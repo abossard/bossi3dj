@@ -37,7 +37,7 @@ flowchart TD
 | C1 | no | Sonnet 5.5, high | `osc/contract` | one meaning per address in `osc/CONTROLS.md`, generator and both scenes follow, one Magic project drives both |
 | B2 | Blender | Opus 5.5, high | `blender/flight-fixes` | `make verify` passes, Hover arrives in 10 to 15 s, no cut stall above the M1 budget |
 | B3 | Blender | Opus 5.5, high | `blender/look-round9` | every camera passes the round 9 rubric, verdict file from `shot-reviewer` |
-| B4 | Blender | Sonnet 5.5, high | `blender/show-start` | one command from cold to a correct, upright Syphon frame with default values |
+| B4 | Blender | Sonnet 5.5, xhigh | `blender/feature-check` (B1 session continues) | one command from cold to a correct, upright Syphon frame with default values |
 | G2 | Godot | Opus 5.5, high | `godot/live-pass` | self-check passes on Metal, `COLOSSUS_OUT` frame has content, Colossus readable in every director shot |
 | B5, G3 | one each | Sonnet 5.5, high | `perf/fps-tables` | fps table per camera or shot with `fps_trustworthy` true |
 | V | both, in turn | orchestrator | | both self-checks green in the browser, `make test` green |
