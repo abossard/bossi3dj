@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Synthwave Control</title>
+<style>
+  :root {
+    --bg: #120a1f; --panel: #1d1230; --line: #35234f; --fg: #f1e8ff; --dim: #a291c2;
+    --accent: #ff4fb4; --accent2: #39e5ff; --ok: #3ddc84; --warn: #ffb020; --bad: #ff5c5c; --mono: ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.4 -apple-system, system-ui, sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 16px; background: var(--panel);
+           border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 2; }
+  header h1 { font-size: 16px; margin: 0 6px 0 0; letter-spacing: .04em; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line);
+          font: 12px var(--mono); background: var(--bg); white-space: nowrap; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bad); } .dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); }
+  main { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 12px; padding: 12px 16px; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+  section.wide { grid-column: 1 / -1; }
+  section h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin: 0 0 8px;
+               display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .ctl { display: grid; grid-template-columns: 92px 1fr 48px 26px 22px; gap: 6px; align-items: center; margin: 3px 0; }
+  .ctl label { font: 12px var(--mono); color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+  .ctl label:hover { color: var(--fg); }
+  .ctl output { font: 12px var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+  .src { font: 10px var(--mono); color: var(--dim); text-align: center; }
+  .src.osc { color: var(--accent2); } .src.web { color: var(--accent); } .src.sim { color: var(--warn); }
+  .lock { padding: 0; width: 22px; height: 22px; font-size: 11px; line-height: 1; }
+  .lock.on { background: var(--warn); border-color: var(--warn); color: #1a1200; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  input[type=number], input[type=text] { width: 80px; font: 12px var(--mono); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; }
+  button { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+  button:hover { border-color: var(--accent2); }
+  button.on { background: var(--accent); border-color: var(--accent); color: #1a0716; }
+  button.fire { border-color: var(--accent); min-width: 90px; }
+  button.fire:active { background: var(--accent); color: #1a0716; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0; }
+  .muted { color: var(--dim); font-size: 12px; }
+  .preview { width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 6px; display: block; object-fit: contain; }
+  table { width: 100%; border-collapse: collapse; font: 12px var(--mono); }
+  th, td { text-align: left; padding: 2px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { color: var(--dim); font-weight: 500; } td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.stale td { color: var(--dim); } tr.held td { color: var(--warn); }
+  .scroll { max-height: 300px; overflow: auto; }
+  pre.log { margin: 0; height: 240px; overflow: auto; font: 11px/1.35 var(--mono); background: var(--bg); padding: 6px; border-radius: 6px; }
+  .kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 4px 12px; font: 12px var(--mono); margin-bottom: 8px; }
+  .kv b { color: var(--dim); font-weight: 500; margin-right: 4px; }
+  @media (max-width: 480px) { main { padding: 10px; } .ctl { grid-template-columns: 78px 1fr 42px 24px 22px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Synthwave Control</h1>
+  <span class="chip"><span id="link" class="dot"></span><span id="linktxt">connecting</span></span>
+  <span class="chip">cam <b id="cam">-</b></span>
+  <span class="chip"><span id="playdot" class="dot"></span><b id="fps">-</b> fps</span>
+  <span class="chip"><span id="sydot" class="dot"></span>Syphon <b id="sy">-</b></span>
+  <span class="chip"><span id="oscdot" class="dot"></span>OSC <b id="oschz">-</b></span>
+  <button id="defaults">Reset to defaults</button>
+  <button id="holdall" title="Skip all incoming OSC for vj_* so this page owns the scene">Hold all OSC</button>
+  <button id="release">Release all</button>
+</header>
+<main id="main">
+  <section id="preview-sec">
+    <h2>Camera output <label class="muted"><input type="checkbox" id="pv"> live preview</label></h2>
+    <img id="frame" class="preview" alt="">
+    <div class="muted" id="pvinfo">The preview reads the Syphon frame back at 640×360, about 10 fps, and only while this box is ticked.</div>
+  </section>
+  <section>
+    <h2>Beat simulator</h2>
+    <div class="row">
+      <button id="simon">Start</button>
+      <label class="muted">BPM <input type="number" id="bpm" min="40" max="220" step="1" value="124"></label>
+      <label class="muted">shock every <input type="number" id="every" min="0" max="64" step="1" value="8"> beats</label>
+    </div>
+    <div class="muted">Writes vj_beat, vj_bass, vj_level and vj_shock the way Magic's audio analysis would. Hold those keys (or all) so Magic's OSC doesn't fight it.</div>
+    <h2 style="margin-top:12px">Presets <span class="muted">stored in this browser</span></h2>
+    <div class="row"><input type="text" id="pname" placeholder="name" style="width:140px"><button id="psave">Save current</button></div>
+    <div class="row" id="plist"></div>
+  </section>
+  <section class="wide" id="osc-sec">
+    <h2>Incoming OSC <span class="row" style="margin:0"><label class="muted"><input type="checkbox" id="logpause"> pause log</label></span></h2>
+    <div class="kv" id="oscstats"></div>
+    <div class="scroll"><table><thead><tr><th>address</th><th>value</th><th class="num">Hz</th><th class="num">count</th><th class="num">age s</th><th>from</th><th></th></tr></thead><tbody id="addrs"></tbody></table></div>
+    <h2 style="margin-top:10px">Packet log <span class="muted">newest last</span></h2>
+    <pre class="log" id="log"></pre>
+  </section>
+</main>
+<script>
+// Presentation only: which section a property sits in. Properties missing here land in "Other", so the page never hides one.
+const GROUPS = [
+  ["Triggers", []],
+  ["Camera", ["vj_cam", "vj_cam_speed"]],
+  ["Sky", ["vj_night", "vj_sun", "vj_moon", "vj_moon_phase", "vj_stars", "vj_nebula"]],
+  ["Music", ["vj_level", "vj_bass", "vj_beat", "vj_intensity", "vj_hue", "vj_strobe"]],
+  ["World", ["vj_pyramids", "vj_grid", "vj_grid_speed", "vj_water", "vj_flamingos", "vj_haze"]],
+  ["Fog", ["vj_fog", "vj_fog_height", "vj_fog_glow", "vj_fog_hue", "vj_fog_noise", "vj_fog_scale", "vj_fog_speed", "vj_fog_beat"]],
+  ["Other", []],
+];
+const PRESET_STORE = "synthwave-presets";
+const $ = id => document.getElementById(id);
+const els = {};          // key -> {input, out, src, lock, step} or {buttons, src, lock}
+let layoutKey = "", dragging = null, pending = {}, timer = null, state = null;
+
+function post(path, body) {
+  return fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body || {})});
+}
+function send(key, value) {            // coalesced to one request per 16 ms (not rAF: it stops in background tabs)
+  pending[key] = value;
+  if (!timer) timer = setTimeout(() => { const b = pending; pending = {}; timer = null; post("/api/set", b); }, 16);
+}
+function fmt(v, step) { return step >= 1 ? String(Math.round(v)) : v.toFixed(step >= 0.1 ? 1 : 2); }
+function name(key) { return key.slice(3); }
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function addr(key) { return "/" + key.replace("_", "/"); }
+
+function tail(c) {                     // source badge and hold toggle shared by every control
+  const src = el("span", "src", "");
+  const lock = el("button", "lock", "H"); lock.title = "hold: skip incoming OSC for " + c.key;
+  lock.onclick = () => post("/api/hold", {keys: [c.key], on: !lock.classList.contains("on")});
+  return {src, lock};
+}
+
+function build(controls) {
+  document.querySelectorAll("section.ctlsec").forEach(s => s.remove());
+  for (const k in els) delete els[k];
+  const byKey = Object.fromEntries(controls.map(c => [c.key, c]));
+  const placed = new Set(GROUPS.flatMap(g => g[1]));
+  const anchor = $("osc-sec");
+  for (let [title, keys] of GROUPS) {
+    if (title === "Triggers") keys = controls.filter(c => c.trigger).map(c => c.key);
+    if (title === "Other") keys = controls.filter(c => !c.trigger && !placed.has(c.key)).map(c => c.key);
+    keys = keys.filter(k => byKey[k] && (title === "Triggers" || !byKey[k].trigger));
+    if (!keys.length) continue;
+    const sec = el("section", "ctlsec"); sec.appendChild(el("h2", null, title));
+    for (const key of keys) sec.appendChild(control(byKey[key]));
+    $("main").insertBefore(sec, anchor);
+  }
+}
+
+function control(c) {
+  const t = tail(c);
+  if (c.trigger) {
+    const row = el("div", "row");
+    const b = el("button", "fire", name(c.key)); b.title = "fires on the rising edge";
+    b.onclick = () => { send(c.key, 1.0); setTimeout(() => send(c.key, 0.0), 150); };
+    row.append(b, t.src, t.lock);
+    els[c.key] = {src: t.src, lock: t.lock};
+    return row;
+  }
+  if (c.step >= 1 && c.max - c.min <= 12) {        // small integer range: one button per value
+    const row = el("div", "row");
+    const lab = el("span", "muted", name(c.key)); lab.style.width = "92px"; row.appendChild(lab);
+    const buttons = [];
+    for (let v = c.min; v <= c.max; v += c.step) {
+      const b = el("button", null, String(v)); b.onclick = () => send(c.key, v);
+      buttons.push([v, b]); row.appendChild(b);
+    }
+    row.append(t.src, t.lock);
+    els[c.key] = {buttons, src: t.src, lock: t.lock};
+    return row;
+  }
+  const row = el("div", "ctl");
+  const lab = el("label", null, name(c.key)); lab.title = `${c.key}  ${c.min}..${c.max}, default ${c.default}. Click to reset.`;
+  const input = el("input"); Object.assign(input, {type: "range", min: c.min, max: c.max, step: c.step});
+  const out = el("output");
+  input.oninput = () => { out.textContent = fmt(+input.value, c.step); send(c.key, +input.value); };
+  input.onpointerdown = () => dragging = c.key;
+  input.onpointerup = input.onpointercancel = () => dragging = null;
+  lab.onclick = () => { input.value = c.default; input.oninput(); };
+  row.append(lab, input, out, t.src, t.lock);
+  els[c.key] = {input, out, step: c.step, src: t.src, lock: t.lock};
+  return row;
+}
+
+function update(s) {
+  state = s;
+  const key = s.controls.map(c => [c.key, c.min, c.max, c.step, c.trigger].join()).join("|");
+  if (key !== layoutKey) { layoutKey = key; build(s.controls); }
+  const osc = s.osc || {source: {}, hold: [], addresses: {}};
+  const hold = new Set(osc.hold);
+  for (const [k, v] of Object.entries(s.values)) {
+    const e = els[k]; if (!e) continue;
+    if (e.input && dragging !== k) { e.input.value = v; e.out.textContent = fmt(v, e.step); }
+    if (e.buttons) for (const [bv, b] of e.buttons) b.classList.toggle("on", Math.round(v) === bv);
+    const src = osc.source[k] || "";
+    e.src.textContent = src; e.src.className = "src " + src;
+    e.lock.classList.toggle("on", hold.has(k));
+  }
+  $("cam").textContent = s.camera || "-";
+  $("fps").textContent = s.fps;
+  $("playdot").className = "dot " + (!s.playing ? "" : s.fps >= 24 ? "ok" : "warn");
+  $("sy").textContent = s.syphon ? (s.syphon.failed ? "failed" : s.syphon.frames) : "off";
+  $("sydot").className = "dot " + (s.syphon && !s.syphon.failed ? "ok" : "");
+  $("linktxt").textContent = s.scene;
+  $("simon").textContent = s.sim.on ? "Stop" : "Start"; $("simon").classList.toggle("on", s.sim.on);
+  if (document.activeElement !== $("bpm")) $("bpm").value = s.sim.bpm;
+  if (document.activeElement !== $("every")) $("every").value = s.sim.shock_every;
+  monitor(s.osc);
+}
+
+function monitor(o) {
+  if (!o) { $("oscdot").className = "dot"; $("oschz").textContent = "bridge off"; return; }
+  const live = Object.values(o.addresses).filter(a => a.age < 1);
+  const hz = live.reduce((n, a) => n + a.hz, 0);
+  $("oscdot").className = "dot " + (live.length ? "ok" : "warn");
+  $("oschz").textContent = live.length ? `${Math.round(hz)} msg/s` : "silent";
+  const kv = {port: o.port, received: o.received, applied: o.applied, dropped: o.dropped, held: o.held,
+              errors: o.errors, "timer Hz": o.ticks_hz, holding: o.hold.length};
+  $("oscstats").innerHTML = Object.entries(kv).map(([k, v]) => `<span><b>${k}</b>${v}</span>`).join("");
+  const rows = Object.entries(o.addresses).sort((a, b) => a[0] < b[0] ? -1 : 1);
+  $("addrs").innerHTML = rows.map(([a, st]) => {
+    const v = st.v.map(x => typeof x === "number" ? x.toFixed(3) : x).join(" ");
+    const cls = st.held ? "held" : st.age > 2 ? "stale" : "";
+    return `<tr class="${cls}"><td>${a}</td><td>${v}</td><td class="num">${st.hz}</td><td class="num">${st.n}</td>` +
+           `<td class="num">${st.age}</td><td>${st.src}</td><td>${st.held ? "held" : ""}</td></tr>`;
+  }).join("") || `<tr><td colspan="7" class="muted">nothing received yet on udp ${o.port}</td></tr>`;
+  if (!$("logpause").checked) {
+    const log = $("log"), atEnd = log.scrollTop + log.clientHeight >= log.scrollHeight - 4;
+    log.textContent = o.log.map(([t, src, a, args]) =>
+      `${(t - o.now).toFixed(2).padStart(7)}  ${src.padEnd(16)} ${a} ${args.map(x => typeof x === "number" ? +x.toFixed(4) : x).join(" ")}`).join("\n");
+    if (atEnd) log.scrollTop = log.scrollHeight;
+  }
+}
+
+async function poll() {
+  try {
+    const r = await fetch("/api/state", {cache: "no-store"});
+    const s = await r.json();
+    if (s.controls) update(s);
+    $("link").className = "dot ok";
+  } catch (e) {
+    $("link").className = "dot"; $("linktxt").textContent = "Blender not reachable";
+  }
+  setTimeout(poll, 100);
+}
+
+// Preview: fetch the next frame only after the last one has loaded, so a slow Blender never queues requests.
+function nextFrame() {
+  if (!$("pv").checked) return;
+  fetch("/api/frame.bmp", {cache: "no-store"}).then(r => r.status === 200 ? r.blob() : null).then(b => {
+    if (b) { const old = $("frame").src; $("frame").src = URL.createObjectURL(b); if (old.startsWith("blob:")) URL.revokeObjectURL(old); }
+    setTimeout(nextFrame, b ? 60 : 300);
+  }).catch(() => setTimeout(nextFrame, 1000));
+}
+$("pv").onchange = nextFrame;
+
+function presets() { try { return JSON.parse(localStorage.getItem(PRESET_STORE)) || {}; } catch (e) { return {}; } }
+function savePresets(p) { try { localStorage.setItem(PRESET_STORE, JSON.stringify(p)); } catch (e) {} renderPresets(); }
+function renderPresets() {
+  const p = presets(), list = $("plist"); list.innerHTML = "";
+  for (const n of Object.keys(p).sort()) {
+    const b = el("button", null, n); b.title = "load"; b.onclick = () => post("/api/set", p[n]);
+    const x = el("button", "lock", "×"); x.title = "delete " + n; x.onclick = () => { const q = presets(); delete q[n]; savePresets(q); };
+    list.append(b, x);
+  }
+  if (!Object.keys(p).length) list.appendChild(el("span", "muted", "none saved yet"));
+}
+$("psave").onclick = () => {
+  if (!state) return;
+  const n = $("pname").value.trim() || "preset " + (Object.keys(presets()).length + 1);
+  const trig = new Set(state.controls.filter(c => c.trigger).map(c => c.key));
+  const p = presets(); p[n] = Object.fromEntries(Object.entries(state.values).filter(([k]) => !trig.has(k)));
+  savePresets(p); $("pname").value = "";
+};
+
+const simCfg = extra => post("/api/sim", Object.assign({bpm: +$("bpm").value, shock_every: +$("every").value}, extra));
+$("simon").onclick = () => simCfg({on: !(state && state.sim.on)});
+$("bpm").onchange = $("every").onchange = () => simCfg({});
+$("defaults").onclick = () => post("/api/defaults");
+$("holdall").onclick = () => post("/api/hold", {on: true});
+$("release").onclick = () => post("/api/hold", {on: false});
+renderPresets();
+poll();
+</script>
+</body>
+</html>

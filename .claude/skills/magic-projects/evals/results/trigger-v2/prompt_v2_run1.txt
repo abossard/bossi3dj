@@ -1,0 +1,20 @@
+You are simulating Claude Code's skill-selection step. Claude Code is open in the repo abossard/swift-vj (a Swift VJ app; it also holds tooling for Magic Music Visuals). The available_skills list is below; Claude sees only these names and descriptions. Claude consults a skill only when it would genuinely help with a task it cannot trivially do alone; it does not consult skills for unrelated work.
+
+<available_skills>
+- magic-projects: Work with Magic Music Visuals (Magic 3, Magic.app or MagicBeta.app) and its .magic projects. Read, explain, check, diff, edit, generate and live-verify scenes, modules, Globals, modifiers, ExprTk expressions, audio, MIDI and OSC inputs and mappings, OSCSender output, Iterators, ISF/GLSL shaders and custom modules, video, camera and Syphon inputs, Syphon output, playlists and transitions, audio file playback, movie export and live-performance settings. Use whenever the user mentions Magic or Magic Music Visuals, a .magic file, a Magic scene, module, Global or modifier, Magic MIDI/OSC learn, or Magic V3 compatibility, even if they only say "my visuals project" or "the Magic patch".
+- hyperframes: Mandatory entry point for any request to make, create, edit, animate, or render a video, animation, or motion graphic, including music videos and beat-synced edits.
+- music-to-video: Turn a music track into a beat-synced video (lyric video, slideshow, kinetic promo).
+- find-skills: Helps users discover and install agent skills when they ask "is there a skill that can...".
+- supermatt:research: Investigate a question against high-trust primary sources and capture the findings as a Markdown file in the repo.
+- supermatt:diagnosing-bugs: Diagnose a bug methodically before fixing it.
+- supermatt:qa: QA a change in the running program the way its user meets it (CLI via tmux, web app via browser).
+- supermatt:tdd: Test-driven development, red-green-refactor.
+- anthropic-skills:pdf: Read, extract, fill or create PDF files.
+- anthropic-skills:computer-use: Drive native desktop apps through screenshots and clicks.
+- anthropic-skills:built-in-browser: Use the browser pane inside the Claude desktop app.
+- dataviz: Use before creating any chart, graph, plot, dashboard or data visualization.
+- run: Launch and drive this project's app to see a change working.
+- code-review: Review the current diff or a PR for correctness bugs.
+</available_skills>
+
+For each user message in /private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/trigger/queries_blind.json (fields id, query), decide which single skill, if any, Claude would invoke as its first step. Use your honest judgement as that Claude. Write a JSON object {"<id>": "<skill name or none>", ...} to /private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/trigger/v2_run1.json and reply with just "done". Do not run any other commands.

@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "answer.md names OutShock as the Global behind /vj/shock",
+      "passed": true,
+      "evidence": "# synthwave_pyramids.magic: /vj/shock and the kick detector\n\n## Which Global feeds /vj/shock\n\n- OSCSender node id 25 (127.0.0.1:9201, message `/vj/shock`) has its Value linked to Global **OutShock** ("
+    },
+    {
+      "text": "answer.md lists both ShockT and ShockAmp as dependencies",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "answer.md mentions the Clock dependency",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "answer.md identifies the 20-80 Hz band",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "answer.md identifies the 80-320 Hz band at half weight",
+      "passed": true,
+      "evidence": ""
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

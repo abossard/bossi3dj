@@ -1,0 +1,122 @@
+[
+ {
+  "query": "add my mp3 ~/Music/set_2026_10.mp3 to the synthwave magic project so it plays in a loop instead of using blackhole",
+  "should_trigger": true,
+  "split": "train",
+  "id": 1
+ },
+ {
+  "query": "why does my ExprTk expression max(x, y*exp(-Dt*9)) in Magic start at 0 and never seed? the Global is calculated",
+  "should_trigger": true,
+  "split": "train",
+  "id": 2
+ },
+ {
+  "query": "the Blender synthwave scene's /vj/beat driver isn't moving the pyramid edges, check synthwave_runtime.py and the bridge",
+  "should_trigger": false,
+  "split": "test",
+  "id": 3
+ },
+ {
+  "query": "convert this Magic Music Visuals user guide PDF section about modifiers into a markdown cheat sheet",
+  "should_trigger": false,
+  "split": "train",
+  "id": 4
+ },
+ {
+  "query": "can you turn on syphon output in master.magic (synesthesia-visuals/magic) and name the server 'vj-main'? i want to pull it into resolume",
+  "should_trigger": true,
+  "split": "train",
+  "id": 5
+ },
+ {
+  "query": "diff dev.magic and dev2.magic for me, i changed something in the globals last week and now the strobe is broken",
+  "should_trigger": true,
+  "split": "test",
+  "id": 6
+ },
+ {
+  "query": "my Synesthesia scene's main.glsl has a uniform syn_BassLevel that flickers, how do I smooth it in the shader?",
+  "should_trigger": false,
+  "split": "test",
+  "id": 7
+ },
+ {
+  "query": "in the Blender file, add a new camera CAM_7 that orbits the moon, don't touch the Magic side",
+  "should_trigger": false,
+  "split": "train",
+  "id": 8
+ },
+ {
+  "query": "what's a good BPM detection algorithm in Python for live audio from BlackHole? I want to replace Synesthesia's beat OSC",
+  "should_trigger": false,
+  "split": "train",
+  "id": 9
+ },
+ {
+  "query": "make me a hyperframes music video for this track with beat-synced cuts",
+  "should_trigger": false,
+  "split": "test",
+  "id": 10
+ },
+ {
+  "query": "load the synthetic test build into Magic and check the readout overlay shows values, then put my normal project back",
+  "should_trigger": true,
+  "split": "test",
+  "id": 11
+ },
+ {
+  "query": "rename the Global FxGlow to GlowAmount everywhere in synthwave_pyramids.magic including the expressions that use it",
+  "should_trigger": true,
+  "split": "train",
+  "id": 12
+ },
+ {
+  "query": "write a GLSL ISF shader that does a chromatic aberration glitch, I'll drop it into my Magic additional modules folder myself",
+  "should_trigger": false,
+  "split": "train",
+  "id": 13
+ },
+ {
+  "query": "I need the OSC out of my Magic project to go to port 9300 instead of 9201 for a test, make a copy with that change",
+  "should_trigger": true,
+  "split": "test",
+  "id": 14
+ },
+ {
+  "query": "lab.py shows /vj/level arriving at 60 Hz but /vj/cam never changes, what's wrong with the relay code?",
+  "should_trigger": false,
+  "split": "train",
+  "id": 15
+ },
+ {
+  "query": "resolve keeps complaining the syphon client can't find 'Main Server', how do i list all syphon servers on this mac from the terminal?",
+  "should_trigger": false,
+  "split": "train",
+  "id": 16
+ },
+ {
+  "query": "is Magic actually rendering anything right now? grab a frame from it and tell me if the screen is black",
+  "should_trigger": true,
+  "split": "train",
+  "id": 17
+ },
+ {
+  "query": "the synthwave .magic file in Tools/magic-blender-lab/scenes, can you tell me what modifiers are on the Kick global and why it seems to lag behind the music?",
+  "should_trigger": true,
+  "split": "train",
+  "id": 18
+ },
+ {
+  "query": "Build a Magic Music Visuals project with three scenes, each a spectrum bar chart driven by Freq. Range bands, and save it as spectrum_test.magic",
+  "should_trigger": true,
+  "split": "test",
+  "id": 19
+ },
+ {
+  "query": "set up the SwiftVJ app so it receives Syphon from Blender CAM_OUT and shows it in the preview",
+  "should_trigger": false,
+  "split": "test",
+  "id": 20
+ }
+]

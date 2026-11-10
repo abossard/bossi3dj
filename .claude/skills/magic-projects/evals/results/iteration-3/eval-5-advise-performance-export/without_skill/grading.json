@@ -1,0 +1,50 @@
+{
+  "expectations": [
+    {
+      "text": "lower or fix the graphics resolution instead of rendering at 4K",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "watch FPS in the status information / aim for 60",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "mentions frame-rate throttling or vsync",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "mentions graphics memory / Load All Scenes Into Graphics Memory",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "mentions Module Text Update Speed or closing the editor",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "export via File > Export Movie",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "export follows audio files only; live inputs are ignored",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "H.264 settings: quality (CRF) and width/height multiple of 4 or 1920x1080 at 60",
+      "passed": true,
+      "evidence": ""
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  }
+}

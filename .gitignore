@@ -1,0 +1,15 @@
+.DS_Store
+__pycache__/
+*.blend1
+.venv/
+*.log
+
+# NASA SVS Deep Star Maps and filtered moon maps (downloaded or generated, 124 to 423 MB each)
+blender/scenes/planet_proto/starmaps/
+# review grabs, sheets and reference photos (local review material)
+blender/scenes/planet_proto/visual_check/
+
+# local agent settings
+.claude/settings.local.json
+.claude/worktrees/
+blender/review/*.ppm

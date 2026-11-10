@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "names the Iterator Notes MIDI feature",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "explains the 88-key Iterator starting at note 21",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "says the MIDI source must be assigned to a device/channel in Input Sources",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "explains key lighting via Threshold-gated Power/Bypass/Saturation",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "explains InputSelector picks the Left/Right/Middle/Black key shape by note within the octave",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "says Left Key / Right Key are key-shape scenes used as scene modules",
+      "passed": true,
+      "evidence": ""
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "expectations": [
+    {
+      "text": "synthwave_lab.magic exists and decodes",
+      "passed": true,
+      "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-1/eval-2-edit-osc-syphon-gain/with_skill/run-1/outputs/synthwave_lab.magic"
+    },
+    {
+      "text": "all 30 OSCSenders target 127.0.0.1:9200",
+      "passed": true,
+      "evidence": "[('127.0.0.1', '9200')]"
+    },
+    {
+      "text": "Syphon on, named synthwave-out, 1920x1080",
+      "passed": true,
+      "evidence": "{'videoSharing': '1', 'videoSharingWidth': '1920', 'videoSharingHeight': '1080', 'videoSharingName': 'synthwave-out'}"
+    },
+    {
+      "text": "Global Gain value is 0.7",
+      "passed": true,
+      "evidence": "0.7"
+    },
+    {
+      "text": "no other semantic change",
+      "passed": true,
+      "evidence": "[]"
+    },
+    {
+      "text": "no check() errors",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "input file unchanged",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "changes.md reports the port, Syphon and Gain changes",
+      "passed": true,
+      "evidence": "# synthwave_lab.magic changes\n\nSource: `.claude/skills/magic-projects/evals/files/synthwave_pyramids.magic` (unchanged, sha1 `c78a7d85033c2aacc8aac16deb9b0dbd8f991a19` before and after).\n\n`magicproj.p"
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  }
+}

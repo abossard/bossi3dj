@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Blender__get_objects_summary",
+      "mcp__Blender__get_object_detail_summary",
+      "mcp__Blender__get_blendfile_summary_datablocks",
+      "mcp__Blender__get_blendfile_summary_missing_files",
+      "mcp__Blender__get_blendfile_summary_of_linked_libraries",
+      "mcp__Blender__get_blendfile_summary_path_info",
+      "mcp__Blender__get_blendfile_summary_usage_guess",
+      "mcp__Blender__get_python_api_docs",
+      "mcp__Blender__search_api_docs",
+      "mcp__Blender__search_manual_docs",
+      "mcp__godot-mcp__godot_docs",
+      "mcp__godot-mcp__godot_node_read",
+      "mcp__godot-mcp__godot_editor_read",
+      "mcp__godot-mcp__godot_animation_read",
+      "mcp__godot-mcp__godot_runtime_state",
+      "Bash(make help)",
+      "Bash(make test)",
+      "Bash(make magic-test)",
+      "Bash(make godot-test)",
+      "Bash(make godot-smoke)",
+      "Bash(make blender-status)",
+      "Bash(python3 tools/blender_lock.py status)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__Blender__execute_blender_code|mcp__Blender__render_.*|mcp__Blender__jump_.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/blender_lock.py\" hook",
+            "timeout": 10,
+            "statusMessage": "Checking the Blender lock"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,137 @@
+# Colossus Scene spec sheet
+
+Terms follow [GLOSSARY.md](../../../GLOSSARY.md). The look lives in the art book; this sheet holds the numbers.
+
+## Platform
+
+| Item | Value |
+|---|---|
+| Engine | Godot 4.7.2 (mono build installed, GDScript only) |
+| Renderer | Forward+, Metal driver (`rendering_device/driver.macos="metal"`) |
+| Host | M1 Max, 32-core GPU, 64 GB |
+| Output | Syphon server `COLOSSUS_OUT`, 1920×1080, 60 fps, picked up by Magic |
+| Internal resolution | 0.75 scale, MetalFX temporal upscale (`Viewport.scaling_3d_mode = 4`) |
+| Frame budget | 16.6 ms GPU, 8 ms CPU main thread |
+
+## Budgets
+
+| Item | Budget |
+|---|---|
+| Colossus | ≤ 100k tris, one rig, ≤ 24 physical bones for the Fall |
+| Wanderer | ≤ 60k tris, Mixamo-compatible humanoid skeleton |
+| Each ruin set | ≤ 300k tris after decimation, LODs on |
+| Visible tris total | ≤ 3M |
+| Draw calls | ≤ 1500 |
+| Textures | 2k for hero assets, 4k only for the Colossus albedo/normal |
+
+## World
+
+| Item | Value |
+|---|---|
+| Units | metres, Y up |
+| Terrain | Terrain3D, 8 × 8 km, 2 m vertex spacing, full collision; flat plain beyond the edge |
+| Heightmap | Copernicus GLO-30 tile N63 W020, cropped to Mælifellssandur (centre 63.80 N 19.08 W, Fjallabak highlands): a black sand plain under the Mýrdalsjökull glacier foot. Landmannalaugar sits in the tile corner and has no plain to roam. Relief x1.5, plain at y = 0 |
+| Wanderer height | 1.75 m |
+| Colossus height | 20 to 40 m, set per Colossus; Grock Endboss at 28 m |
+| Shrine | Temple Ruins pack, columns scaled to 10 to 14 m, on the glacier foot at (14, 1467), 80 m up, 850 m beyond the edge of the roaming area (centre (14, 15), radius 600 m) |
+| Other ruins | Arch bridge across a canyon, toppled statue fragment in the plain, Faroe wall scans as scatter |
+| Light | One sun 4° above horizon behind overcast, volumetric fog, SDFGI on, SSR off, SSIL on |
+
+## Assets
+
+| Role | Asset | License | Committed |
+|---|---|---|---|
+| Colossus 1 (start) | Grock Endboss | CC-BY | yes |
+| Colossus 2 | Ancient Titan Vol2 | CC-BY (credit waived) | yes |
+| Colossus 3 | Golem Rock | CC-BY label, "All rights reserved" in text | only after the author confirms |
+| Wanderer | Nomad Marksman Rig | CC-BY | yes |
+| Wanderer clips | Mixamo | Adobe terms, no redistribution | no, `assets/mixamo/` is git-ignored |
+| Terrain textures, rock scans, sky | Poly Haven, ambientCG | CC0 | yes |
+| Ruins | Temple Ruins pack, arch bridge, statue fragment (CC-BY), Faroe ruins (CC0) | as listed | yes |
+| Heightmap | Copernicus GLO-30 | free, attribution required | yes |
+
+Every CC-BY and Copernicus item gets a line in `CREDITS.md` when it is downloaded.
+
+Mixamo clips needed: idle, walk, run, braced hang idle, braced hang shimmy left/right, climb up, climb down, hanging swing, fall idle, stand up.
+
+## Arc
+
+```mermaid
+stateDiagram-v2
+  [*] --> Approach
+  Approach --> Climb: performer Next
+  Climb --> Fall: performer Next
+  Fall --> Reset: 4 s after the body settles, or 15 s
+  Reset --> Approach: fade done, next Colossus
+```
+
+| Phase | Wanderer (autonomous) | Colossus | Camera director |
+|---|---|---|---|
+| Approach | walks from the Shrine toward the Colossus | roams, foot IK on terrain, head looks at the Wanderer | wide scale shots, slow drift |
+| Climb | runs to the nearest Grab Point, then climbs toward the head | turns and walks to meet the Wanderer, stands while he climbs, Shakes on triggers | close grip, over-shoulder, low hero |
+| Fall | holds on, lets go on impact, stands up | ragdoll takes over | wide collapse, then dust close-up |
+| Reset | none | swap to the next Colossus | fade to black 2 s, open on the Shrine |
+
+Only the performer advances Approach and Climb. Fall ends on its own.
+
+## Grab Path
+
+- A **Grab Point** is a node under a `BoneAttachment3D` on the Colossus. Fields: surface normal, grip kind (`ledge` or `fur`), links to neighbouring Grab Points.
+- Links are authored by hand in each Colossus scene. A Grab Path must connect every Grab Point to the head.
+- The Wanderer picks the link whose direction, projected onto the surface at the current Grab Point, best matches the input direction (autonomous: toward the head).
+- The Colossus plants its feet with `TwoBoneIK3D`. The Wanderer's hands will use it once he has a rig. The body hangs from the grip as a pendulum during a Shake, swinging sideways along the surface. The grip never fails.
+
+## Inputs
+
+### OSC (from Magic through `lab.py`)
+
+`lab.py` relays to Blender (udp 9201) and to Godot on udp 127.0.0.1:9202 (`--godot-port`, settable on the lab page, 0 = off); its generators and sliders reach both. Godot reads the existing `/vj/*` addresses:
+
+| Address | Drives |
+|---|---|
+| `/vj/beat` | Colossus footfall timing nudge, dust puffs, camera cut points |
+| `/vj/bass` | footfall weight (camera shake, dust size) |
+| `/vj/level` | sun glow through the cloud gap |
+| `/vj/shock` | triggers a Shake while the Wanderer is on the Colossus |
+| `/vj/fog`, `/vj/fog_height`, `/vj/haze` | volumetric fog density, height, distance haze |
+| `/vj/cam` | 1 to 5 hold that director shot; 0 hands the cut back to the director |
+| `/vj/intensity` | overall exposure |
+
+Each address counts as missing 2 s after its last packet and falls back to its rest value (the tuned look). Missing `/vj/beat`: an internal 90 BPM beat, as the Blender runtime does.
+
+### Keyboard and mouse (Takeover)
+
+| Input | Action |
+|---|---|
+| W A S D | steer the Wanderer; while climbing, choose climb direction |
+| Shift | run |
+| Space | grab the nearest Grab Point (Approach and Climb) / let go to the ground (Approach only) |
+| Mouse move | camera Takeover |
+| N | next Phase |
+| R | Reset now |
+| Q | Shake |
+| C | swap to the next Colossus at the next Reset |
+| 1 to 5 | force a director shot: 1 scale wide, 2 low hero, 3 over-shoulder climb, 4 close grip, 5 aerial orbit |
+| F1 | debug overlay: Grab Points, links, IK targets, frame timings |
+
+Takeover ends 4 s after the last input, for the Wanderer and the camera separately.
+
+## Project layout
+
+```
+godot/colossus/
+  project.godot
+  addons/            godot_mcp, terrain_3d, godot-syphon (licences beside them)
+  assets/dem/        the Copernicus crop
+  assets/terrain/    CC0 ground textures
+  assets/mixamo/     git-ignored
+  colossi/           the Colossus base, the rigged stand-in, the roster, the Grab Path
+  wanderer/
+  world/             land, sky, fog, dust, film grain, shrine and ruins
+  director/          camera shots and cut logic
+  arc/               Phase state machine
+  io/                OSC in, keyboard Takeover, debug overlay
+  tests/             logic tests, smoke run, Metal capture
+  docs/              this sheet, GUIDELINES.md
+  CREDITS.md
+```

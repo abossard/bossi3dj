@@ -1,0 +1,761 @@
+{
+  "metadata": {
+    "skill_name": "magic-projects",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "claude-opus-5-5",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-11-04T12:52:54Z",
+    "evals_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 147.3,
+        "tokens": 108272,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "names the Iterator Notes MIDI feature",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "explains the 88-key Iterator starting at note 21",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "says the MIDI source must be assigned to a device/channel in Input Sources",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "explains key lighting via Threshold-gated Power/Bypass/Saturation",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "explains InputSelector picks the Left/Right/Middle/Black key shape by note within the octave",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "says Left Key / Right Key are key-shape scenes used as scene modules",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 9,
+        "failed": 0,
+        "total": 9,
+        "time_seconds": 68.6,
+        "tokens": 89976,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "show.magic exists and decodes",
+          "passed": true,
+          "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-3/eval-2-edit-playlist-show/with_skill/run-1/outputs/show.magic"
+        },
+        {
+          "text": "every scene is in the playlist once, in order",
+          "passed": true,
+          "evidence": "['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18']"
+        },
+        {
+          "text": "every entry auto-advances after 16 s",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "every entry uses the crossfade style (1)",
+          "passed": true,
+          "evidence": "{'1'}"
+        },
+        {
+          "text": "Syphon on as magic-show at 1280x720",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "looping on",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "scenes and modules unchanged",
+          "passed": true,
+          "evidence": "[]"
+        },
+        {
+          "text": "changes.md notes the project has no audio files",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "changes.md says auto-advance is switched on in Magic (not stored in the project)",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 9,
+        "failed": 0,
+        "total": 9,
+        "time_seconds": 140.9,
+        "tokens": 121067,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "spectrum_bars.magic exists and decodes",
+          "passed": true,
+          "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-3/eval-3-generate-iterator-midi-osc/with_skill/run-1/outputs/spectrum_bars.magic"
+        },
+        {
+          "text": "no check() errors",
+          "passed": true,
+          "evidence": "[]"
+        },
+        {
+          "text": "an Iterator with 16 iterations",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "a bar height reads Freq. Range Iterator Freqs. (feature 1, sub 6)",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "a MIDI source on channel 1",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "something reads MIDI CC 1 (feature 3, sub 1)",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "OSC input on port 8000",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "Global Speed reads osc:/speed",
+          "passed": true,
+          "evidence": "osc:/speed"
+        },
+        {
+          "text": "a rotation is linked to Speed",
+          "passed": true,
+          "evidence": "['Speed']"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 4,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 89.9,
+        "tokens": 82308,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "fixed.magic exists and decodes",
+          "passed": true,
+          "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-3/eval-4-repair-hand-edit/with_skill/run-1/outputs/fixed.magic"
+        },
+        {
+          "text": "no check() errors",
+          "passed": true,
+          "evidence": "[]"
+        },
+        {
+          "text": "Globals are still Spin and Pulse",
+          "passed": true,
+          "evidence": "{'Spin', 'Pulse'}"
+        },
+        {
+          "text": "all five bar Scales link to Pulse again",
+          "passed": true,
+          "evidence": "5"
+        },
+        {
+          "text": "the Scene 1 Trails has its five inputs back",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "the typo Spinn is gone",
+          "passed": true,
+          "evidence": "['Spin*2']"
+        },
+        {
+          "text": "fixes.md names all three problems",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 5,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 150.4,
+        "tokens": 98366,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "lower or fix the graphics resolution instead of rendering at 4K",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "watch FPS in the status information / aim for 60",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "mentions frame-rate throttling or vsync",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "mentions graphics memory / Load All Scenes Into Graphics Memory",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "mentions Module Text Update Speed or closing the editor",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "export via File > Export Movie",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "export follows audio files only; live inputs are ignored",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "H.264 settings: quality (CRF) and width/height multiple of 4 or 1920x1080 at 60",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 6,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 148.5,
+        "tokens": 109771,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "a .fs file was written",
+          "passed": true,
+          "evidence": "['/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-3/eval-6-custom-isf-module/with_skill/run-1/outputs/Mirror Pulse.fs']"
+        },
+        {
+          "text": "the .fs header parses and has an amount input",
+          "passed": true,
+          "evidence": "{'Amount': 0.0}"
+        },
+        {
+          "text": "demo_mirror.magic decodes",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "a Mirror Pulse node (pluginName = file stem)",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "Mirror Pulse takes the Polygon as input",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "its Amount param reads Source 0 volume",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "no check() errors",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "notes.md explains Additional Module Folders",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 152.6,
+        "tokens": 108350,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "names the Iterator Notes MIDI feature",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "explains the 88-key Iterator starting at note 21",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "says the MIDI source must be assigned to a device/channel in Input Sources",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "explains key lighting via Threshold-gated Power/Bypass/Saturation",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "explains InputSelector picks the Left/Right/Middle/Black key shape by note within the octave",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "says Left Key / Right Key are key-shape scenes used as scene modules",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.89,
+        "passed": 8,
+        "failed": 1,
+        "total": 9,
+        "time_seconds": 93.4,
+        "tokens": 84113,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "show.magic exists and decodes",
+          "passed": true,
+          "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-3/eval-2-edit-playlist-show/without_skill/run-1/outputs/show.magic"
+        },
+        {
+          "text": "every scene is in the playlist once, in order",
+          "passed": true,
+          "evidence": "['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18']"
+        },
+        {
+          "text": "every entry auto-advances after 16 s",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "every entry uses the crossfade style (1)",
+          "passed": true,
+          "evidence": "{'1'}"
+        },
+        {
+          "text": "Syphon on as magic-show at 1280x720",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "looping on",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "scenes and modules unchanged",
+          "passed": true,
+          "evidence": "[]"
+        },
+        {
+          "text": "changes.md notes the project has no audio files",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "changes.md says auto-advance is switched on in Magic (not stored in the project)",
+          "passed": false,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 9,
+        "failed": 0,
+        "total": 9,
+        "time_seconds": 202.2,
+        "tokens": 112699,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "spectrum_bars.magic exists and decodes",
+          "passed": true,
+          "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-3/eval-3-generate-iterator-midi-osc/without_skill/run-1/outputs/spectrum_bars.magic"
+        },
+        {
+          "text": "no check() errors",
+          "passed": true,
+          "evidence": "[]"
+        },
+        {
+          "text": "an Iterator with 16 iterations",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "a bar height reads Freq. Range Iterator Freqs. (feature 1, sub 6)",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "a MIDI source on channel 1",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "something reads MIDI CC 1 (feature 3, sub 1)",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "OSC input on port 8000",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "Global Speed reads osc:/speed",
+          "passed": true,
+          "evidence": "osc:/speed"
+        },
+        {
+          "text": "a rotation is linked to Speed",
+          "passed": true,
+          "evidence": "['Speed', 'Spin']"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 4,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 131.1,
+        "tokens": 82311,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "fixed.magic exists and decodes",
+          "passed": true,
+          "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-3/eval-4-repair-hand-edit/without_skill/run-1/outputs/fixed.magic"
+        },
+        {
+          "text": "no check() errors",
+          "passed": true,
+          "evidence": "[]"
+        },
+        {
+          "text": "Globals are still Spin and Pulse",
+          "passed": true,
+          "evidence": "{'Pulse', 'Spin'}"
+        },
+        {
+          "text": "all five bar Scales link to Pulse again",
+          "passed": true,
+          "evidence": "5"
+        },
+        {
+          "text": "the Scene 1 Trails has its five inputs back",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "the typo Spinn is gone",
+          "passed": true,
+          "evidence": "['Spin*2']"
+        },
+        {
+          "text": "fixes.md names all three problems",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 5,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 186.9,
+        "tokens": 115787,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "lower or fix the graphics resolution instead of rendering at 4K",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "watch FPS in the status information / aim for 60",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "mentions frame-rate throttling or vsync",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "mentions graphics memory / Load All Scenes Into Graphics Memory",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "mentions Module Text Update Speed or closing the editor",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "export via File > Export Movie",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "export follows audio files only; live inputs are ignored",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "H.264 settings: quality (CRF) and width/height multiple of 4 or 1920x1080 at 60",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 6,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 131.2,
+        "tokens": 93054,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "a .fs file was written",
+          "passed": true,
+          "evidence": "['/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-3/eval-6-custom-isf-module/without_skill/run-1/outputs/Mirror Pulse.fs']"
+        },
+        {
+          "text": "the .fs header parses and has an amount input",
+          "passed": true,
+          "evidence": "{'Amount': 0.0}"
+        },
+        {
+          "text": "demo_mirror.magic decodes",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "a Mirror Pulse node (pluginName = file stem)",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "Mirror Pulse takes the Polygon as input",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "its Amount param reads Source 0 volume",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "no check() errors",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "notes.md explains Additional Module Folders",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 124.2667,
+        "stddev": 35.6574,
+        "min": 68.6,
+        "max": 150.4
+      },
+      "tokens": {
+        "mean": 101626.6667,
+        "stddev": 14198.5777,
+        "min": 82308,
+        "max": 121067
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.9817,
+        "stddev": 0.0449,
+        "min": 0.89,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 149.5667,
+        "stddev": 40.0157,
+        "min": 93.4,
+        "max": 202.2
+      },
+      "tokens": {
+        "mean": 99385.6667,
+        "stddev": 14774.9548,
+        "min": 82311,
+        "max": 115787
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.02",
+      "time_seconds": "-25.3",
+      "tokens": "+2241"
+    }
+  },
+  "notes": [
+    "General Magic tasks (MIDI, playlist, Iterator/MIDI/OSC generation, repair, performance/export, custom ISF). 51/51 with the skill, 50/51 without.",
+    "Baselines again found magicproj.py in the worktree and used it, so pass rates barely separate. With the skill runs were 17% faster (124 s vs 150 s); tokens were about equal (102k vs 99k) because skill runs read references.",
+    "Only baseline miss: eval 2 did not say auto-advance is a runtime toggle, not stored in the project.",
+    "Behaviour not scored: the eval-5 baseline grepped Magic's whole preferences file, which holds an API key; skill runs read single keys with magic_pref. The eval-3 baseline read the system MIDI configuration to pick a device.",
+    "The runs found 5 tool issues, all fixed after this iteration: set_playlist dropped existing entries (Element truthiness), check misread Tab order, set had no looping or input-rewiring option, set --size forced Syphon on and did not set fixedMagicSize.",
+    "The eval-3 grader first rejected a valid rotation driven through an intermediate Global; fixed to follow one hop."
+  ]
+}

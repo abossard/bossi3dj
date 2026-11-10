@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Magic Blender Lab</title>
+<style>
+  :root {
+    --bg: #111318; --panel: #1a1d24; --line: #2a2f3a; --fg: #e6e8ee; --dim: #8b93a5;
+    --ok: #3ddc84; --warn: #ffb020; --bad: #ff5c5c; --accent: #6ea8fe; --mono: ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.4 -apple-system, system-ui, sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 2; }
+  header h1 { font-size: 16px; margin: 0 12px 0 0; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); font-size: 12px; background: var(--bg); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
+  .dot.ok { background: var(--ok); } .dot.bad { background: var(--bad); } .dot.warn { background: var(--warn); }
+  main { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 12px; padding: 12px 16px; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+  section h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin: 0 0 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  section.wide { grid-column: 1 / -1; }
+  table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+  th, td { text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { color: var(--dim); font-weight: 500; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  canvas.spark { width: 120px; height: 18px; vertical-align: middle; }
+  pre.log { margin: 0; height: 260px; overflow: auto; font: 11px/1.35 var(--mono); background: var(--bg); padding: 6px; border-radius: 6px; }
+  pre.log .lab { color: var(--dim); } pre.log .err { color: var(--bad); }
+  input, select, button { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+  input[type=range] { padding: 0; width: 100%; }
+  input.short { width: 70px; } input.med { width: 140px; }
+  button { cursor: pointer; } button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #0b1020; border-color: var(--accent); }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; font-family: var(--mono); font-size: 12px; }
+  .kv b { color: var(--dim); font-weight: 500; }
+  ol.steps { padding-left: 18px; margin: 0; } ol.steps li { margin: 4px 0; } code { font-family: var(--mono); background: var(--bg); padding: 1px 4px; border-radius: 4px; }
+  label.sw { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .muted { color: var(--dim); }
+  .slider { display: grid; grid-template-columns: 160px 1fr 70px 24px; gap: 8px; align-items: center; margin: 4px 0; font-family: var(--mono); font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Magic → Blender lab</h1>
+  <span class="chip"><span class="dot" id="d-lab"></span><span id="t-lab">lab</span></span>
+  <span class="chip"><span class="dot" id="d-magic"></span><span id="t-magic">Magic process</span></span>
+  <span class="chip"><span class="dot" id="d-in"></span><span id="t-in">no OSC in</span></span>
+  <span class="chip"><span class="dot" id="d-blproc"></span><span id="t-blproc">Blender process</span></span>
+  <span class="chip"><span class="dot" id="d-bridge"></span><span id="t-bridge">bridge: no pong</span></span>
+  <span class="chip"><label class="sw"><input type="checkbox" id="relay"> relay to Blender and Godot</label></span>
+  <span class="chip">→ <input class="med" id="bl-host" value="127.0.0.1" title="Blender host">:<input class="short" id="bl-port" value="9201" title="Blender port"><button id="bl-apply">set</button></span>
+  <span class="chip">Godot → 127.0.0.1:<input class="short" id="gd-port" value="9202" title="Godot Colossus Scene port, 0 = off"><button id="gd-apply">set</button></span>
+  <span class="chip"><button id="clear">clear stats</button></span>
+</header>
+<main>
+  <section class="wide">
+    <h2>Incoming OSC (what Magic sends) <span class="muted" id="totals"></span></h2>
+    <table><thead><tr><th>address</th><th>tags</th><th>last</th><th class="num">min</th><th class="num">max</th><th class="num">Hz</th><th class="num">count</th><th class="num">age s</th><th>bundle</th><th>trend</th></tr></thead><tbody id="addr"></tbody></table>
+    <div class="muted" id="no-addr">Nothing received yet on the lab port. Point Magic's OSCSender at it (see checklist).</div>
+  </section>
+
+  <section>
+    <h2>Blender bridge</h2>
+    <div class="kv" id="bridge-kv"></div>
+    <div class="row" style="margin-top:8px"><button id="ping">ping now</button><label class="sw"><input type="checkbox" id="autoping" checked> ping every second</label><span class="muted">RTT <canvas class="spark" id="rtt"></canvas></span></div>
+  </section>
+
+  <section>
+    <h2>Send a message to Blender</h2>
+    <div class="row"><input class="med" id="s-addr" value="/vj/level" placeholder="/address"><input id="s-args" value="0.5" placeholder="args: 0.5 3i text" style="flex:1"><button class="primary" id="s-send">send</button></div>
+    <div class="muted">numbers → float, <code>3i</code> → int32, anything else → string. Sent to the Blender and Godot targets, bypassing the relay.</div>
+    <h2 style="margin-top:12px">Sliders (hand-driven values)</h2>
+    <div id="sliders"></div>
+    <div class="row"><input class="med" id="sl-addr" value="/vj/hue" placeholder="/address"><input class="short" id="sl-min" value="0"><input class="short" id="sl-max" value="1"><button id="sl-add">add slider</button></div>
+  </section>
+
+  <section>
+    <h2>Generators (stand in for Magic)</h2>
+    <table><thead><tr><th>address</th><th>wave</th><th class="num">freq Hz</th><th class="num">rate Hz</th><th class="num">min</th><th class="num">max</th><th class="num">sent</th><th></th></tr></thead><tbody id="gens"></tbody></table>
+    <div class="row" style="margin-top:6px">
+      <input class="med" id="g-addr" value="/vj/level" placeholder="/address">
+      <select id="g-wave"><option>sine</option><option>beat</option><option>square</option><option>ramp</option><option>noise</option></select>
+      <input class="short" id="g-freq" value="2" title="waveform frequency Hz">
+      <input class="short" id="g-rate" value="60" title="send rate Hz">
+      <input class="short" id="g-min" value="0"><input class="short" id="g-max" value="1">
+      <button class="primary" id="g-add">start</button>
+    </div>
+    <div class="muted">A generator sends to the Blender and Godot targets directly. To test the relay path instead, send to the lab port with an external tool.</div>
+  </section>
+
+  <section class="wide">
+    <h2>Packet log <span><label class="sw"><input type="checkbox" id="follow" checked> follow</label> <label class="sw"><input type="checkbox" id="showlab"> show /lab/*</label> <a href="/api/log.jsonl" download>download JSONL</a></span></h2>
+    <pre class="log" id="log"></pre>
+  </section>
+
+  <section class="wide">
+    <h2>Checklist</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
+      <div><b>1. Blender</b><ol class="steps">
+        <li>Open Blender (5.x). Text Editor → Open <code>blender/blender_osc_bridge.py</code> → Run Script.</li>
+        <li>The "bridge" chip turns green within a second (pong on UDP 9201).</li>
+        <li>Start a generator above; <code>Scene → Custom Properties</code> shows <code>vj_level</code> moving.</li>
+        <li>Add a driver on any property with variable path <code>["vj_level"]</code> on the Scene to see it move in the viewport.</li>
+      </ol></div>
+      <div><b>2. Magic (Performer edition)</b><ol class="steps">
+        <li>File → New (unsaved throwaway project).</li>
+        <li>Add an <code>OSCSender</code> module: IP Addr <code id="c-ip">127.0.0.1</code>, Port <code id="c-port">9200</code>, Message <code>/vj/level</code>.</li>
+        <li>Link its Value to an audio feature (level, bass band). Play audio.</li>
+        <li>Rows appear in "Incoming OSC" with tags, range and rate. With relay on, Blender gets the same packets.</li>
+        <li>Add a second OSCSender (<code>/vj/bass</code>) to see whether messages arrive bundled.</li>
+      </ol></div>
+      <div><b>3. Output back to Magic</b><ol class="steps">
+        <li>In Blender enable a Syphon publisher (TextureSharing add-on), Eevee viewport.</li>
+        <li>In Magic add a <code>SyphonClient</code> module and pick Blender's server.</li>
+        <li>Latency check: watch RTT here and the viewport response to a slider.</li>
+      </ol></div>
+    </div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const post = (url, body) => fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body || {})}).then(r => r.json());
+const fmt = v => typeof v === 'number' ? (Number.isInteger(v) ? v : v.toFixed(3)) : JSON.stringify(v);
+const logLines = [];
+let configSynced = false;
+let lastGens = [];
+
+function spark(canvas, series, color) {
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth || 120, h = canvas.clientHeight || 18;
+  if (canvas.width !== w * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
+  const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+  if (!series || series.length < 2) return;
+  const nums = series.filter(v => typeof v === 'number');
+  let lo = Math.min(...nums), hi = Math.max(...nums); if (hi === lo) { hi = lo + 1; }
+  ctx.strokeStyle = color || '#6ea8fe'; ctx.lineWidth = 1; ctx.beginPath();
+  nums.forEach((v, i) => { const x = i / (nums.length - 1) * (w - 1), y = h - 1 - (v - lo) / (hi - lo) * (h - 2); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+  ctx.stroke();
+}
+
+function setDot(id, state, text) { const d = $('d-' + id); d.className = 'dot ' + (state || ''); if (text !== undefined) $('t-' + id).textContent = text; }
+
+function render(s) {
+  lastGens = s.generators;
+  if (!configSynced) {
+    $('relay').checked = s.config.relay; $('autoping').checked = s.config.autoping;
+    $('bl-host').value = s.config.blender_host; $('bl-port').value = s.config.blender_port; $('gd-port').value = s.config.godot_port; configSynced = true;
+  }
+  const [ip, port] = s.listen.split(':'); $('c-ip').textContent = ip; $('c-port').textContent = port;
+  setDot('lab', 'ok', 'lab on udp ' + s.listen + ' · ' + s.totals.pps + ' pkt/s');
+  setDot('magic', s.processes.magic ? 'ok' : 'bad', s.processes.magic ? 'Magic running' : 'Magic not running');
+  setDot('blproc', s.processes.blender ? 'ok' : 'bad', s.processes.blender ? 'Blender running' : 'Blender not running');
+  const srcs = Object.entries(s.sources).filter(([, age]) => age < 3).map(([h]) => h);
+  setDot('in', srcs.length ? 'ok' : '', srcs.length ? 'OSC in from ' + srcs.join(', ') : 'no OSC in');
+  const b = s.blender;
+  setDot('bridge', b.alive ? 'ok' : (b.pong_age ? 'warn' : 'bad'), b.alive ? ('bridge ok · ' + b.rtt_ms + ' ms') : (b.pong_age ? 'bridge silent ' + b.pong_age + 's' : 'bridge: no pong'));
+  $('totals').textContent = `${s.totals.packets} packets · ${s.totals.bundles} bundles · ${s.totals.relayed} relayed · ${s.totals.errors} errors · ${s.config.relay ? 'relay on' : 'relay off'}`;
+
+  const rows = Object.entries(s.addresses);
+  $('no-addr').style.display = rows.length ? 'none' : '';
+  const tb = $('addr');
+  const seen = new Set();
+  rows.forEach(([a, st]) => {
+    seen.add(a);
+    let tr = tb.querySelector(`tr[data-a="${CSS.escape(a)}"]`);
+    if (!tr) { tr = document.createElement('tr'); tr.dataset.a = a; tr.innerHTML = '<td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td></td><td><canvas class="spark"></canvas></td>'; tb.appendChild(tr); }
+    const c = tr.children;
+    c[0].textContent = a; c[1].textContent = st.tags; c[2].textContent = st.last.map(fmt).join(' ');
+    c[3].textContent = st.min == null ? '' : fmt(st.min); c[4].textContent = st.max == null ? '' : fmt(st.max);
+    c[5].textContent = st.hz; c[6].textContent = st.count; c[7].textContent = st.age; c[8].textContent = st.bundled ? 'yes' : '';
+    spark(c[9].firstChild, st.series, st.age > 2 ? '#8b93a5' : '#3ddc84');
+  });
+  [...tb.children].forEach(tr => { if (!seen.has(tr.dataset.a)) tr.remove(); });
+
+  const info = b.info || {};
+  $('bridge-kv').innerHTML = [
+    ['state', b.alive ? 'alive' : 'no pong'], ['rtt', b.rtt_ms == null ? '' : b.rtt_ms + ' ms'],
+    ['blender', info.blender || ''], ['python', info.python || ''], ['scene', info.scene || ''],
+    ['timer ticks/s', info.ticks_hz == null ? '' : fmt(info.ticks_hz)], ['received', info.received ?? ''],
+    ['applied', info.applied ?? ''], ['superseded in tick', info.dropped ?? ''], ['from', info.src || ''], ['pending pings', b.pending],
+  ].map(([k, v]) => `<b>${k}</b><span>${v}</span>`).join('');
+  spark($('rtt'), b.rtts, '#ffb020');
+
+  const gt = $('gens');
+  gt.innerHTML = s.generators.map(g => `<tr><td>${g.address}</td><td>${g.wave}</td><td class="num">${g.freq}</td><td class="num">${g.rate}</td><td class="num">${g.min}</td><td class="num">${g.max}</td><td class="num">${g.sent}</td><td><button data-g="${g.id}" data-en="${g.enabled ? 0 : 1}">${g.enabled ? 'stop' : 'start'}</button> <button data-g="${g.id}" data-del="1">×</button></td></tr>`).join('');
+
+  if (s.log.length) {
+    const showLab = $('showlab').checked;
+    s.log.forEach(e => {
+      if (!showLab && e.addr.startsWith('/lab/')) return;
+      const t = new Date(e.t * 1000).toLocaleTimeString([], {hour12: false}) + '.' + String(Math.floor((e.t % 1) * 1000)).padStart(3, '0');
+      const cls = e.error ? 'err' : (e.addr.startsWith('/lab/') ? 'lab' : '');
+      const body = e.error ? `malformed ${e.error} raw=${e.raw}` : `${e.addr} ,${e.tags} ${e.args.map(fmt).join(' ')}`;
+      logLines.push(`<span class="${cls}">${t} ${e.src.padEnd(21)} ${e.bundled ? 'B ' : '  '}${String(e.len).padStart(4)}B ${body}</span>`);
+    });
+    while (logLines.length > 400) logLines.shift();
+    const pre = $('log'); pre.innerHTML = logLines.join('\n');
+    if ($('follow').checked) pre.scrollTop = pre.scrollHeight;
+  }
+}
+
+function connect() {
+  const es = new EventSource('/api/events');
+  es.onmessage = ev => render(JSON.parse(ev.data));
+  es.onerror = () => { setDot('lab', 'bad', 'lab offline, reconnecting'); es.close(); setTimeout(connect, 1500); };
+}
+connect();
+
+function parseArgs(text) {
+  return text.trim().split(/\s+/).filter(Boolean).map(tok => {
+    if (/^-?\d+i$/.test(tok)) return {t: 'i', v: parseInt(tok, 10)};
+    if (/^-?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(tok)) return {t: 'f', v: parseFloat(tok)};
+    return {t: 's', v: tok};
+  });
+}
+
+$('relay').onchange = e => post('/api/config', {relay: e.target.checked});
+$('autoping').onchange = e => post('/api/config', {autoping: e.target.checked});
+$('bl-apply').onclick = () => post('/api/config', {blender_host: $('bl-host').value, blender_port: parseInt($('bl-port').value, 10)});
+$('gd-apply').onclick = () => post('/api/config', {godot_port: parseInt($('gd-port').value, 10)});
+$('clear').onclick = () => { logLines.length = 0; $('log').innerHTML = ''; post('/api/clear'); };
+$('ping').onclick = () => post('/api/ping');
+$('s-send').onclick = () => post('/api/send', {address: $('s-addr').value, args: parseArgs($('s-args').value)});
+$('s-args').onkeydown = e => { if (e.key === 'Enter') $('s-send').click(); };
+$('g-add').onclick = () => post('/api/generators', {address: $('g-addr').value, wave: $('g-wave').value, freq: parseFloat($('g-freq').value), rate: parseFloat($('g-rate').value), min: parseFloat($('g-min').value), max: parseFloat($('g-max').value)});
+$('gens').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.del) post('/api/generators', {id: b.dataset.g, delete: true});
+  else post('/api/generators', {id: b.dataset.g, enabled: b.dataset.en === '1', ...gensById()[b.dataset.g]});
+};
+function gensById() { const m = {}; lastGens.forEach(g => m[g.id] = g); return m; }
+
+$('sl-add').onclick = () => {
+  const addr = $('sl-addr').value, lo = parseFloat($('sl-min').value), hi = parseFloat($('sl-max').value);
+  const row = document.createElement('div'); row.className = 'slider';
+  row.innerHTML = `<span>${addr}</span><input type="range" min="${lo}" max="${hi}" step="${(hi - lo) / 1000}" value="${lo}"><span class="num">${fmt(lo)}</span><button title="remove">×</button>`;
+  const range = row.children[1], out = row.children[2]; let last = 0;
+  range.oninput = () => { out.textContent = fmt(parseFloat(range.value)); const now = performance.now(); if (now - last < 16) return; last = now; post('/api/send', {address: addr, args: [{t: 'f', v: parseFloat(range.value)}]}); };
+  row.children[3].onclick = () => row.remove();
+  $('sliders').appendChild(row);
+};
+</script>
+</body>
+</html>

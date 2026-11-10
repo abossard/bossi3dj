@@ -1,0 +1,13 @@
+- hyperframes: Mandatory entry point for any request to make, create, edit, animate, or render a video, animation, or motion graphic, including music videos and beat-synced edits.
+- music-to-video: Turn a music track into a beat-synced video (lyric video, slideshow, kinetic promo).
+- find-skills: Helps users discover and install agent skills when they ask "is there a skill that can...".
+- supermatt:research: Investigate a question against high-trust primary sources and capture the findings as a Markdown file in the repo.
+- supermatt:diagnosing-bugs: Diagnose a bug methodically before fixing it.
+- supermatt:qa: QA a change in the running program the way its user meets it (CLI via tmux, web app via browser).
+- supermatt:tdd: Test-driven development, red-green-refactor.
+- anthropic-skills:pdf: Read, extract, fill or create PDF files.
+- anthropic-skills:computer-use: Drive native desktop apps through screenshots and clicks.
+- anthropic-skills:built-in-browser: Use the browser pane inside the Claude desktop app.
+- dataviz: Use before creating any chart, graph, plot, dashboard or data visualization.
+- run: Launch and drive this project's app to see a change working.
+- code-review: Review the current diff or a PR for correctness bugs.

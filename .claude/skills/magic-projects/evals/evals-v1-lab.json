@@ -1,0 +1,73 @@
+{
+  "skill_name": "magic-projects",
+  "evals": [
+    {
+      "id": 1,
+      "name": "inspect-shock-and-kick",
+      "prompt": "I'm tuning the synthwave Magic project (evals/files/synthwave_pyramids.magic). Which Global feeds the /vj/shock OSC message and what does its expression depend on? And which audio frequency bands does the kick detector actually listen to? Write the answer to answer.md in the outputs folder.",
+      "expected_output": "answer.md names OutShock as the /vj/shock source, its dependencies (Clock, ShockT, ShockAmp), and says the kick band is Sub + 0.5*Low = the 20-80 Hz and 80-320 Hz Freq. Range bands.",
+      "files": [
+        "evals/files/synthwave_pyramids.magic"
+      ],
+      "expectations": [
+        "answer.md names OutShock as the Global behind /vj/shock",
+        "answer.md lists both ShockT and ShockAmp as dependencies",
+        "answer.md mentions the Clock dependency",
+        "answer.md identifies the 20-80 Hz band",
+        "answer.md identifies the 80-320 Hz band at half weight"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "edit-osc-syphon-gain",
+      "prompt": "Make a copy of evals/files/synthwave_pyramids.magic called synthwave_lab.magic in the outputs folder that sends all the /vj/* OSC to the lab relay on 127.0.0.1:9200 instead of Blender, turns on Syphon output with the server name synthwave-out at 1920x1080, and sets the Gain control to 0.7. Leave everything else as it is, and leave the original file untouched. Tell me what changed.",
+      "expected_output": "outputs/synthwave_lab.magic loads (valid zlib XML), every OSCSender port is 9200, videoSharing=1 with videoSharingName=synthwave-out and 1920x1080, Global Gain value 0.7, no other semantic change, input file unchanged.",
+      "files": [
+        "evals/files/synthwave_pyramids.magic"
+      ],
+      "expectations": null
+    },
+    {
+      "id": 3,
+      "name": "generate-beat-square",
+      "prompt": "Build me a new Magic project beat_square.magic (save it in the outputs folder): one scene with a white-ish square whose size pulses with the bass (the 20-80 Hz band, smoothed so it isn't jittery), coloured by a Global called Hue that defaults to 0.6, and an OSCSender that sends the bass level to /test/bass on 127.0.0.1:9300. Turn Syphon output on. It has to open in Magic without broken links. Don't load it into Magic, I'll do that.",
+      "expected_output": "outputs/beat_square.magic: valid file, no dangling links or bad ids, Global Hue=0.6, a source on audio Freq. Range subFeature 0 with a Smooth/Average/expression smoother, a Polygon scaled by it, OSCSender /test/bass to 127.0.0.1:9300 fed by the bass, videoSharing=1.",
+      "files": [],
+      "expectations": null
+    },
+    {
+      "id": 4,
+      "name": "diff-synthetic-build",
+      "prompt": "What's actually different between evals/files/synthwave_pyramids.magic and evals/files/synthwave_synthetic.magic? I need to know what the synthetic test build replaces before I trust it. Write a short summary to diff_summary.md in the outputs folder.",
+      "expected_output": "diff_summary.md says the five band Globals (Sub, Low, Mid, HiMid, Air) switch from audio inputs to calculated synthetic expressions with Random noise, many manual controls (Strobe, CamAuto, Sun, Fog, Monitor, Readout...) become timer expressions, and the OSC targets, scenes and modules are unchanged.",
+      "files": [
+        "evals/files/synthwave_pyramids.magic",
+        "evals/files/synthwave_synthetic.magic"
+      ],
+      "expectations": [
+        "names all five band Globals",
+        "says the bands become synthetic/calculated",
+        "mentions the Random noise modifier",
+        "names at least 10 controls that become timers",
+        "says OSC targets/scenes/modules are unchanged"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "plan-live-osc-check",
+      "prompt": "Magic is running the synthwave project right now and Blender is listening for its OSC. I want to confirm that /vj/beat actually leaves Magic with sensible values while music plays through BlackHole. Don't run anything against the live apps yet: write plan.md in the outputs folder with the exact commands you would run, in order, and what you'd look for.",
+      "expected_output": "plan.md binds and sends nothing on 9201, observes the OSC by a retargeted copy, the lab relay or a passive capture, leaves Magic's project as it was (or reloads it), checks 9200 before using it, and states the expected /vj/beat range and that OSCSender sends only on change.",
+      "files": [
+        "evals/files/synthwave_pyramids.magic"
+      ],
+      "expectations": [
+        "no command binds or sends on port 9201",
+        "observes the OSC without taking Blender's port (retargeted copy, lab relay or passive capture)",
+        "leaves Magic's project as it was: loads nothing, or reloads the original afterwards",
+        "checks that port 9200 is free before using it (or does not use it)",
+        "states the expected /vj/beat range (0..1, pulses on beats)",
+        "says OSCSender sends /vj/beat only when its value changes"
+      ]
+    }
+  ]
+}

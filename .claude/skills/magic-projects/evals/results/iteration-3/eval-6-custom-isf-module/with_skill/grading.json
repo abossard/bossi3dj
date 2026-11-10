@@ -1,0 +1,50 @@
+{
+  "expectations": [
+    {
+      "text": "a .fs file was written",
+      "passed": true,
+      "evidence": "['/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-3/eval-6-custom-isf-module/with_skill/run-1/outputs/Mirror Pulse.fs']"
+    },
+    {
+      "text": "the .fs header parses and has an amount input",
+      "passed": true,
+      "evidence": "{'Amount': 0.0}"
+    },
+    {
+      "text": "demo_mirror.magic decodes",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "a Mirror Pulse node (pluginName = file stem)",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "Mirror Pulse takes the Polygon as input",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "its Amount param reads Source 0 volume",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "no check() errors",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "notes.md explains Additional Module Folders",
+      "passed": true,
+      "evidence": ""
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  }
+}

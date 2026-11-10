@@ -1,0 +1,116 @@
+{
+  "skill_name": "magic-projects",
+  "evals": [
+    {
+      "id": 1,
+      "name": "inspect-midi-piano",
+      "prompt": "I opened Magic's sample MIDIPiano.magic (copy at evals/files/MIDIPiano.magic) and want to drive it from my own keyboard. Which MIDI features and channels does it listen to, how does a key light up, and what do the Left Key / Right Key scenes do differently? Write the answer to answer.md in the outputs folder.",
+      "files": [
+        "evals/files/MIDIPiano.magic"
+      ],
+      "expected_output": "answer.md: Iterator Notes from an unassigned MIDI source, 88-key Iterator from note 21, Threshold-gated Power/Bypass/Saturation, InputSelector picks Left/Right/Middle/Black key shapes by note mod 12.",
+      "expectations": [
+        "names the Iterator Notes MIDI feature",
+        "explains the 88-key Iterator starting at note 21",
+        "says the MIDI source must be assigned to a device/channel in Input Sources",
+        "explains key lighting via Threshold-gated Power/Bypass/Saturation",
+        "explains InputSelector picks the Left/Right/Middle/Black key shape by note within the octave",
+        "says Left Key / Right Key are key-shape scenes used as scene modules"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "edit-playlist-show",
+      "prompt": "Take evals/files/ManyScenes.magic and make a copy show.magic in the outputs folder for a gig: every scene in the playlist, auto-advancing every 16 seconds with a crossfade, Syphon output on as 'magic-show' at 1280x720, and the audio files loop. Don't change the scenes themselves. Tell me what you changed in changes.md.",
+      "files": [
+        "evals/files/ManyScenes.magic"
+      ],
+      "expected_output": "show.magic: all 19 scenes, 16 s, crossfade (style 1), Syphon magic-show 1280x720, looping, scenes unchanged; changes.md notes there are no audio files and that auto-advance is switched on in Magic.",
+      "expectations": [
+        "show.magic exists and decodes",
+        "every scene is in the playlist once, in order",
+        "every entry auto-advances after 16 s",
+        "every entry uses the crossfade style (1)",
+        "Syphon on as magic-show at 1280x720",
+        "looping on",
+        "scenes and modules unchanged",
+        "changes.md notes the project has no audio files",
+        "changes.md says auto-advance is switched on in Magic (not stored in the project)"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "generate-iterator-midi-osc",
+      "prompt": "Make me a new Magic project spectrum_bars.magic in the outputs folder: a row of 16 bars made with an Iterator, each bar's height following its own slice of the spectrum (Iterator frequency ranges) on Source 0, the hue of all bars controlled by MIDI CC 1 on channel 1, and a Global called Speed that I can set over OSC at /speed on port 8000 and that rotates the whole row. It must open in Magic without broken links; don't load it.",
+      "files": [],
+      "expected_output": "spectrum_bars.magic: 0 check errors, Iterator 16, Iterator Freqs. link, MIDI channel 1 CC 1, OSC in 8000 with Global Speed = osc:/speed driving a rotation.",
+      "expectations": [
+        "spectrum_bars.magic exists and decodes",
+        "no check() errors",
+        "an Iterator with 16 iterations",
+        "a bar height reads Freq. Range Iterator Freqs. (feature 1, sub 6)",
+        "a MIDI source on channel 1",
+        "something reads MIDI CC 1 (feature 3, sub 1)",
+        "OSC input on port 8000",
+        "Global Speed reads osc:/speed",
+        "a rotation is linked to Speed"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "repair-hand-edit",
+      "prompt": "I hand-edited a Magic project (evals/files/hand_edited.magic, it started as the GlobalsExamples sample and I renamed the Globals to Spin and Pulse) and now one rotation and one of the bouncing bars are dead and a trail disappeared. Find what's broken, fix it into fixed.magic in the outputs folder, and list each problem and fix in fixes.md.",
+      "files": [
+        "evals/files/hand_edited.magic"
+      ],
+      "expected_output": "fixed.magic: 0 errors, Spinn -> Spin, Scale relinked to Pulse, Trails input restored; fixes.md lists the three.",
+      "expectations": [
+        "fixed.magic exists and decodes",
+        "no check() errors",
+        "Globals are still Spin and Pulse",
+        "all five bar Scales link to Pulse again",
+        "the Scene 1 Trails has its five inputs back",
+        "the typo Spinn is gone",
+        "fixes.md names all three problems"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "advise-performance-export",
+      "prompt": "My Magic project stutters at about 25 fps when I go fullscreen on a 4K projector, and after the gig I also need a 1080p60 H.264 video of the set with the audio file I played. What should I check and change in Magic for both? Write advice.md in the outputs folder. You can look at evals/files/DemoProject.magic as an example project.",
+      "files": [
+        "evals/files/DemoProject.magic"
+      ],
+      "expected_output": "advice.md: graphics resolution, FPS/status info, throttling/vsync, graphics memory, Module Text Update Speed; Export Movie with audio files only, H.264 quality/CRF.",
+      "expectations": [
+        "lower or fix the graphics resolution instead of rendering at 4K",
+        "watch FPS in the status information / aim for 60",
+        "mentions frame-rate throttling or vsync",
+        "mentions graphics memory / Load All Scenes Into Graphics Memory",
+        "mentions Module Text Update Speed or closing the editor",
+        "export via File > Export Movie",
+        "export follows audio files only; live inputs are ignored",
+        "H.264 settings: quality (CRF) and width/height multiple of 4 or 1920x1080 at 60"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "custom-isf-module",
+      "prompt": "Write a custom ISF effect called 'Mirror Pulse' for Magic (mirrors the image left-right and pulses brightness with an amount parameter) and add it after the Polygon in a copy of evals/files/DemoProject.magic, with its amount linked to Source 0 volume. Put the .fs file and demo_mirror.magic in the outputs folder and tell me in notes.md what I need to do for Magic to find the effect.",
+      "files": [
+        "evals/files/DemoProject.magic"
+      ],
+      "expected_output": "Mirror Pulse.fs with an amount input; demo_mirror.magic with pluginName 'Mirror Pulse' after the Polygon, Amount <- Source 0 Volume; notes.md explains Additional Module Folders.",
+      "expectations": [
+        "a .fs file was written",
+        "the .fs header parses and has an amount input",
+        "demo_mirror.magic decodes",
+        "a Mirror Pulse node (pluginName = file stem)",
+        "Mirror Pulse takes the Polygon as input",
+        "its Amount param reads Source 0 volume",
+        "no check() errors",
+        "notes.md explains Additional Module Folders"
+      ]
+    }
+  ]
+}

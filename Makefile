@@ -1,0 +1,87 @@
+BLENDER ?= /Applications/Blender.app/Contents/MacOS/Blender
+GODOT   ?= /Applications/Godot_mono.app/Contents/MacOS/Godot
+COLOSSUS = godot/colossus
+SCENES   = blender/scenes
+SCENE   ?= planet
+BLEND_planet = $(SCENES)/synthwave_planet.blend
+BLEND_island = $(SCENES)/synthwave_pyramids.blend
+
+.PHONY: help status lab test magic-test godot-test godot-smoke godot-capture godot-import godot-lint \
+        blender-open blender-kill blender-rebuild blender-paths magic-build venv verify
+
+help:
+	@echo "bossi3dj: Magic -> OSC -> Blender scene + Godot scene -> Syphon -> Magic"
+	@echo ""
+	@echo "  status            what runs now: Blender, bridge, Syphon, Godot, Magic, relay, lock, load"
+	@echo "  lab               OSC relay and debug page: Magic udp 9200 -> Blender 9201 + Godot 9202, http 8765"
+	@echo "  test              magic-test + godot-test (no GUI, no GPU)"
+	@echo "  magic-test        Magic project tooling unit tests"
+	@echo "  magic-build       regenerate magic/projects/*.magic from the generators"
+	@echo "  godot-test        Colossus logic tests, headless"
+	@echo "  godot-smoke       one full Colossus Arc, headless, own OSC port and Syphon name"
+	@echo "  godot-capture     render one frame per Phase on Metal into OUT=<dir> (opens a window)"
+	@echo "  godot-import      re-import the Godot project after adding assets or addons"
+	@echo "  godot-lint        gdlint + gdformat --check on the project's own scripts"
+	@echo "  blender-open      open SCENE=planet|island in the GUI with scripts allowed (refuses a second Blender)"
+	@echo "  blender-kill      end the running Blender (unsaved state is lost)"
+	@echo "  blender-rebuild   headless: rebuild synthwave_planet.blend from the island scene (no Blender may run)"
+	@echo "  blender-paths     list the external files each .blend points at"
+	@echo "  venv              .venv with numpy and Pillow for the verify scripts"
+	@echo "  verify            pure-model checks of the star system and the Flight camera (needs venv)"
+
+status:
+	@python3 tools/vj_status.py
+
+lab:
+	@python3 osc/lab.py
+
+test: magic-test godot-test
+
+magic-test:
+	python3 -m unittest discover magic/tests
+
+magic-build:
+	python3 magic/synthwave_magic.py
+	python3 magic/edm_analysis_magic.py
+
+godot-test:
+	$(GODOT) --headless --path $(COLOSSUS) --script res://tests/run_tests.gd
+
+godot-smoke:
+	$(GODOT) --headless --path $(COLOSSUS) --script res://tests/smoke.gd
+
+OUT ?= /tmp/colossus-capture
+godot-capture:
+	$(GODOT) --path $(COLOSSUS) --script res://tests/capture.gd -- $(OUT)
+
+godot-import:
+	$(GODOT) --headless --path $(COLOSSUS) --import
+	@git status --short $(COLOSSUS)/project.godot
+
+godot-lint:
+	cd $(COLOSSUS) && find . -name '*.gd' -not -path './addons/*' -print0 | xargs -0 gdlint
+	cd $(COLOSSUS) && find . -name '*.gd' -not -path './addons/*' -print0 | xargs -0 gdformat --check
+
+blender-open:
+	@if pgrep -f "Blender.app/Contents/MacOS/Blender" >/dev/null; then echo "a Blender is already running (make status)"; exit 1; fi
+	open -a /Applications/Blender.app --args --enable-autoexec "$(CURDIR)/$(BLEND_$(SCENE))"
+
+blender-kill:
+	-pkill -f "Blender.app/Contents/MacOS/Blender"
+	@python3 tools/blender_lock.py release --force
+
+blender-rebuild:
+	@if pgrep -f "Blender.app/Contents/MacOS/Blender" >/dev/null; then echo "a Blender is running: make blender-kill first"; exit 1; fi
+	cd $(SCENES)/planet_proto && $(BLENDER) -b --factory-startup -Y ../synthwave_pyramids.blend --python build_planet.py -- --graft
+
+blender-paths:
+	@if pgrep -f "Blender.app/Contents/MacOS/Blender" >/dev/null; then echo "a Blender is running: make blender-kill first"; exit 1; fi
+	@for f in $(BLEND_island) $(BLEND_planet); do $(BLENDER) -b --disable-autoexec $$f --python tools/blend_paths.py 2>/dev/null | sed -n 's/^BLEND_PATHS //p'; done
+
+venv:
+	uv venv .venv
+	uv pip install --python .venv/bin/python numpy pillow
+
+verify:
+	.venv/bin/python docs/research/synthwave-star-system/verify_star_system.py
+	.venv/bin/python docs/research/synthwave-flight/verify_flight.py

@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "names all five band Globals",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "says the bands become synthetic/calculated",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "mentions the Random noise modifier",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "names at least 10 controls that become timers",
+      "passed": true,
+      "evidence": "28 named"
+    },
+    {
+      "text": "says OSC targets/scenes/modules are unchanged",
+      "passed": true,
+      "evidence": ""
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

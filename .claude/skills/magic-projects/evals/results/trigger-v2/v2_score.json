@@ -1,0 +1,268 @@
+{
+ "version": "v2",
+ "runs": 3,
+ "train": "12/12",
+ "test": "8/8",
+ "queries": [
+  {
+   "id": 1,
+   "split": "train",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "my TouchDesigner network drops frames when I add a Feedback TOP, how can I profile it?"
+  },
+  {
+   "id": 2,
+   "split": "train",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "set up OSC from TouchOSC on my iPad (port 9000) to control the Hue and Speed globals in my Magic patch"
+  },
+  {
+   "id": 3,
+   "split": "train",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "Export my Magic project as a 4K 30fps video with the song I loaded, which settings in the export dialog do I need and why does it ignore my mic?"
+  },
+  {
+   "id": 4,
+   "split": "train",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "Synesthesia scene: the bass uniform flickers, how do I smooth syn_BassLevel in my main.glsl?"
+  },
+  {
+   "id": 5,
+   "split": "test",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "my Magic Music Visuals project lags when i switch scenes in the playlist, its like a half second freeze, any idea what setting that is?"
+  },
+  {
+   "id": 6,
+   "split": "train",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "In Resolume Arena, how do I map a MIDI controller knob to the opacity of layer 2?"
+  },
+  {
+   "id": 7,
+   "split": "train",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "I have an old Magic 2.5 project from 2023 (festival_set.magic), will it work in Magic 3 or do I need to fix stuff first?"
+  },
+  {
+   "id": 8,
+   "split": "test",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "convert this ISF shader to a Metal shader for my Swift app's render pipeline"
+  },
+  {
+   "id": 9,
+   "split": "train",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "Get my webcam and a Syphon feed from Resolume into one Magic scene, side by side, and send the result back out over Syphon"
+  },
+  {
+   "id": 10,
+   "split": "test",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "Can you map the faders of my Akai MIDImix (CC 16-23, channel 1) to the eight Globals in ~/Desktop/club.magic? I'm tired of MIDI-learning them by hand"
+  },
+  {
+   "id": 11,
+   "split": "test",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "hyperframes",
+    "hyperframes",
+    "hyperframes"
+   ],
+   "query": "make a beat-synced lyric video for this mp3 with hyperframes"
+  },
+  {
+   "id": 12,
+   "split": "train",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "which is better for a small club VJ setup, Magic Music Visuals or Resolume? just give me pros and cons, I'm deciding what to buy"
+  },
+  {
+   "id": 13,
+   "split": "test",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "what's the expression to make a global in magic decay smoothly after each kick, Peak feels way too sluggish"
+  },
+  {
+   "id": 14,
+   "split": "train",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "compare these two .magic files and tell me what I changed between yesterday and today: show_v3.magic show_v4.magic"
+  },
+  {
+   "id": 15,
+   "split": "test",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "write a GLSL fragment shader for Shadertoy that does a plasma effect"
+  },
+  {
+   "id": 16,
+   "split": "test",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "write an ISF shader for Magic that does a kaleidoscope tunnel and tell me how to get it into the module list"
+  },
+  {
+   "id": 17,
+   "split": "train",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "in magic, how do i make a row of 32 spectrum bars with the iterator so every bar gets its own frequency band"
+  },
+  {
+   "id": 18,
+   "split": "train",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "Ableton Live: how do I send MIDI clock to an external device on channel 10?"
+  },
+  {
+   "id": 19,
+   "split": "test",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "OBS doesn't see my Syphon source anymore after the macOS update, how do I fix the Syphon Client plugin?"
+  },
+  {
+   "id": 20,
+   "split": "train",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "fix the swift-vj app so the shader browser loads ISF files from a user folder too"
+  }
+ ]
+}

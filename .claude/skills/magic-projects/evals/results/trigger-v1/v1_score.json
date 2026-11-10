@@ -1,0 +1,268 @@
+{
+ "version": "v1",
+ "runs": 3,
+ "train": "12/12",
+ "test": "8/8",
+ "queries": [
+  {
+   "id": 1,
+   "split": "train",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "add my mp3 ~/Music/set_2026_10.mp3 to the synthwave magic project so it plays in a loop instead of using blackhole"
+  },
+  {
+   "id": 2,
+   "split": "train",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "why does my ExprTk expression max(x, y*exp(-Dt*9)) in Magic start at 0 and never seed? the Global is calculated"
+  },
+  {
+   "id": 3,
+   "split": "test",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "supermatt:diagnosing-bugs",
+    "supermatt:diagnosing-bugs",
+    "none"
+   ],
+   "query": "the Blender synthwave scene's /vj/beat driver isn't moving the pyramid edges, check synthwave_runtime.py and the bridge"
+  },
+  {
+   "id": 4,
+   "split": "train",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "anthropic-skills:pdf",
+    "anthropic-skills:pdf",
+    "anthropic-skills:pdf"
+   ],
+   "query": "convert this Magic Music Visuals user guide PDF section about modifiers into a markdown cheat sheet"
+  },
+  {
+   "id": 5,
+   "split": "train",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "can you turn on syphon output in master.magic (synesthesia-visuals/magic) and name the server 'vj-main'? i want to pull it into resolume"
+  },
+  {
+   "id": 6,
+   "split": "test",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "diff dev.magic and dev2.magic for me, i changed something in the globals last week and now the strobe is broken"
+  },
+  {
+   "id": 7,
+   "split": "test",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "my Synesthesia scene's main.glsl has a uniform syn_BassLevel that flickers, how do I smooth it in the shader?"
+  },
+  {
+   "id": 8,
+   "split": "train",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "in the Blender file, add a new camera CAM_7 that orbits the moon, don't touch the Magic side"
+  },
+  {
+   "id": 9,
+   "split": "train",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "what's a good BPM detection algorithm in Python for live audio from BlackHole? I want to replace Synesthesia's beat OSC"
+  },
+  {
+   "id": 10,
+   "split": "test",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "hyperframes",
+    "hyperframes",
+    "hyperframes"
+   ],
+   "query": "make me a hyperframes music video for this track with beat-synced cuts"
+  },
+  {
+   "id": 11,
+   "split": "test",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "load the synthetic test build into Magic and check the readout overlay shows values, then put my normal project back"
+  },
+  {
+   "id": 12,
+   "split": "train",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "rename the Global FxGlow to GlowAmount everywhere in synthwave_pyramids.magic including the expressions that use it"
+  },
+  {
+   "id": 13,
+   "split": "train",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "write a GLSL ISF shader that does a chromatic aberration glitch, I'll drop it into my Magic additional modules folder myself"
+  },
+  {
+   "id": 14,
+   "split": "test",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "I need the OSC out of my Magic project to go to port 9300 instead of 9201 for a test, make a copy with that change"
+  },
+  {
+   "id": 15,
+   "split": "train",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "supermatt:diagnosing-bugs",
+    "supermatt:diagnosing-bugs",
+    "none"
+   ],
+   "query": "lab.py shows /vj/level arriving at 60 Hz but /vj/cam never changes, what's wrong with the relay code?"
+  },
+  {
+   "id": 16,
+   "split": "train",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "resolve keeps complaining the syphon client can't find 'Main Server', how do i list all syphon servers on this mac from the terminal?"
+  },
+  {
+   "id": 17,
+   "split": "train",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "is Magic actually rendering anything right now? grab a frame from it and tell me if the screen is black"
+  },
+  {
+   "id": 18,
+   "split": "train",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "the synthwave .magic file in Tools/magic-blender-lab/scenes, can you tell me what modifiers are on the Kick global and why it seems to lag behind the music?"
+  },
+  {
+   "id": 19,
+   "split": "test",
+   "should": true,
+   "rate": 1.0,
+   "ok": true,
+   "picks": [
+    "magic-projects",
+    "magic-projects",
+    "magic-projects"
+   ],
+   "query": "Build a Magic Music Visuals project with three scenes, each a spectrum bar chart driven by Freq. Range bands, and save it as spectrum_test.magic"
+  },
+  {
+   "id": 20,
+   "split": "test",
+   "should": false,
+   "rate": 0.0,
+   "ok": true,
+   "picks": [
+    "none",
+    "none",
+    "none"
+   ],
+   "query": "set up the SwiftVJ app so it receives Syphon from Blender CAM_OUT and shows it in the preview"
+  }
+ ]
+}

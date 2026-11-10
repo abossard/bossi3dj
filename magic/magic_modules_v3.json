@@ -1,0 +1,2622 @@
+{
+ "_about": "Every module bundled with Magic 3.0b6, with the params and defaults Magic itself wrote when saving a project that contained each module with no params (Tools/magic-blender-lab/docs/magic-tooling-report.md). VideoCapture comes from a sample save.",
+ "magic": "3.0b6",
+ "modules": {
+  "3d Rotate": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "X rotate": "1",
+    "Y rotate": "1",
+    "Z rotate": "1",
+    "Zoom Level": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "ASCII Art": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Size": "0.1",
+    "Gamma": "1",
+    "Tint": "1",
+    "TintColor R": "0",
+    "TintColor G": "1",
+    "TintColor B": "0",
+    "TintColor A": "1",
+    "AlphaMode": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Antialias": {
+   "category": "Modules/Special",
+   "params": {
+    "Quality": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Apply Alpha": {
+   "category": "Modules2/Color Adjustment",
+   "params": {
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Array": {
+   "category": "Modules/Effects2D",
+   "params": {
+    "X Amount": "0.2",
+    "X Distance": "0.2",
+    "Y Amount": "0.2",
+    "Y Distance": "0.2",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Auto Color Tone": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Sample Mode": "0",
+    "Color Mode": "1",
+    "Color Count": "5",
+    "Base Color R": "0.25",
+    "Base Color G": "0.59",
+    "Base Color B": "0.9",
+    "Base Color A": "1",
+    "Pixel Point X": "0.5",
+    "Pixel Point Y": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Auto Levels": {
+   "category": "Modules2/Color Adjustment",
+   "params": {
+    "Min_threshold": "0",
+    "Mid_point": "0.5",
+    "Max_threshold": "1",
+    "Adapt_rate": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Bad TV": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "NoiseLevel": "0.5",
+    "Distortion1": "1",
+    "Distortion2": "5",
+    "Speed": "0.3",
+    "Scroll": "0",
+    "ScanLineThickness": "25",
+    "ScanLineIntensity": "0.5",
+    "ScanLineOffset": "0",
+    "Speed (M)": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Blend": {
+   "category": "Modules/Layers",
+   "params": {
+    "Mode": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Bloom": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "BlurAmount": "12",
+    "Intensity": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Bright": {
+   "category": "Modules2/Color Adjustment",
+   "params": {
+    "Bright": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Bump Distortion": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "Level": "0.5",
+    "Radius": "0.25",
+    "Center X": "0.5",
+    "Center Y": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "CMYK Halftone": {
+   "category": "Modules2/Halftone Effect",
+   "params": {
+    "GridSize": "45",
+    "Smoothing": "0.15",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "CMYK Halftone-Lookaround": {
+   "category": "Modules2/Halftone Effect",
+   "params": {
+    "GridSize": "45",
+    "Smoothing": "0.15",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Channel Slide": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Slide amount R": "0",
+    "Slide amount G": "0",
+    "Slide amount B": "0",
+    "Slide amount A": "0",
+    "Reflection": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Checkerboard": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Width": "0.25",
+    "Offset X": "0",
+    "Offset Y": "0",
+    "Color1 R": "1",
+    "Color1 G": "1",
+    "Color1 B": "1",
+    "Color1 A": "1",
+    "Color2 R": "0",
+    "Color2 G": "0",
+    "Color2 B": "0",
+    "Color2 A": "1",
+    "Power": "1"
+   }
+  },
+  "Chroma Desaturation Mask": {
+   "category": "Modules2/Masking",
+   "params": {
+    "Master Threshold": "0.5",
+    "Key Color R": "0.24",
+    "Key Color G": "0.77",
+    "Key Color B": "0.38",
+    "Key Color A": "1",
+    "HUE- Tol.": "0",
+    "HUE- Min. Bracket": "0.25",
+    "HUE- Max Bracket": "0.25",
+    "SAT- Tol.": "0",
+    "SAT- Min. Bracket": "0.5",
+    "SAT- Max Bracket": "0.5",
+    "VAL- Tol.": "0",
+    "VAL- Min. Bracket": "0.5",
+    "VAL- Max Bracket": "0.5",
+    "Dilate": "0",
+    "Blur": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Chroma Mask": {
+   "category": "Modules2/Masking",
+   "params": {
+    "Key Color R": "0.24",
+    "Key Color G": "0.77",
+    "Key Color B": "0.38",
+    "Key Color A": "1",
+    "Show Alpha": "0",
+    "ApplyAlpha": "0",
+    "Hard Cutoff": "0",
+    "Alpha Mode": "1",
+    "Cutoff Thresh": "0.5",
+    "HUE- Tol.": "0",
+    "HUE- Min. Bracket": "0.25",
+    "HUE- Max Bracket": "0.25",
+    "SAT- Tol.": "0",
+    "SAT- Min. Bracket": "0.5",
+    "SAT- Max Bracket": "0.5",
+    "VAL- Tol.": "0",
+    "VAL- Min. Bracket": "0.5",
+    "VAL- Max Bracket": "0.5",
+    "Dilate": "0",
+    "Blur": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Chroma Zoom": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Master_zoom": "1",
+    "Red_zoom": "1",
+    "Green_zoom": "1",
+    "Blue_zoom": "1",
+    "Center X": "0.5",
+    "Center Y": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "ChromaKeyFast": {
+   "category": "Modules/Effects2D",
+   "params": {
+    "Strength": "0.7",
+    "Falloff": "0.9",
+    "Color": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Circle Splash Distortion": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "Radius": "0.125",
+    "Streaks": "0",
+    "Center X": "0.5",
+    "Center Y": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Circle Wrap Distortion": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "InputAngle": "0.5",
+    "InputRadius": "1",
+    "InputCenter X": "0",
+    "InputCenter Y": "0",
+    "Mirror": "0",
+    "CorrectAspect": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Circular Screen": {
+   "category": "Modules2/Halftone Effect",
+   "params": {
+    "Sharpness": "1",
+    "Offset": "0",
+    "Scale": "1",
+    "Colorize": "0",
+    "Center X": "0.5",
+    "Center Y": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "City Lights": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "BlurAmount": "4",
+    "Intensity": "0.5",
+    "EdgeIntensity": "15",
+    "EdgeThreshold": "0",
+    "ErodeIntensity": "0.25",
+    "ErodeRadius": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Collage": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "Seed": "0.5",
+    "Cell_size": "0.125",
+    "Allow_flips_h": "1",
+    "Allow_flips_v": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Color Bars": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Color Shift": "0",
+    "Power": "1"
+   }
+  },
+  "Color Controls": {
+   "category": "Modules2/Color Adjustment",
+   "params": {
+    "Bright": "0",
+    "Contrast": "1",
+    "Hue": "0",
+    "Saturation": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Color Invert": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Color Levels": {
+   "category": "Modules2/Color Adjustment",
+   "params": {
+    "Minimum Point": "0.2",
+    "Mid Point": "0.5",
+    "Maximum Point": "0.8",
+    "Offset1 R": "0.5",
+    "Offset1 G": "0.5",
+    "Offset1 B": "0.5",
+    "Offset1 A": "0.5",
+    "Offset2 R": "0.5",
+    "Offset2 G": "0.5",
+    "Offset2 B": "0.5",
+    "Offset2 A": "0.5",
+    "Offset3 R": "0.5",
+    "Offset3 G": "0.5",
+    "Offset3 B": "0.5",
+    "Offset3 A": "0.5",
+    "Offset4 R": "0.5",
+    "Offset4 G": "0.5",
+    "Offset4 B": "0.5",
+    "Offset4 A": "0.5",
+    "Offset5 R": "0.5",
+    "Offset5 G": "0.5",
+    "Offset5 B": "0.5",
+    "Offset5 A": "0.5",
+    "Offset6 R": "0.5",
+    "Offset6 G": "0.5",
+    "Offset6 B": "0.5",
+    "Offset6 A": "0.5",
+    "Levels Mode": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Color Monochrome": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Intensity": "1",
+    "Color R": "0.6",
+    "Color G": "0.45",
+    "Color B": "0.3",
+    "Color A": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Color Posterize": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Levels": "30",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Color Relookup": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "Mix_amount": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Color Replacement": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Master Threshold": "0.5",
+    "Key Color R": "0.24",
+    "Key Color G": "0.77",
+    "Key Color B": "0.38",
+    "Key Color A": "1",
+    "Target Color R": "0.77",
+    "Target Color G": "0.38",
+    "Target Color B": "0.24",
+    "Target Color A": "1",
+    "HUE- Tol.": "0",
+    "HUE- Min. Bracket": "0.25",
+    "HUE- Max Bracket": "0.25",
+    "SAT- Tol.": "0",
+    "SAT- Min. Bracket": "0.5",
+    "SAT- Max Bracket": "0.5",
+    "VAL- Tol.": "0",
+    "VAL- Min. Bracket": "0.5",
+    "VAL- Max Bracket": "0.5",
+    "Dilate": "0",
+    "Blur": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Color Schemes": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Base Color R": "0.25",
+    "Base Color G": "0.59",
+    "Base Color B": "0.9",
+    "Base Color A": "1",
+    "Color Mode": "1",
+    "Color Count": "3",
+    "Power": "1"
+   }
+  },
+  "Color Test Grid": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Grid Columns": "16",
+    "Grid Rows": "9",
+    "Color Shift": "0",
+    "Color Range": "1",
+    "Power": "1"
+   }
+  },
+  "ColorHSB": {
+   "category": "Modules/Color",
+   "params": {
+    "Hue": "1",
+    "Saturation": "1",
+    "Brightness": "1",
+    "Alpha": "1",
+    "Override": "0",
+    "Additive": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "ColorRGB": {
+   "category": "Modules/Color",
+   "params": {
+    "Red": "1",
+    "Green": "1",
+    "Blue": "1",
+    "Alpha": "1",
+    "Override": "0",
+    "Additive": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Contrast": {
+   "category": "Modules/Effects2D",
+   "params": {
+    "Contrast": "0",
+    "Brightness": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Convergence": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "Horizontal_magnitude": "0.125",
+    "Vertical_magnitude": "0.125",
+    "Color_magnitude": "1",
+    "Mode": "0",
+    "Speed": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Cubic Warp": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "Level": "1",
+    "Center X": "0.5",
+    "Center Y": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Deinterlace": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "DepthTest": {
+   "category": "Modules/Geometry",
+   "params": {
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Diagonal Blur": {
+   "category": "Modules2/Blur",
+   "params": {
+    "Width": "0",
+    "Angle": "0.125",
+    "Quality": "2",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Diagonalize": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Width": "0",
+    "Angle": "0.125",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Dilate": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Intensity": "0",
+    "Radius": "2",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Dilate-Fast": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Intensity": "0.25",
+    "Radius": "6",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Dither-Bayer": {
+   "category": "Modules2/Halftone Effect",
+   "params": {
+    "Colorize": "0",
+    "MatrixMode": "2",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Dot Screen": {
+   "category": "Modules2/Halftone Effect",
+   "params": {
+    "Sharpness": "1",
+    "Angle": "0",
+    "Scale": "1",
+    "Colorize": "0",
+    "Center X": "0.5",
+    "Center Y": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Double Vision": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "H Shift": "0",
+    "V Shift": "0",
+    "Shift Mix": "0.5",
+    "Original Mix": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Dual Side Scroller And Flip": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "Slidetop": "0",
+    "Shifttop": "0",
+    "MirrorHorizontaltop": "1",
+    "MirrorVerticaltop": "1",
+    "Slidebot": "0",
+    "Shiftbot": "0",
+    "MirrorHorizontalbot": "1",
+    "MirrorVerticalbot": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Duotone": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Threshold": "0.5",
+    "Softness": "0",
+    "BrightColor R": "1",
+    "BrightColor G": "1",
+    "BrightColor B": "1",
+    "BrightColor A": "1",
+    "DarkColor R": "0",
+    "DarkColor G": "0",
+    "DarkColor B": "0",
+    "DarkColor A": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Echo Trace": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "Threshold": "0",
+    "Gain": "1",
+    "Hard Cutoff": "1",
+    "Invert": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Edge Blowout": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Left Edge": "0.25",
+    "Right Edge": "0.75",
+    "Bottom Edge": "0.25",
+    "Top Edge": "0.75",
+    "Horizontal Bleed": "1",
+    "Vertical Bleed": "1",
+    "Inside Bleed": "1",
+    "Outside Bleed": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Edge Blur": {
+   "category": "Modules2/Blur",
+   "params": {
+    "Intensity": "5",
+    "BlurAmount": "10",
+    "Invert_map": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Edge Distort": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "Intensity": "0.2",
+    "Invert_map": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Edges": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Intensity": "50",
+    "Threshold": "0",
+    "Sobel": "1",
+    "Opaque": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Emboss": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Intensity": "2",
+    "Colorize": "1",
+    "Brightness": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Erode": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Intensity": "0",
+    "BleedRadius": "2",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Erode-Fast": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Intensity": "0.25",
+    "Radius": "6",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Exposure Adjust": {
+   "category": "Modules2/Color Adjustment",
+   "params": {
+    "InputEV": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "FFT Color Lines": {
+   "category": "Modules2/Generator",
+   "params": {
+    "FFT": "-1",
+    "Wave": "-1",
+    "GainFFT": "1",
+    "RangeFFT": "0.9",
+    "WaveSize": "0.05",
+    "Vertical": "1",
+    "Stereo": "1",
+    "Color1 R": "0.208739444",
+    "Color1 G": "0.986106992",
+    "Color1 B": "0.187117974",
+    "Color1 A": "1",
+    "Color2 R": "0",
+    "Color2 G": "0.5",
+    "Color2 B": "1",
+    "Color2 A": "1",
+    "Color3 R": "0",
+    "Color3 G": "1",
+    "Color3 B": "0",
+    "Color3 A": "1",
+    "Wavecolor R": "1",
+    "Wavecolor G": "1",
+    "Wavecolor B": "1",
+    "Wavecolor A": "1",
+    "Overwrite": "1",
+    "Power": "1"
+   }
+  },
+  "FFT Filled Waveform": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Source": "-1",
+    "StrokeSize": "0.1",
+    "Gain": "1",
+    "MinRange": "0.1",
+    "MaxRange": "0.9",
+    "TopColor R": "0",
+    "TopColor G": "0",
+    "TopColor B": "0",
+    "TopColor A": "0",
+    "BottomColor R": "0",
+    "BottomColor G": "0.5",
+    "BottomColor B": "0.9",
+    "BottomColor A": "1",
+    "StrokeColor R": "0.25",
+    "StrokeColor G": "0.25",
+    "StrokeColor B": "0.25",
+    "StrokeColor A": "1",
+    "Power": "1"
+   }
+  },
+  "FFT Spectrogram": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Source": "-1",
+    "Clear": "0",
+    "Gain": "1",
+    "Range": "1",
+    "Axis_scale": "1.25",
+    "LumaMode": "0",
+    "Color1 R": "0",
+    "Color1 G": "0.5",
+    "Color1 B": "1",
+    "Color1 A": "1",
+    "Color2 R": "1",
+    "Color2 G": "0",
+    "Color2 B": "0",
+    "Color2 A": "1",
+    "Color3 R": "0",
+    "Color3 G": "1",
+    "Color3 B": "0",
+    "Color3 A": "1",
+    "Power": "1"
+   }
+  },
+  "False Color": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "BrightColor R": "1",
+    "BrightColor G": "0.9",
+    "BrightColor B": "0.8",
+    "BrightColor A": "1",
+    "DarkColor R": "0.3",
+    "DarkColor G": "0",
+    "DarkColor B": "0",
+    "DarkColor A": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Fast Blur": {
+   "category": "Modules2/Blur",
+   "params": {
+    "BlurAmount": "12",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "FastMosh": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "Update_keyframe": "1",
+    "Update_rate": "0.95",
+    "Sharpen": "1",
+    "Blur": "0.25",
+    "Posterize": "0.25",
+    "Mode": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Flip H": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Flip V": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Fractal": {
+   "category": "Modules/Special",
+   "params": {
+    "Iterations": "100",
+    "Real": "-1",
+    "Imaginary": "0",
+    "Zoom": "1",
+    "Center X": "0",
+    "Center Y": "0",
+    "Power": "1"
+   }
+  },
+  "Freeze Frame": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "Freeze": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Frosted Glass": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "Magnitude": "0.01",
+    "Seed": "0.345",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "GLSLShader": {
+   "category": "Modules/Special",
+   "params": {
+    "File": "../../../../../../../Applications/MagicBeta.app/Contents/MacOS/Modules/Special/GLSLShaders/default.txt",
+    "Reload": "0",
+    "Speed": "1",
+    "X Param": ".4",
+    "Y Param": ".6",
+    "Z Param": ".3",
+    "W Param": ".7",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Gamma Correction": {
+   "category": "Modules2/Color Adjustment",
+   "params": {
+    "Gamma": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Ghosting": {
+   "category": "Modules2/Film",
+   "params": {
+    "Bias": "-0.5",
+    "Scale": "0.5",
+    "Ghosts": "5",
+    "Ghost Dispersal": "0.0125",
+    "Additive Mode": "1",
+    "Direction X": "0.5",
+    "Direction Y": "0.5",
+    "Lens Color R": "0.9",
+    "Lens Color G": "0.8",
+    "Lens Color B": "0.7",
+    "Lens Color A": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Glitch Shifter": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "Size": "0.1",
+    "Horizontal Amount": "0.2",
+    "Vertical Amount": "0",
+    "Randomize Size": "1",
+    "Randomize Zoom": "0",
+    "Use Alt Image": "0",
+    "Offset X": "0",
+    "Offset Y": "0",
+    "Speed": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Gloom": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "BlurAmount": "12",
+    "Intensity": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Glow": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Intensity": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Glow-Fast": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Intensity": "1",
+    "BlurAmount": "12",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "God Rays": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "LightDirDOTviewDir": "0.5",
+    "LightPositionOnScreen X": "0.5",
+    "LightPositionOnScreen Y": "0.5",
+    "Quality": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "HSVtoRGB": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Hatch Blur": {
+   "category": "Modules2/Blur",
+   "params": {
+    "Width": "0",
+    "Angle": "0.125",
+    "Quality": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Heart": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Size": "0.25",
+    "Fill Color R": "1",
+    "Fill Color G": "0",
+    "Fill Color B": "0",
+    "Fill Color A": "1",
+    "Power": "1"
+   }
+  },
+  "HorizVertHold": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "Horiz. Hold": "0",
+    "Vert. Hold": "0",
+    "FlashEvent": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "HueSaturation": {
+   "category": "Modules/Effects2D",
+   "params": {
+    "Hue": "0",
+    "Saturation": "0",
+    "Lightness": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Hyperspace": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "CenterX": "0.5",
+    "ScrollAmount": "0",
+    "RightScrollOffset": "0",
+    "MidHeight": "0.5",
+    "Seamless": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "ISFShader": {
+   "category": "Modules/Special",
+   "params": {
+    "File": "",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "ImageFile": {
+   "category": "Modules/Media",
+   "params": {
+    "File": "",
+    "Reload": "0",
+    "Scale": "1",
+    "Power": "1"
+   }
+  },
+  "ImageFolder": {
+   "category": "Modules/Media",
+   "params": {
+    "Folder": "",
+    "Reload": "0",
+    "Cache": "0",
+    "Scale": "1",
+    "Index": "0",
+    "Looping": "1",
+    "Power": "1"
+   }
+  },
+  "InputSelector": {
+   "category": "Modules/Layers",
+   "params": {
+    "Input #": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Interlace": {
+   "category": "Modules2/Film",
+   "params": {
+    "Line Size": "4",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Interlace Mirror": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "Horizontal": "1",
+    "Vertical": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Invert": {
+   "category": "Modules/Effects2D",
+   "params": {
+    "Invert Alpha": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Iterator": {
+   "category": "Modules/Special",
+   "params": {
+    "Iterations": "1",
+    "Offset": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "JpegFolder": {
+   "category": "Modules/Media",
+   "params": {
+    "Folder": "",
+    "Reload": "0",
+    "Cache": "0",
+    "Scale": "1",
+    "Index": "0",
+    "Play": "0",
+    "FPS": "30",
+    "Scene Start": "1",
+    "Looping": "1",
+    "Power": "1"
+   }
+  },
+  "Kaleidoscope": {
+   "category": "Modules/Effects2D",
+   "params": {
+    "Iterations": "6",
+    "Zoom": "1",
+    "Rotation": "0",
+    "Fill Edges": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Kaleidoscope Tile": {
+   "category": "Modules2/Tile Effect",
+   "params": {
+    "Size": "0.5",
+    "Sides": "6",
+    "Rotation": "0.125",
+    "Angle": "0",
+    "Slide1 X": "0",
+    "Slide1 Y": "0",
+    "Slide2 X": "0",
+    "Slide2 Y": "0",
+    "Shift X": "0",
+    "Shift Y": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Layer Mask": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Mask size mode": "0",
+    "Bright": "0",
+    "Contrast": "1",
+    "Alpha Mode": "2",
+    "ApplyAlpha": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Layer Position": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "Offset X": "0.5",
+    "Offset Y": "0.5",
+    "RepeatImage": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Lens Flare": {
+   "category": "Modules2/Film",
+   "params": {
+    "Bias": "-0.67",
+    "Scale": "1.25",
+    "Source Gain": "1",
+    "Chromatic Distortion R": "0.75",
+    "Chromatic Distortion G": "0.875",
+    "Chromatic Distortion B": "1",
+    "Chromatic Distortion A": "0.75",
+    "Ghosts": "3",
+    "Ghost Dispersal": "0.25",
+    "Lens Color R": "0.67",
+    "Lens Color G": "0.5",
+    "Lens Color B": "0.75",
+    "Lens Color A": "1",
+    "Halo Width": "0.33",
+    "Dirt": "0.25",
+    "Center X": "0.5",
+    "Center Y": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Life": {
+   "category": "Modules2/Generator",
+   "params": {
+    "RestartNow": "0",
+    "StartThresh": "0.5",
+    "RandomRegrowth": "0",
+    "RandomDeath": "0",
+    "Speed": "1",
+    "Power": "1"
+   }
+  },
+  "Line Screen": {
+   "category": "Modules2/Halftone Effect",
+   "params": {
+    "Sharpness": "1",
+    "Offset": "0",
+    "Angle": "0.5",
+    "Scale": "1",
+    "Colorize": "0",
+    "Fill": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Linear Gradient": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Offset": "0.5",
+    "Frequency": "1",
+    "Curve": "0",
+    "Vertical": "0",
+    "StartColor R": "1",
+    "StartColor G": "0.75",
+    "StartColor B": "0",
+    "StartColor A": "1",
+    "EndColor R": "0",
+    "EndColor G": "0.25",
+    "EndColor B": "0.75",
+    "EndColor A": "1",
+    "Power": "1"
+   }
+  },
+  "Lines": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Spacing": "0.5",
+    "Line_width": "0.05",
+    "Angle": "0.25",
+    "Shift": "0",
+    "Color1 R": "1",
+    "Color1 G": "1",
+    "Color1 B": "1",
+    "Color1 A": "1",
+    "Color2 R": "0",
+    "Color2 G": "0",
+    "Color2 B": "0",
+    "Color2 A": "1",
+    "Power": "1"
+   }
+  },
+  "Lissajous": {
+   "category": "Modules/Geometry",
+   "params": {
+    "Source 0": "-1",
+    "Source 1": "-1",
+    "Power": "1"
+   }
+  },
+  "LumaKey": {
+   "category": "Modules/Effects2D",
+   "params": {
+    "Strength": "0.5",
+    "Falloff": "0.5",
+    "Invert": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Luminance Posterize": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Levels": "30",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Mask": {
+   "category": "Modules/Layers",
+   "params": {
+    "Use Alpha": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Maximum Component": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Median": {
+   "category": "Modules2/Blur",
+   "params": {
+    "Radius": "4",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Meta Image": {
+   "category": "Modules2/Tile Effect",
+   "params": {
+    "Cell_size": "0.125",
+    "Zoom_tile": "1",
+    "Mix": "0.5",
+    "Mode": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Micro Buffer": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "Buffer": "0",
+    "Buffer 2": "0",
+    "Buffer 3": "0",
+    "Buffer Lag": "1",
+    "Mode": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Micro Buffer RGB": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "Buffer R": "0",
+    "Buffer G": "0",
+    "Buffer B": "0",
+    "Buffer A": "0",
+    "Buffer Lag": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Minimum Component": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Mirror": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "Horizontal": "1",
+    "Vertical": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Mirror Edge": {
+   "category": "Modules2/Tile Effect",
+   "params": {
+    "Angle": "0",
+    "Shift X": "0",
+    "Shift Y": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Mix": {
+   "category": "Modules/Layers",
+   "params": {
+    "Amount": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Model": {
+   "category": "Modules/Geometry",
+   "params": {
+    "File": "",
+    "Reload": "0",
+    "Center": "1",
+    "Scale": "1",
+    "Colorize": "0",
+    "Wireframe": "0",
+    "3-Light": "0",
+    "Global Light": "1",
+    "L. Azimuth": "0",
+    "L. Elevation": "0",
+    "L. Intensity": "1",
+    "Power": "1"
+   }
+  },
+  "Motion Heat Map": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Threshold": "0.1",
+    "Gain": "1",
+    "Motion Color": "1",
+    "Display Mode": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Motion Mask": {
+   "category": "Modules2/Masking",
+   "params": {
+    "Threshold": "0.25",
+    "Persistence": "0.95",
+    "Reset BG": "0",
+    "Dilate": "0",
+    "Blur": "0",
+    "Output Mask": "0",
+    "Hard Cutoff": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Multi Hue Shift": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "ShiftLow": "0",
+    "ShiftMid": "0",
+    "ShiftHigh": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Multi Pass Gaussian Blur": {
+   "category": "Modules2/Blur",
+   "params": {
+    "BlurAmount": "24",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "MultiFrame 2x2": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Lag": "1",
+    "HueShift": "0",
+    "Speed": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "MultiFrame 3x3": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Lag": "1",
+    "HueShift": "0",
+    "Speed": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "MultiMix": {
+   "category": "Modules/Layers",
+   "params": {
+    "Index": "0",
+    "Smooth": "0",
+    "Repeat": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Neon": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Intensity": "5",
+    "Gain": "1",
+    "NeonColor R": "1",
+    "NeonColor G": "0.4",
+    "NeonColor B": "0.64",
+    "NeonColor A": "1",
+    "Preserve Opacity": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Night Vision": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "LuminanceThreshold": "0.2",
+    "ColorAmplification": "4",
+    "NoiseLevel": "0.1",
+    "VisionColor R": "0.1",
+    "VisionColor G": "0.95",
+    "VisionColor B": "0.2",
+    "VisionColor A": "1",
+    "Speed": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Noise": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Random Seed": "0.5",
+    "Cell Size": "0.125",
+    "Threshold": "0",
+    "Animated": "1",
+    "Color Mode": "2",
+    "Speed": "1",
+    "Power": "1"
+   }
+  },
+  "NoiseBlur": {
+   "category": "Modules/Effects2D",
+   "params": {
+    "Amount": "0.2",
+    "Angle": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Null": {
+   "category": "Modules/Layers",
+   "params": {
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "OSCSender": {
+   "category": "Modules/Special",
+   "params": {
+    "IP Addr.": "127.0.0.1",
+    "Port": "9201",
+    "Message": "/myMessage",
+    "Value": "0",
+    "Power": "1"
+   }
+  },
+  "Optical Flow Distort": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "Distortion Amount": "0.5",
+    "Flow Persistence": "0.98",
+    "Scale": "2",
+    "Offset": "0.1",
+    "Noise Removal": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Optical Flow Generator": {
+   "category": "Modules2/Masking",
+   "params": {
+    "Scale": "10",
+    "Offset": "0.01",
+    "Noise Removal": "0.2",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Pixel Shifter": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "Horizontal Phase": "0",
+    "Horizontal Frequency": "1",
+    "Horizontal Random": "0",
+    "Vertical Phase": "0",
+    "Vertical Frequency": "0",
+    "Vertical Random": "0",
+    "Sinusoidal": "1",
+    "Mirror": "1",
+    "Speed": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Pixelate": {
+   "category": "Modules/Effects2D",
+   "params": {
+    "Amount": "0.15",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Pixellate": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Cell_size": "0.125",
+    "Shape": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Polygon": {
+   "category": "Modules/Geometry",
+   "params": {
+    "Sides": "4",
+    "Fit": "1",
+    "Power": "1"
+   }
+  },
+  "Posterize": {
+   "category": "Modules/Effects2D",
+   "params": {
+    "Amount": "0.85",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Quad Tile": {
+   "category": "Modules2/Tile Effect",
+   "params": {
+    "Size": "0.5",
+    "Rotation": "0",
+    "Angle": "0",
+    "Slide1 X": "0",
+    "Slide1 Y": "0",
+    "Slide2 X": "0",
+    "Slide2 Y": "0",
+    "Shift X": "0",
+    "Shift Y": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "RGB EQ": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Red": "1",
+    "Green": "1",
+    "Blue": "1",
+    "Gain": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "RGB Halftone": {
+   "category": "Modules2/Halftone Effect",
+   "params": {
+    "GridSize": "45",
+    "Smoothing": "0.15",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "RGB Halftone-lookaround": {
+   "category": "Modules2/Halftone Effect",
+   "params": {
+    "GridSize": "45",
+    "Smoothing": "0.15",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "RGB Invert": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "R": "1",
+    "G": "1",
+    "B": "1",
+    "A": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "RGB Strobe": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "R": "1",
+    "G": "1",
+    "B": "1",
+    "A": "0",
+    "Strobe Rates R": "0",
+    "Strobe Rates G": "0",
+    "Strobe Rates B": "0",
+    "Strobe Rates A": "0",
+    "Speed": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "RGB Trails 3.0": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "RWeight": "0",
+    "GWeight": "0",
+    "BWeight": "0",
+    "AWeight": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "RGBA Swap": {
+   "category": "Modules2/Color Adjustment",
+   "params": {
+    "Red": "0",
+    "Green": "1",
+    "Blue": "2",
+    "Alpha": "3",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "RGBtoHSV": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Radial Gradient": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Radius1": "0.1",
+    "Radius2": "0.25",
+    "StartColor R": "1",
+    "StartColor G": "0.75",
+    "StartColor B": "0",
+    "StartColor A": "1",
+    "EndColor R": "0",
+    "EndColor G": "0.25",
+    "EndColor B": "0.75",
+    "EndColor A": "1",
+    "Location X": "0.5",
+    "Location Y": "0.5",
+    "Power": "1"
+   }
+  },
+  "Radial Replicate": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "Post Rotate Angle": "0",
+    "Number Of Divisions": "12",
+    "Pre Rotate Angle": "0",
+    "Radius Start": "0",
+    "Radius End": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "RadialBlur": {
+   "category": "Modules/Effects2D",
+   "params": {
+    "Distance": "0.25",
+    "Density": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Random Lines": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Line Count": "15",
+    "Max Line Width": "0.025",
+    "Random Seed": "0.25",
+    "Wobble Amount": "0",
+    "Hue Range": "0.2",
+    "Saturation": "1",
+    "Randomize Brightness": "1",
+    "Randomize Width": "0",
+    "Randomize Points": "0",
+    "Randomize Alpha": "0",
+    "Speed": "1",
+    "Power": "1"
+   }
+  },
+  "Random Shape": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Point Count": "5",
+    "Random Seed": "0.125",
+    "Saturation": "0",
+    "Random Shades": "1",
+    "Random Alpha": "0",
+    "Triangle Shapes": "0",
+    "Power": "1"
+   }
+  },
+  "Replicate": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "StartSize": "0.5",
+    "StartOpacity": "1",
+    "StartCenter X": "0",
+    "StartCenter Y": "0",
+    "StartPadding": "0.25",
+    "EndSize": "0.25",
+    "EndOpacity": "1",
+    "EndCenter X": "0",
+    "EndCenter Y": "0",
+    "EndPadding": "0.1",
+    "Repetitions": "5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Replicate Random": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "RandomSeed": "",
+    "Repetitions": "5",
+    "RandomizeOpacity": "",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Resolution": {
+   "category": "Modules/Effects2D",
+   "params": {
+    "Width": "320",
+    "Height": "240",
+    "Scale": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Restart": {
+   "category": "Modules/Special",
+   "params": {
+    "Restart Now": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Ripples": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "Level": "1",
+    "Offset": "0",
+    "X_smear": "0",
+    "Y_smear": "0",
+    "Center X": "0.5",
+    "Center Y": "0.5",
+    "Mode": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Rotate": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "Angle": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "RotateAxis": {
+   "category": "Modules/Transforms",
+   "params": {
+    "Axis": "",
+    "Angle": "",
+    "Bypass": "",
+    "Power": ""
+   }
+  },
+  "RotateVector": {
+   "category": "Modules/Transforms",
+   "params": {
+    "Angle": "0",
+    "X": "0",
+    "Y": "0",
+    "Z": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Scale": {
+   "category": "Modules/Transforms",
+   "params": {
+    "X": "1",
+    "Y": "1",
+    "Z": "1",
+    "X For All": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Sepia Tone": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Contrast": "0.8",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Set Alpha": {
+   "category": "Modules2/Color Adjustment",
+   "params": {
+    "New Alpha": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Shake": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "Magnitude": "0",
+    "Intensity": "1",
+    "Speed": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Shape Mask": {
+   "category": "Modules2/Masking",
+   "params": {
+    "Mask Shape Mode": "1",
+    "Shape Width": "0.5",
+    "Shape Height": "0.5",
+    "Center X": "0.5",
+    "Center Y": "0.5",
+    "Invert Mask": "0",
+    "Horizontal Repeat": "0",
+    "Vertical Repeat": "0",
+    "Apply Mask": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Sharpen Luminance": {
+   "category": "Modules2/Sharpen",
+   "params": {
+    "Intensity": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Sharpen RGB": {
+   "category": "Modules2/Sharpen",
+   "params": {
+    "IntensityR": "1",
+    "IntensityG": "1",
+    "IntensityB": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Shockwave": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "Position": "0",
+    "Distortion": "10",
+    "Magnitude": "0.08",
+    "Center X": "0",
+    "Center Y": "0",
+    "Background": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Shockwave Pulse": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "Pulse": "0",
+    "Rate": "1",
+    "Magnitude": "0.08",
+    "Distortion": "10",
+    "Center X": "0",
+    "Center Y": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Side Scroller And Flip": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "Slide": "0",
+    "Shift": "0",
+    "MirrorHorizontal": "1",
+    "MirrorVertical": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Sine Warp Gradient": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Size": "0.5",
+    "Rotation": "0",
+    "Angle": "0",
+    "Shift X": "0.5",
+    "Shift Y": "0.5",
+    "Xcolor R": "1",
+    "Xcolor G": "0.5",
+    "Xcolor B": "0",
+    "Xcolor A": "1",
+    "Ycolor R": "0",
+    "Ycolor G": "0.5",
+    "Ycolor B": "1",
+    "Ycolor A": "1",
+    "Background R": "0",
+    "Background G": "0",
+    "Background B": "0",
+    "Background A": "0",
+    "Power": "1"
+   }
+  },
+  "Sine Warp Tile": {
+   "category": "Modules2/Tile Effect",
+   "params": {
+    "Size": "0.5",
+    "Rotation": "0",
+    "Angle": "0",
+    "Shift X": "0.5",
+    "Shift Y": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "SineWave": {
+   "category": "Modules/Geometry",
+   "params": {
+    "Frequency": "2",
+    "Phase": "0",
+    "Solid": "0",
+    "Fit Width": "0",
+    "Power": "1"
+   }
+  },
+  "Sketch": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Intensity": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Slit Scan": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "Spacing": "1",
+    "Line_width": "0.33",
+    "Angle": "0.25",
+    "Shift": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Soft Blur": {
+   "category": "Modules2/Blur",
+   "params": {
+    "Softness": "0.9",
+    "Depth": "10",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Solarize": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "CenterBrightness": "0.5",
+    "PowerCurve": "1",
+    "Colorize": "0",
+    "Inverse": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Solid Color": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Color R": "1",
+    "Color G": "0",
+    "Color B": "0",
+    "Color A": "1",
+    "Power": "1"
+   }
+  },
+  "Spectrum": {
+   "category": "Modules/Geometry",
+   "params": {
+    "Source": "-1",
+    "Bars": "1",
+    "Threshold": "-60",
+    "Log X Scale": "1",
+    "Log Y Scale": "1",
+    "Rounded": "0",
+    "Smoothness": "0",
+    "Start At 0": "0",
+    "Fit Width": "0",
+    "Power": "1"
+   }
+  },
+  "Sphere Map": {
+   "category": "Modules2/Geometry Adjustment",
+   "params": {
+    "Image Scale": "0.5",
+    "Radius Scale": "1",
+    "Rotate X": "0",
+    "Rotate Y": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Spiral": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Rotation": "0",
+    "Count": "2",
+    "Width": "0.125",
+    "Softness": "0.25",
+    "Color1 R": "0",
+    "Color1 G": "0",
+    "Color1 B": "0",
+    "Color1 A": "0",
+    "Color2 R": "1",
+    "Color2 G": "1",
+    "Color2 B": "1",
+    "Color2 A": "1",
+    "Power": "1"
+   }
+  },
+  "Star": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Size": "0.25",
+    "Stroke Width": "0.01",
+    "Fill Color R": "1",
+    "Fill Color G": "0.6",
+    "Fill Color B": "0.75",
+    "Fill Color A": "1",
+    "Stroke Color R": "0",
+    "Stroke Color G": "0",
+    "Stroke Color B": "0",
+    "Stroke Color A": "1",
+    "Power": "1"
+   }
+  },
+  "Starfield": {
+   "category": "Modules/Geometry",
+   "params": {
+    "Speed": "1",
+    "Size": "3",
+    "Circles": "1",
+    "Stars/sec": "10",
+    "Distance": "10",
+    "Spread": "10",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Stripes": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Width": "0.25",
+    "Offset": "0",
+    "Vertical": "0",
+    "Color1 R": "1",
+    "Color1 G": "1",
+    "Color1 B": "1",
+    "Color1 A": "1",
+    "Color2 R": "0",
+    "Color2 G": "0",
+    "Color2 B": "0",
+    "Color2 A": "1",
+    "Power": "1"
+   }
+  },
+  "Strobe": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "Strobe Rate": "0",
+    "Speed": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "SyphonClient": {
+   "category": "Modules/Special",
+   "params": {
+    "Server": "CAM_OUT - Blender",
+    "Power": "1"
+   }
+  },
+  "Text": {
+   "category": "Modules/Special",
+   "params": {
+    "Text": "",
+    "Font": "Lucida Grande",
+    "Align": "0",
+    "Size": "10",
+    "Bold": "0",
+    "Italic": "0",
+    "Underline": "0",
+    "Line #": "-1",
+    "Power": "1"
+   }
+  },
+  "TextFile": {
+   "category": "Modules/Special",
+   "params": {
+    "File": "",
+    "Reload": "0",
+    "Font": "Lucida Grande",
+    "Align": "0",
+    "Size": "2.5",
+    "Line #": "-1",
+    "Power": "1"
+   }
+  },
+  "Thermal Camera": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Time Glitch RGB": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "Buffer R": "0.25",
+    "Buffer G": "0.5",
+    "Buffer B": "0.75",
+    "Buffer A": "0.5",
+    "Buffer Lag": "4",
+    "Size": "0.1",
+    "Horizontal Amount": "0.2",
+    "Vertical Amount": "0",
+    "Randomize Size": "1",
+    "Randomize Position": "0",
+    "Randomize Zoom": "0",
+    "Speed": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Toon": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "NormalEdgeThreshold": "0.03",
+    "QLevel": "32",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Trail Mask": {
+   "category": "Modules2/Masking",
+   "params": {
+    "Mask size mode": "0",
+    "Bright": "0",
+    "Contrast": "1",
+    "RGB_mode": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Trails": {
+   "category": "Modules/Effects2D",
+   "params": {
+    "Strength": ".5",
+    "Blur": "1",
+    "Blur Radius": ".5",
+    "Speed": "0",
+    "Z/X": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Translate": {
+   "category": "Modules/Transforms",
+   "params": {
+    "X": "0",
+    "Y": "0",
+    "Z": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Transparency": {
+   "category": "Modules/Effects2D",
+   "params": {
+    "Amount": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Trapezoid Distortion": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "Top Width": "1",
+    "Bottom Width": "1",
+    "Height": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Triangle": {
+   "category": "Modules2/Generator",
+   "params": {
+    "Pt1 X": "0",
+    "Pt1 Y": "0",
+    "Pt2 X": "0.5",
+    "Pt2 Y": "1",
+    "Pt3 X": "1",
+    "Pt3 Y": "0",
+    "FillColor R": "1",
+    "FillColor G": "1",
+    "FillColor B": "1",
+    "FillColor A": "1",
+    "BgColor R": "0",
+    "BgColor G": "0",
+    "BgColor B": "0",
+    "BgColor A": "0",
+    "Power": "1"
+   }
+  },
+  "Triangles": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "Cell_size": "0.125",
+    "Style": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Trio Tone": {
+   "category": "Modules2/Color Effect",
+   "params": {
+    "DarkColor R": "0",
+    "DarkColor G": "0.164",
+    "DarkColor B": "1",
+    "DarkColor A": "1",
+    "MidColor R": "0",
+    "MidColor G": "1",
+    "MidColor B": "0",
+    "MidColor A": "1",
+    "BrightColor R": "1",
+    "BrightColor G": "0",
+    "BrightColor B": "0",
+    "BrightColor A": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Twirl": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "Radius": "5",
+    "Amount": "0",
+    "Center X": "0.5",
+    "Center Y": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Unsharp Mask": {
+   "category": "Modules2/Sharpen",
+   "params": {
+    "Intensity": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "VHS Glitch": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "AutoScan": "1",
+    "XScanline": "0.5",
+    "XScanline2": "0.5",
+    "YScanline": "0",
+    "XScanlineSize": "0.5",
+    "XScanlineSize2": "0.25",
+    "YScanlineAmount": "0.25",
+    "GrainLevel": "0",
+    "ScanFollow": "1",
+    "AnalogDistort": "1",
+    "BleedAmount": "1",
+    "BleedDistort": "0.5",
+    "BleedRange": "1",
+    "ColorBleedL R": "0.8",
+    "ColorBleedL G": "0",
+    "ColorBleedL B": "0.4",
+    "ColorBleedL A": "1",
+    "ColorBleedC R": "0",
+    "ColorBleedC G": "0.5",
+    "ColorBleedC B": "0.75",
+    "ColorBleedC A": "1",
+    "ColorBleedR R": "0.8",
+    "ColorBleedR G": "0",
+    "ColorBleedR B": "0.4",
+    "ColorBleedR A": "1",
+    "Speed": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "VVMotionBlur 3.0": {
+   "category": "Modules2/Blur",
+   "params": {
+    "BlurAmount": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Vertex Manipulator": {
+   "category": "Modules2/Glitch",
+   "params": {
+    "Top Left X": "0",
+    "Top Left Y": "1",
+    "Bottom Left X": "0",
+    "Bottom Left Y": "0",
+    "Top Right X": "1",
+    "Top Right Y": "1",
+    "Bottom Right X": "1",
+    "Bottom Right Y": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Vibrance": {
+   "category": "Modules2/Color Adjustment",
+   "params": {
+    "Vibrance": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "VideoCapture": {
+   "category": "Modules/Media",
+   "params": {
+    "Device": "0",
+    "Scale": "1",
+    "Crop": "0",
+    "Flip": "0",
+    "Grayscale": "0",
+    "Deinterlace": "0",
+    "Stop All": "0",
+    "Start This": "0",
+    "Power": "1"
+   },
+   "source": "MultiVidCap.magic sample (not instantiated: it opens a camera)"
+  },
+  "VideoFile": {
+   "category": "Modules/Media",
+   "params": {
+    "File": "",
+    "Reload": "0",
+    "Scale": "1",
+    "Crop": "0",
+    "Deinterlace": "0",
+    "Speed": "1",
+    "Start Time": "0",
+    "End Time": "0",
+    "Goto Start": "0",
+    "Scene Start": "1",
+    "Looping": "1",
+    "Audio": "0",
+    "Audio Gain": "1",
+    "Power": "1"
+   }
+  },
+  "VideoFolder": {
+   "category": "Modules/Media",
+   "params": {
+    "Folder": "",
+    "Reload": "0",
+    "Cache": "0",
+    "Scale": "1",
+    "Crop": "0",
+    "Speed": "1",
+    "Cur. File": "",
+    "Loop Cur.": "0",
+    "Goto Prev": "0",
+    "Goto Next": "0",
+    "Randomize": "0",
+    "Resume": "0",
+    "Scene Start": "1",
+    "Loop Folder": "1",
+    "Power": "1"
+   }
+  },
+  "VideoStream": {
+   "category": "Modules/Media",
+   "params": {
+    "URL": "",
+    "Reload": "0",
+    "Scale": "1",
+    "Crop": "0",
+    "Pause": "0",
+    "Power": "1"
+   }
+  },
+  "Waveform": {
+   "category": "Modules/Geometry",
+   "params": {
+    "Source": "-1",
+    "Solid": "1",
+    "Line Width": "1",
+    "Circle": "0",
+    "Overwrite": "1",
+    "Fit Width": "0",
+    "Power": "1"
+   }
+  },
+  "White Point Adjust": {
+   "category": "Modules2/Color Adjustment",
+   "params": {
+    "NewWhite R": "1",
+    "NewWhite G": "1",
+    "NewWhite B": "1",
+    "NewWhite A": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "XYZoom": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "LevelX": "1",
+    "LevelY": "1",
+    "Center X": "0.5",
+    "Center Y": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Zoom": {
+   "category": "Modules2/Distortion Effect",
+   "params": {
+    "Level": "1",
+    "Center X": "0.5",
+    "Center Y": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "Zooming Feedback": {
+   "category": "Modules2/Stylize",
+   "params": {
+    "PreShift X": "0",
+    "PreShift Y": "0",
+    "FeedbackLevel": "0.9",
+    "RotateAngle": "0.5",
+    "ZoomLevel": "1.2",
+    "ZoomCenter X": "0",
+    "ZoomCenter Y": "0",
+    "FeedbackShift X": "0",
+    "FeedbackShift Y": "0",
+    "Invert": "0",
+    "BlendMode": "3",
+    "BlackThresh": "0.1",
+    "SatLevel": "1",
+    "ColorShift": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "v002 Bleach Bypass": {
+   "category": "Modules2/v002",
+   "params": {
+    "Amount": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "v002 Crosshatch": {
+   "category": "Modules2/v002",
+   "params": {
+    "Invert": "0",
+    "Separation": "0.25",
+    "Greyscale": "0.75",
+    "Thickness": "0.75",
+    "Front R": "0.5",
+    "Front G": "0",
+    "Front B": "0.25",
+    "Front A": "1",
+    "Back R": "0.2",
+    "Back G": "0.75",
+    "Back B": "0.5",
+    "Back A": "1",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "v002 Dilate": {
+   "category": "Modules2/v002",
+   "params": {
+    "Amount": "0.01",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "v002 Erode": {
+   "category": "Modules2/v002",
+   "params": {
+    "Amount": "0.01",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "v002 Light Leak": {
+   "category": "Modules2/v002",
+   "params": {
+    "Amount": "0.5",
+    "LeakLength": "0.5",
+    "Angle": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "v002 Technicolor": {
+   "category": "Modules2/v002",
+   "params": {
+    "Amount": "0.5",
+    "Style": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "v002 Vignette": {
+   "category": "Modules2/v002",
+   "params": {
+    "Vignette": "0.5",
+    "VignetteEdge": "0",
+    "VignetteMix": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "v002-CRT-Displacement": {
+   "category": "Modules2/v002",
+   "params": {
+    "Amount": "0.5",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  },
+  "v002-CRT-Mask": {
+   "category": "Modules2/v002",
+   "params": {
+    "Amount": "0.5",
+    "Style": "0",
+    "Bypass": "0",
+    "Power": "1"
+   }
+  }
+ }
+}

@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "fixed.magic exists and decodes",
+      "passed": true,
+      "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-3/eval-4-repair-hand-edit/without_skill/run-1/outputs/fixed.magic"
+    },
+    {
+      "text": "no check() errors",
+      "passed": true,
+      "evidence": "[]"
+    },
+    {
+      "text": "Globals are still Spin and Pulse",
+      "passed": true,
+      "evidence": "{'Pulse', 'Spin'}"
+    },
+    {
+      "text": "all five bar Scales link to Pulse again",
+      "passed": true,
+      "evidence": "5"
+    },
+    {
+      "text": "the Scene 1 Trails has its five inputs back",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "the typo Spinn is gone",
+      "passed": true,
+      "evidence": "['Spin*2']"
+    },
+    {
+      "text": "fixes.md names all three problems",
+      "passed": true,
+      "evidence": ""
+    }
+  ],
+  "summary": {
+    "passed": 7,
+    "failed": 0,
+    "total": 7,
+    "pass_rate": 1.0
+  }
+}

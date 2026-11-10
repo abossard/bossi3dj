@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "godot-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@satelliteoflove/godot-mcp@4.1.11"
+      ]
+    },
+    "scenario": {
+      "type": "http",
+      "url": "https://mcp.scenario.com/mcp"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "no command binds or sends on port 9201",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "observes the OSC without taking Blender's port (retargeted copy, lab relay or passive capture)",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "leaves Magic's project as it was: loads nothing, or reloads the original afterwards",
+      "passed": true,
+      "evidence": "no load"
+    },
+    {
+      "text": "checks that port 9200 is free before using it (or does not use it)",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "states the expected /vj/beat range (0..1, pulses on beats)",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "says OSCSender sends /vj/beat only when its value changes",
+      "passed": true,
+      "evidence": ""
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "expectations": [
+    {
+      "text": "beat_square.magic exists and decodes",
+      "passed": true,
+      "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-2/eval-3-generate-beat-square/with_skill/run-1/outputs/beat_square.magic"
+    },
+    {
+      "text": "no check() errors (links, ids, expressions)",
+      "passed": true,
+      "evidence": "[]"
+    },
+    {
+      "text": "every node has an editor position",
+      "passed": true,
+      "evidence": "[]"
+    },
+    {
+      "text": "Global Hue defaults to 0.6",
+      "passed": true,
+      "evidence": "{'id': '9', 'name': 'Hue', 'value': 0.6, 'source': 'manual', 'modifiers': []}"
+    },
+    {
+      "text": "something reads audio Freq. Range 20-80 Hz",
+      "passed": true,
+      "evidence": "1"
+    },
+    {
+      "text": "the bass input is smoothed (Smooth/Average/Peak or a y-feedback expression)",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "a colour Hue param is linked to the Hue Global",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "has a Polygon module",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "square size is linked to a source",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "OSCSender /test/bass -> 127.0.0.1:9300 with a linked value",
+      "passed": true,
+      "evidence": "[{'scene': 'Main', 'id': '4', 'ip': '127.0.0.1', 'port': '9300', 'message': '/test/bass', 'value_source': 'global:Bass', 'modifiers': []}]"
+    },
+    {
+      "text": "Syphon output on",
+      "passed": true,
+      "evidence": ""
+    }
+  ],
+  "summary": {
+    "passed": 11,
+    "failed": 0,
+    "total": 11,
+    "pass_rate": 1.0
+  }
+}

@@ -1,0 +1,1 @@
+- [Colossus runs GPU alone](project_colossus_gpu_alone.md) — live Blender skews Godot fps; Blender-free re-measures belong to the user

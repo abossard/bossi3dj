@@ -1,0 +1,500 @@
+{
+  "metadata": {
+    "skill_name": "magic-projects",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-11-04T11:11:22Z",
+    "evals_run": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 54.8,
+        "tokens": 74400,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "answer.md names OutShock as the Global behind /vj/shock",
+          "passed": true,
+          "evidence": "# synthwave_pyramids.magic: /vj/shock and the kick detector\n\nSource: `magicproj.py info`, `osc`, `globals` on `.claude/skills/magic-projects/evals/files/synthwave_pyramids.magic` (`check`: 0 errors).\n"
+        },
+        {
+          "text": "answer.md lists both ShockT and ShockAmp as dependencies",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "answer.md mentions the Clock dependency",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "answer.md identifies the 20-80 Hz band",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "answer.md identifies the 80-320 Hz band at half weight",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 40.8,
+        "tokens": 70719,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "synthwave_lab.magic exists and decodes",
+          "passed": true,
+          "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-1/eval-2-edit-osc-syphon-gain/with_skill/run-1/outputs/synthwave_lab.magic"
+        },
+        {
+          "text": "all 30 OSCSenders target 127.0.0.1:9200",
+          "passed": true,
+          "evidence": "[('127.0.0.1', '9200')]"
+        },
+        {
+          "text": "Syphon on, named synthwave-out, 1920x1080",
+          "passed": true,
+          "evidence": "{'videoSharing': '1', 'videoSharingWidth': '1920', 'videoSharingHeight': '1080', 'videoSharingName': 'synthwave-out'}"
+        },
+        {
+          "text": "Global Gain value is 0.7",
+          "passed": true,
+          "evidence": "0.7"
+        },
+        {
+          "text": "no other semantic change",
+          "passed": true,
+          "evidence": "[]"
+        },
+        {
+          "text": "no check() errors",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "input file unchanged",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "changes.md reports the port, Syphon and Gain changes",
+          "passed": true,
+          "evidence": "# synthwave_lab.magic changes\n\nSource: `.claude/skills/magic-projects/evals/files/synthwave_pyramids.magic` (unchanged, sha1 `c78a7d85033c2aacc8aac16deb9b0dbd8f991a19` before and after).\n\n`magicproj.p"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 11,
+        "failed": 0,
+        "total": 11,
+        "time_seconds": 74.4,
+        "tokens": 77337,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "beat_square.magic exists and decodes",
+          "passed": true,
+          "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-1/eval-3-generate-beat-square/with_skill/run-1/outputs/beat_square.magic"
+        },
+        {
+          "text": "no check() errors (links, ids, expressions)",
+          "passed": true,
+          "evidence": "[]"
+        },
+        {
+          "text": "every node has an editor position",
+          "passed": true,
+          "evidence": "[]"
+        },
+        {
+          "text": "Global Hue defaults to 0.6",
+          "passed": true,
+          "evidence": "{'id': '9', 'name': 'Hue', 'value': 0.6, 'source': 'manual', 'modifiers': []}"
+        },
+        {
+          "text": "something reads audio Freq. Range 20-80 Hz",
+          "passed": true,
+          "evidence": "1"
+        },
+        {
+          "text": "the bass input is smoothed (Smooth/Average/Peak or a y-feedback expression)",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "a colour Hue param is linked to the Hue Global",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "has a Polygon module",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "square size is linked to a source",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "OSCSender /test/bass -> 127.0.0.1:9300 with a linked value",
+          "passed": true,
+          "evidence": "[{'scene': 'Main', 'id': '4', 'ip': '127.0.0.1', 'port': '9300', 'message': '/test/bass', 'value_source': 'global:Bass', 'modifiers': [('Expression', 0.0, 'x + if(Clock < 2, 0.001*frac(Clock*13), 0)', False)]}]"
+        },
+        {
+          "text": "Syphon output on",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 4,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 68.1,
+        "tokens": 72471,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "names all five band Globals",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "says the bands become synthetic/calculated",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "mentions the Random noise modifier",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "names at least 10 controls that become timers",
+          "passed": true,
+          "evidence": "28 named"
+        },
+        {
+          "text": "says OSC targets/scenes/modules are unchanged",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 104.6,
+        "tokens": 91344,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "answer.md names OutShock as the Global behind /vj/shock",
+          "passed": true,
+          "evidence": "# synthwave_pyramids.magic: /vj/shock and the kick detector\n\nSource: decompressed project XML (3-byte header `L*h` + zlib). Global/feature mapping per `Tools/magic-blender-lab/magicproj.py` (`GLOBAL_L"
+        },
+        {
+          "text": "answer.md lists both ShockT and ShockAmp as dependencies",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "answer.md mentions the Clock dependency",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "answer.md identifies the 20-80 Hz band",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "answer.md identifies the 80-320 Hz band at half weight",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 8,
+        "failed": 0,
+        "total": 8,
+        "time_seconds": 79.9,
+        "tokens": 77749,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "synthwave_lab.magic exists and decodes",
+          "passed": true,
+          "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-1/eval-2-edit-osc-syphon-gain/without_skill/run-1/outputs/synthwave_lab.magic"
+        },
+        {
+          "text": "all 30 OSCSenders target 127.0.0.1:9200",
+          "passed": true,
+          "evidence": "[('127.0.0.1', '9200')]"
+        },
+        {
+          "text": "Syphon on, named synthwave-out, 1920x1080",
+          "passed": true,
+          "evidence": "{'videoSharing': '1', 'videoSharingWidth': '1920', 'videoSharingHeight': '1080', 'videoSharingName': 'synthwave-out'}"
+        },
+        {
+          "text": "Global Gain value is 0.7",
+          "passed": true,
+          "evidence": "0.7"
+        },
+        {
+          "text": "no other semantic change",
+          "passed": true,
+          "evidence": "[]"
+        },
+        {
+          "text": "no check() errors",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "input file unchanged",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "changes.md reports the port, Syphon and Gain changes",
+          "passed": true,
+          "evidence": "# synthwave_lab.magic vs synthwave_pyramids.magic\n\n32 XML lines changed. Same 3-byte header (`L*h`) and zlib-compressed XML. Nothing else touched.\n\n## OSC (scene \"OSC Out\")\n- All 30 `OSCSender` nodes "
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 11,
+        "failed": 0,
+        "total": 11,
+        "time_seconds": 143.8,
+        "tokens": 97542,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "beat_square.magic exists and decodes",
+          "passed": true,
+          "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-1/eval-3-generate-beat-square/without_skill/run-1/outputs/beat_square.magic"
+        },
+        {
+          "text": "no check() errors (links, ids, expressions)",
+          "passed": true,
+          "evidence": "[]"
+        },
+        {
+          "text": "every node has an editor position",
+          "passed": true,
+          "evidence": "[]"
+        },
+        {
+          "text": "Global Hue defaults to 0.6",
+          "passed": true,
+          "evidence": "{'id': '9', 'name': 'Hue', 'value': 0.6, 'source': 'manual', 'modifiers': []}"
+        },
+        {
+          "text": "something reads audio Freq. Range 20-80 Hz",
+          "passed": true,
+          "evidence": "1"
+        },
+        {
+          "text": "the bass input is smoothed (Smooth/Average/Peak or a y-feedback expression)",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "a colour Hue param is linked to the Hue Global",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "has a Polygon module",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "square size is linked to a source",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "OSCSender /test/bass -> 127.0.0.1:9300 with a linked value",
+          "passed": true,
+          "evidence": "[{'scene': 'Main', 'id': '4', 'ip': '127.0.0.1', 'port': '9300', 'message': '/test/bass', 'value_source': 'global:Bass', 'modifiers': []}]"
+        },
+        {
+          "text": "Syphon output on",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 4,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.8,
+        "passed": 4,
+        "failed": 1,
+        "total": 5,
+        "time_seconds": 107.0,
+        "tokens": 85277,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "names all five band Globals",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "says the bands become synthetic/calculated",
+          "passed": true,
+          "evidence": ""
+        },
+        {
+          "text": "mentions the Random noise modifier",
+          "passed": false,
+          "evidence": ""
+        },
+        {
+          "text": "names at least 10 controls that become timers",
+          "passed": true,
+          "evidence": "28 named"
+        },
+        {
+          "text": "says OSC targets/scenes/modules are unchanged",
+          "passed": true,
+          "evidence": ""
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 59.525,
+        "stddev": 14.9192,
+        "min": 40.8,
+        "max": 74.4
+      },
+      "tokens": {
+        "mean": 73731.75,
+        "stddev": 2834.9332,
+        "min": 70719,
+        "max": 77337
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.95,
+        "stddev": 0.1,
+        "min": 0.8,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 108.825,
+        "stddev": 26.3381,
+        "min": 79.9,
+        "max": 143.8
+      },
+      "tokens": {
+        "mean": 87978.0,
+        "stddev": 8460.258,
+        "min": 77749,
+        "max": 97542
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.05",
+      "time_seconds": "-49.3",
+      "tokens": "-14246"
+    }
+  },
+  "notes": []
+}

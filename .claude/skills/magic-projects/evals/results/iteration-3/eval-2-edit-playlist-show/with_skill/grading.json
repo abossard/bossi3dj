@@ -1,0 +1,55 @@
+{
+  "expectations": [
+    {
+      "text": "show.magic exists and decodes",
+      "passed": true,
+      "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-3/eval-2-edit-playlist-show/with_skill/run-1/outputs/show.magic"
+    },
+    {
+      "text": "every scene is in the playlist once, in order",
+      "passed": true,
+      "evidence": "['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18']"
+    },
+    {
+      "text": "every entry auto-advances after 16 s",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "every entry uses the crossfade style (1)",
+      "passed": true,
+      "evidence": "{'1'}"
+    },
+    {
+      "text": "Syphon on as magic-show at 1280x720",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "looping on",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "scenes and modules unchanged",
+      "passed": true,
+      "evidence": "[]"
+    },
+    {
+      "text": "changes.md notes the project has no audio files",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "changes.md says auto-advance is switched on in Magic (not stored in the project)",
+      "passed": true,
+      "evidence": ""
+    }
+  ],
+  "summary": {
+    "passed": 9,
+    "failed": 0,
+    "total": 9,
+    "pass_rate": 1.0
+  }
+}

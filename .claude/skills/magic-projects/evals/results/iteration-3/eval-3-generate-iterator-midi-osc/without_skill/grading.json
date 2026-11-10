@@ -1,0 +1,55 @@
+{
+  "expectations": [
+    {
+      "text": "spectrum_bars.magic exists and decodes",
+      "passed": true,
+      "evidence": "/private/tmp/claude-501/-Users-abossard-Desktop-projects-swift-vj--claude-worktrees-magic-scene-tooling-874023/e7123772-4c83-4fe3-9011-f7066e7522f5/scratchpad/magic-projects-workspace/iteration-3/eval-3-generate-iterator-midi-osc/without_skill/run-1/outputs/spectrum_bars.magic"
+    },
+    {
+      "text": "no check() errors",
+      "passed": true,
+      "evidence": "[]"
+    },
+    {
+      "text": "an Iterator with 16 iterations",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "a bar height reads Freq. Range Iterator Freqs. (feature 1, sub 6)",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "a MIDI source on channel 1",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "something reads MIDI CC 1 (feature 3, sub 1)",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "OSC input on port 8000",
+      "passed": true,
+      "evidence": ""
+    },
+    {
+      "text": "Global Speed reads osc:/speed",
+      "passed": true,
+      "evidence": "osc:/speed"
+    },
+    {
+      "text": "a rotation is linked to Speed",
+      "passed": true,
+      "evidence": "['Speed', 'Spin']"
+    }
+  ],
+  "summary": {
+    "passed": 9,
+    "failed": 0,
+    "total": 9,
+    "pass_rate": 1.0
+  }
+}
