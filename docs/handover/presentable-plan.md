@@ -74,7 +74,7 @@ Merged since: B4 and G2 (both on the wave 1 branches). Blender planet 33 of 37 c
 | Node | Worktree, branch | State |
 |---|---|---|
 | G5 Godot look round 2 (7 failing frames, Reset hitch, Shake from OSC) | `.claude/worktrees/godot-look-round2`, `godot/look-round2` | merged 2026-11-11: 19 of 21 frames pass, 2 open (Wanderer in the low hero shot) |
-| B2 Flight and Energy | `.claude/worktrees/blender-flight`, `blender/flight` | worktree ready, session not started |
-| B3 planet look round 9 | `.claude/worktrees/blender-look-round9`, `blender/look-round9` | worktree ready, session not started |
+| B2 Flight and Energy | `.claude/worktrees/blender-flight`, `blender/flight` | session started 2026-11-11, Blender-free part first |
+| B3 planet look round 9 | `.claude/worktrees/blender-look-round9`, `blender/look-round9` | session started 2026-11-11, Blender-free part first |
 
 GPU order: G5, B2 live part, B3 live part, then the fps tables on an idle machine. B2 and B3 each begin with a Blender-free part.
