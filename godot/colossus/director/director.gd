@@ -5,8 +5,21 @@ extends Camera3D
 
 const FOLLOW := 0.6
 const AIM := 0.35
-## Beyond this the volumetric haze swallows a far Colossus, so the wide shot stops reaching for it.
-const TELEPHOTO_RANGE := 450.0
+## The long walk (the Colossus is up to 1.6 km away): a shot that would show the giant a few pixels
+## tall takes a telephoto lens aimed at it. The camera stays this far behind the Wanderer (m), at
+## most: the Shrine's columns stand 11 m round its centre, and the Wanderer starts 64 m before it.
+const WIDE_BACK_MAX := 24.0
+const HERO_BACK := 24.0
+## The close grip keeps this far from the surface the Wanderer hangs on (m).
+const CLOSE_BACK := 3.0
+## Beyond this gap (m) the low hero shot goes telephoto: its own lens shows the giant under 100 px
+## (about a tenth of the frame). The over-shoulder and close-grip shots stay on the Wanderer.
+const HERO_RANGE := 200.0
+## The narrowest lens (degrees of field of view) the long walk uses, per shot, and the widest that
+## still holds the Wanderer in the low hero frame (past it the giant would be under 60 px).
+const WIDE_NARROWEST := 6.0
+const HERO_NARROWEST := 8.0
+const HERO_WIDEST_WITH_WANDERER := 14.0
 
 var wanderer: Wanderer
 var colossus: Colossus
@@ -165,8 +178,10 @@ func _place(delta: float) -> void:
 	match shot:
 		Shots.Shot.LOW_HERO:
 			_want_pos = w + side * 3.5 - dir * 2.0 + Vector3.DOWN * 0.8
-			# Up at the head when close; far off, up past the Wanderer toward the giant.
-			_want_aim = head if gap < 200.0 else w + dir * 20.0 + Vector3.UP * 4.0
+			if gap > HERO_RANGE:
+				_long_walk(w, HERO_BACK, 1.5, -0.8, HERO_NARROWEST, true)
+			else:
+				_want_aim = head
 		Shots.Shot.OVER_SHOULDER:
 			if grip and grip.normal().dot(Vector3.UP) < 0.7:
 				var climb_up := (head - grip.global_position).normalized()
@@ -184,8 +199,10 @@ func _place(delta: float) -> void:
 		Shots.Shot.CLOSE_GRIP:
 			var g := grip.global_position if grip else w + Vector3.UP * 0.6
 			var n := grip.normal() if grip else -dir
-			_want_pos = g + n * 1.6 + side * 0.8
-			_want_aim = g + Vector3.DOWN * 0.4
+			# He hangs 1.7 m below the grip and swings 0.6 m sideways in a Shake: far enough back and
+			# aimed at his body, he stays in the frame.
+			_want_pos = g + n * CLOSE_BACK + side * 0.8
+			_want_aim = w
 		Shots.Shot.AERIAL:
 			_orbit += deg_to_rad(6.0) * delta
 			_want_pos = c + Vector3(cos(_orbit) * 70.0, 60.0, sin(_orbit) * 70.0)
@@ -199,19 +216,40 @@ func _place(delta: float) -> void:
 				_want_pos = c + front * h * 2.6 + Vector3.UP * h * 0.25
 				_want_aim = body
 			else:
-				if gap > TELEPHOTO_RANGE:
-					# The long walk: the Wanderer small on the plain, the haze where the giant is.
-					_want_pos = w - dir * 9.0 + Vector3.UP * 0.6
-					_want_aim = w + dir * 60.0 + Vector3.UP * 3.0
-				else:
-					# Telephoto from behind the Wanderer: the farther the giant, the farther back
-					# and the longer the lens, so it towers over the small figure.
-					var back := clampf(gap * 0.12, 9.0, 60.0)
-					_want_pos = w - dir * back + Vector3.UP * (0.4 + back * 0.03)
-					_want_aim = c + Vector3.UP * h * 0.45
-					_want_fov = minf(_want_fov, _fit_fov(h, gap + back))
+				# Telephoto from behind the Wanderer: the farther the giant, the farther back
+				# and the longer the lens, so it towers over the small figure.
+				var back := clampf(gap * 0.12, 9.0, WIDE_BACK_MAX)
+				_want_pos = w - dir * back + Vector3.UP * (0.4 + back * 0.03)
+				_want_aim = c + Vector3.UP * h * 0.45
+				_want_fov = minf(_want_fov, fit_fov(h, gap + back, WIDE_NARROWEST))
+
+
+## The long walk as a telephoto frame: the camera `back` m behind the Wanderer, `aside` m to his
+## side and `rise` m above his eye, aimed at the middle of the Colossus. The lens fits the giant in,
+## never wider than the shot's own and never narrower than `narrowest` degrees. With `keep_wanderer`
+## it widens as far as HERO_WIDEST_WITH_WANDERER to hold him too; where the ground behind him climbs
+## (the Shrine's slope) he would not fit and the frame is the giant's alone.
+func _long_walk(
+	w: Vector3, back: float, aside: float, rise: float, narrowest: float, keep_wanderer: bool
+) -> void:
+	var c := colossus.global_position
+	var h := colossus.height_m
+	var dir := Vector3(c.x - w.x, 0.0, c.z - w.z)
+	var gap := dir.length()
+	dir = dir.normalized() if gap > 0.1 else Vector3.FORWARD
+	_want_pos = w - dir * back + dir.cross(Vector3.UP).normalized() * aside + Vector3.UP * rise
+	_want_aim = c + Vector3.UP * h * 0.45
+	var fov_giant := fit_fov(h, gap + back, narrowest)
+	if keep_wanderer:
+		var eye := maxf(_want_pos.y, float(height_at.call(_want_pos.x, _want_pos.z)) + 0.3)
+		var to_wanderer := rad_to_deg(atan2(eye - (w.y - 0.2), back))
+		var to_giant := rad_to_deg(atan2(eye - _want_aim.y, gap + back))
+		var needed := 2.0 * 1.4 * absf(to_wanderer - to_giant)
+		if needed <= HERO_WIDEST_WITH_WANDERER:
+			fov_giant = maxf(fov_giant, needed)
+	_want_fov = minf(_want_fov, fov_giant)
 
 
 ## Vertical field of view that fits a figure `size` metres tall at `distance` into the frame.
-static func _fit_fov(size: float, distance: float) -> float:
-	return clampf(rad_to_deg(2.0 * atan(size * 0.75 / maxf(distance, 1.0))), 4.0, 60.0)
+static func fit_fov(size: float, distance: float, narrowest: float) -> float:
+	return clampf(rad_to_deg(2.0 * atan(size * 0.75 / maxf(distance, 1.0))), narrowest, 60.0)

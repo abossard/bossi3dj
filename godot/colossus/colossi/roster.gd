@@ -13,6 +13,12 @@ static func size() -> int:
 	return ENTRIES.size()
 
 
+## Makes what the Colossi share and take long to make, so a Reset builds the next one in a frame.
+static func warm() -> void:
+	for entry in ENTRIES:
+		PlaceholderColossus.stone_bumps(entry["seed"])
+
+
 static func make(index: int) -> Colossus:
 	var entry: Dictionary = ENTRIES[index % ENTRIES.size()]
 	var c := PlaceholderColossus.new()

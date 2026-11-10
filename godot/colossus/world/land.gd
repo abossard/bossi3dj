@@ -19,6 +19,9 @@ const SHRINE := Vector3(14.0, 0.0, 1467.0)
 const SAND := "res://assets/terrain/gravelly_sand"
 const ROCK := "res://assets/terrain/rocky_terrain_02"
 const SAND_TINT := Color("4a4744")
+## The rock texture is dark already (mean 80, 78, 28): any tint below white sends the ground near
+## the camera to flat black in the low backlight, with no light able to lift it.
+const ROCK_TINT := Color.WHITE
 
 var terrain: Terrain3D
 
@@ -57,7 +60,7 @@ func height_at(x: float, z: float) -> float:
 
 func _assets() -> Terrain3DAssets:
 	var assets := Terrain3DAssets.new()
-	for spec: Array in [[SAND, SAND_TINT, 0.05], [ROCK, Color("6b6660"), 0.03]]:
+	for spec: Array in [[SAND, SAND_TINT, 0.05], [ROCK, ROCK_TINT, 0.03]]:
 		var t := Terrain3DTextureAsset.new()
 		t.albedo_texture = load(spec[0] + "_albedo_height.png")
 		t.normal_texture = load(spec[0] + "_normal_rough.png")

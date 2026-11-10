@@ -6,7 +6,7 @@ extends Node
 const OUTPUT_SIZE := Vector2i(1920, 1080)
 const SPAWN := Land.ARENA + Vector3(0.0, 0.0, -250.0)
 const FADE_SECONDS := 1.0
-const SHRINE_START := Vector3(0.0, 0.0, -18.0)
+const SHRINE_START := Vector3(0.0, 0.0, -64.0)
 
 @export var syphon_enabled := true
 @export var syphon_server := "COLOSSUS_OUT"
@@ -102,6 +102,7 @@ func _ready() -> void:
 	overlay.visible = false
 	add_child(overlay)
 
+	Roster.warm()
 	_start_arc()
 	director.set_phase(arc.phase)
 
