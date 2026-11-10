@@ -18,6 +18,15 @@ func _init() -> void:
 	_test_beat()
 	_test_fov()
 	_test_brain()
+	_test_vj_map()
+	_test_values_persist()
+	_test_hold_and_defaults()
+	_test_step_toward()
+	_test_go_to()
+	_test_beat_sim()
+	_test_http()
+	_test_osc_encode()
+	_test_check_verdicts()
 	print("%d passed, %d failed" % [_passed, _failed])
 	quit(1 if _failed > 0 else 0)
 
@@ -275,3 +284,281 @@ func _test_brain() -> void:
 	for c in cases:
 		var got := WandererBrain.wish(c[1], c[2], c[3], c[4], c[5], c[6], c[7])
 		_check("brain %s" % c[0], got.is_equal_approx(c[8]), true)
+
+
+func _test_vj_map() -> void:
+	var cases := [
+		# address, wire value, stored value, scene value
+		["/vj/fog_height", 0.42, 0.42, 40.0],
+		["/vj/fog_height", 0.0, 0.0, 10.0],
+		["/vj/fog_height", 1.0, 1.0, 90.0],
+		["/vj/fog_height", 0.71, 0.71, 65.0],
+		["/vj/fog_height", 25.0, 1.0, 90.0],
+		["/vj/fog_height", -3.0, 0.0, 10.0],
+		["/vj/fog", 0.0, 0.0, 0.002],
+		["/vj/fog", 0.35, 0.35, 0.003],
+		["/vj/fog", 0.675, 0.675, 0.0075],
+		["/vj/fog", 7.0, 1.0, 0.012],
+		["/vj/haze", 0.0, 0.0, 0.0],
+		["/vj/haze", 0.5, 0.5, 0.000125],
+		["/vj/haze", 1.0, 1.0, 0.00025],
+		["/vj/haze", 4.0, 1.0, 0.00025],
+		["/vj/level", 0.0, 0.0, 1.4],
+		["/vj/level", 0.5, 0.5, 1.8],
+		["/vj/level", 0.75, 0.75, 2.2],
+		["/vj/level", 1.0, 1.0, 2.6],
+		["/vj/bass", 0.0, 0.0, 0.5],
+		["/vj/bass", 0.5, 0.5, 0.75],
+		["/vj/bass", 1.0, 1.0, 1.0],
+		["/vj/intensity", 0.0, 0.0, 0.2],
+		["/vj/intensity", 0.25, 0.25, 0.6],
+		["/vj/intensity", 0.5, 0.5, 1.0],
+		["/vj/intensity", 0.75, 0.75, 1.5],
+		["/vj/intensity", 1.0, 1.0, 2.0],
+		["/vj/intensity", 3.0, 1.0, 2.0],
+		["/vj/cam", 0.0, 0.0, 1.0],
+		["/vj/cam", 2.4, 2.0, 3.0],
+		["/vj/cam", 2.6, 3.0, 4.0],
+		["/vj/cam", 4.0, 4.0, 5.0],
+		["/vj/cam", 7.0, 4.0, 5.0],
+		["/vj/cam", -1.0, 0.0, 1.0],
+		["/vj/cam_auto", 1.0, 1.0, 1.0],
+		["/vj/cam_auto", 0.0, 0.0, 0.0],
+		["/vj/cam_auto", 0.4, 0.0, 0.0],
+		["/vj/cam_auto", 0.6, 1.0, 1.0],
+		["/vj/shock", 0.5, 0.5, 0.5],
+		["/vj/shock", 9.0, 1.5, 1.5],
+	]
+	for c in cases:
+		_check("map stores %s %s" % [c[0], c[1]], VjMap.clamp_value(c[0], c[1]), c[2])
+		_check("map scene %s %s" % [c[0], c[1]], VjMap.scene_value(c[0], c[1]), c[3])
+	# The wire default gives the tuned rest look: address, wire default, scene value.
+	var rests := [
+		["/vj/level", 0.5, 1.8],
+		["/vj/bass", 0.0, 0.5],
+		["/vj/beat", 0.0, 0.0],
+		["/vj/shock", 0.0, 0.0],
+		["/vj/intensity", 0.5, 1.0],
+		["/vj/fog", 0.35, 0.003],
+		["/vj/fog_height", 0.42, 40.0],
+		["/vj/haze", 1.0, 0.00025],
+		["/vj/cam", 0.0, 1.0],
+		["/vj/cam_auto", 1.0, 1.0],
+	]
+	for r in rests:
+		_check("map wire default %s" % r[0], VjMap.rest(r[0]), r[1])
+		_check("map rest look %s" % r[0], VjMap.scene_value(r[0], VjMap.rest(r[0])), r[2])
+	_check("every address has a table row", VjMap.addresses().size(), rests.size())
+
+
+func _signals() -> VjSignals:
+	var v := VjSignals.new()
+	return v
+
+
+func _test_values_persist() -> void:
+	# A value stays until the next write, however long no packet comes.
+	var cases := [
+		["/vj/fog", 0.8, 0.8],
+		["/vj/fog_height", 0.9, 0.9],
+		["/vj/cam", 3.0, 3.0],
+		["/vj/bass", 0.9, 0.9],
+		["/vj/haze", 0.3, 0.3],
+	]
+	for c in cases:
+		var v := _signals()
+		_check("write %s taken" % c[0], v.apply(c[0], c[1], VjSignals.SOURCE_OSC), true)
+		for i in 600:
+			v._process(0.1)
+		_check("%s after 60 s without a packet" % c[0], v.value(c[0]), c[2])
+		v.free()
+	var quiet := _signals()
+	for i in 20:
+		quiet._process(0.1)
+	_check("internal beat while /vj/beat is quiet", quiet.beats >= 2, true)
+	_check("unwritten value is its rest value", quiet.value("/vj/level"), 0.5)
+	_check("unknown address is ignored", quiet.apply("/vj/hue", 0.5, VjSignals.SOURCE_OSC), false)
+	_check("unknown address is counted", quiet.ignored, 1)
+	quiet.free()
+	var live := _signals()
+	for i in 40:
+		live.apply("/vj/beat", 0.0, VjSignals.SOURCE_OSC)
+		live._process(0.1)
+	_check("no internal beat while /vj/beat is written", live.beats, 0)
+	live.free()
+
+
+func _test_hold_and_defaults() -> void:
+	# source, held, taken, value after writing 0.1 over a page value of 0.9
+	var cases := [
+		[VjSignals.SOURCE_OSC, true, false, 0.9],
+		[VjSignals.SOURCE_SIM, true, false, 0.9],
+		[VjSignals.SOURCE_PAGE, true, true, 0.1],
+		[VjSignals.SOURCE_OSC, false, true, 0.1],
+	]
+	for c in cases:
+		var v := _signals()
+		v.apply("/vj/fog", 0.9, VjSignals.SOURCE_PAGE)
+		v.set_hold("/vj/fog", c[1])
+		_check("hold %s %s taken" % [c[0], c[1]], v.apply("/vj/fog", 0.1, c[0]), c[2])
+		_check("hold %s %s value" % [c[0], c[1]], v.value("/vj/fog"), c[3])
+		v.free()
+	var v := _signals()
+	for a: String in VjMap.addresses():
+		v.apply(a, float(VjMap.ROWS[a]["hi"]), VjSignals.SOURCE_PAGE)
+	v.set_hold("/vj/fog", true)
+	v.reset_defaults()
+	var off := 0.0
+	for a: String in VjMap.addresses():
+		off = maxf(off, absf(v.value(a) - VjMap.rest(a)))
+	_check("defaults restore every rest value", off, 0.0)
+	_check("defaults release holds", v.held_addresses().size(), 0)
+	v.fire("/vj/shock", 1.0)
+	_check("fire raises the trigger", v.value("/vj/shock"), 1.0)
+	v._process(VjSignals.PULSE_SECONDS + 0.05)
+	_check("fire ends after the pulse", v.value("/vj/shock"), 0.0)
+	_check("fire counted one shock", v.shocks, 1)
+	v.free()
+
+
+func _test_step_toward() -> void:
+	var ph := Arc.Phase
+	var ev := Arc.Event
+	var cases := [
+		[ph.APPROACH, ph.APPROACH, -1],
+		[ph.APPROACH, ph.CLIMB, ev.NEXT],
+		[ph.APPROACH, ph.FALL, ev.NEXT],
+		[ph.APPROACH, ph.RESET, ev.RESET_NOW],
+		[ph.CLIMB, ph.APPROACH, ev.RESET_NOW],
+		[ph.CLIMB, ph.FALL, ev.NEXT],
+		[ph.FALL, ph.CLIMB, ev.RESET_NOW],
+		[ph.FALL, ph.APPROACH, ev.RESET_NOW],
+		[ph.FALL, ph.RESET, ev.RESET_NOW],
+		[ph.RESET, ph.APPROACH, -1],
+		[ph.RESET, ph.CLIMB, -1],
+		[ph.RESET, ph.RESET, -1],
+	]
+	for c in cases:
+		_check("step_toward %s to %s" % [c[0], c[1]], Arc.step_toward(c[0], c[1]), c[2])
+
+
+func _test_go_to() -> void:
+	var ph := Arc.Phase
+	var ev := Arc.Event
+	# start Phase, goal, events the clock or the performer sends afterwards, Phase at the end
+	var cases := [
+		["approach to fall", ph.APPROACH, ph.FALL, [], ph.FALL],
+		["approach to climb", ph.APPROACH, ph.CLIMB, [], ph.CLIMB],
+		["fall to approach waits in reset", ph.FALL, ph.APPROACH, [], ph.RESET],
+		["fall to approach", ph.FALL, ph.APPROACH, [ev.FADE_DONE], ph.APPROACH],
+		["fall to climb", ph.FALL, ph.CLIMB, [ev.FADE_DONE], ph.CLIMB],
+		["climb to reset", ph.CLIMB, ph.RESET, [], ph.RESET],
+		["performer Next ends the walk", ph.FALL, ph.CLIMB, [ev.NEXT, ev.FADE_DONE], ph.APPROACH],
+	]
+	for c in cases:
+		var arc := ArcState.new()
+		arc.phase = c[1]
+		arc.go_to(c[2])
+		for e in c[3]:
+			arc.send(e)
+		_check("go_to %s" % c[0], arc.phase, c[4])
+		arc.free()
+
+
+func _test_beat_sim() -> void:
+	# time, bpm, beat, shock every 4
+	var cases := [
+		[0.0, 120.0, 1.0, 1.0],
+		[0.05, 120.0, exp(-6.0 * 0.1), 1.0],
+		[0.25, 120.0, exp(-6.0 * 0.5), 0.0],
+		[0.5, 120.0, 1.0, 0.0],
+		[1.0, 120.0, 1.0, 0.0],
+		[2.0, 120.0, 1.0, 1.0],
+	]
+	for c in cases:
+		_check("sim beat %s" % [c.slice(0, 2)], BeatSim.beat(c[0], c[1]), c[2])
+		_check("sim shock %s" % [c.slice(0, 2)], BeatSim.shock(c[0], c[1], 4), c[3])
+	_check("sim shock never", BeatSim.shock(0.0, 120.0, 0), 0.0)
+	_check("sim bass on the kick", BeatSim.bass(0.0, 120.0), 0.9)
+	_check("sim level starts mid", BeatSim.level(0.0, 120.0), 0.55)
+
+
+func _test_http() -> void:
+	var head := "POST /api/set?x=1 HTTP/1.1\r\nHost: 127.0.0.1:9211\r\nContent-Length: 7\r\n\r\n"
+	var post := head + '{"a":1}'
+	var cases := [
+		["no blank line yet", "GET / HTTP/1.1\r\nHost: x\r\n".to_utf8_buffer(), {}],
+		["empty", PackedByteArray(), {}],
+		["body incomplete", post.substr(0, post.length() - 2).to_utf8_buffer(), {}],
+		[
+			"get",
+			"GET /api/state HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n".to_utf8_buffer(),
+			{
+				"method": "GET",
+				"path": "/api/state",
+				"headers": {"host": "127.0.0.1"},
+				"body": "",
+			},
+		],
+		[
+			"post with body and query",
+			post.to_utf8_buffer(),
+			{
+				"method": "POST",
+				"path": "/api/set",
+				"headers": {"host": "127.0.0.1:9211", "content-length": "7"},
+				"body": '{"a":1}',
+			},
+		],
+	]
+	for c in cases:
+		_check("http parse %s" % c[0], HttpLite.parse(c[1]), c[2])
+	var out := HttpLite.response(404, "text/plain", "no".to_utf8_buffer()).get_string_from_utf8()
+	_check("http status line", out.begins_with("HTTP/1.1 404 Not Found\r\n"), true)
+	_check("http length", out.contains("Content-Length: 2\r\n"), true)
+	_check("http body", out.ends_with("\r\n\r\nno"), true)
+
+
+func _test_osc_encode() -> void:
+	var cases := [["/vj/fog", 0.7], ["/vj/fog_height", 25.0], ["/vj/cam", 3.0], ["/a", -1.5]]
+	for c in cases:
+		var got := OscDecode.decode(OscDecode.encode_float(c[0], c[1]))
+		_check("osc round trip %s" % c[0], got.size() == 1 and got[0][0] == c[0], true)
+		_check("osc round trip value %s" % c[0], got[0][1][0], c[1])
+
+
+func _test_check_verdicts() -> void:
+	var e := FeatureCheck.EFFECT
+	var n := FeatureCheck.NO_EFFECT
+	var x := FeatureCheck.ERROR
+	var sweeps := [
+		["follows", [1.4, 1.8, 2.6], [1.4, 1.8, 2.6], e],
+		["within tolerance", [1.4, 1.81, 2.6], [1.4, 1.8, 2.6], e],
+		["never moved", [0.5, 0.5, 0.5], [0.0, 0.5, 1.0], n],
+		["wrong top", [0.0, 40.0, 30.0], [0.0, 40.0, 60.0], x],
+		["empty", [], [], x],
+		["length differs", [1.0], [1.0, 2.0], x],
+	]
+	for c in sweeps:
+		_check("sweep verdict %s" % c[0], FeatureCheck.sweep_verdict(c[1], c[2]), c[3])
+	var changes := [
+		["reached", 0.0, 3.0, 3.0, e],
+		["stayed", 0.0, 0.0, 3.0, n],
+		["went elsewhere", 0.0, 2.0, 3.0, x],
+	]
+	for c in changes:
+		_check("change verdict %s" % c[0], FeatureCheck.change_verdict(c[1], c[2], c[3]), c[4])
+	var counts := [["all", 4, 4, e], ["more", 5, 4, e], ["none", 0, 4, n], ["some", 2, 4, x]]
+	for c in counts:
+		_check("count verdict %s" % c[0], FeatureCheck.count_verdict(c[1], c[2]), c[3])
+	var ids := {}
+	for row: Dictionary in FeatureCheck.TABLE:
+		ids[row["id"]] = true
+	_check("check rows have unique ids", ids.size(), FeatureCheck.TABLE.size())
+	for row: Dictionary in FeatureCheck.TABLE:
+		if row.has("needs"):
+			_check(
+				"precondition %s is described" % row["needs"],
+				FeatureCheck.NEEDS.has(row["needs"]),
+				true
+			)

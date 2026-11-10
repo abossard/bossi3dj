@@ -12,6 +12,8 @@ const SHRINE_START := Vector3(0.0, 0.0, -18.0)
 @export var syphon_server := "COLOSSUS_OUT"
 ## Tests set their own port so they never receive or steal the show's OSC.
 @export var osc_port := VjSignals.PORT
+## The control page (http) and its self-check. 0 turns it off. Tests use 19211.
+@export var page_port := ControlServer.PORT
 
 var output: SubViewport
 var world: World
@@ -21,6 +23,10 @@ var director: Director
 var arc: ArcState
 var vj: VjSignals
 var overlay: DebugOverlay
+var page: ControlServer
+var syphon: Node
+## Engine frame count when the Syphon server started: the addon has no frame counter.
+var syphon_since_frame := 0
 var dust: Dust
 var wanderer_takeover := Takeover.new(4.0)
 
@@ -84,6 +90,11 @@ func _ready() -> void:
 	vj = VjSignals.new()
 	vj.port = osc_port
 	add_child(vj)
+	if page_port > 0:
+		page = ControlServer.new()
+		page.main = self
+		page.port = page_port
+		add_child(page)
 	arc = ArcState.new()
 	add_child(arc)
 	overlay = DebugOverlay.new()
@@ -107,10 +118,11 @@ func _start_syphon() -> void:
 	if not ClassDB.class_exists("SyphonOutput"):
 		push_warning("SyphonOutput not available; frames stay in the window only")
 		return
-	var s: Node = ClassDB.instantiate("SyphonOutput")
-	s.set("server_name", syphon_server)
-	s.set("texture", output.get_texture())
-	add_child(s)
+	syphon = ClassDB.instantiate("SyphonOutput")
+	syphon.set("server_name", syphon_server)
+	syphon.set("texture", output.get_texture())
+	syphon_since_frame = Engine.get_frames_drawn()
+	add_child(syphon)
 
 
 ## Bring the next Colossus from the roster and put the Wanderer at the Shrine.
@@ -165,15 +177,20 @@ func _physics_process(delta: float) -> void:
 		_autonomous()
 	colossus.look_target = wanderer.global_position
 	colossus.seek = arc.phase == Arc.Phase.CLIMB and not wanderer.on_colossus()
-	world.apply_signals(
-		vj.value("/vj/level", World.REST["/vj/level"]),
-		vj.value("/vj/fog", World.REST["/vj/fog"]),
-		vj.value("/vj/fog_height", World.REST["/vj/fog_height"]),
-		vj.value("/vj/haze", World.REST["/vj/haze"]),
-		vj.value("/vj/intensity", World.REST["/vj/intensity"])
+	world.apply_look(
+		_scene("/vj/level"),
+		_scene("/vj/fog"),
+		_scene("/vj/fog_height"),
+		_scene("/vj/haze"),
+		_scene("/vj/intensity")
 	)
-	colossus.weight = vj.value("/vj/bass", 0.5)
-	director.pin(int(round(vj.value("/vj/cam", 0.0))))
+	colossus.weight = _scene("/vj/bass")
+	director.pin(0 if _scene("/vj/cam_auto") >= 0.5 else int(_scene("/vj/cam")))
+
+
+## The scene value of an address's current contract value.
+func _scene(address: String) -> float:
+	return VjMap.scene_value(address, vj.value(address))
 
 
 func _autonomous() -> void:

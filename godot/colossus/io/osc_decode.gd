@@ -74,3 +74,22 @@ static func _read_string(p: PackedByteArray, at: int) -> Array:
 		end += 1
 	var s := p.slice(at, end).get_string_from_utf8()
 	return [s, (end + 4) & ~3]
+
+
+## One OSC message with a single float32 argument, as Magic sends it.
+static func encode_float(address: String, v: float) -> PackedByteArray:
+	var b := _pad(address.to_utf8_buffer())
+	b.append_array(_pad(",f".to_utf8_buffer()))
+	var four := PackedByteArray()
+	four.resize(4)
+	four.encode_float(0, v)
+	four.reverse()
+	b.append_array(four)
+	return b
+
+
+static func _pad(s: PackedByteArray) -> PackedByteArray:
+	s.append(0)
+	while s.size() % 4 != 0:
+		s.append(0)
+	return s
