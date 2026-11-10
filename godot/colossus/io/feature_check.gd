@@ -38,7 +38,7 @@ const TABLE := [
 	{"id": "shot_3", "kind": "shot", "address": "/vj/cam", "want": 3},
 	{"id": "shot_4", "kind": "shot", "address": "/vj/cam", "want": 4},
 	{"id": "shot_5", "kind": "shot", "address": "/vj/cam", "want": 5},
-	{"id": "shot_auto", "kind": "auto", "address": "/vj/cam"},
+	{"id": "shot_auto", "kind": "auto", "address": "/vj/cam_auto"},
 	{"id": "beat", "kind": "beat", "address": "/vj/beat"},
 	{"id": "beat_simulator", "kind": "simulator", "address": "/vj/beat"},
 	{"id": "osc_packet", "kind": "osc", "address": OSC_ADDRESS},
@@ -254,10 +254,11 @@ func _sweep(row: Dictionary) -> Dictionary:
 
 func _shot(row: Dictionary) -> Dictionary:
 	var n: int = row["want"]
-	_write("/vj/cam", 0.0)
+	_write("/vj/cam_auto", 1.0)
 	await _settle()
 	var before := int(_probe("shot"))
-	_write("/vj/cam", float(n))
+	_write("/vj/cam", float(n - 1))
+	_write("/vj/cam_auto", 0.0)
 	await _settle()
 	var after := int(_probe("shot"))
 	var verdict := change_verdict(before, after, n)
@@ -267,10 +268,11 @@ func _shot(row: Dictionary) -> Dictionary:
 
 
 func _auto(row: Dictionary) -> Dictionary:
-	_write("/vj/cam", 3.0)
+	_write("/vj/cam", 2.0)
+	_write("/vj/cam_auto", 0.0)
 	await _settle()
 	var before := int(_probe("pinned"))
-	_write("/vj/cam", 0.0)
+	_write("/vj/cam_auto", 1.0)
 	await _settle()
 	var after := int(_probe("pinned"))
 	return _result(row, change_verdict(before, after, 0), "pinned shot after auto", after, 0)

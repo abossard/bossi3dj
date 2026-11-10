@@ -16,12 +16,12 @@ Keys: N next Phase, R Reset, Q Shake, C pick the next Colossus, 1 to 5 force a s
 
 The running scene serves its own control page on `127.0.0.1:9211`, the counterpart of Blender's page on 9210 (`io/control_server.gd`, `io/control_page.html`). It is a node beside the output viewport, so nothing of it reaches the Syphon frame, and with no browser open it costs one accept check per frame.
 
-- One slider per level address (`/vj/level`, `bass`, `fog`, `fog_height`, `haze`, `intensity`) with its default and what it drives. Moving a slider writes the value and holds it, so a live OSC sender cannot fight the page; the lock gives the address back to OSC. Only the page overrides a hold, OSC and the simulator yield to it.
-- A pin per director shot and Auto, a jump to each Phase (going back is a Reset), Shake, Shake + drop and Beat triggers, a beat simulator that stands in for Magic, Defaults and Release holds.
+- One slider per level address (`/vj/level`, `bass`, `fog`, `fog_height`, `haze`, `intensity`), in wire values 0..1 like OSC, with its default and what it drives. Moving a slider writes the value and holds it, so a live OSC sender cannot fight the page; the lock gives the address back to OSC. Only the page overrides a hold, OSC and the simulator yield to it.
+- A pin per director shot (sets `/vj/cam` and `/vj/cam_auto` 0) and Auto (`/vj/cam_auto` 1), a jump to each Phase (going back is a Reset), Shake, Shake + drop and Beat triggers, a beat simulator that stands in for Magic, Defaults and Release holds.
 - Header: Phase, director shot, fps and frame time, OSC packets, Syphon server and frames, where the Wanderer is. `GET /api/state` has the same as JSON, with the current value per address and the numbers the scene acts on. `make status` shows it as `godot_scene`.
 - Self-check: "Check all" drives every control through the OSC path, reads the number the scene acts on (`Environment` fog and exposure, sun energy, Colossus weight, director shot, beat count, Shake roll, Phase) and shows effect, no effect or error per control. Values and holds are left as found and the Phase ends in Approach. `make godot-check` runs the same code headless.
 
-All values live in `io/vj_signals.gd` (one owner). OSC, the page, the simulator and the check write through `apply()`, and a value stays until the next write, as in Blender. Only `/vj/beat` keeps a fallback: an internal 90 BPM beat while it is quiet. The map from contract value to scene value (range, clamp, scaling, rest value) is one data table, `io/vj_map.gd`.
+All values live in `io/vj_signals.gd` (one owner). OSC, the page, the simulator and the check write through `apply()`, and a value stays until the next write, as in Blender. Only `/vj/beat` keeps a fallback: an internal 90 BPM beat while it is quiet. The map from wire value to scene value (range, clamp, scaling, rest value) is one data table, `io/vj_map.gd`: every continuous control is 0..1 on the wire, and the wire default lands on the tuned look.
 
 ```bash
 make godot-check

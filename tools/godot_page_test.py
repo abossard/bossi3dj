@@ -70,7 +70,7 @@ def main():
         check("GET / is the page", status == 200 and b"Colossus Control" in html and b"/api/state" in html, "%d bytes" % len(html))
         s = state()
         addresses = [c["address"] for c in s["controls"]]
-        check("state lists every address", len(addresses) == 9 and "/vj/fog_height" in addresses, str(len(addresses)))
+        check("state lists every address", len(addresses) == 10 and "/vj/fog_height" in addresses, str(len(addresses)))
         check("state has Phase, shot, fps, OSC, Syphon",
               s["phase"] == "Approach" and "shot" in s and "fps" in s and "packets" in s["osc"] and s["syphon"]["server"] == "COLOSSUS_OUT")
 
@@ -82,13 +82,13 @@ def main():
         api("POST", "/api/set", {"values": {"/vj/fog": 0.9}, "hold": True})
         time.sleep(0.5)
         s = state()
-        check("set takes effect in the scene", abs(s["probe"]["fog_density"] - 0.011) < 0.0003, str(s["probe"]["fog_density"]))
+        check("set takes effect in the scene", abs(s["probe"]["fog_density"] - 0.010615) < 0.0003, str(s["probe"]["fog_density"]))
         check("set holds the value", s["values"]["/vj/fog"]["held"] and s["values"]["/vj/fog"]["source"] == "page")
 
-        api("POST", "/api/set", {"values": {"/vj/cam": 4}, "hold": True})
+        api("POST", "/api/set", {"values": {"/vj/cam": 3, "/vj/cam_auto": 0}, "hold": True})
         time.sleep(0.5)
         check("pin changes the director shot", state()["shot"] == 4 and state()["pinned"] == 4)
-        api("POST", "/api/set", {"values": {"/vj/cam": 0}})
+        api("POST", "/api/set", {"values": {"/vj/cam_auto": 1}})
         api("POST", "/api/phase", {"phase": "Climb"})
         check("phase jump reaches Climb", wait_for(lambda: state()["phase"] == "Climb", 10, "climb"))
         shocks = state()["probe"]["shocks"]
@@ -104,7 +104,7 @@ def main():
         time.sleep(0.5)
         s = state()
         check("defaults restore values and release holds",
-              s["values"]["/vj/fog"]["value"] == 0.1 and s["osc"]["holds"] == [])
+              s["values"]["/vj/fog"]["value"] == 0.35 and s["osc"]["holds"] == [])
         api("POST", "/api/phase", {"phase": "Approach"})
         wait_for(lambda: state()["phase"] == "Approach", 20, "approach")
 

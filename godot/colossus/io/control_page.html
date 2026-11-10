@@ -65,7 +65,7 @@
 </header>
 <main>
   <section>
-    <h2>Look and weight <span class="muted">move = hold; the lock gives it back to OSC</span></h2>
+    <h2>Look and weight <span class="muted">wire values 0..1; move = hold; the lock gives it back to OSC</span></h2>
     <div id="levels"></div>
   </section>
   <section>
@@ -102,7 +102,7 @@
 <script>
 const $ = id => document.getElementById(id);
 const PHASES = ["Approach", "Climb", "Fall", "Reset"];
-const LEVEL = 0, TRIGGER = 1, SHOT = 2;   // VjMap.Kind
+const LEVEL = 0, TRIGGER = 1, SHOT = 2, TOGGLE = 3;   // VjMap.Kind
 let state = null, built = false, active = null, lastSent = 0;
 
 async function post(path, body) {
@@ -139,7 +139,14 @@ function build(s) {
   for (let n = 0; n <= 5; n++) {
     const b = document.createElement("button");
     b.dataset.shot = n; b.textContent = n ? "Pin " + n : "Auto";
-    b.addEventListener("click", () => post("/api/set", {values: {"/vj/cam": n}, hold: n > 0}));
+    b.addEventListener("click", async () => {
+      if (n === 0) {
+        await post("/api/set", {values: {"/vj/cam_auto": 1}, hold: false});
+        await post("/api/hold", {addresses: ["/vj/cam"], on: false});
+      } else {
+        await post("/api/set", {values: {"/vj/cam": n - 1, "/vj/cam_auto": 0}, hold: true});
+      }
+    });
     $("shots").appendChild(b);
   }
   $("phases").innerHTML = "";
