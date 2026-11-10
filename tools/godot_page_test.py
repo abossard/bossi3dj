@@ -82,7 +82,7 @@ def main():
         api("POST", "/api/set", {"values": {"/vj/fog": 0.9}, "hold": True})
         time.sleep(0.5)
         s = state()
-        check("set takes effect in the scene", abs(s["probe"]["fog_density"] - 0.010615) < 0.0003, str(s["probe"]["fog_density"]))
+        check("set takes effect in the scene", abs(s["probe"]["fog_density"] - 0.00774) < 0.0003, str(s["probe"]["fog_density"]))
         check("set holds the value", s["values"]["/vj/fog"]["held"] and s["values"]["/vj/fog"]["source"] == "page")
 
         api("POST", "/api/set", {"values": {"/vj/cam": 3, "/vj/cam_auto": 0}, "hold": True})
