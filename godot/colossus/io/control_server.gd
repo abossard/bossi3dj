@@ -191,6 +191,17 @@ func _post(path: String, body: Dictionary) -> PackedByteArray:
 	return HttpLite.json(200, {"ok": true})
 
 
+## Where a frame goes, in ms: script and engine time of the last frame, physics time, draw calls.
+## The viewport's own render time reads 0 on Metal (checked 2026-11-10), so it is not offered.
+func _profile() -> Dictionary:
+	return {
+		"process_ms": snappedf(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, 0.01),
+		"physics_ms":
+		snappedf(Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0, 0.01),
+		"draw_calls": int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)),
+	}
+
+
 func check_state() -> Dictionary:
 	if check == null:
 		return {"running": false, "current": "", "results": [], "summary": {}}
@@ -246,6 +257,7 @@ func state() -> Dictionary:
 		"fps": Engine.get_frames_per_second(),
 		"frame_ms": snappedf(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, 0.01),
 		"display": DisplayServer.get_name(),
+		"profile": _profile(),
 		"controls": controls,
 		"values": values,
 		"probe": probe,

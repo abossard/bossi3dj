@@ -6,7 +6,7 @@ SCENE   ?= planet
 BLEND_planet = $(SCENES)/synthwave_planet.blend
 BLEND_island = $(SCENES)/synthwave_pyramids.blend
 
-.PHONY: help status lab test magic-test osc-test blender-test osc-sync osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-import godot-lint \
+.PHONY: help status lab test magic-test osc-test blender-test osc-sync osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-import godot-lint \
         godot-open godot-kill blender-open blender-kill blender-check blender-prepare blender-rebuild blender-paths magic-build venv verify
 
 # Blender and Godot share one GPU: a live window of one refuses to start while the other runs.
@@ -32,6 +32,7 @@ help:
 	@echo "  godot-open        run the Colossus Scene in a window: OSC 9202, Syphon COLOSSUS_OUT (refuses while Blender runs)"
 	@echo "  godot-kill        end every Godot window (headless runs are left alone)"
 	@echo "  godot-capture     render one frame per Phase on Metal into OUT=<dir> (opens a window, refuses while Blender runs)"
+	@echo "  godot-look        render the look matrix on Metal into OUT=<dir>: five pinned shots, fog, fog_height and intensity ends (refuses while Blender runs)"
 	@echo "  godot-import      re-import the Godot project after adding assets or addons"
 	@echo "  godot-lint        gdlint + gdformat --check on the project's own scripts"
 	@echo "  blender-open      open SCENE=planet|island with scripts allowed, then wait until the start state holds (start_check.py; refuses a second Blender or a Godot window)"
@@ -88,6 +89,10 @@ OUT ?= /tmp/colossus-capture
 godot-capture:
 	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
 	$(GODOT) --path $(COLOSSUS) --script res://tests/capture.gd -- $(OUT)
+
+godot-look:
+	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
+	$(GODOT) --path $(COLOSSUS) --script res://tests/look.gd -- $(OUT)
 
 godot-open:
 	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
