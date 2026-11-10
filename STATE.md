@@ -1,6 +1,6 @@
 # State
 
-Updated 2026-11-10. Keep this file short and current: where each stream stands, what is open, what waits for the user. Details go to `docs/handover/`.
+Updated 2026-11-11. Keep this file short and current: where each stream stands, what is open, what waits for the user. Details go to `docs/handover/`.
 
 ## Now
 
@@ -25,9 +25,11 @@ Updated 2026-11-10. Keep this file short and current: where each stream stands, 
 
 ## Godot: Colossus Scene
 
-- Works: full Arc (Approach, Climb, Fall, Reset), 332 logic tests, OSC in on 9202, control page on 9211 with a self-check (22 of 22 headless and on Metal, 2026-11-10), values persist without packets, Syphon `COLOSSUS_OUT` (app `Godot`) at 1080p with pixel content, nothing of the page in the frame. Report: [docs/reports/godot-feature-check.md](docs/reports/godot-feature-check.md).
-- Look round 1 (`godot/colossus/docs/look-rubric.md`, 21 frames): 14 pass, 7 fail. Flat black ground in the first seconds after start or a new Colossus and at `/vj/fog_height` 0; no Colossus visible on the long walk (1.6 km away); no Wanderer in the Shake close grip. Verdicts: `docs/reports/godot-look-verdict.json`.
-- Frame time, context only (foreign load): median 60 fps at load 41 to 58, 36 to 40 at load 80 to 96; a 490 ms hitch when Fall hands over to Reset.
+- Works: full Arc (Approach, Climb, Fall, Reset), 345 logic tests, OSC in on 9202, control page on 9211 with a self-check (22 of 22 headless and on Metal), values persist without packets, Syphon `COLOSSUS_OUT` (app `Godot`) at 1080p with pixel content, nothing of the page in the frame. Report: [docs/reports/godot-feature-check.md](docs/reports/godot-feature-check.md).
+- Look round 2 (2026-11-11, same rubric): 19 of the 21 round 1 frames pass. Ground no longer flat black, the Colossus reads at 1.6 km (120 to 172 px of 1080), the Wanderer is in the close grip on 30 of 30 samples, `/vj/shock` works from real packets. Notes: [docs/handover/godot-look-round2.md](docs/handover/godot-look-round2.md).
+- Still failing: `shot-2` and `2-approach-low-hero` lose the Wanderer on the long walk (the lens that holds the giant cannot hold him).
+- Syphon publishes from frame 120 (2 s after the window opens) and the Reset holds black 2 s, because the lighting needs that long to converge.
+- Frame time, context only (foreign load): median 16.7 ms, worst frame in the Arc 48 ms, Reset hitch 167 ms down to 36 ms.
 - Open: real Colossus and Wanderer models (downloads need a login), stand-in ruins, a trustworthy fps table, pickup in Magic's SyphonClient, Scenario was never signed in.
 - godot-mcp is installed and was never used in 43 h of work.
 
@@ -47,6 +49,7 @@ Updated 2026-11-10. Keep this file short and current: where each stream stands, 
 - Start the next Flight session.
 - Keep godot-mcp, or remove the addon and autoload.
 - Sketchfab and Mixamo downloads; Scenario OAuth.
+- Godot low hero shot on the long walk: keep the giant (now), keep the Wanderer (giant under 60 px), or stop counting it as a close shot in the rubric.
 
 ## Checked after the import (2026-11-10)
 
