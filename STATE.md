@@ -31,9 +31,13 @@ Updated 2026-11-10. Keep this file short and current: where each stream stands, 
 
 - Three mismatches between the scenes (`/vj/fog_height` units, `/vj/cam` meaning, Godot's 2 s staleness against Magic's send-on-change): [osc/CONTROLS.md](osc/CONTROLS.md). No Magic project drives both scenes yet.
 
+## Decided by the user (2026-11-10)
+
+- Contract: every continuous `/vj/*` control is 0..1 on the wire, each scene scales it to its own range; the wire default gives each scene its tuned look. Indices (`/vj/cam`) stay integers, triggers keep their strength.
+- `/vj/cam` N picks each scene's Nth shot (0-based, clamped to what the scene has). New `/vj/cam_auto` (0 or 1, default 1) hands the cuts to the scene's own director: Godot follows it, Blender ignores it.
+
 ## Waiting for the user
 
-- How to resolve the contract mismatches: 0..1 everywhere with per-scene scaling, or per-scene address prefixes.
 - Eclipse in space: the moon's shadow on the Planet, or lining up per space camera.
 - Bend the straight show valley, or keep it.
 - Start the next Flight session.
