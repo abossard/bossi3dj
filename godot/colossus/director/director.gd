@@ -7,7 +7,7 @@ const FOLLOW := 0.6
 const AIM := 0.35
 ## The long walk (the Colossus is up to 1.6 km away): a shot that would show the giant a few pixels
 ## tall takes a telephoto lens aimed at it. The camera stays this far behind the Wanderer (m), at
-## most: the Shrine's columns stand 11 m round its centre, and the Wanderer starts 64 m before it.
+## most, so it stays low on the Shrine's slope.
 const WIDE_BACK_MAX := 24.0
 const HERO_BACK := 24.0
 ## The close grip keeps this far from the surface the Wanderer hangs on (m).

@@ -6,7 +6,10 @@ extends Node
 const OUTPUT_SIZE := Vector2i(1920, 1080)
 const SPAWN := Land.ARENA + Vector3(0.0, 0.0, -250.0)
 const FADE_SECONDS := 1.0
-const SHRINE_START := Vector3(0.0, 0.0, -64.0)
+## Syphon publishes from this frame on: for the first second or two the lighting is still
+## converging (tests/warmup.gd: the lower frame is dark and speckled until about frame 120).
+const SYPHON_WARMUP_FRAMES := 120
+const SHRINE_START := Vector3(0.0, 0.0, -34.0)
 
 @export var syphon_enabled := true
 @export var syphon_server := "COLOSSUS_OUT"
@@ -119,6 +122,8 @@ func _start_syphon() -> void:
 	if not ClassDB.class_exists("SyphonOutput"):
 		push_warning("SyphonOutput not available; frames stay in the window only")
 		return
+	for i in SYPHON_WARMUP_FRAMES:
+		await get_tree().process_frame
 	syphon = ClassDB.instantiate("SyphonOutput")
 	syphon.set("server_name", syphon_server)
 	syphon.set("texture", output.get_texture())

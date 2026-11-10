@@ -5,6 +5,9 @@ extends Node3D
 const SUN_ELEVATION_DEG := 4.0
 const SUN_COLOR := Color("e8c890")
 const STONE := Color("262d35")
+## The columns toward the plain (indices of the eight round the slab) are left out: the Wanderer
+## starts on that side and the camera stands behind him, in line with them.
+const GATE := [5, 6, 7]
 const FILL_ELEVATION_DEG := 30.0
 const FILL_COLOR := Color("8fa0b4")
 const FILL_ENERGY := 0.5
@@ -149,6 +152,8 @@ func _build_shrine() -> void:
 	rng.seed = 3
 	for i in 8:
 		var a := TAU * i / 8.0
+		if i in GATE:
+			continue
 		var h := rng.randf_range(10.0, 14.0) * (0.45 if i % 3 == 1 else 1.0)
 		var col := MeshInstance3D.new()
 		var cyl := CylinderMesh.new()
