@@ -66,3 +66,15 @@ What B1's table changed in the graph:
 | Godot ranges in `io/vj_map.gd` differ from `osc/contract.json` | G1 follow-up |
 
 GPU order from here: B4 (Blender), G2 (Godot live), B2 live part (Blender), B3 (Blender), then the fps tables. B2 starts with its Blender-free part in parallel with B4.
+
+## Status 2026-11-10, wave 2
+
+Merged since: B4 and G2 (both on the wave 1 branches). Blender planet 33 of 37 controls with an effect, Godot 22 of 22 on Metal, Godot look round 1: 14 pass, 7 fail.
+
+| Node | Worktree, branch | State |
+|---|---|---|
+| G5 Godot look round 2 (7 failing frames, Reset hitch, Shake from OSC) | `.claude/worktrees/godot-look-round2`, `godot/look-round2` | running in the G1 session, holds the GPU |
+| B2 Flight and Energy | `.claude/worktrees/blender-flight`, `blender/flight` | worktree ready, session not started |
+| B3 planet look round 9 | `.claude/worktrees/blender-look-round9`, `blender/look-round9` | worktree ready, session not started |
+
+GPU order: G5, B2 live part, B3 live part, then the fps tables on an idle machine. B2 and B3 each begin with a Blender-free part.
