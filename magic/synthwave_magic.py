@@ -11,11 +11,15 @@ zlib XML; a parameter links to a Global with layerID 2147483646 and
 feature=<global id>; modifier types are the index into Magic's modifier list.
 """
 import argparse
+import json
 import os
 import xml.etree.ElementTree as ET
 import zlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+# The contract (osc/contract.json) is the one source of every address, its wire range and wire default.
+with open(os.path.join(HERE, "..", "osc", "contract.json")) as _f:
+    CONTRACT = {r["address"]: r for r in json.load(_f)["controls"]}
 HEADER = b"L*h"                  # copied from master.magic; Magic does not check it
 GLOBAL_LAYER = 2147483646        # "Globals" source
 AUDIO_LAYER, OSC_LAYER = 2, 3    # Layer ids below
@@ -61,15 +65,16 @@ GLOBALS = [
     ctl("Meteor", 0.0),      # momentary pad: shooting star
     ctl("HueBase", 0.0),
     ctl("HueDrift", 0.05),   # hue walk per bar and per drop
-    ctl("CamAuto", 1.0),     # 1 = cut every 8 bars and on drops
-    ctl("CamSel", 0.0),      # manual camera, 0..1 -> CAM_0..CAM_6
+    ctl("CamAuto", 1.0),     # 1 = Magic cuts every 8 bars and on drops, and Godot's director cuts by itself; 0 = CamSel
+    ctl("CamSel", 0.0),      # manual camera, 0..1 -> shot 0..10 (a scene without that many takes its last)
+    ctl("CamCount", 1.0),    # shots the auto-cutter cycles through, 0..1 -> 1..11
     ctl("CamSpeed", 0.33),   # 0.33 -> scene default 1.0
     ctl("GridSpeed", 0.3),
     ctl("Sun", 1.0), ctl("Moon", 1.0), ctl("Pyramids", 1.0),
     ctl("Grid", 1.0), ctl("Stars", 1.0), ctl("Water", 1.0),
     ctl("MoonPhase", 1.0),   # moon on its orbit: 0 new (next to the sun), 1 full (opposite)
     ctl("Eclipse", 0.0),     # lines the orbit up: lunar at full moon, solar at new moon
-    ctl("StarSpeed", 0.0),   # x10, star drift against the sun (1 deg/s per 0.1)
+    ctl("StarSpeed", 0.0),   # star drift against the sun, 0..1 = 0..10 deg/s
     ctl("Night", 0.0),       # sun height: 0 +20 deg, 0.5 half set, 1 -18 deg (night); lowering it runs time backwards
     ctl("Nebula", 1.0),      # night 3D nebula strength
     ctl("Flamingos", 1.0),   # flock size, 0 hides them
@@ -78,8 +83,13 @@ GLOBALS = [
     ctl("FogGlow", 0.3),     # x2
     ctl("FogHue", 0.0),
     ctl("FogNoise", 0.6),
-    ctl("FogScale", 0.5),    # x520 m
+    ctl("FogScale", 0.26),   # x1000 m
     ctl("FogSpeed", 0.25),   # x40 m/s
+    ctl("Flight", 0.0),      # planet scene: 0 orbit, 0.33 approach, 0.66 skim, 1 hover
+    ctl("Boost", 0.0),       # planet scene: accelerator while skimming or hovering
+    ctl("Blend", 0.5),       # planet scene: shot change duration, 0 cuts, x2
+    ctl("CamEnergy", 0.3),   # planet scene: how hard the cameras move
+    ctl("Hit", 0.0),         # momentary pad: speed surge with a wide-angle kick
     ctl("FogBeat", 0.5),     # how much fog pulses on the beat
     ctl("Haze", 1.0),        # distance haze; 0 with Fog 0 is a fog-free view
     ctl("FxGlow", 0.0), ctl("FxTrails", 0.0), ctl("FxBlur", 0.0),
@@ -177,22 +187,26 @@ GLOBALS = [
     ("ShockAmp", "calc", 0.6, [ex("if(DropEvt > 0.5 or Shock > 0.5, 1.5, if(ShockOn > 0.5, min(1.5, 0.6 + 0.8*DropEnv), y))")]),
     ("ShockT", "calc", -1, [ex("if(ShockOn > 0.5 or DropEvt > 0.5 or Shock > 0.5, Clock, y)")]),
 
-    # Values sent to Blender (/vj/*).
+    # Values sent to the scenes (/vj/*), in wire units: 0..1 for every continuous control (osc/CONTROLS.md).
     # Level and bass relative to the track's own average, so any input level works.
-    ("OutLevel", "calc", 0, [ex("(1 - React)*0.5 + React*min(1, 0.4*Energy/max(EnergyAvg, 0.02) + 0.3*Beat)")]),
+    ("OutLevel", "calc", 0.5, [ex("(1 - React)*0.5 + React*min(1, 0.4*Energy/max(EnergyAvg, 0.02) + 0.3*Beat)")]),
     ("OutBass", "calc", 0, [ex("React*min(1, 0.35*Sub/max(SubLong, 0.03) + 0.5*Kick)")]),
     ("OutBeat", "calc", 0, [ex("React*Beat")]),
     ("OutHue", "calc", 0, [ex("frac(HueBase + HueDrift*(Bars/8 + Drops*0.25))")]),
-    ("OutIntensity", "calc", 1, [ex("Master*(1 - Blackout)*(0.85 + Auto*(0.35*DropEnv + 0.15*Build - 0.25*Breakdown))")]),
+    ("OutIntensity", "calc", 0.5, [ex("0.5*Master*(1 - Blackout)*(0.85 + Auto*(0.35*DropEnv + 0.15*Build - 0.25*Breakdown))")]),
     ("OutStrobe", "calc", 0, [ex("Master*(1 - Blackout)*min(1, max(Strobe, Auto*DropEnv*0.5)*Beat^4 + Auto*Build*Build*Snare^4*0.6)")]),
-    ("OutGridSpeed", "calc", 0.6, [ex("max(0.05, 0.15 + GridSpeed*2*(0.6 + React*(0.5*EnergyAvg + 0.8*DropEnv + 0.4*Build) - 0.4*Breakdown))")]),
-    ("OutCam", "calc", 0, [ex("if(CamAuto > 0.5, (floor(Beats/32) + Drops) % 7, floor(CamSel*6.999))")]),
-    ("OutCamSpeed", "calc", 1, [ex("max(0.05, CamSpeed*3*(0.6 + Auto*(0.5*Build + 0.8*DropEnv - 0.3*Breakdown)))")]),
+    # 0..4 cells/s on the wire as 0..1
+    ("OutGridSpeed", "calc", 0.15, [ex("min(1, max(0.0125, 0.0375 + GridSpeed*0.5*(0.6 + React*(0.5*EnergyAvg + 0.8*DropEnv + 0.4*Build) - 0.4*Breakdown)))")]),
+    # An index: shot N of the scene, 0-based. A scene with fewer shots takes its last.
+    ("OutCam", "calc", 0, [ex("if(CamAuto > 0.5, (floor(Beats/32) + Drops) % (floor(CamCount*10 + 0.001) + 1), floor(CamSel*10.999))")]),
+    ("OutCamAuto", "calc", 1, [ex("if(CamAuto > 0.5, 1, 0)")]),
+    # 0..4 on the wire as 0..1
+    ("OutCamSpeed", "calc", 0.25, [ex("min(1, max(0.0125, CamSpeed*0.75*(0.6 + Auto*(0.5*Build + 0.8*DropEnv - 0.3*Breakdown))))")]),
     ("OutSun", ("global", "Sun"), 1, [("Smooth", 0.95, "x")]),
     ("OutMoon", ("global", "Moon"), 1, [("Smooth", 0.95, "x")]),
     ("OutMoonPhase", ("global", "MoonPhase"), 1, [("Smooth", 0.95, "x")]),
     ("OutEclipse", ("global", "Eclipse"), 0, [("Smooth", 0.95, "x")]),
-    ("OutStarSpeed", ("global", "StarSpeed"), 0, [ex("x*10"), ("Smooth", 0.95, "x")]),
+    ("OutStarSpeed", ("global", "StarSpeed"), 0, [("Smooth", 0.95, "x")]),
     ("OutPyramids", ("global", "Pyramids"), 1, [("Smooth", 0.95, "x")]),
     ("OutGrid", ("global", "Grid"), 1, [("Smooth", 0.95, "x")]),
     ("OutStars", ("global", "Stars"), 1, [("Smooth", 0.95, "x")]),
@@ -202,16 +216,22 @@ GLOBALS = [
     ("OutFlamingos", ("global", "Flamingos"), 1, [("Smooth", 0.95, "x")]),
     ("OutHaze", ("global", "Haze"), 1, [("Smooth", 0.95, "x")]),
     ("OutFog", "calc", 0.35, [ex("max(Fog, min(0.6, Fog + Auto*Breakdown*0.3))"), ("Smooth", 0.95, "x")]),
-    ("OutFogHeight", ("global", "FogHeight"), 25, [ex("x*60"), ("Smooth", 0.95, "x")]),
-    ("OutFogGlow", "calc", 0.6, [ex("min(2, FogGlow*2*(1 + Auto*0.5*DropEnv))")]),
+    ("OutFogHeight", ("global", "FogHeight"), 0.42, [("Smooth", 0.95, "x")]),
+    ("OutFogGlow", "calc", 0.3, [ex("min(1, FogGlow*(1 + Auto*0.5*DropEnv))")]),
     ("OutFogHue", ("global", "FogHue"), 0, [("Smooth", 0.95, "x")]),
     ("OutFogNoise", ("global", "FogNoise"), 0.6, [("Smooth", 0.95, "x")]),
-    ("OutFogScale", ("global", "FogScale"), 260, [ex("x*520"), ("Smooth", 0.95, "x")]),
-    ("OutFogSpeed", ("global", "FogSpeed"), 10, [ex("x*40"), ("Smooth", 0.95, "x")]),
+    ("OutFogScale", ("global", "FogScale"), 0.26, [("Smooth", 0.95, "x")]),
+    ("OutFogSpeed", ("global", "FogSpeed"), 0.25, [("Smooth", 0.95, "x")]),
     ("OutFogBeat", ("global", "FogBeat"), 0.5, [("Smooth", 0.95, "x")]),
     # A 50 ms pulse at the wave's strength, so every trigger is a new rising edge.
     ("OutShock", "calc", 0, [ex("if(Clock - ShockT < 0.05 and ShockT > 0, ShockAmp, 0)")]),
     ("OutMeteor", "calc", 0, [ex("if(Meteor > 0.5, 1, 0)")]),
+    ("OutHit", "calc", 0, [ex("if(Hit > 0.5, 1, 0)")]),
+    # Planet scene controls that are plain faders here; the scene eases them itself.
+    ("OutFlight", ("global", "Flight"), 0, []),
+    ("OutBoost", ("global", "Boost"), 0, []),
+    ("OutBlend", ("global", "Blend"), 0.5, []),
+    ("OutEnergy", ("global", "CamEnergy"), 0.3, []),
 
     # Magic-side effect amounts: manual faders only, so Magic adds nothing over Blender's frame by default.
     ("GlowAmt", "calc", 0, [ex("FxGlow")]),
@@ -220,11 +240,11 @@ GLOBALS = [
     ("ChromaAmt", "calc", 0, [ex("FxChroma")]),
 ]
 
-# Every address synthwave_runtime.py reads, in its DEFAULTS order.
+# One sender per contract row: (address, Global). osc/contract.json holds the address list; a test checks both ways.
 OSC_OUT = [
     ("/vj/level", "OutLevel"), ("/vj/bass", "OutBass"), ("/vj/beat", "OutBeat"),
     ("/vj/hue", "OutHue"), ("/vj/intensity", "OutIntensity"), ("/vj/strobe", "OutStrobe"),
-    ("/vj/grid_speed", "OutGridSpeed"), ("/vj/cam", "OutCam"), ("/vj/cam_speed", "OutCamSpeed"),
+    ("/vj/grid_speed", "OutGridSpeed"), ("/vj/cam", "OutCam"), ("/vj/cam_auto", "OutCamAuto"), ("/vj/cam_speed", "OutCamSpeed"),
     ("/vj/sun", "OutSun"), ("/vj/moon", "OutMoon"), ("/vj/moon_phase", "OutMoonPhase"), ("/vj/pyramids", "OutPyramids"),
     ("/vj/grid", "OutGrid"), ("/vj/stars", "OutStars"), ("/vj/water", "OutWater"),
     ("/vj/night", "OutNight"), ("/vj/shock", "OutShock"), ("/vj/nebula", "OutNebula"),
@@ -233,19 +253,12 @@ OSC_OUT = [
     ("/vj/fog_speed", "OutFogSpeed"), ("/vj/fog_beat", "OutFogBeat"),
     ("/vj/meteor", "OutMeteor"), ("/vj/flamingos", "OutFlamingos"), ("/vj/haze", "OutHaze"),
     ("/vj/eclipse", "OutEclipse"), ("/vj/star_speed", "OutStarSpeed"),
+    ("/vj/flight", "OutFlight"), ("/vj/boost", "OutBoost"), ("/vj/blend", "OutBlend"), ("/vj/energy", "OutEnergy"),
+    ("/vj/hit", "OutHit"),
 ]
 
-# Readout rows: (top value, display step, scene default); the rest are 0..1
-# in steps of 0.01 with the default below.
-READOUT = {
-    "/vj/level": (1, 0.01, 0.5), "/vj/intensity": (2, 0.01, 1), "/vj/grid_speed": (8, 0.05, 0.6),
-    "/vj/cam": (6, 1, 0), "/vj/shock": (1.5, 0.01, 0), "/vj/cam_speed": (4, 0.05, 1), "/vj/fog": (1, 0.01, 0.35),
-    "/vj/fog_height": (60, 1, 25), "/vj/fog_glow": (2, 0.01, 0.6), "/vj/fog_noise": (1, 0.01, 0.6),
-    "/vj/fog_scale": (520, 5, 260), "/vj/fog_speed": (40, 0.5, 10), "/vj/fog_beat": (1, 0.01, 0.5),
-    "/vj/star_speed": (10, 0.1, 0),
-}
-DEFAULT_ONE = {"/vj/sun", "/vj/moon", "/vj/moon_phase", "/vj/pyramids", "/vj/grid", "/vj/stars", "/vj/water", "/vj/nebula",
-               "/vj/flamingos", "/vj/haze"}
+# Readout rows: (top value, display step, wire default), all from the contract.
+READOUT = {a: (r["max"], 1 if r["kind"] == "int" else 0.01, r["default"]) for a, r in CONTRACT.items()}
 
 # --synthetic: a test build that needs no audio or controller. A 24-bar
 # loop at 128 BPM (8 full, 4 breakdown, 4 build with a snare roll, 8 drop)
@@ -395,9 +408,11 @@ def chain(*nodes):
     return nodes[-1]
 
 
-def build(port, ip, syphon, globals_=GLOBALS, captions=None, audio=None, trails_fx=False):
+def build(port, ip, syphon, globals_=GLOBALS, captions=None, audio=None, trails_fx=False, syphon2=None, mix="SceneMix"):
     """captions: (lines, global) for a timed text line in the Readout scene;
-    audio: an audio file Magic plays in a loop and analyses instead of BlackHole."""
+    audio: an audio file Magic plays in a loop and analyses instead of BlackHole;
+    syphon2: a second SyphonClient server; the Program scene then crossfades the two with a Mix module
+    whose Amount is the Global `mix` (0 = syphon only, 1 = syphon2 only), which globals_ must hold."""
     p = Project()
     globals_el = ET.Element("Globals")
     for name, *_ in globals_:
@@ -411,8 +426,14 @@ def build(port, ip, syphon, globals_=GLOBALS, captions=None, audio=None, trails_
     master, program, oscout, monitor, readout = (p.add_scene(n) for n in ("Master", "Program", "OSC Out", "Monitor", "Readout"))
     off = "if(x < 0.01, 1, 0)"   # bypass while an amount is zero
 
-    # Program: Blender frame through bypassable effects.
+    # Program: the scene frame(s) through bypassable effects.
     syphon_in = p.node("SyphonClient", [p.iv("Server", syphon)])
+    sources = [syphon_in]
+    if syphon2:
+        syphon_in2 = p.node("SyphonClient", [p.iv("Server", syphon2)])
+        crossfade = p.node("Mix", [p.link("Amount", 0.0, mix)], children=[syphon_in, syphon_in2])
+        sources = [syphon_in, syphon_in2, crossfade]
+        syphon_in = crossfade
     bloom = p.node("Bloom", [p.iv("BlurAmount", 12.0), p.link("Intensity", 1.0, "GlowAmt", "x*(0.6 + 0.8*Kick)")],
                    bypass=("GlowAmt", off))
     chroma = p.node("Chroma Zoom", [p.iv("Master_zoom", 1), p.link("Red_zoom", 1, "ChromaAmt", "1 - x*(0.02 + 0.06*Kick)"),
@@ -432,7 +453,11 @@ def build(port, ip, syphon, globals_=GLOBALS, captions=None, audio=None, trails_
                    bypass=("FxShake", off))
     fx = [n for n in (syphon_in, bloom, chroma, radial, trails, kaleido, shake) if n is not None]
     chain(*fx)
-    p.fill_scene(program, [shake], fx, {n.get("id"): (15 + i * 200, 15) for i, n in enumerate(fx)})
+    shift = 200 if syphon2 else 0   # two sources stand in a column in front of the Mix
+    pos = {n.get("id"): (15 + shift + i * 200, 15) for i, n in enumerate(fx)}
+    for i, n in enumerate(sources[:-1]):
+        pos[n.get("id")] = (15, 15 + i * 160)
+    p.fill_scene(program, [shake], sources[:-1] + fx, pos)
 
     # OSC Out: one OSCSender per /vj/* address, drawn by the Master scene.
     # OSCSender only sends on change, so a value that starts at its final
@@ -440,7 +465,7 @@ def build(port, ip, syphon, globals_=GLOBALS, captions=None, audio=None, trails_
     # toward the middle of its range. Each value is clamped to the range
     # Blender takes, so a Global dragged past 1 in Magic cannot overdrive it.
     def out(addr):
-        top = READOUT.get(addr, (1,))[0]
+        top = READOUT[addr][0]
         jitter = "if(Clock < 2, if(x > %g, -1, 1)*0.001*frac(Clock*13), 0)" % (top / 2)
         return [ex("min(%g, max(0, x + %s))" % (top, jitter))]
     senders = [p.node("OSCSender", [p.iv("IP Addr.", ip), p.iv("Port", port), p.iv("Message", addr),
@@ -469,7 +494,7 @@ def build(port, ip, syphon, globals_=GLOBALS, captions=None, audio=None, trails_
     # it differs from the scene default. Text cannot print a number, so each
     # row holds every displayable value as a line and Line # picks one.
     rd_nodes, rd_roots, pos = [], [], {}
-    rows = [(addr, g, READOUT.get(addr, (1, 0.01, 1 if addr in DEFAULT_ONE else 0))) for addr, g in OSC_OUT]
+    rows = [(addr, g, READOUT[addr]) for addr, g in OSC_OUT]
     gap = min(0.062, 1.8 / (len(rows) - 1))  # every row between y 0.9 and -0.9
     for i, (addr, g, (top, step, default)) in enumerate(rows):
         digits = len(("%g" % step).partition(".")[2])

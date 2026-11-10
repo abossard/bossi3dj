@@ -39,6 +39,8 @@
   label.sw { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
   .muted { color: var(--dim); }
   .slider { display: grid; grid-template-columns: 160px 1fr 70px 24px; gap: 8px; align-items: center; margin: 4px 0; font-family: var(--mono); font-size: 12px; }
+  #contract { max-height: 420px; overflow: auto; padding-right: 6px; }
+  .slider.moved > span:first-child { color: var(--warn); }
 </style>
 </head>
 <body>
@@ -71,7 +73,9 @@
     <h2>Send a message to Blender</h2>
     <div class="row"><input class="med" id="s-addr" value="/vj/level" placeholder="/address"><input id="s-args" value="0.5" placeholder="args: 0.5 3i text" style="flex:1"><button class="primary" id="s-send">send</button></div>
     <div class="muted">numbers → float, <code>3i</code> → int32, anything else → string. Sent to the Blender and Godot targets, bypassing the relay.</div>
-    <h2 style="margin-top:12px">Sliders (hand-driven values)</h2>
+    <h2 style="margin-top:12px">Sliders (hand-driven values) <span><button id="sl-reset" title="send every wire default">all to default</button></span></h2>
+    <div class="muted">One slider per row of the contract, in wire units (0..1, an integer for an index, a trigger's strength), starting at the wire default. A yellow name has moved off its default.</div>
+    <div id="contract"></div>
     <div id="sliders"></div>
     <div class="row"><input class="med" id="sl-addr" value="/vj/hue" placeholder="/address"><input class="short" id="sl-min" value="0"><input class="short" id="sl-max" value="1"><button id="sl-add">add slider</button></div>
   </section>
@@ -80,7 +84,7 @@
     <h2>Generators (stand in for Magic)</h2>
     <table><thead><tr><th>address</th><th>wave</th><th class="num">freq Hz</th><th class="num">rate Hz</th><th class="num">min</th><th class="num">max</th><th class="num">sent</th><th></th></tr></thead><tbody id="gens"></tbody></table>
     <div class="row" style="margin-top:6px">
-      <input class="med" id="g-addr" value="/vj/level" placeholder="/address">
+      <input class="med" id="g-addr" value="/vj/level" placeholder="/address" list="addresses"><datalist id="addresses"></datalist>
       <select id="g-wave"><option>sine</option><option>beat</option><option>square</option><option>ramp</option><option>noise</option></select>
       <input class="short" id="g-freq" value="2" title="waveform frequency Hz">
       <input class="short" id="g-rate" value="60" title="send rate Hz">
@@ -231,6 +235,42 @@ $('gens').onclick = e => {
   else post('/api/generators', {id: b.dataset.g, enabled: b.dataset.en === '1', ...gensById()[b.dataset.g]});
 };
 function gensById() { const m = {}; lastGens.forEach(g => m[g.id] = g); return m; }
+
+// The contract rows (osc/contract.json, served by lab.py): sliders, generator ranges and defaults all come from here.
+let contract = [];
+const SEND_GAP = 16;
+function send(address, v) { return post('/api/send', {address, args: [{t: 'f', v}]}); }
+function contractRow(r) {
+  const row = document.createElement('div'); row.className = 'slider'; row.dataset.address = r.address;
+  const step = r.kind === 'int' ? 1 : (r.max - r.min) / 1000, trig = r.kind === 'trigger';
+  const start = trig ? Math.min(1, r.max) : r.default;
+  row.innerHTML = `<span title="${r.kind}, wire ${r.min}..${r.max}, default ${r.default}">${r.address}</span><input type="range" min="${r.min}" max="${r.max}" step="${step}" value="${start}"><span class="num">${fmt(start)}</span><button title="${trig ? 'fire at this strength' : 'back to the default'}">${trig ? '▶' : '↺'}</button>`;
+  const range = row.children[1], out = row.children[2]; let last = 0;
+  const moved = () => row.classList.toggle('moved', !trig && parseFloat(range.value) !== r.default);
+  range.oninput = () => {
+    out.textContent = fmt(parseFloat(range.value)); moved();
+    if (trig) return;
+    const now = performance.now(); if (now - last < SEND_GAP) return; last = now; send(r.address, parseFloat(range.value));
+  };
+  range.onchange = () => { if (!trig) send(r.address, parseFloat(range.value)); };
+  row.children[3].onclick = () => {
+    if (trig) { send(r.address, parseFloat(range.value)); setTimeout(() => send(r.address, 0), 100); return; }
+    range.value = r.default; out.textContent = fmt(r.default); moved(); send(r.address, r.default);
+  };
+  return row;
+}
+fetch('/api/contract').then(r => r.json()).then(rows => {
+  contract = rows;
+  $('contract').replaceChildren(...rows.map(contractRow));
+  $('addresses').replaceChildren(...rows.map(r => Object.assign(document.createElement('option'), {value: r.address})));
+});
+$('sl-reset').onclick = () => document.querySelectorAll('#contract .slider').forEach(row => {
+  if (row.children[3].title === 'back to the default') row.children[3].click();
+});
+$('g-addr').onchange = () => {
+  const r = contract.find(c => c.address === $('g-addr').value);
+  if (r) { $('g-min').value = r.min; $('g-max').value = r.kind === 'trigger' ? Math.min(1, r.max) : r.max; }
+};
 
 $('sl-add').onclick = () => {
   const addr = $('sl-addr').value, lo = parseFloat($('sl-min').value), hi = parseFloat($('sl-max').value);

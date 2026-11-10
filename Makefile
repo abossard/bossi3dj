@@ -6,7 +6,7 @@ SCENE   ?= planet
 BLEND_planet = $(SCENES)/synthwave_planet.blend
 BLEND_island = $(SCENES)/synthwave_pyramids.blend
 
-.PHONY: help status lab test magic-test godot-test godot-smoke godot-capture godot-import godot-lint \
+.PHONY: help status lab test magic-test osc-test blender-test osc-sync osc-sweep godot-test godot-smoke godot-capture godot-import godot-lint \
         godot-open godot-kill blender-open blender-kill blender-rebuild blender-paths magic-build venv verify
 
 # Blender and Godot share one GPU: a live window of one refuses to start while the other runs.
@@ -18,9 +18,13 @@ help:
 	@echo ""
 	@echo "  status            what runs now: Blender, bridge, Syphon, Godot, Magic, relay, lock, load"
 	@echo "  lab               OSC relay and debug page: Magic udp 9200 -> Blender 9201 + Godot 9202, http 8765"
-	@echo "  test              magic-test + godot-test (no GUI, no GPU)"
-	@echo "  magic-test        Magic project tooling unit tests"
-	@echo "  magic-build       regenerate magic/projects/*.magic from the generators"
+	@echo "  test              magic-test + osc-test + blender-test + godot-test (no GUI, no GPU)"
+	@echo "  magic-test        Magic project tooling and generator unit tests"
+	@echo "  osc-test          contract table, CONTROLS.md and sweep tests"
+	@echo "  blender-test      the bridge's wire-to-scene scaling, without Blender"
+	@echo "  magic-build       regenerate magic/projects/*.magic from the generators (synthwave_pyramids for Blender, show for both scenes)"
+	@echo "  osc-sync          rewrite the CONTROLS.md table and the bridge's SCALES block from osc/contract.json"
+	@echo "  osc-sweep         walk every /vj/* address through min, default, max (ARGS=\"--target godot --seconds 2\", ARGS=--dry-run)"
 	@echo "  godot-test        Colossus logic tests, headless"
 	@echo "  godot-smoke       one full Colossus Arc, headless, own OSC port and Syphon name"
 	@echo "  godot-open        run the Colossus Scene in a window: OSC 9202, Syphon COLOSSUS_OUT (refuses while Blender runs)"
@@ -41,13 +45,26 @@ status:
 lab:
 	@python3 osc/lab.py
 
-test: magic-test godot-test
+test: magic-test osc-test blender-test godot-test
 
 magic-test:
 	python3 -m unittest discover magic/tests
 
+osc-test:
+	python3 -m unittest discover osc/tests
+
+blender-test:
+	python3 -m unittest discover blender/tests
+
+osc-sync:
+	python3 osc/contract.py sync
+
+osc-sweep:
+	python3 osc/sweep.py $(ARGS)
+
 magic-build:
 	python3 magic/synthwave_magic.py
+	python3 magic/show_magic.py
 	python3 magic/edm_analysis_magic.py
 
 godot-test:

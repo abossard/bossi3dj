@@ -5,11 +5,15 @@ Run it inside Blender (Text Editor > Run Script, or
 
 - listens for OSC on UDP 127.0.0.1:9201 without threads: a non-blocking
   socket drained from one bpy.app.timers callback;
+- takes the contract's wire values (osc/CONTROLS.md: continuous controls 0..1,
+  indices integers, triggers keep their strength), scales them to the scene
+  units of the property with SCALES, and ignores addresses that are not rows;
 - writes the first numeric argument of every message to a custom property
   on the scene: /vj/level -> scene["vj_level"]. Drivers read it as
   ["vj_level"] (Simple Expression, no Python needed);
 - optionally routes addresses to RNA paths through MAPPING below;
-- switches scene.camera on /vj/cam N to the camera named CAM_N;
+- switches scene.camera on /vj/cam N to the camera named CAM_N, or to the
+  last camera below N when the scene has fewer;
 - after each batch calls scene.update_tag() and redraws 3D views, which
   custom-property writes from Python otherwise skip;
 - answers /lab/ping with /lab/pong so the lab page can show round-trip
@@ -21,7 +25,9 @@ Run it inside Blender (Text Editor > Run Script, or
   at least one frame change: a pulse that rises and falls within one tick or
   one frame (a 50 ms pulse at 15 fps) is otherwise never seen by the runtime.
 
-Re-running the script replaces the previous instance.
+Re-running the script replaces the previous instance. The scaling functions
+(scale_wire, wire_to_scene, camera_index) need no bpy and are unit tested in
+blender/tests/test_bridge_scaling.py.
 """
 import socket
 import struct
@@ -29,7 +35,10 @@ import sys
 import time
 from collections import deque
 
-import bpy
+try:
+    import bpy
+except ImportError:      # the tests import this file outside Blender
+    bpy = None
 
 HOST, PORT = "127.0.0.1", 9201
 TICK = 0.0            # timer interval; 0.0 = every main-loop pass (~100-170 Hz measured on 5.2)
@@ -48,6 +57,50 @@ MAPPING = {
 # (drivers cannot set scene.camera).
 CAMERA_ADDRESS = "/vj/cam"
 CAMERA_PREFIX = "CAM_"
+
+# address -> (kind, wire min, wire max, scene min, scene max) for the rows Blender uses.
+# Written from osc/contract.json, so the three copies of the contract cannot drift.
+# --- contract:begin (generated from osc/contract.json by `python3 osc/contract.py sync`, do not edit) ---
+SCALES = {
+    '/vj/level': ('float', 0, 1, 0, 1),
+    '/vj/bass': ('float', 0, 1, 0, 1),
+    '/vj/beat': ('float', 0, 1, 0, 1),
+    '/vj/hue': ('float', 0, 1, 0, 1),
+    '/vj/intensity': ('float', 0, 1, 0, 2),
+    '/vj/strobe': ('float', 0, 1, 0, 1),
+    '/vj/grid_speed': ('float', 0, 1, 0, 4),
+    '/vj/cam': ('int', 0, 10, None, None),
+    '/vj/cam_speed': ('float', 0, 1, 0, 4),
+    '/vj/sun': ('float', 0, 1, 0, 1),
+    '/vj/moon': ('float', 0, 1, 0, 1),
+    '/vj/moon_phase': ('float', 0, 1, 0, 1),
+    '/vj/pyramids': ('float', 0, 1, 0, 1),
+    '/vj/grid': ('float', 0, 1, 0, 1),
+    '/vj/stars': ('float', 0, 1, 0, 1),
+    '/vj/water': ('float', 0, 1, 0, 1),
+    '/vj/night': ('float', 0, 1, 0, 1),
+    '/vj/nebula': ('float', 0, 1, 0, 1),
+    '/vj/shock': ('trigger', 0, 1.5, None, None),
+    '/vj/meteor': ('trigger', 0, 1, None, None),
+    '/vj/flamingos': ('float', 0, 1, 0, 1),
+    '/vj/fog': ('float', 0, 1, 0, 1),
+    '/vj/fog_height': ('float', 0, 1, 0, 60),
+    '/vj/fog_glow': ('float', 0, 1, 0, 2),
+    '/vj/fog_hue': ('float', 0, 1, 0, 1),
+    '/vj/fog_noise': ('float', 0, 1, 0, 1),
+    '/vj/fog_scale': ('float', 0, 1, 0, 1000),
+    '/vj/fog_speed': ('float', 0, 1, 0, 40),
+    '/vj/fog_beat': ('float', 0, 1, 0, 1),
+    '/vj/haze': ('float', 0, 1, 0, 1),
+    '/vj/eclipse': ('float', 0, 1, 0, 1),
+    '/vj/star_speed': ('float', 0, 1, 0, 10),
+    '/vj/flight': ('float', 0, 1, 0, 1),
+    '/vj/boost': ('float', 0, 1, 0, 1),
+    '/vj/blend': ('float', 0, 1, 0, 2),
+    '/vj/energy': ('float', 0, 1, 0, 1),
+    '/vj/hit': ('trigger', 0, 1, None, None),
+}
+# --- contract:end ---
 
 LOG_SIZE = 300       # recent messages kept for debug pages
 
@@ -120,6 +173,38 @@ def prop_name(address):
     return address.strip("/").replace("/", "_")
 
 
+def scale_wire(address, value):
+    """The scene value for a wire value, or None when the address is not a row Blender uses.
+    Floats are clamped to the wire range and scaled linearly, an index is rounded inside its
+    range, a trigger passes through with its strength."""
+    row = SCALES.get(address)
+    if row is None:
+        return None
+    kind, wmin, wmax, smin, smax = row
+    if kind == "trigger":
+        return float(value)
+    v = min(max(float(value), wmin), wmax)
+    if kind == "int":
+        return float(int(round(v)))
+    return smin + (v - wmin) / (wmax - wmin) * (smax - smin)
+
+
+def wire_to_scene(address, args):
+    """The message arguments with the first numeric one scaled to scene units, or None to ignore the message."""
+    v = next((a for a in args if isinstance(a, (int, float)) and not isinstance(a, bool)), None)
+    scaled = None if v is None else scale_wire(address, v)
+    return None if scaled is None else [scaled]
+
+
+def camera_index(n, available):
+    """The camera a cut to N takes: N when the scene has it, else the highest one below it, else the lowest."""
+    available = sorted(available)
+    if not available:
+        return None
+    below = [i for i in available if i <= n]
+    return below[-1] if below else available[0]
+
+
 def high(args):
     v = next((a for a in args if isinstance(a, (int, float)) and not isinstance(a, bool)), 0.0)
     return v >= 0.5
@@ -135,6 +220,8 @@ class Bridge:
         self.applied = 0
         self.dropped = 0
         self.errors = 0
+        self.ignored = 0          # messages whose address is not a contract row Blender uses
+        self.limits = {}          # property name -> (min, max) from its UI data
         self.latest = {}          # address -> args, latest wins within a tick
         self.ticks = 0
         self.tick_window = []     # tick timestamps of the last second
@@ -174,7 +261,13 @@ class Bridge:
                 self.record(now, src, addr, args)
                 if addr == "/lab/ping":
                     pings.append((src, args))
-                elif prop_name(addr) in self.hold:
+                    continue
+                args = wire_to_scene(addr, args)
+                if args is None:
+                    self.ignored += 1
+                    continue
+                args = self.fit(addr, args)
+                if prop_name(addr) in self.hold:
                     self.held += 1
                 elif addr in self.latest and self.is_trigger(prop_name(addr)) and high(self.latest[addr]) and not high(args):
                     self.pending[addr] = (args, "osc")     # a whole pulse within one tick: the fall waits for a frame
@@ -190,6 +283,30 @@ class Bridge:
         for src, args in pings:
             self.pong(src, args)
         return TICK
+
+    def fit(self, addr, args):
+        """Keeps a scaled float inside the property's own min and max, which can be narrower than the contract's range."""
+        k = prop_name(addr)
+        if SCALES[addr][0] != "float":
+            return args
+        lim = self.limits.get(k)
+        if lim is None:
+            try:
+                ui = bpy.context.scene.id_properties_ui(k).as_dict()
+            except (KeyError, TypeError):
+                return args              # not a property yet: ask again once it exists
+            lim = self.limits[k] = (ui.get("min"), ui.get("max"))
+        lo, hi = lim
+        v = args[0]
+        if lo is not None:
+            v = max(v, lo)
+        if hi is not None:
+            v = min(v, hi)
+        return [v]
+
+    def camera_indices(self):
+        return [int(o.name[len(CAMERA_PREFIX):]) for o in bpy.data.objects
+                if o.type == "CAMERA" and o.name.startswith(CAMERA_PREFIX) and o.name[len(CAMERA_PREFIX):].isdigit()]
 
     def record(self, now, src, addr, args):
         st = self.stats.get(addr)
@@ -238,8 +355,9 @@ class Bridge:
             self.source[prop_name(addr)] = source
             self.applied += 1
             if addr == CAMERA_ADDRESS:
-                cam = bpy.data.objects.get("%s%d" % (CAMERA_PREFIX, int(round(v))))
-                if cam is not None and cam.type == "CAMERA" and scene.camera != cam:
+                n = camera_index(int(round(v)), self.camera_indices())
+                cam = None if n is None else bpy.data.objects.get("%s%d" % (CAMERA_PREFIX, n))
+                if cam is not None and scene.camera != cam:
                     scene.camera = cam
             route = MAPPING.get(addr)
             if route:
