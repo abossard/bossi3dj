@@ -152,7 +152,7 @@ def main():
     controls = state["controls"]
     scene = state["scene"]
     print("scene %s, camera %s, %d controls, %.1f fps" % (scene, state["camera"], len(controls), state["fps"]))
-    out_path = args.out or os.path.join(ROOT, "blender", "review", "out", "feature_check_%s.json" % scene)
+    out_path = os.path.abspath(args.out) if args.out else os.path.join(ROOT, "blender", "review", "out", "feature_check_%s.json" % scene)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     report = {"scene": scene, "time": time.strftime("%Y-%m-%d %H:%M:%S"), "controls": len(controls)}
 

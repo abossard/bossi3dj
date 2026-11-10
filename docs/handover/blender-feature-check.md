@@ -31,4 +31,9 @@ python3 blender/review/feature_check_table.py blender/review/out/feature_check_S
 
 ## Open
 
-See the report.
+- Bugs 1 to 4 of the report have owners: Flight and Energy hook (B2), `VJ_Color` hue link and grid scroll (planet build), nebula (B3).
+- Island scene: the check ran but is invalid (viewport probably Solid, noise floor 0.000). Open the island in Rendered shading and rerun `make blender-open SCENE=island`, `make blender-check`.
+- `vj_energy` shows only on CAM_3 at 1.0 with no reader found: unexplained.
+- Syphon orientation: `python3 blender/review/syphon_orientation.py` shows the delivered frame is bottom-up; Magic's side is unobserved.
+- The check takes about 25 min on the planet, mostly the fallback over 11 cameras for controls with no effect. `--no-fallback` for a quick pass.
+- `blender/review/refresh_texts.py` re-embeds text blocks of a .blend; `blender/scenes/synthwave_pyramids.blend` was refreshed with it and is committed.

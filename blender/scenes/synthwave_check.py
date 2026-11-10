@@ -449,10 +449,13 @@ class Check:
                 notes.append("read only in Python by " + ", ".join(rd["python"]) if rd["python"] else "no shader or driver reads it")
         row["note"] = "; ".join(notes)
         if self.frames_dir and row["verdict"] != "effect":
-            os.makedirs(self.frames_dir, exist_ok=True)
-            for name, fr in frames.items():
-                path = os.path.join(self.frames_dir, "%s-cam%s-%s.png" % (c["key"], row["cams_tried"][0] if row["cams_tried"] else "x", name))
-                write_png(path, np.rint(fr[::-1, :, ::-1]).astype(np.uint8))      # the BMP is bottom-up BGR
+            try:
+                os.makedirs(self.frames_dir, exist_ok=True)
+                for name, fr in frames.items():
+                    path = os.path.join(self.frames_dir, "%s-cam%s-%s.png" % (c["key"], row["cams_tried"][0] if row["cams_tried"] else "x", name))
+                    write_png(path, np.rint(fr[::-1, :, ::-1]).astype(np.uint8))      # the BMP is bottom-up BGR
+            except OSError as e:
+                row["note"] += "; frames not saved: %s" % e
         return row
 
     def test(self, c, rd):
