@@ -73,7 +73,7 @@ const ROWS := {
 		"kind": Kind.LEVEL,
 		"lo": 0.0,
 		"hi": 1.0,
-		"rest": 0.42,
+		"rest": 0.41,
 		"out_lo": 0.0,
 		"out_hi": 95.0
 	},

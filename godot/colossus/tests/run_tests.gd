@@ -290,7 +290,7 @@ func _test_brain() -> void:
 func _test_vj_map() -> void:
 	var cases := [
 		# address, wire value, stored value, scene value
-		["/vj/fog_height", 0.42, 0.42, 39.9],
+		["/vj/fog_height", 0.41, 0.41, 38.95],
 		["/vj/fog_height", 0.0, 0.0, 0.0],
 		["/vj/fog_height", 1.0, 1.0, 95.0],
 		["/vj/fog_height", 25.0, 1.0, 95.0],
@@ -338,7 +338,7 @@ func _test_vj_map() -> void:
 		["/vj/shock", 0.0, 0.0],
 		["/vj/intensity", 0.5, 1.0],
 		["/vj/fog", 0.35, 0.00301],
-		["/vj/fog_height", 0.42, 39.9],
+		["/vj/fog_height", 0.41, 38.95],
 		["/vj/haze", 1.0, 0.00025],
 		["/vj/cam", 0.0, 0.0],
 		["/vj/cam_auto", 1.0, 1.0],

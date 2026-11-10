@@ -94,7 +94,7 @@ Only the performer advances Approach and Climb. Fall ends on its own.
 | `/vj/level` | 0..1, default 0.5 | sun glow through the cloud gap, energy 1.0..2.6 |
 | `/vj/shock` | trigger, 1.4 and above marks a drop | triggers a Shake while the Wanderer is on the Colossus |
 | `/vj/fog` | 0..1, default 0.35 | volumetric fog density 0..0.0086 |
-| `/vj/fog_height` | 0..1, default 0.42 | fog height 0..95 m |
+| `/vj/fog_height` | 0..1, default 0.41 | fog height 0..95 m |
 | `/vj/haze` | 0..1, default 1 | distance haze density, none up to the tuned look |
 | `/vj/cam` | 0..10, default 0 | the Nth director shot (0-based, clamped to the last), held while `/vj/cam_auto` is 0 |
 | `/vj/cam_auto` | 0 or 1, default 1 | 1 hands the cuts to the director, 0 pins the shot `/vj/cam` names |

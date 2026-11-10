@@ -11,7 +11,7 @@ Values are wire values (0..1), run against the contract of 2026-11-10 (below). E
 | level | /vj/level | effect | [1.0,1.8,2.6] | [1.0,1.8,2.6] | sun_energy at min, default, max |
 | bass | /vj/bass | effect | [0.5,0.5,1.0] | [0.5,0.5,1.0] | weight at min, default, max |
 | fog | /vj/fog | effect | [0.0,0.00301,0.0086] | [0.0,0.00301,0.0086] | fog_density at min, default, max |
-| fog_height | /vj/fog_height | effect | [0.0,39.9,95.0] | [0.0,39.9,95.0] | fog_height at min, default, max |
+| fog_height | /vj/fog_height | effect | [0.0,38.95,95.0] | [0.0,38.95,95.0] | fog_height at min, default, max |
 | haze | /vj/haze | effect | [0.0,0.00025,0.00025] | [0.0,0.00025,0.00025] | haze_density at min, default, max |
 | intensity | /vj/intensity | effect | [0.2,1.0,1.8] | [0.2,1.0,1.8] | exposure at min, default, max |
 | shot_1 | /vj/cam | effect | 1 | 1 | director shot after pinning 1 |
@@ -68,6 +68,6 @@ Needs Blender closed. Each item is something headless cannot see.
 2. Run "Check all" on the page on Metal: expect 22 effect again (`jq .check.summary` of `curl -s http://127.0.0.1:9211/api/state`).
 3. Syphon content: grab `COLOSSUS_OUT` and read pixel statistics, once with the page closed and once open. Nothing of the page may appear in the frame.
 4. fps and frame time with only Godot on the GPU: `make status` must say `fps_trustworthy`, then read `fps` and `frame_ms` from `/api/state` across a full Arc.
-5. Look: `/vj/fog_height` wire 0, 0.42 and 1, `/vj/fog` 0 and 1, `/vj/intensity` wire 0 and 1, each of the five pinned shots (`/vj/cam` 0..4 with `/vj/cam_auto` 0) with the Colossus readable. `make godot-capture OUT=<dir>` and a contact sheet to `shot-reviewer`.
+5. Look: `/vj/fog_height` wire 0, 0.41 and 1, `/vj/fog` 0 and 1, `/vj/intensity` wire 0 and 1, each of the five pinned shots (`/vj/cam` 0..4 with `/vj/cam_auto` 0) with the Colossus readable. `make godot-capture OUT=<dir>` and a contact sheet to `shot-reviewer`.
 6. Shake and the director's close grip with the Wanderer on the Colossus, from the page's Shake button and from a real OSC `/vj/shock`.
 7. A real Magic session: a fader left standing for more than 2 s keeps its effect; `make lab` relays to 9202 and the page shows `osc` as source.
