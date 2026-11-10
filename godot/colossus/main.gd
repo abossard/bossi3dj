@@ -9,6 +9,9 @@ const FADE_SECONDS := 1.0
 ## Syphon publishes from this frame on: for the first second or two the lighting is still
 ## converging (tests/warmup.gd: the lower frame is dark and speckled until about frame 120).
 const SYPHON_WARMUP_FRAMES := 120
+## The Reset holds the black this long after the next Colossus is built: the camera has moved
+## 1.5 km and the lighting takes about 120 frames to converge (tests/warmup.gd).
+const RESET_HOLD_SECONDS := 2.0
 const SHRINE_START := Vector3(0.0, 0.0, -34.0)
 
 @export var syphon_enabled := true
@@ -277,6 +280,7 @@ func _on_phase(phase: Arc.Phase) -> void:
 			var t := create_tween()
 			t.tween_property(_fade, "color:a", 1.0, FADE_SECONDS)
 			t.tween_callback(_start_arc)
+			t.tween_interval(RESET_HOLD_SECONDS)
 			t.tween_property(_fade, "color:a", 0.0, FADE_SECONDS)
 			t.tween_callback(func() -> void: arc.send(Arc.Event.FADE_DONE))
 

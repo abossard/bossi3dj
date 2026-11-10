@@ -104,11 +104,10 @@ func _run() -> void:
 	main.page_port = 0
 	root.add_child(main)
 	main.set_process_unhandled_input(false)
-	# The first published frames: Syphon shows the output from the first draw on.
-	await _save("start-f1")
-	for i in 20:
+	# The first frame Syphon publishes (ColossusMain.SYPHON_WARMUP_FRAMES).
+	for i in ColossusMain.SYPHON_WARMUP_FRAMES:
 		await RenderingServer.frame_post_draw
-	await _save("start-f20")
+	await _save("start-f%d" % ColossusMain.SYPHON_WARMUP_FRAMES)
 	await _wait(4.0)
 	_write("/vj/cam_auto", 0.0)
 	for n in 5:
@@ -127,8 +126,8 @@ func _run() -> void:
 	_write("/vj/cam_auto", 0.0)
 	_write("/vj/cam", 0.0)
 	main._start_arc()
-	await _save("new-colossus-f1")
-	for i in 20:
+	# The Reset holds black for RESET_HOLD_SECONDS after the build; this is the first frame after it.
+	for i in int(ColossusMain.RESET_HOLD_SECONDS * 60.0):
 		await RenderingServer.frame_post_draw
-	await _save("new-colossus-f20")
+	await _save("new-colossus-after-hold")
 	quit()

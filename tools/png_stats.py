@@ -6,7 +6,7 @@
 Per file: size, mean RGB, luma mean and variance, share of lit pixels (luma above 30/255 of the
 sum rule used by `magicproj.py grab`: r+g+b > 30), share of near-black and blown-out pixels, and the
 3x3 grid of mean luma (rows top first, as stored in the file), and `flat_black_bottom`: the share of
-the lowest 30% of rows where every channel is 2 or less (the ground; a frame passes below 0.02). With two or more files it adds the
+the lowest 30% of rows where every channel is 2 or less (the ground; a frame passes below 0.02) and `near_black_bottom` (every channel 12 or less). With two or more files it adds the
 largest difference of the 3x3 grids against the first, and the same with the grid rows reversed, so
 a flipped frame shows. Reads 8-bit grey, RGB and RGBA PNGs, standard library only.
 """
@@ -58,7 +58,7 @@ def read_png(path):
 def stats(path):
     w, h, ch, rows = read_png(path)
     step = max(1, int((w * h / 90000) ** 0.5))
-    n = lit = dark = blown = low = low_black = 0
+    n = lit = dark = blown = low = low_black = low_dark = 0
     acc, s1, s2 = [0, 0, 0], 0.0, 0.0
     grid = [[[0.0, 0] for _ in range(3)] for _ in range(3)]
     for y in range(0, h, step):
@@ -81,6 +81,7 @@ def stats(path):
             if y >= h * 0.7:
                 low += 1
                 low_black += max(r, g, b) <= 2
+                low_dark += max(r, g, b) <= 12
             cell = grid[min(2, 3 * y // h)][min(2, 3 * x // w)]
             cell[0] += l
             cell[1] += 1
@@ -91,6 +92,7 @@ def stats(path):
         "luma_mean": round(mean, 1), "luma_variance": round(s2 / n - mean * mean, 1),
         "lit": round(lit / n, 3), "near_black": round(dark / n, 3), "blown_out": round(blown / n, 3),
         "flat_black_bottom": round(low_black / max(low, 1), 3),
+        "near_black_bottom": round(low_dark / max(low, 1), 3),
         "grid_luma": [[round(c[0] / c[1], 1) for c in row] for row in grid],
     }
 
