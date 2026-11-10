@@ -11,6 +11,9 @@ Serves a debug page on http://127.0.0.1:HTTP that shows every incoming
 message (type tags, values, rate), relays packets to Blender, sends test
 messages and generators, and pings the Blender bridge for round-trip time.
 
+The page's sliders and generators work in wire units and start at the wire defaults of
+contract.json (served at /api/contract), the one table of CONTROLS.md.
+
 Standard library only. Run: python3 lab.py --help
 """
 import argparse
@@ -28,6 +31,8 @@ from collections import deque
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import contract  # noqa: E402  the /vj/* rows (contract.json) behind the page's sliders and generator ranges
 
 
 # --- OSC encoding / decoding (calculations, no side effects) -----------------
@@ -465,6 +470,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
             self.wfile.write(body)
+        elif path == "/api/contract":
+            self._json(contract.load())
         elif path == "/api/state":
             self._json(self.lab.snapshot())
         elif path == "/api/events":

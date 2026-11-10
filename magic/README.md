@@ -4,12 +4,16 @@ Generators and tooling for `.magic` files. The skill `.claude/skills/magic-proje
 
 ## Synthwave project
 
-`projects/synthwave_pyramids.magic` plays `blender/scenes/synthwave_pyramids.blend` and `synthwave_planet.blend`. It is generated: edit `synthwave_magic.py` and run `python3 magic/synthwave_magic.py` (`--port 9200` to go through the lab, `--syphon "<sender> - Blender"` for another Syphon name, `--synthetic --out FILE` for a test build that replaces audio and controls with a scripted EDM loop and timers, `--audio FILE` to play and analyse an audio file in a loop instead of BlackHole). Defaults: OSC to the bridge on 127.0.0.1:9201, Syphon server `CAM_OUT - Blender`, audio from BlackHole 2ch, OSC in on 11111.
+`projects/synthwave_pyramids.magic` plays `blender/scenes/synthwave_pyramids.blend` and `synthwave_planet.blend`. It is generated: edit `synthwave_magic.py` and run `python3 magic/synthwave_magic.py` (`--port 9200` to go through the lab, `--syphon "<sender> - Blender"` for another Syphon name, `--synthetic --out FILE` for a test build that replaces audio and controls with a scripted EDM loop and timers, `--audio FILE` to play and analyse an audio file in a loop instead of BlackHole). Defaults: OSC to the bridge on 127.0.0.1:9201, Syphon server `CAM_OUT - Blender`, audio from BlackHole 2ch, OSC in on 11111. Every address, its wire range (0..1 for a continuous control) and its wire default come from `osc/contract.json`; the generator sends wire units and each scene scales them.
+
+## Show project
+
+`projects/show.magic` (`show_magic.py`, `python3 magic/show_magic.py`) is the synthwave project with two Syphon sources, `CAM_OUT - Blender` and `COLOSSUS_OUT - Godot`, in the Program scene. A `Mix` module crossfades them with the Global `SceneMix` (0 Blender only, 1 Godot only) and the effects run on the mix. Its senders go to the relay on udp 9200, which feeds Blender (9201) and Godot (9202). `--syphon-godot` sets another server name. `CamAuto` 1 lets Magic cut Blender and Godot's own director cut Godot (`/vj/cam_auto` 1); 0 sends `CamSel` as `/vj/cam` to both and holds Godot on that shot.
 
 Scenes:
 - **Master**: Program behind Blackout, the Monitor overlay, and OSC Out.
 - **Program**: SyphonClient → Bloom → Chroma Zoom → RadialBlur → Kaleidoscope → Shake. Each effect is bypassed while its amount is 0. `--trails` adds `effects/Synthwave Trails.fs` before the Kaleidoscope (each pixel is the brighter of the live frame and its fading history, so nothing goes dark); Magic finds it once `effects/` is listed under Help > Additional Module Folders. Magic's own Trails module draws behind its input through alpha, which the opaque Syphon frame hides, and the usual feedback shaders key dark pixels to their black history.
-- **OSC Out**: one OSCSender per `/vj/*` address. OSCSender only sends on change, so every value jitters by 0.001 for the first 2 s and Blender is reset to the project's values at load. Each value is clamped to the range Blender takes (0..1 unless the address table says otherwise), so a Global dragged past 1 in Magic cannot overdrive the scene.
+- **OSC Out**: one OSCSender per `/vj/*` address. OSCSender only sends on change, so every value jitters by 0.001 for the first 2 s and the scenes are reset to the project's values at load. Each value is clamped to the row's wire range (0..1, an index up to 10, a trigger up to 1.5), so a Global dragged past 1 in Magic cannot overdrive a scene.
 - **Monitor**: a bar per analysis Global, for tuning.
 - **Readout**: every `/vj/*` address with the value being sent, yellow while it differs from the scene default. Text cannot print numbers, so each row lists every displayable value and `Line #` picks one.
 
@@ -52,12 +56,13 @@ OSC out (latest value of each Global; ranges and meaning per scene are in [osc/C
 |---|---|
 | `/vj/level` `/vj/bass` `/vj/beat` | `OutLevel` `OutBass` `OutBeat` |
 | `/vj/hue` `/vj/intensity` `/vj/strobe` | `OutHue` `OutIntensity` `OutStrobe` |
-| `/vj/grid_speed` `/vj/cam` `/vj/cam_speed` | `OutGridSpeed` `OutCam` `OutCamSpeed` |
+| `/vj/grid_speed` `/vj/cam` `/vj/cam_auto` `/vj/cam_speed` | `OutGridSpeed` `OutCam` `OutCamAuto` `OutCamSpeed`; `OutCam` is a whole number, shot 0..10 (`CamCount` shots while `CamAuto` cuts, `CamSel` otherwise) |
 | `/vj/sun` `/vj/moon` `/vj/pyramids` `/vj/grid` `/vj/stars` `/vj/water` | `OutSun` … `OutWater` |
 | `/vj/night` `/vj/nebula` `/vj/shock` | `OutNight` `OutNebula` `OutShock`: a 50 ms pulse at the wave's strength on heavy kicks (at most every 0.9 s, every 0.35 s while a drop is fresh; 0.6 rising to 1.5), on each drop (1.5) and on the pad |
 | `/vj/fog` … `/vj/fog_beat` | `OutFog` … `OutFogBeat`; fog thickens in breakdowns and glows on drops while `Auto` is on |
 | `/vj/meteor` `/vj/flamingos` `/vj/haze` `/vj/moon_phase` | `OutMeteor` (1 while the pad is held) `OutFlamingos` `OutHaze` `OutMoonPhase` |
-| `/vj/eclipse` `/vj/star_speed` | `OutEclipse` `OutStarSpeed` (0..10) |
+| `/vj/eclipse` `/vj/star_speed` | `OutEclipse` `OutStarSpeed` |
+| `/vj/flight` `/vj/boost` `/vj/blend` `/vj/energy` `/vj/hit` | `OutFlight` `OutBoost` `OutBlend` `OutEnergy` (faders `Flight` `Boost` `Blend` `CamEnergy`, passed on as they are) and `OutHit` (1 while the `Hit` pad is held) |
 
 
 ## Magic projects (`magicproj.py`)

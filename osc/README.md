@@ -1,6 +1,6 @@
 # OSC relay and debug page
 
-`lab.py` sits between Magic Music Visuals and the scenes: it relays Magic's OSC to Blender and Godot and shows every message. The address contract is [CONTROLS.md](CONTROLS.md).
+`lab.py` sits between Magic Music Visuals and the scenes: it relays Magic's OSC to Blender and Godot and shows every message. The address contract is [CONTROLS.md](CONTROLS.md), made from [contract.json](contract.json) (`python3 osc/contract.py sync`, `make osc-sync`). `osc/sweep.py` (`make osc-sweep`) walks every row through min, default and max.
 
 ```
 Magic OSCSender ──udp 9200──> lab.py ──relay udp 9201──> Blender (blender/blender_osc_bridge.py)
@@ -26,7 +26,7 @@ Options: `--listen 9200` (port Magic sends to), `--blender-port 9201`, `--blende
 - **Incoming OSC**: one row per address with type tags, last value, min/max, send rate (Hz), count, bundle flag and a trend line. This is where the Magic format and rate get read off.
 - **Relay**: every packet from Magic is forwarded unchanged to the Blender target (Magic can only send to one destination per project).
 - **Blender bridge**: round-trip time, Blender/Python version, scene, timer ticks per second, messages received and applied. The bridge answers `/lab/ping` once a second.
-- **Send / sliders / generators**: drive Blender without Magic. A generator sends a sine, beat pulse, square, ramp or noise at a chosen rate, so the scene side can be built before the Magic side exists.
+- **Send / sliders / generators**: drive Blender and Godot without Magic. The sliders are one per contract row, in wire units, starting at the wire default; a generator's range follows the row you pick. A generator sends a sine, beat pulse, square, ramp or noise at a chosen rate, so the scene side can be built before the Magic side exists.
 - **Packet log**: last 1000 messages with source, size and bundle marker; downloadable as JSONL.
 - **Checklist**: the manual steps for Blender, Magic and Syphon.
 
@@ -35,9 +35,9 @@ Options: `--listen 9200` (port Magic sends to), `--blender-port 9201`, `--blende
 Run `blender_osc_bridge.py` in Blender's Text Editor (or `blender --python blender/blender_osc_bridge.py`).
 
 - Listens on UDP 127.0.0.1:9201 from a `bpy.app.timers` callback; no threads.
-- The first numeric argument of each address lands in a scene custom property: `/vj/level` → `scene["vj_level"]`. Drivers read it with the Simple Expression path `["vj_level"]`.
+- The first numeric argument of each address lands in a scene custom property: `/vj/level` → `scene["vj_level"]`, scaled from the wire value to the property's scene units (`SCALES`, from `contract.json`); an address that is not a row Blender uses is ignored. Drivers read it with the Simple Expression path `["vj_level"]`.
 - `MAPPING` at the top of the script optionally routes an address to an object attribute, e.g. `"/vj/level": ("Cube", "scale", 2)`.
-- `/vj/cam N` also makes the camera object `CAM_N` the scene camera (drivers cannot set `scene.camera`).
+- `/vj/cam N` also makes the camera object `CAM_N` the scene camera, or the last camera below N when the scene has fewer (drivers cannot set `scene.camera`).
 - After each batch it calls `scene.update_tag()` and redraws 3D views, which plain custom-property writes skip.
 - Re-running the script replaces the previous instance.
 
