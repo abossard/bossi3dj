@@ -7,7 +7,7 @@ BLEND_planet = $(SCENES)/synthwave_planet.blend
 BLEND_island = $(SCENES)/synthwave_pyramids.blend
 
 .PHONY: help status lab test magic-test godot-test godot-smoke godot-capture godot-import godot-lint \
-        godot-open godot-kill blender-open blender-kill blender-rebuild blender-paths magic-build venv verify
+        godot-open godot-kill blender-open blender-kill blender-check blender-rebuild blender-paths magic-build venv verify
 
 # Blender and Godot share one GPU: a live window of one refuses to start while the other runs.
 BLENDER_RUNS   = pgrep -f "Blender.app/Contents/MacOS/Blender" >/dev/null
@@ -30,6 +30,7 @@ help:
 	@echo "  godot-lint        gdlint + gdformat --check on the project's own scripts"
 	@echo "  blender-open      open SCENE=planet|island in the GUI with scripts allowed (refuses a second Blender or a Godot window)"
 	@echo "  blender-kill      end the running Blender (unsaved state is lost)"
+	@echo "  blender-check     feature check of the running scene: one row per control, contract cross-check, JSON in blender/review/out (ARGS=--only vj_fog)"
 	@echo "  blender-rebuild   headless: rebuild synthwave_planet.blend from the island scene (no Blender may run)"
 	@echo "  blender-paths     list the external files each .blend points at"
 	@echo "  venv              .venv with numpy and Pillow for the verify scripts"
@@ -81,6 +82,9 @@ blender-open:
 	@if $(BLENDER_RUNS); then echo "a Blender is already running (make status)"; exit 1; fi
 	@if $(GODOT_GUI_RUNS); then echo "a Godot window runs and shares the GPU: make godot-kill first (make status)"; exit 1; fi
 	open -a /Applications/Blender.app --args --enable-autoexec "$(CURDIR)/$(BLEND_$(SCENE))"
+
+blender-check:
+	python3 blender/review/feature_check.py $(ARGS)
 
 blender-kill:
 	-pkill -f "Blender.app/Contents/MacOS/Blender"

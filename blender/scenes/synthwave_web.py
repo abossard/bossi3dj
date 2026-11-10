@@ -13,6 +13,10 @@ previous instance. Open http://127.0.0.1:9210 to drive the scene without Magic.
   BPM, and a shockwave every few beats.
 - The preview is the Syphon frame, read back small by syphon_out.py only
   while this page asks for it.
+- The feature check (synthwave_check.py, "Check all" on the page, `make blender-check`):
+  POST /api/check starts it (body: {"only": [...], "frames_dir": "..."}), GET /api/check
+  returns its progress and rows, POST /api/check/abort stops it. The module is loaded
+  again for every check, and nothing of it runs while no check runs.
 - The HTTP server runs in a daemon thread and never touches bpy. One
   bpy.app.timers callback applies the queued writes on the main thread and
   publishes a snapshot (values, OSC stats and log, fps) for the page to poll.
@@ -23,6 +27,7 @@ import os
 import queue
 import threading
 import time
+import types
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import bpy
@@ -34,6 +39,7 @@ PUBLISH_EVERY = 0.1   # s between snapshots, built only while a page polls
 PAGE_IDLE = 2.0       # s after the last poll before snapshots stop
 PULSE = 0.1           # s a trigger stays high, longer than one frame so the runtime sees the edge
 LOG_SENT = 80         # newest OSC log lines in each snapshot
+CHECK_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "synthwave_check.py")
 PREFIX = "vj_"
 REGISTRY_KEY = "synthwave_web"
 BRIDGE_KEY = "vj_osc_bridge"
@@ -51,6 +57,14 @@ def controls(scene):
                     "step": ui.get("step", 1.0) / 100.0, "default": ui.get("default", 0.0),
                     "trigger": ui.get("description") == "trigger"})
     return out
+
+
+def load_check():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("synthwave_check", CHECK_FILE)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def address(key):
@@ -91,6 +105,7 @@ class Web:
         self.polled = 0.0         # last /api/state request, set by the HTTP thread
         self.published = 0.0
         self.sim = Sim()
+        self.check = None
         self.server = ThreadingHTTPServer((HOST, PORT), self.handler())
         self.server.daemon_threads = True
         self.thread = threading.Thread(target=self.server.serve_forever, name=REGISTRY_KEY, daemon=True)
@@ -120,6 +135,8 @@ class Web:
                 elif path == "/api/state":
                     web.polled = time.time()
                     self._send(json.dumps(web.snapshot).encode(), "application/json")
+                elif path == "/api/check":
+                    self._send((web.check.public if web.check else '{"state": "idle"}').encode(), "application/json")
                 elif path == "/api/frame.bmp":
                     bpy.app.driver_namespace[PREVIEW_WANTED] = time.time()
                     frame = bpy.app.driver_namespace.get(PREVIEW_KEY)
@@ -131,8 +148,10 @@ class Web:
                 path = self.path.split("?")[0]
                 try:
                     body = json.loads(self.rfile.read(int(self.headers.get("Content-Length") or 0)) or b"{}")
-                    if path in ("/api/set", "/api/defaults", "/api/hold"):
+                    if path in ("/api/set", "/api/defaults", "/api/hold", "/api/check"):
                         web.writes.put((path, body))
+                    elif path == "/api/check/abort":
+                        web.check and web.check.abort()
                     elif path == "/api/sim":
                         web.sim.config(body)
                     else:
@@ -155,6 +174,8 @@ class Web:
                 self.apply(scene, bridge, {str(k): float(v) for k, v in body.items()}, "web")
             elif path == "/api/defaults":
                 self.apply(scene, bridge, {c["key"]: c["default"] for c in controls(scene)}, "web")
+            elif path == "/api/check":
+                self.start_check(body)
             elif path == "/api/hold" and bridge is not None:
                 keys = set(body.get("keys") or [c["key"] for c in controls(scene)])
                 bridge.hold = bridge.hold | keys if body.get("on") else bridge.hold - keys
@@ -169,6 +190,18 @@ class Web:
             self.published = now
             self.publish(scene, bridge, now)
         return TICK
+
+    def start_check(self, opts):
+        if self.check is not None and self.check.result["state"] == "running":
+            return
+        try:
+            self.check = load_check().Check(self, controls, opts)
+            self.check.start()
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            err = json.dumps({"state": "failed", "error": "check not started: %s" % e, "rows": []})
+            self.check = types.SimpleNamespace(public=err, result={"state": "failed"}, abort=lambda: None)
 
     def apply(self, scene, bridge, values, source):
         values = {k: v for k, v in values.items() if k.startswith(PREFIX) and k in scene}
@@ -208,6 +241,8 @@ class Web:
         self.snapshot = snap
 
     def close(self):
+        if self.check is not None and self.check.result["state"] == "running":
+            self.check.abort()
         try:
             bpy.app.timers.unregister(self.tick)
         except Exception:
