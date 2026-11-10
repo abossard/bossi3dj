@@ -60,7 +60,34 @@ All of it is data in `io/vj_map.gd`, which follows the Godot column of `osc/cont
 - `make godot-smoke` no longer asserts the wall-clock gap between frames, it prints it ("info C3 worst gap", 1.3 s at load 70 here). A real stall still shows there; the number is for a person to read.
 - Allocation per frame is not measured, only kept by construction: with no client the server does one `is_connection_available()` call and an empty-array loop per frame, and `VjSignals` writes into existing dictionary keys.
 
-## For the live pass (Metal, window, nothing else on the GPU)
+## Live pass 2026-11-10 (Metal, Blender closed, `make godot-open`)
+
+Foreign load throughout (`make status`: `fps_trustworthy` false, load 40 to 96), so fps and frame times are context, no verdict.
+
+- **Check all on Metal: 22 effect, 0 no effect, 0 error**, same rows as headless (page API, `POST /api/check`). Shake roll 0.176 rad. `fog_height` default is 0.41 since the contract change (38.95 m).
+- **Syphon server**: name `COLOSSUS_OUT`, app `Godot`, shown by `magicproj.py grab` as `COLOSSUS_OUT - Godot` (use `grab --app Godot --server COLOSSUS_OUT`). Frame 1920x1080.
+- **Syphon pixels** (`tools/png_stats.py` on the grabbed PNGs). Free-running Approach, page closed, mean luma 120 to 126, variance 2760 to 2840, lit share 0.97, no blown-out pixels. With shot 1 pinned: page closed luma mean 110.2 and 110.6, variance 5071 and 5220; page open luma mean 109.1, variance 5141; largest difference of the 3x3 luma grid 6.9 open against closed, 4.3 closed against closed. Nothing of the page is in the frame (it is an HTTP server only, no Godot node draws it).
+- **Row order**: the grabbed rows are bottom first. Against the engine's own output image of the same shot (`capture.gd`, top-down) the 3x3 luma grid differs by 157 in the same order and by 27 with the rows reversed. `magicproj.py grab` flips only Magic's frames, so a Godot PNG from it is upside down.
+- **fps across one Arc** (`tools/godot_frame_log.py`, Phase jumps, 12 s each). Load 41 to 58: median 60 fps in every Phase, page closed or open. Hitches at Fall and Reset: 2 fps (490 ms frame) closed, 47 to 53 fps (170 to 280 ms frames) open. Load 80 to 96: median 36 to 40 fps in every Phase, page closed or open. `process_ms` (whole-frame time, in `/api/state` `profile`) 17 to 21 ms at 60 fps. The viewport's render time reads 0 on Metal, so no GPU split; the Godot MCP profiler needs the editor and was not used. Largest known cost: the hitch when Fall hands over to Reset (the next Colossus is built). Not tuned.
+- **Real OSC** (`make osc-sweep ARGS="--target godot --seconds 2"`, 4 minutes): all ten Godot addresses show source `osc` with 19 writes each (shock 4), no packet dropped, 502 packets ignored (Blender-only addresses). After the sweep ended values stayed at the last write (defaults) and `live` went false after 2 s, as designed.
+- **Look**: 21 frames (`make godot-look`, `make godot-capture`) against the frozen rubric `godot/colossus/docs/look-rubric.md`, judged by `shot-reviewer` on 480 px tiles. Verdicts in [godot-look-verdict.json](godot-look-verdict.json): 14 pass, 7 fail.
+
+### Failing frames
+
+- **Flat black ground** (`exposure`): `shot-1`, `shot-2`, `fog_height-0`, `1-approach-scale-wide`, `2-approach-low-hero`, `9-next-colossus`. The black is exactly (0,0,0) over the lower 15 to 30 percent. The same shot is lit later (`fog_height-0.41`, a live Syphon grab after a minute), so it looks like a warm-up: the first seconds after start or after a Colossus is built, and with `fog_height` 0 where the fog carries no light to the ground. Unverified cause: sun shadow with SDFGI not yet giving indirect light (SDFGI replaces the constant ambient). A fix is a shadowless fill light or a wait before the first fade-in, not a number in `Environment`, so it is left.
+- **No Colossus in the long walk** (`colossus-readable`): `1-approach-scale-wide`, `9-next-colossus`, and in `shot-1` to `shot-4`. The Colossus is 1.6 km from the Wanderer in Approach (look.gd prints distance and bearing). The director's `TELEPHOTO_RANGE` of 450 m is a deliberate choice: beyond it the wide shot shows the Wanderer small on the plain and does not aim at the giant. Even with fog 0 no dark shape is in the horizon band, so a figure of `height_m` 28 (the exported default, not checked per Colossus) may be too small to resolve at 1.6 km. Needs a decision, not a number: bring the Colossus nearer, or aim the wide shot at it.
+- **`4-shake-close-grip`**: no Wanderer figure (`wanderer-visible`); the camera sits 1.6 m off the grip and only stone fills the frame. The pinned `shot-4` in Approach passes.
+- `shot-3`, `shot-4`, `shot-5` and the Reset fade pass; `fog_height-0.41` differs from `shot-1` only by moment (Wanderer and camera move).
+
+Metal printed `timeout waiting for fence` once at start of `godot-look`; frames were still saved.
+
+## Not seen yet
+
+- Shake and the close grip from a real OSC `/vj/shock` with the Wanderer on the Colossus.
+- A real Magic session (`make lab` or Magic itself) against 9202 with a standing fader.
+- `/vj/bass` effect on dust size and camera thump, `/vj/beat` footfall nudge.
+
+## Original live-pass list (items 1 to 5 done above, 6 and 7 open)
 
 Needs Blender closed. Each item is something headless cannot see.
 

@@ -42,7 +42,7 @@ Read [SPEC.md](SPEC.md) for numbers, [GLOSSARY.md](../../../GLOSSARY.md) for ter
 - After adding addons or assets: `make godot-import`. Zero load errors, and check that `project.godot` did not change.
 - Drive the scene without Magic using the `lab.py` generators (beat pulse on `/vj/beat`, pad on `/vj/shock`).
 - Check the Syphon server `COLOSSUS_OUT` appears in Magic's SyphonClient list and holds 60 fps through a full Arc.
-- Look: `make godot-capture OUT=<dir>` renders one frame per Phase on Metal; build a contact sheet and give it to the `shot-reviewer` subagent.
+- Look: `make godot-capture OUT=<dir>` renders one frame per Phase on Metal, `make godot-look OUT=<dir>` the five pinned shots and the ends of fog, fog_height and intensity. Tile them to 480 px and give them to the `shot-reviewer` subagent with the frozen rubric `docs/look-rubric.md`. Pixel numbers first: `python3 tools/png_stats.py <png>...`. Frame rate across an Arc: `python3 tools/godot_frame_log.py` against the running scene.
 - godot-mcp (editor open, addon on) is for what tests cannot see: `godot_runtime_state` digests, the profiler, `godot_validate_meshes` when rendering looks wrong with nothing in the log. Prefer text digests to screenshots.
 
 ## Pitfalls
