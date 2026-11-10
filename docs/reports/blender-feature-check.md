@@ -77,6 +77,8 @@ Fixed inside the runtime and page: none of the above bugs; the check itself need
 
 ## Contract cross-check
 
+Since the contract decision of 2026-11-10 (every continuous address 0..1 on the wire, scaled by the bridge), `feature_check.py` fails only on a row without a page control or a page control without a row; range, default and trigger differences are printed as information. The row parser is `contract_rows()`, the one place to change for the new table. The table below is from before the decision.
+
 | address | kind | detail |
 |---|---|---|
 | `/vj/cam` | range | contract 0..6, page 0..10 |

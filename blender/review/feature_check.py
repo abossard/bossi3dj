@@ -82,6 +82,9 @@ def contract_rows():
     return rows
 
 
+INFO_KINDS = ("range", "range not numeric", "default", "trigger")   # until the contract is 0..1 on the wire: information, not failures
+
+
 def cross_check(controls):
     page = {"/" + c["key"].replace("_", "/", 1): c for c in controls}
     rows = contract_rows()
@@ -105,6 +108,8 @@ def cross_check(controls):
         out.append({"address": address, "kind": "no contract row", "detail": "page exposes it, osc/CONTROLS.md does not list it"})
     for address in sorted(a for a, r in rows.items() if not r["used"] and a in page):
         out.append({"address": address, "kind": "not used but on page", "detail": "contract says Blender does not use it"})
+    for m in out:
+        m["level"] = "info" if m["kind"] in INFO_KINDS else "fail"
     return out
 
 
@@ -157,9 +162,11 @@ def main():
     report = {"scene": scene, "time": time.strftime("%Y-%m-%d %H:%M:%S"), "controls": len(controls)}
 
     report["contract"] = mismatches = cross_check(controls)
-    print("\ncontract: %d mismatch(es)" % len(mismatches))
-    for m in mismatches:
-        print("  %-16s %-18s %s" % (m["address"], m["kind"], m["detail"]))
+    failing = [m for m in mismatches if m["level"] == "fail"]
+    print("\ncontract: %d missing or extra address(es), %d range or default difference(s) as information" % (
+        len(failing), len(mismatches) - len(failing)))
+    for m in sorted(mismatches, key=lambda m: m["level"] != "fail"):
+        print("  %-5s %-16s %-18s %s" % (m["level"], m["address"], m["kind"], m["detail"]))
 
     if not args.no_probe:
         report["osc_probe"] = probe = osc_probe(controls)
@@ -208,7 +215,7 @@ def main():
     with open(out_path, "w") as f:
         json.dump(report, f, indent=1)
     print("written", out_path)
-    bad = counts.get("no effect", 0) + counts.get("error", 0) + len(mismatches)
+    bad = counts.get("no effect", 0) + counts.get("error", 0) + len(failing)
     if result.get("state") != "done":
         return 2
     return 1 if bad or not report["state_equals_defaults"] else 0
