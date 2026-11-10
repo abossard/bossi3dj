@@ -20,6 +20,7 @@ const ENDS := [
 ]
 
 var main: ColossusMain
+var output_size := Vector2(1920, 1080)
 var _out := "user://look"
 
 
@@ -39,6 +40,19 @@ func _write(address: String, v: float) -> void:
 	main.vj.apply(address, v, VjSignals.SOURCE_PAGE)
 
 
+## Screen position of a world point in the output frame, and whether it is in front and inside.
+func _screen(cam: Camera3D, p: Vector3) -> Dictionary:
+	var at := cam.unproject_position(p)
+	var inside := (
+		not cam.is_position_behind(p)
+		and at.x >= 0.0
+		and at.x <= output_size.x
+		and at.y >= 0.0
+		and at.y <= output_size.y
+	)
+	return {"at": at, "inside": inside}
+
+
 func _save(label: String) -> void:
 	await RenderingServer.frame_post_draw
 	var path := "%s/%s.png" % [_out, label]
@@ -46,6 +60,9 @@ func _save(label: String) -> void:
 	var cam := main.output.get_camera_3d()
 	var to_colossus := main.colossus.global_position - cam.global_position
 	var angle := rad_to_deg((-cam.global_basis.z).angle_to(to_colossus))
+	var top := _screen(cam, main.colossus.global_position + Vector3.UP * main.colossus.height_m)
+	var foot := _screen(cam, main.colossus.global_position)
+	var wand := _screen(cam, main.wanderer.global_position + Vector3.UP)
 	print(
 		(
 			"saved %s  shot %d  %d fps  colossus %d m away, %d deg off the view axis (fov %d)"
@@ -59,6 +76,24 @@ func _save(label: String) -> void:
 			]
 		)
 	)
+	print(
+		(
+			"probe %s  colossus %d px tall, top in frame %s  wanderer at %d,%d in frame %s, %d m"
+			% [
+				label,
+				absf(foot["at"].y - top["at"].y) if not cam.is_position_behind(top_point()) else 0,
+				top["inside"],
+				wand["at"].x,
+				wand["at"].y,
+				wand["inside"],
+				cam.global_position.distance_to(main.wanderer.global_position)
+			]
+		)
+	)
+
+
+func top_point() -> Vector3:
+	return main.colossus.global_position + Vector3.UP * main.colossus.height_m
 
 
 func _run() -> void:
@@ -69,6 +104,10 @@ func _run() -> void:
 	main.page_port = 0
 	root.add_child(main)
 	main.set_process_unhandled_input(false)
+	# The first frame Syphon publishes (ColossusMain.SYPHON_WARMUP_FRAMES).
+	for i in ColossusMain.SYPHON_WARMUP_FRAMES:
+		await RenderingServer.frame_post_draw
+	await _save("start-f%d" % ColossusMain.SYPHON_WARMUP_FRAMES)
 	await _wait(4.0)
 	_write("/vj/cam_auto", 0.0)
 	for n in 5:
@@ -83,4 +122,12 @@ func _run() -> void:
 		_write(e[1], e[2])
 		await _wait(SETTLE)
 		await _save(e[0])
+	main.vj.reset_defaults()
+	_write("/vj/cam_auto", 0.0)
+	_write("/vj/cam", 0.0)
+	main._start_arc()
+	# The Reset holds black for RESET_HOLD_SECONDS after the build; this is the first frame after it.
+	for i in int(ColossusMain.RESET_HOLD_SECONDS * 60.0):
+		await RenderingServer.frame_post_draw
+	await _save("new-colossus-after-hold")
 	quit()

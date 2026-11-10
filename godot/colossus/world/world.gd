@@ -5,14 +5,22 @@ extends Node3D
 const SUN_ELEVATION_DEG := 4.0
 const SUN_COLOR := Color("e8c890")
 const STONE := Color("262d35")
+## The columns toward the plain (indices of the eight round the slab) are left out: the Wanderer
+## starts on that side and the camera stands behind him, in line with them.
+const GATE := [5, 6, 7]
+const FILL_ELEVATION_DEG := 30.0
+const FILL_COLOR := Color("8fa0b4")
+const FILL_ENERGY := 0.5
 var environment: Environment
 var sun: DirectionalLight3D
+var fill: DirectionalLight3D
 var land: Land
 
 
 func _ready() -> void:
 	_build_environment()
 	_build_sun()
+	_build_fill()
 	land = Land.new()
 	add_child(land)
 	_build_shrine()
@@ -81,7 +89,7 @@ func _build_environment() -> void:
 	env.volumetric_fog_enabled = true
 	env.volumetric_fog_density = 0.003
 	env.volumetric_fog_albedo = Color("8c9196")
-	env.volumetric_fog_anisotropy = 0.6
+	env.volumetric_fog_anisotropy = 0.4
 	env.volumetric_fog_length = 250.0
 	env.volumetric_fog_ambient_inject = 0.3
 	env.adjustment_enabled = true
@@ -99,10 +107,27 @@ func _build_sun() -> void:
 	sun.rotation = Vector3(deg_to_rad(-SUN_ELEVATION_DEG), PI, 0.0)
 	sun.light_color = SUN_COLOR
 	sun.light_energy = 1.8
-	sun.light_volumetric_fog_energy = 2.0
+	# The fog scatters the sun toward a camera that looks at it, and the veil on a far giant is as
+	# bright as the sky behind him; at 1.0 (and anisotropy 0.4) it leaves him a dark shape.
+	sun.light_volumetric_fog_energy = 1.0
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 600.0
 	add_child(sun)
+
+
+## The key light stands low behind the Colossus, so the ground and every face turned to the camera
+## sit in shadow, and SDFGI (which replaces the constant ambient) lifts them too little. A dim light
+## from the camera side, no shadow and no specular, keeps them off black.
+func _build_fill() -> void:
+	fill = DirectionalLight3D.new()
+	fill.rotation = Vector3(deg_to_rad(-FILL_ELEVATION_DEG), 0.0, 0.0)
+	fill.light_color = FILL_COLOR
+	fill.light_energy = FILL_ENERGY
+	fill.light_specular = 0.0
+	fill.light_volumetric_fog_energy = 0.0
+	fill.light_bake_mode = Light3D.BAKE_DISABLED
+	fill.shadow_enabled = false
+	add_child(fill)
 
 
 func _stone() -> StandardMaterial3D:
@@ -127,6 +152,8 @@ func _build_shrine() -> void:
 	rng.seed = 3
 	for i in 8:
 		var a := TAU * i / 8.0
+		if i in GATE:
+			continue
 		var h := rng.randf_range(10.0, 14.0) * (0.45 if i % 3 == 1 else 1.0)
 		var col := MeshInstance3D.new()
 		var cyl := CylinderMesh.new()

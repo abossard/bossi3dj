@@ -43,6 +43,7 @@ Read [SPEC.md](SPEC.md) for numbers, [GLOSSARY.md](../../../GLOSSARY.md) for ter
 - Drive the scene without Magic using the `lab.py` generators (beat pulse on `/vj/beat`, pad on `/vj/shock`).
 - Check the Syphon server `COLOSSUS_OUT` appears in Magic's SyphonClient list and holds 60 fps through a full Arc.
 - Look: `make godot-capture OUT=<dir>` renders one frame per Phase on Metal, `make godot-look OUT=<dir>` the five pinned shots and the ends of fog, fog_height and intensity. Tile them to 480 px and give them to the `shot-reviewer` subagent with the frozen rubric `docs/look-rubric.md`. Pixel numbers first: `python3 tools/png_stats.py <png>...`. Frame rate across an Arc: `python3 tools/godot_frame_log.py` against the running scene.
+- Numbers before images, all on Metal (refuse while Blender runs): `make godot-framing` (Colossus height in px and contrast per shot and distance, Wanderer in frame, close grip through a Shake; pass/fail), `make godot-warmup` (flat-black share of the frame from the first draw and after a new Colossus), `make godot-hitch` (every frame above 30 ms across one Arc), `make godot-shake-osc` (real `/vj/shock` packets over udp into a Climb), `make godot-ablate ARGS=<variant prefix>` (which renderer feature turns the frame black), `make godot-cost` (median frame time with the fill light on and off).
 - godot-mcp (editor open, addon on) is for what tests cannot see: `godot_runtime_state` digests, the profiler, `godot_validate_meshes` when rendering looks wrong with nothing in the log. Prefer text digests to screenshots.
 
 ## Pitfalls

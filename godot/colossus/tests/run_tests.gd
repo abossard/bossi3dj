@@ -17,6 +17,8 @@ func _init() -> void:
 	_test_osc()
 	_test_beat()
 	_test_fov()
+	_test_fit_fov()
+	_test_stone_bumps()
 	_test_brain()
 	_test_vj_map()
 	_test_vj_map_matches_contract()
@@ -238,6 +240,40 @@ func _test_fov() -> void:
 	]
 	for c in cases:
 		_check("fov %s" % c[0], snappedf(Shots.fov(c[0]), 0.01), c[1])
+
+
+func _test_fit_fov() -> void:
+	# size m, distance m, narrowest lens deg, field of view wanted deg, the giant's height in px in a
+	# 1080 px frame at that lens (0: not asked). The long walk shows him 100 px tall at least.
+	var cases := [
+		[28.0, 1700.0, 6.0, 6.0, 168.0],
+		[28.0, 1700.0, 8.0, 8.0, 126.0],
+		[28.0, 500.0, 6.0, 6.0, 577.0],
+		[28.0, 150.0, 6.0, 15.9, 720.0],
+		[28.0, 20.0, 6.0, 60.0, 0.0],
+	]
+	for c in cases:
+		var fov := Director.fit_fov(c[0], c[1], c[2])
+		_check("fit_fov %s" % [c.slice(0, 3)], snappedf(fov, 0.1), c[3])
+		if c[4] > 0.0:
+			var px: float = 1080.0 * c[0] / (2.0 * c[1] * tan(deg_to_rad(fov) * 0.5))
+			_check("fit_fov px %s" % [c.slice(0, 3)], absf(px - c[4]) < c[4] * 0.02, true)
+
+
+## The stone's normal map is made once per seed, and Roster.warm makes one for every Colossus.
+func _test_stone_bumps() -> void:
+	Roster.warm()
+	var seeds: Array[int] = []
+	for entry in Roster.ENTRIES:
+		seeds.append(entry["seed"])
+	for n in seeds:
+		var first := PlaceholderColossus.stone_bumps(n)
+		_check("stone bumps seed %d once" % n, PlaceholderColossus.stone_bumps(n) == first, true)
+	_check(
+		"stone bumps differ per seed",
+		PlaceholderColossus.stone_bumps(seeds[0]) == PlaceholderColossus.stone_bumps(seeds[1]),
+		false
+	)
 
 
 func _test_brain() -> void:

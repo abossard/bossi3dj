@@ -4,8 +4,8 @@ extends Colossus
 ## attachments, Grab Points riding the bones, feet planted on the land by TwoBoneIK3D and a
 ## physical-bone ragdoll for the Fall. A real Colossus swaps the parts and keeps the rest.
 
-const STONE := Color("2d2b28")
-const MOSS := Color("2c3024")
+const STONE := Color("80796f")
+const MOSS := Color("555c40")
 const EYE := Color("cfe3ee")
 ## [bone, parent, head offset from the parent's head], offsets in units of height_m.
 const BONES := [
@@ -43,6 +43,7 @@ const LIMBS := [
 const CHEST_CENTER := Vector3(0.0, 0.04, 0.0)
 const CHEST_RADII := Vector3(0.25, 0.15, 0.17)
 
+static var _bumps := {}
 var _skeleton: Skeleton3D
 var _sim: PhysicalBoneSimulator3D
 var _ik: TwoBoneIK3D
@@ -67,7 +68,7 @@ func _build() -> void:
 		_rest[b[0]] = b[2] * h
 	_skeleton.reset_bone_poses()
 	var stone := _stone_material()
-	var moss := _stone_material()
+	var moss := stone.duplicate() as StandardMaterial3D
 	moss.albedo_color = MOSS
 	for l: Array in LIMBS:
 		_capsule(_attach(l[0]), _rest[l[1]], l[2] * h, stone)
@@ -345,22 +346,32 @@ func _stone_material() -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.albedo_color = STONE
 	m.roughness = 0.95
-	var bumps := NoiseTexture2D.new()
-	bumps.width = 512
-	bumps.height = 512
-	bumps.seamless = true
-	bumps.as_normal_map = true
-	bumps.bump_strength = 6.0
-	var n := FastNoiseLite.new()
-	n.seed = seed_value
-	n.frequency = 0.02
-	n.fractal_octaves = 5
-	bumps.noise = n
+	# The haze must not swallow a far giant: at 1.6 km it would take him to the colour of the sky.
+	m.disable_fog = true
 	m.normal_enabled = true
-	m.normal_texture = bumps
+	m.normal_texture = stone_bumps(seed_value)
 	m.uv1_triplanar = true
 	m.uv1_scale = Vector3.ONE * 0.25
 	return m
+
+
+## The stone's normal map, one per seed, made once. Making it on first use costs a frame of
+## 80 ms each when the next Colossus is built at the Reset, so Roster.warm makes them at start.
+static func stone_bumps(noise_seed: int) -> NoiseTexture2D:
+	if not _bumps.has(noise_seed):
+		var bumps := NoiseTexture2D.new()
+		bumps.width = 512
+		bumps.height = 512
+		bumps.seamless = true
+		bumps.as_normal_map = true
+		bumps.bump_strength = 6.0
+		var n := FastNoiseLite.new()
+		n.seed = noise_seed
+		n.frequency = 0.02
+		n.fractal_octaves = 5
+		bumps.noise = n
+		_bumps[noise_seed] = bumps
+	return _bumps[noise_seed]
 
 
 func _point(parent: Node3D, at: Vector3, normal: Vector3) -> GrabPoint:

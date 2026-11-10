@@ -6,7 +6,7 @@ SCENE   ?= planet
 BLEND_planet = $(SCENES)/synthwave_planet.blend
 BLEND_island = $(SCENES)/synthwave_pyramids.blend
 
-.PHONY: help status lab test magic-test osc-test blender-test osc-sync osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-import godot-lint \
+.PHONY: help status lab test magic-test osc-test blender-test osc-sync osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-framing godot-hitch godot-warmup godot-ablate godot-cost godot-shake-osc godot-import godot-lint \
         godot-open godot-kill blender-open blender-kill blender-check blender-prepare blender-rebuild blender-paths magic-build venv verify
 
 # Blender and Godot share one GPU: a live window of one refuses to start while the other runs.
@@ -33,6 +33,12 @@ help:
 	@echo "  godot-kill        end every Godot window (headless runs are left alone)"
 	@echo "  godot-capture     render one frame per Phase on Metal into OUT=<dir> (opens a window, refuses while Blender runs)"
 	@echo "  godot-look        render the look matrix on Metal into OUT=<dir>: five pinned shots, fog, fog_height and intensity ends (refuses while Blender runs)"
+	@echo "  godot-framing     Metal: Colossus height in px and Wanderer in frame per shot and distance, close grip through a Shake (pass/fail)"
+	@echo "  godot-hitch       Metal: frame times across one Arc, every frame above 30 ms with its Phase (the Reset hitch)"
+	@echo "  godot-warmup      Metal: luma and flat-black share of the output frame from the first draw and after a new Colossus"
+	@echo "  godot-ablate      Metal: flat-black share per renderer feature switched off (ARGS=name prefix of one variant)"
+	@echo "  godot-cost        Metal: median frame time with the fill light on and off, alternating in one run"
+	@echo "  godot-shake-osc   Metal: real /vj/shock packets over udp into a Climb, the Shake and the drop mark (pass/fail)"
 	@echo "  godot-import      re-import the Godot project after adding assets or addons"
 	@echo "  godot-lint        gdlint + gdformat --check on the project's own scripts"
 	@echo "  blender-open      open SCENE=planet|island with scripts allowed, then wait until the start state holds (start_check.py; refuses a second Blender or a Godot window)"
@@ -93,6 +99,30 @@ godot-capture:
 godot-look:
 	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
 	$(GODOT) --path $(COLOSSUS) --script res://tests/look.gd -- $(OUT)
+
+godot-framing:
+	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
+	$(GODOT) --path $(COLOSSUS) --script res://tests/framing.gd -- $(ARGS)
+
+godot-hitch:
+	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
+	$(GODOT) --path $(COLOSSUS) --script res://tests/hitch.gd
+
+godot-warmup:
+	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
+	$(GODOT) --path $(COLOSSUS) --script res://tests/warmup.gd -- $(ARGS)
+
+godot-ablate:
+	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
+	$(GODOT) --path $(COLOSSUS) --script res://tests/ablate.gd -- $(ARGS)
+
+godot-cost:
+	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
+	$(GODOT) --path $(COLOSSUS) --script res://tests/cost.gd
+
+godot-shake-osc:
+	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
+	$(GODOT) --path $(COLOSSUS) --script res://tests/shake_osc.gd
 
 godot-open:
 	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
