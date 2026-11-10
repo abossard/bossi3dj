@@ -601,15 +601,6 @@ def stars_in_the_dark(g):
         T.l.new(T.mul(tail.outputs[0], dark), ln.to_socket)
 
 
-def no_hue(g):
-    """Colour effects live in Magic: VJ_Color keeps intensity and strobe but no longer rotates the hue (vj_hue)."""
-    for n in g.nodes:
-        if n.type == "HUE_SAT":
-            for ln in list(n.inputs["Hue"].links):
-                g.links.remove(ln)
-            n.inputs["Hue"].default_value = 0.5
-
-
 g_met, T, gi, go = make_group("VJ_Meteor", [("Direction", "NodeSocketVector", None), ("A", "NodeSocketVector", None), ("B", "NodeSocketVector", None),
                                             ("Head", "NodeSocketFloat", 0.0), ("Length", "NodeSocketFloat", 0.0), ("Amount", "NodeSocketFloat", 0.0)],
                               [("Color", "NodeSocketColor")])
@@ -1133,7 +1124,6 @@ fill_sky_base(g_base)           # both modes: the island's sunset-all-day sky be
 stars_in_the_dark(g_sky)
 if GRAFT:
     space_sky(g_sky)
-no_hue(g_col)
 
 # ================================================================ world
 if not GRAFT:      # graft: the island's world, its VJ_Sky turned with the shot (frame_island_sky)
@@ -1723,7 +1713,10 @@ def terrain_build(T):
     # needle streaks (CAM_4 p75). Thinned toward their mean where a cell is under a pixel
     q_ = T.vmath("NORMALIZE", T.vmath("SUBTRACT", geo.outputs["Position"], tuple(CENTER)))
     qx_, qy_, qz_ = T.sep(q_)
-    la = T.mul(T.math("ARCSINE", T.math("MINIMUM", T.math("MAXIMUM", qx_, -1.0), 1.0)), R / WIRE_CELL)
+    # the lattice scrolls along the meridians at vj_grid_speed cells/s (rt_grid_phase counts cells; its fraction, as a
+    # whole cell moves a lattice onto itself)
+    la = T.addf(T.mul(T.math("ARCSINE", T.math("MINIMUM", T.math("MAXIMUM", qx_, -1.0), 1.0)), R / WIRE_CELL),
+                T.math("FRACT", T.attr("rt_grid_phase")))
     lo = T.mul(T.math("ARCTAN2", qz_, qy_), R / WIRE_CELL)
     wpw = T.math("DIVIDE", T.mul(cam.outputs["View Distance"], 0.0011), WIRE_CELL)
     ww = T.mul(wpw, 1.2)         # a pixel, in cells: for the thinning and the fade into the mean below

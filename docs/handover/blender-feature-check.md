@@ -1,4 +1,4 @@
-# Blender feature check (node B1)
+# Blender feature check and wiring (nodes B1, B4)
 
 Branch `blender/feature-check`. Report: [docs/reports/blender-feature-check.md](../reports/blender-feature-check.md).
 
@@ -16,24 +16,26 @@ Branch `blender/feature-check`. Report: [docs/reports/blender-feature-check.md](
 ## Commands
 
 ```
-make blender-kill && make blender-rebuild   # re-embeds synthwave_runtime.py, synthwave_web.py is read from file
-make blender-open
-make blender-check                          # about 30 min with the camera fallback
+make blender-open SCENE=planet|island      # opens, then start_check.py waits for the start state
+make blender-check                          # about 25 min with the camera fallback, includes the six bridge messages
+make blender-kill && make blender-prepare && make blender-rebuild   # only after editing build_planet.py or the loader
 make blender-check ARGS="--only vj_fog,vj_hue --no-fallback"
 python3 blender/review/feature_check_table.py blender/review/out/feature_check_Scene.json
 ```
 
 ## Things that cost time
 
-- The `.blend` embeds a copy of `synthwave_runtime.py`; Blender runs that copy on load. After any runtime edit run `make blender-rebuild` (the builder re-embeds all text blocks). `synthwave_check.py`, `synthwave_web.py`, `syphon_out.py` and the page are read from files and need no rebuild. The island file has no builder: its embedded runtime is stale until its texts are refreshed.
-- The viewport is noisy by itself (mean abs diff 0.1 to 1.0 between untouched renders, per camera). A paused viewport was tried: frames are identical within a cell but differ by 1 to 1.9 between cells, so it is worse. The check keeps playback running, averages 8 preview frames and measures the floor on 3 replicate baselines per camera and state.
-- Weak effects (below 10 x floor) are measured again on fresh baselines; they count only when they repeat.
+- Both `.blend` files embed one text block, `vj_loader.py`; the runtime, bridge, Syphon sender and page are read from disk on every open. No rebuild after editing them. `make blender-prepare` (island file) and `make blender-rebuild` (planet, grafted from the island) are only for the loader, `build_planet.py` and the island's own data. `health.py` flags an embedded text that differs from its file.
+- Blender opens 3D views in Solid whatever the file stores; `_play` in the runtime sets camera view and Rendered. A Solid island run reads every shader control as dead (noise floor 0.000).
+- The viewport is noisy by itself (mean abs diff 0.1 to 1.0 between untouched renders). The check keeps playback running, averages 8 preview frames and measures the floor on 3 replicate baselines per camera and state. Weak effects (below 10 x floor) must repeat on fresh baselines.
+- EEVEE draws flat frames while it compiles: `start_check.py` waits for luminance variance, `blender-open` takes about a minute on the planet.
+- A viewport that is paused is worse (1 to 1.9 mad between cells).
 
 ## Open
 
-- Bugs 1 to 4 of the report have owners: Flight and Energy hook (B2), `VJ_Color` hue link and grid scroll (planet build), nebula (B3).
-- Island scene: the check ran but is invalid (viewport probably Solid, noise floor 0.000). Open the island in Rendered shading and rerun `make blender-open SCENE=island`, `make blender-check`.
-- `vj_energy` shows only on CAM_3 at 1.0 with no reader found: unexplained.
-- Syphon orientation: `python3 blender/review/syphon_orientation.py` shows the delivered frame is bottom-up; Magic's side is unobserved.
-- The check takes about 25 min on the planet, mostly the fallback over 11 cameras for controls with no effect. `--no-fallback` for a quick pass.
-- `blender/review/refresh_texts.py` re-embeds text blocks of a .blend; `blender/scenes/synthwave_pyramids.blend` was refreshed with it and is committed.
+- Flight and Energy (B2): `/vj/blend`, `/vj/boost`, `/vj/flight` have no reader on either scene; `/vj/hit` and `/vj/energy` read nothing but show a weak effect on one planet camera (unexplained). The hook is one call in `synthwave_runtime.main()`.
+- `/vj/nebula` shows on no planet camera (B3).
+- `/vj/eclipse` and `/vj/star_speed` do nothing on the island (no star system); the page still lists them.
+- Syphon orientation: `python3 blender/review/syphon_orientation.py` shows the delivered frame is bottom-up; Magic's side is unobserved (user's app).
+- `/vj/grid_speed` scrolls the planet's wire lattice along the meridians at cells/s (`la` in `build_planet.py`). The default 0.6 cells/s moves the grid at the rest look; judge it by eye (look issue, B3 or the user).
+- `fps_trustworthy` was false throughout (load 40 and more from other jobs): no fps recorded.

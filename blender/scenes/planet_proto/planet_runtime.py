@@ -154,7 +154,7 @@ def update_lod(scene):
 
 
 def tick(scene, depsgraph=None):
-    if bpy.data.texts.get("synthwave_runtime.py") is not None:     # grafted: the island runtime runs the clocks
+    if bpy.data.texts.get("vj_loader.py") is not None:     # grafted: the island runtime runs the clocks
         planet_tick(scene)
         return
     now = time.perf_counter()

@@ -26,6 +26,7 @@ within FREEZE_LAPSE seconds lapses by itself. Nothing here costs anything while 
 """
 import math
 import random
+import re
 import time
 import types
 
@@ -44,10 +45,11 @@ DEFAULTS = {
     "vj_eclipse": 0.0, "vj_star_speed": 0.0, "vj_flight": 0.0, "vj_boost": 0.0, "vj_blend": 1.0,
     "vj_energy": 0.3, "vj_hit": 0.0,
 }
-# (min, max, step) where it is not 0..1; stored on the props as UI data, so the web page and Blender's own UI share them
+# (min, max, step) where it is not 0..1; stored on the props as UI data, so the web page and Blender's own UI share them.
+# vj_cam stops at the scene's last camera (ensure_props), 10 being the planet's.
 RANGES = {
-    "vj_intensity": (0.0, 2.0, 0.01), "vj_grid_speed": (0.0, 4.0, 0.01), "vj_cam": (0.0, 6.0, 1.0),
-    "vj_cam_speed": (0.0, 4.0, 0.01), "vj_shock": (0.0, 1.5, 0.01), "vj_fog_height": (1.0, 200.0, 1.0),
+    "vj_intensity": (0.0, 2.0, 0.01), "vj_grid_speed": (0.0, 4.0, 0.01), "vj_cam": (0.0, 10.0, 1.0),
+    "vj_cam_speed": (0.0, 4.0, 0.01), "vj_shock": (0.0, 1.5, 0.01), "vj_fog_height": (1.0, 60.0, 1.0),
     "vj_fog_glow": (0.0, 2.0, 0.01), "vj_fog_scale": (10.0, 1000.0, 1.0), "vj_fog_speed": (0.0, 40.0, 0.1),
     "vj_star_speed": (0.0, 10.0, 0.1), "vj_blend": (0.0, 2.0, 0.01),
 }
@@ -74,7 +76,8 @@ FLOCK_END = 30.0      # s of flight after which every bird has faded out
 IDLE_AFTER = 2.0      # seconds without /vj/* changes before the idle pulse fades in
 IDLE_BPM = 124.0
 IDLE_DEPTH = 0.45     # idle pulse peak, 0..1
-BRIDGE_TEXT = "blender_osc_bridge.py"
+BRIDGE_FILE = "//../blender_osc_bridge.py"
+CAMERA_NAME = re.compile(r"^CAM_(\d+)$")
 OUTPUT_CAMERA = "CAM_OUT"
 STEP = 0.1            # s of clock time per frame while a check steps the clocks (the cap on a frame's dt)
 FREEZE_LAPSE = 4.0    # s after which a freeze that nobody renews ends by itself
@@ -126,11 +129,17 @@ def clock_dt(now, dt):
     return 0.0
 
 
+def camera_count(scene):
+    return sum(1 for o in scene.objects if o.type == "CAMERA" and CAMERA_NAME.match(o.name))
+
+
 def ensure_props(scene):
     for k, v in DEFAULTS.items():
         if k not in scene:
             scene[k] = v
         lo, hi, step = RANGES.get(k, (0.0, 1.0, 0.01))
+        if k == "vj_cam":
+            hi = max(camera_count(scene) - 1, 0)
         scene.id_properties_ui(k).update(min=lo, max=hi, soft_min=lo, soft_max=hi, step=step * 100.0, default=v,
                                          description="trigger" if k in TRIGGERS else "")
     for k in CLOCKS:
@@ -294,14 +303,7 @@ def install_handler():
 
 
 def start_bridge():
-    text = bpy.data.texts.get(BRIDGE_TEXT)
-    if text is None:
-        print("synthwave_runtime: no %r text block, OSC disabled" % BRIDGE_TEXT)
-        return
-    try:
-        text.as_module().start()
-    except OSError as e:
-        print("synthwave_runtime: bridge not started: %s" % e)
+    start_sibling(BRIDGE_FILE, "OSC bridge")
 
 
 def start_syphon(win, area):
@@ -346,6 +348,9 @@ def _play():
         win.screen.show_statusbar = False   # its UI state builds up over a long show and drags playback from ~22 to ~5 fps
         for area in win.screen.areas:
             if area.type == "VIEW_3D":
+                view = area.spaces.active       # Blender opens every 3D view in Solid shading whatever the file stores
+                view.shading.type = "RENDERED"
+                view.region_3d.view_perspective = "CAMERA"
                 with bpy.context.temp_override(window=win, area=area):
                     if not bpy.context.screen.is_animation_playing:
                         bpy.ops.screen.animation_play()

@@ -4,9 +4,10 @@
     python3 blender/review/feature_check.py [--only vj_fog,vj_night] [--out FILE] [--wait SECONDS]
 
 1. waits until the scene page (http 9210) answers and Syphon draws frames (a cold `make blender-open` takes minutes);
-2. contract cross-check: every row of osc/CONTROLS.md whose Blender column is not "not used" exists on the page with
-   the same range and default, and the page exposes nothing without a row;
-3. sends every address once over udp 9201 and counts what the bridge applied;
+2. contract cross-check: every row of osc/contract.json with a Blender column exists on the page with the same scene
+   range, the scene value of its wire default and the same trigger flag, and the page exposes nothing without a row;
+3. sends every address once over udp 9201 and counts what the bridge applied, then the six messages of
+   docs/handover/osc-contract.md with their expected property values (bridge_check.py);
 4. starts the check inside Blender (POST /api/check, the same code the page's "Check all" runs), prints one row per
    control as it finishes and writes everything to a JSON file;
 5. compares /api/state with the defaults afterwards.
@@ -17,7 +18,6 @@ not run. Standard library only.
 import argparse
 import json
 import os
-import re
 import socket
 import struct
 import sys
@@ -26,10 +26,10 @@ import urllib.error
 import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-CONTRACT = os.path.join(ROOT, "osc", "CONTROLS.md")
+sys.path.insert(0, os.path.join(ROOT, "osc"))
+import contract  # noqa: E402
 BASE = "http://127.0.0.1:9210"
 OSC = ("127.0.0.1", 9201)
-NUMBER = r"-?\d+(?:\.\d+)?"
 
 
 def http(path, body=None, timeout=10):
@@ -65,27 +65,22 @@ def wait_ready(limit):
 
 
 def contract_rows():
-    """Address -> {range, default, blender, trigger} from the Addresses table of osc/CONTROLS.md."""
+    """Address -> what the page must show for it, from osc/contract.json (the one source of the table in CONTROLS.md):
+    kind, the scene range, the scene value of the wire default, and whether Blender uses the row at all."""
     rows = {}
-    for line in open(CONTRACT, encoding="utf-8"):
-        if not line.startswith("| `/vj/"):
-            continue
-        cells = [c.strip() for c in line.strip().strip("|").split("|")]
-        if len(cells) < 4:
-            continue
-        rng, default, blender = cells[1], cells[2], cells[3]
-        m = re.fullmatch(r"(%s)\.\.(%s)" % (NUMBER, NUMBER), rng)
-        for address in re.findall(r"`(/vj/[a-z_0-9]+)`", cells[0]):
-            rows[address] = {"range": [float(m.group(1)), float(m.group(2))] if m else None, "range_text": rng,
-                             "default": float(default) if re.fullmatch(NUMBER, default) else None,
-                             "trigger": rng == "trigger", "used": not blender.lower().startswith("not used")}
+    for r in contract.load():
+        scene = r.get("blender")
+        rows[r["address"]] = {"kind": r["kind"], "used": scene is not None, "wire": [r["min"], r["max"]],
+                              "range": None if scene is None or r["kind"] != "float" else [scene["min"], scene["max"]],
+                              "default": None if scene is None else contract.scene_value(r, "blender", r["default"])}
     return rows
 
 
-INFO_KINDS = ("range", "range not numeric", "default", "trigger")   # until the contract is 0..1 on the wire: information, not failures
-
-
 def cross_check(controls):
+    """Every difference between the contract rows and the page's controls is a failure: a missing or extra address,
+    a range, a default that is not the wire default's scene value (half a percent of the range of slack, as in
+    osc/tests/test_contract.py), a trigger that is not one. An index (`/vj/cam`) starts at the wire minimum and
+    stops at or below the wire maximum: the page ends it at the scene's last camera."""
     page = {"/" + c["key"].replace("_", "/", 1): c for c in controls}
     rows = contract_rows()
     out = []
@@ -96,20 +91,21 @@ def cross_check(controls):
         if c is None:
             out.append({"address": address, "kind": "missing on page", "detail": "contract row, no control"})
             continue
-        if r["range"] is not None and (abs(r["range"][0] - c["min"]) > 1e-9 or abs(r["range"][1] - c["max"]) > 1e-9):
-            out.append({"address": address, "kind": "range", "detail": "contract %s, page %g..%g" % (r["range_text"], c["min"], c["max"])})
-        elif r["range"] is None and not r["trigger"]:
-            out.append({"address": address, "kind": "range not numeric", "detail": "contract '%s', page %g..%g" % (r["range_text"], c["min"], c["max"])})
-        if r["trigger"] != bool(c["trigger"]):
-            out.append({"address": address, "kind": "trigger", "detail": "contract %s, page %s" % (r["trigger"], bool(c["trigger"]))})
-        if r["default"] is not None and abs(r["default"] - c["default"]) > 1e-9:
-            out.append({"address": address, "kind": "default", "detail": "contract %g, page %g" % (r["default"], c["default"])})
-    for address in sorted(set(page) - set(rows)):
-        out.append({"address": address, "kind": "no contract row", "detail": "page exposes it, osc/CONTROLS.md does not list it"})
-    for address in sorted(a for a, r in rows.items() if not r["used"] and a in page):
-        out.append({"address": address, "kind": "not used but on page", "detail": "contract says Blender does not use it"})
-    for m in out:
-        m["level"] = "info" if m["kind"] in INFO_KINDS else "fail"
+        span = c["max"] - c["min"]
+        if r["kind"] == "float" and (abs(r["range"][0] - c["min"]) > 1e-9 or abs(r["range"][1] - c["max"]) > 1e-9):
+            out.append({"address": address, "kind": "range", "detail": "contract %g..%g, page %g..%g" % (*r["range"], c["min"], c["max"])})
+        if r["kind"] == "int" and not (c["min"] == r["wire"][0] and c["max"] <= r["wire"][1]):
+            out.append({"address": address, "kind": "range", "detail": "contract index %g..%g, page %g..%g" % (*r["wire"], c["min"], c["max"])})
+        if r["kind"] == "trigger" and (not c["trigger"] or abs(c["max"] - r["wire"][1]) > 1e-9):
+            out.append({"address": address, "kind": "trigger", "detail": "contract trigger up to %g, page %s up to %g" % (
+                r["wire"][1], "trigger" if c["trigger"] else "not a trigger", c["max"])})
+        if r["kind"] != "trigger" and c["trigger"]:
+            out.append({"address": address, "kind": "trigger", "detail": "page has a trigger, contract says %s" % r["kind"]})
+        if abs(r["default"] - c["default"]) > 0.005 * span:
+            out.append({"address": address, "kind": "default", "detail": "contract wire default is %g in the scene, page %g" % (r["default"], c["default"])})
+    for address in sorted(set(page) - {a for a, r in rows.items() if r["used"]}):
+        out.append({"address": address, "kind": "not in contract" if address not in rows else "not used but on page",
+                    "detail": "page exposes it, osc/contract.json has no Blender column for it"})
     return out
 
 
@@ -130,6 +126,46 @@ def osc_probe(controls):
     missing = sorted(set("/" + c["key"].replace("_", "/", 1) for c in controls) - seen)
     return {"sent": len(controls), "received": after["received"] - before["received"],
             "applied": after["applied"] - before["applied"], "missing": missing, "errors": after["errors"] - before["errors"]}
+
+
+BRIDGE_MESSAGES = (("/vj/intensity", 0.5), ("/vj/fog_height", 0.42), ("/vj/fog_scale", 0.26), ("/vj/cam", 12), ("/vj/shock", 1.4),
+                   ("/vj/cam_auto", 0))     # docs/handover/osc-contract.md: the live check of the 0..1 wire
+
+
+def bridge_check(controls):
+    """The six messages of docs/handover/osc-contract.md over udp 9201, each read back from the scene: the property is the
+    contract's scene value of the wire value (kept inside the property's own range), `/vj/cam 12` cuts to the
+    highest CAM_k of the scene, `/vj/cam_auto` writes no property and counts in the bridge's `ignored`.
+    Returns one row per message; the scene is put back on its defaults."""
+    page = {c["key"]: c for c in controls}
+    rows = contract.by_address()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    out = []
+    for address, wire in BRIDGE_MESSAGES:
+        key = "vj_" + address[len("/vj/"):]
+        before = http("/api/state")
+        sock.sendto(osc_message(address, float(wire)), OSC)
+        time.sleep(0.5)
+        http("/api/state")
+        time.sleep(0.3)
+        after = http("/api/state")
+        row = {"address": address, "wire": wire}
+        if key in page:
+            want = contract.scene_value(rows[address], "blender", wire)
+            want = min(max(want, page[key]["min"]), page[key]["max"])
+            got = after["values"].get(key)
+            row.update(property=key, expected=round(want, 4), got=None if got is None else round(got, 4),
+                       ok=got is not None and abs(got - want) < 1e-3)
+            if address == "/vj/cam":
+                row["camera"] = after["camera"]
+                row["ok"] = row["ok"] and after["camera"] == "CAM_%d" % int(want)
+        else:
+            ignored = after["osc"]["ignored"] - before["osc"]["ignored"]
+            row.update(property=None, ignored=ignored, ok=key not in after["values"] and ignored == 1)
+        out.append(row)
+    http("/api/defaults", {})
+    time.sleep(0.5)
+    return out
 
 
 def fmt_row(r):
@@ -162,17 +198,20 @@ def main():
     report = {"scene": scene, "time": time.strftime("%Y-%m-%d %H:%M:%S"), "controls": len(controls)}
 
     report["contract"] = mismatches = cross_check(controls)
-    failing = [m for m in mismatches if m["level"] == "fail"]
-    print("\ncontract: %d missing or extra address(es), %d range or default difference(s) as information" % (
-        len(failing), len(mismatches) - len(failing)))
-    for m in sorted(mismatches, key=lambda m: m["level"] != "fail"):
-        print("  %-5s %-16s %-18s %s" % (m["level"], m["address"], m["kind"], m["detail"]))
+    print("\ncontract: %d mismatch(es)" % len(mismatches))
+    for m in mismatches:
+        print("  %-16s %-18s %s" % (m["address"], m["kind"], m["detail"]))
 
     if not args.no_probe:
         report["osc_probe"] = probe = osc_probe(controls)
         print("\nudp 9201: sent %d, received %d, applied %d, errors %d%s" % (
             probe["sent"], probe["received"], probe["applied"], probe["errors"],
             ", not seen: " + " ".join(probe["missing"]) if probe["missing"] else ""))
+
+        report["bridge_check"] = bridge = bridge_check(controls)
+        print("\nbridge, six messages: %d of %d as expected" % (sum(1 for b in bridge if b["ok"]), len(bridge)))
+        for b in bridge:
+            print("  %-3s %-14s %-6g %s" % ("ok" if b["ok"] else "BAD", b["address"], b["wire"], {k: v for k, v in b.items() if k not in ("address", "wire", "ok")}))
 
     frames_dir = os.path.join(os.path.dirname(out_path), "feature_check_%s_frames" % scene)
     http("/api/check", {"only": [k for k in args.only.split(",") if k], "frames_dir": frames_dir,
@@ -215,7 +254,7 @@ def main():
     with open(out_path, "w") as f:
         json.dump(report, f, indent=1)
     print("written", out_path)
-    bad = counts.get("no effect", 0) + counts.get("error", 0) + len(failing)
+    bad = counts.get("no effect", 0) + counts.get("error", 0) + len(mismatches) + sum(1 for b in report.get("bridge_check", []) if not b["ok"])
     if result.get("state") != "done":
         return 2
     return 1 if bad or not report["state_equals_defaults"] else 0

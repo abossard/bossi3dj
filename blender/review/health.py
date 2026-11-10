@@ -4,6 +4,8 @@ Through the Blender MCP:  exec(open(bpy.path.abspath("//../review/health.py")).r
 The dict lands in `result` and in driver_namespace["health"]. `problems` lists what would spoil
 a grab or a save; an empty list means the scene is ready.
 """
+import os
+
 import bpy
 
 DN = bpy.app.driver_namespace
@@ -45,6 +47,21 @@ def long_drivers(limit=250):
     return out
 
 
+def stale_texts():
+    """Embedded text blocks whose text differs from the file they stand for (Blender runs the stored copy, not the file).
+    A block without a path stands for the file of its name next to the .blend or in planet_proto/."""
+    out = []
+    for tx in bpy.data.texts:
+        candidates = [bpy.path.abspath(tx.filepath)] if tx.filepath else [bpy.path.abspath(p + tx.name) for p in ("//", "//planet_proto/")]
+        path = next((c for c in candidates if os.path.exists(c)), None)
+        if path is None:
+            continue
+        with open(path) as f:
+            if f.read().rstrip("\n") != tx.as_string().rstrip("\n"):
+                out.append(tx.name)
+    return out
+
+
 def health():
     bridge, sender = DN.get("vj_osc_bridge"), DN.get("syphon_out")
     h = {
@@ -60,6 +77,7 @@ def health():
         "syphon": None if sender is None else {"frames": sender.frames, "failed": sender.failed},
         "off_default": off_default(),
         "long_drivers": long_drivers(),
+        "stale_texts": stale_texts(),
     }
     p = []
     if not any(v["perspective"] == "CAMERA" for v in h["views"]):
@@ -78,6 +96,8 @@ def health():
         p.append("Syphon sender is not running")
     if h["long_drivers"]:
         p.append("driver expressions at the 256-character limit")
+    if h["stale_texts"]:
+        p.append("embedded text differs from its file (Blender runs the embedded copy): %s" % ", ".join(h["stale_texts"]))
     if h["off_default"]:
         p.append("vj_* values differ from defaults: reset before saving the .blend")
     h["problems"] = p

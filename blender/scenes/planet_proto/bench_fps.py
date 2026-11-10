@@ -49,7 +49,7 @@ def clock(scene, depsgraph=None):
 runtime = bpy.data.texts.get("planet_runtime.py")
 if runtime is not None:
     runtime.as_module()          # installs planet_runtime.tick (rt_space, LOD anchor on cuts; clocks when standalone)
-if runtime is None or bpy.data.texts.get("synthwave_runtime.py") is not None:
+if runtime is None or bpy.data.texts.get("vj_loader.py") is not None:
     bpy.app.handlers.frame_change_pre.append(clock)   # -Y keeps the island runtime off, so its clocks run here
 
 

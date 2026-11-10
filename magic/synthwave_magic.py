@@ -79,11 +79,11 @@ GLOBALS = [
     ctl("Nebula", 1.0),      # night 3D nebula strength
     ctl("Flamingos", 1.0),   # flock size, 0 hides them
     ctl("Fog", 0.35),        # 0 removes the fog volume
-    ctl("FogHeight", 0.42),  # x60 m
+    ctl("FogHeight", 0.41),  # 1..60 m
     ctl("FogGlow", 0.3),     # x2
     ctl("FogHue", 0.0),
     ctl("FogNoise", 0.6),
-    ctl("FogScale", 0.26),   # x1000 m
+    ctl("FogScale", 0.25),   # 10..1000 m
     ctl("FogSpeed", 0.25),   # x40 m/s
     ctl("Flight", 0.0),      # planet scene: 0 orbit, 0.33 approach, 0.66 skim, 1 hover
     ctl("Boost", 0.0),       # planet scene: accelerator while skimming or hovering
@@ -216,11 +216,11 @@ GLOBALS = [
     ("OutFlamingos", ("global", "Flamingos"), 1, [("Smooth", 0.95, "x")]),
     ("OutHaze", ("global", "Haze"), 1, [("Smooth", 0.95, "x")]),
     ("OutFog", "calc", 0.35, [ex("max(Fog, min(0.6, Fog + Auto*Breakdown*0.3))"), ("Smooth", 0.95, "x")]),
-    ("OutFogHeight", ("global", "FogHeight"), 0.42, [("Smooth", 0.95, "x")]),
+    ("OutFogHeight", ("global", "FogHeight"), 0.41, [("Smooth", 0.95, "x")]),
     ("OutFogGlow", "calc", 0.3, [ex("min(1, FogGlow*(1 + Auto*0.5*DropEnv))")]),
     ("OutFogHue", ("global", "FogHue"), 0, [("Smooth", 0.95, "x")]),
     ("OutFogNoise", ("global", "FogNoise"), 0.6, [("Smooth", 0.95, "x")]),
-    ("OutFogScale", ("global", "FogScale"), 0.26, [("Smooth", 0.95, "x")]),
+    ("OutFogScale", ("global", "FogScale"), 0.25, [("Smooth", 0.95, "x")]),
     ("OutFogSpeed", ("global", "FogSpeed"), 0.25, [("Smooth", 0.95, "x")]),
     ("OutFogBeat", ("global", "FogBeat"), 0.5, [("Smooth", 0.95, "x")]),
     # A 50 ms pulse at the wave's strength, so every trigger is a new rising edge.

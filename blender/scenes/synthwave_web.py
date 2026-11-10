@@ -15,7 +15,8 @@ previous instance. Open http://127.0.0.1:9210 to drive the scene without Magic.
   while this page asks for it.
 - The feature check (synthwave_check.py, "Check all" on the page, `make blender-check`):
   POST /api/check starts it (body: {"only": [...], "frames_dir": "..."}), GET /api/check
-  returns its progress and rows, POST /api/check/abort stops it. The module is loaded
+  returns its progress and rows, POST /api/check/abort stops it. GET /api/health runs
+  blender/review/health.py and returns its dict. The module is loaded
   again for every check, and nothing of it runs while no check runs.
 - The HTTP server runs in a daemon thread and never touches bpy. One
   bpy.app.timers callback applies the queued writes on the main thread and
@@ -40,6 +41,7 @@ PAGE_IDLE = 2.0       # s after the last poll before snapshots stop
 PULSE = 0.1           # s a trigger stays high, longer than one frame so the runtime sees the edge
 LOG_SENT = 80         # newest OSC log lines in each snapshot
 CHECK_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "synthwave_check.py")
+HEALTH_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "review", "health.py")
 PREFIX = "vj_"
 REGISTRY_KEY = "synthwave_web"
 BRIDGE_KEY = "vj_osc_bridge"
@@ -106,6 +108,7 @@ class Web:
         self.published = 0.0
         self.sim = Sim()
         self.check = None
+        self.health = '{"error": "not run"}'
         self.server = ThreadingHTTPServer((HOST, PORT), self.handler())
         self.server.daemon_threads = True
         self.thread = threading.Thread(target=self.server.serve_forever, name=REGISTRY_KEY, daemon=True)
@@ -137,6 +140,11 @@ class Web:
                     self._send(json.dumps(web.snapshot).encode(), "application/json")
                 elif path == "/api/check":
                     self._send((web.check.public if web.check else '{"state": "idle"}').encode(), "application/json")
+                elif path == "/api/health":     # blender/review/health.py, run on the main thread
+                    done = threading.Event()
+                    web.writes.put((path, done))
+                    done.wait(10)
+                    self._send(web.health.encode(), "application/json")
                 elif path == "/api/frame.bmp":
                     bpy.app.driver_namespace[PREVIEW_WANTED] = time.time()
                     frame = bpy.app.driver_namespace.get(PREVIEW_KEY)
@@ -176,6 +184,8 @@ class Web:
                 self.apply(scene, bridge, {c["key"]: c["default"] for c in controls(scene)}, "web")
             elif path == "/api/check":
                 self.start_check(body)
+            elif path == "/api/health":
+                self.run_health(body)
             elif path == "/api/hold" and bridge is not None:
                 keys = set(body.get("keys") or [c["key"] for c in controls(scene)])
                 bridge.hold = bridge.hold | keys if body.get("on") else bridge.hold - keys
@@ -202,6 +212,16 @@ class Web:
             traceback.print_exc()
             err = json.dumps({"state": "failed", "error": "check not started: %s" % e, "rows": []})
             self.check = types.SimpleNamespace(public=err, result={"state": "failed"}, abort=lambda: None)
+
+    def run_health(self, done):
+        try:
+            ns = {}
+            with open(HEALTH_FILE) as f:
+                exec(compile(f.read(), HEALTH_FILE, "exec"), ns)
+            self.health = json.dumps(ns["result"])
+        except Exception as e:
+            self.health = json.dumps({"error": str(e)})
+        done.set()
 
     def apply(self, scene, bridge, values, source):
         values = {k: v for k, v in values.items() if k.startswith(PREFIX) and k in scene}
@@ -230,7 +250,7 @@ class Web:
         if bridge is not None:
             snap["osc"] = {
                 "port": bridge.port, "received": bridge.received, "applied": bridge.applied,
-                "dropped": bridge.dropped, "held": bridge.held, "errors": bridge.errors,
+                "dropped": bridge.dropped, "held": bridge.held, "ignored": bridge.ignored, "errors": bridge.errors,
                 "ticks_hz": len(bridge.tick_window), "hold": sorted(bridge.hold), "source": dict(bridge.source),
                 "addresses": {a: {"n": s["n"], "hz": round(s["hz"], 1), "age": round(now - s["t"], 2),
                                   "v": [x if isinstance(x, (int, float, str)) else str(x) for x in s["v"]],

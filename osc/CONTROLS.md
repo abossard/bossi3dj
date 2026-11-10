@@ -45,11 +45,11 @@ The source of the rows is [contract.json](contract.json). The table below, the b
 | `/vj/meteor` | trigger 0..1, default 0 | rising edge above 0.5: a shooting star (up to three at once), brightest at night. Without the trigger only rarely, every 1-3 min at night while idle | not used |
 | `/vj/flamingos` | 0..1, default 1 | flamingo flock size; 0 hides them | not used |
 | `/vj/fog` | 0..1, default 0.35 | fog bank density, about linear up to 0.6, then it climbs steeply to dense autumn fog at 1, where the ground barely shows. A bank of drifting 3D clouds that fills the valleys and hides what lies behind it, ray-marched per pixel on land, water and pyramids; sky, sun and moon never get it, their reflections in the water do | 0..0.0086 density, default 0.00301. volumetric fog density |
-| `/vj/fog_height` | 0..1, default 0.42 | 0..60 m, default 25.2. top of the fog bank (soft over its upper half), 60 m at most so it always stays near the ground | 0..95 m, default 39.9. top of the volumetric fog |
+| `/vj/fog_height` | 0..1, default 0.41 | 1..60 m, default 25.19. top of the fog bank (soft over its upper half), 60 m at most so it always stays near the ground | 0..95 m, default 38.95. top of the volumetric fog |
 | `/vj/fog_glow` | 0..1, default 0.3 | 0..2, default 0.6. self-glow | not used |
 | `/vj/fog_hue` | 0..1, default 0 | colour: pink, violet, cyan, back to pink | not used |
 | `/vj/fog_noise` | 0..1, default 0.6 | patchiness | not used |
-| `/vj/fog_scale` | 0..1, default 0.26 | 0..1000 m, default 260. cloud size (the property stops at 10 m) | not used |
+| `/vj/fog_scale` | 0..1, default 0.25 | 10..1000 m, default 257.5. cloud size | not used |
 | `/vj/fog_speed` | 0..1, default 0.25 | 0..40 m/s, default 10. wind drift | not used |
 | `/vj/fog_beat` | 0..1, default 0.5 | beat pumping | not used |
 | `/vj/haze` | 0..1, default 1 | distance haze toward the horizon; 0 with `/vj/fog` 0 gives a fog-free view | 0..0.00025 density, default 0.00025. distance haze |
