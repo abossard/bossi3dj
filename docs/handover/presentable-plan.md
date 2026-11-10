@@ -48,3 +48,21 @@ flowchart TD
 - Reviews stay cheap: numbers first (self-check table, ground check, cut timing), images only for cameras whose look changed, as contact sheets through `shot-reviewer`, one frozen rubric per round.
 - Sub sessions do not edit `STATE.md` or this file. They write `docs/handover/<topic>.md` and commit on their own branch. The orchestrator merges into `integration/presentable`.
 - B2 to B4 are cut from B1's table: a control that fails the self-check is a bug with an owner before any look work starts.
+
+## Status 2026-11-10, after wave 1
+
+Merged into `integration/presentable`: B1, G1, C1. On the merged branch: magic 44, osc 21, bridge 6, Godot 263 tests pass, `make godot-check` 22 of 22 headless, the Godot page's "Check all" gave 22 effect in a browser against a headless run on 19211.
+
+What B1's table changed in the graph:
+
+| Finding | Owner |
+|---|---|
+| `/vj/flight`, `/vj/boost`, `/vj/blend`, `/vj/hit`, `/vj/energy` do nothing: the runtime never starts `flight_rt` | B2 |
+| `/vj/hue` ends in an unlinked node of `VJ_Color`; `/vj/grid_speed` has no reader | B4 |
+| the `.blend` runs an embedded, stale copy of the runtime and bridge | B4 |
+| island opens in Solid shading, its check is void | B4 |
+| bridge scaling to 0..1 not yet observed in a live Blender | B4 |
+| `/vj/nebula` shows on no camera | B3 |
+| Godot ranges in `io/vj_map.gd` differ from `osc/contract.json` | G1 follow-up |
+
+GPU order from here: B4 (Blender), G2 (Godot live), B2 live part (Blender), B3 (Blender), then the fps tables. B2 starts with its Blender-free part in parallel with B4.

@@ -14,7 +14,8 @@ Updated 2026-11-10. Keep this file short and current: where each stream stands, 
 
 ## Blender: Synthwave Planet Scene
 
-- Works: planet build, star system with eclipses, 11 cameras, per-camera LOD, volumetric fog box, Flight camera (`/vj/flight`), Energy controls (`/vj/energy`, `/vj/hit`), streaming LOD, Syphon and OSC. Day mean 59 fps (M1 Max, 2026-11-05).
+- Works: planet build, star system with eclipses, 11 cameras, per-camera LOD, volumetric fog box, streaming LOD, Syphon and OSC. Self-check (`make blender-check`, 2026-11-10): 30 of 37 controls have an effect.
+- Not working in the shipped scene: Flight camera and Energy controls (`/vj/flight`, `/vj/boost`, `/vj/blend`, `/vj/energy`, `/vj/hit`: the runtime never starts `flight_rt`), `/vj/hue`, `/vj/grid_speed`, `/vj/nebula`. Report: [docs/reports/blender-feature-check.md](docs/reports/blender-feature-check.md). Day mean 59 fps (M1 Max, 2026-11-05).
 - Review round 8 was grabbed on `d5e3323`; 5 of 6 reviewer groups reported, CAM_6 to CAM_8 were not reviewed. Notes: `docs/handover/planet-visual-check-round8.md`.
 - Open from round 8: day wires washed out on sunlit slopes, CAM_1 bank lines, CAM_4 water step and fog terraces, CAM_5 top band, CAM_9 dotted sky, ragged limb at 10 km orbit, river stubs, moon smear.
 - Flight, open: FL5 Approach and Skim frame times, Hover arrival in 10 to 15 s, M1 cut stalls. Notes: `docs/handover/flight-hover-handover.md`.
@@ -23,13 +24,13 @@ Updated 2026-11-10. Keep this file short and current: where each stream stands, 
 
 ## Godot: Colossus Scene
 
-- Works: full Arc (Approach, Climb, Fall, Reset), 71 logic tests, headless smoke, OSC in on 9202, Syphon `COLOSSUS_OUT` at 1080p.
+- Works: full Arc (Approach, Climb, Fall, Reset), 263 logic tests, OSC in on 9202, Syphon `COLOSSUS_OUT` at 1080p, control page on 9211 with a self-check (`make godot-check`, 22 of 22 headless), values persist without packets. Not yet seen on Metal. Report: [docs/reports/godot-feature-check.md](docs/reports/godot-feature-check.md).
 - Open: real Colossus and Wanderer models (downloads need a login), stand-in ruins, the Colossus is lost in haze beyond 450 m, 60 fps with Blender closed is unmeasured, pickup in Magic's SyphonClient was never checked, Scenario was never signed in.
 - godot-mcp is installed and was never used in 43 h of work.
 
 ## OSC contract
 
-- Three mismatches between the scenes (`/vj/fog_height` units, `/vj/cam` meaning, Godot's 2 s staleness against Magic's send-on-change): [osc/CONTROLS.md](osc/CONTROLS.md). No Magic project drives both scenes yet.
+- One source: `osc/contract.json`, 0..1 on the wire, synced into [osc/CONTROLS.md](osc/CONTROLS.md) and the Blender bridge. `magic/projects/show.magic` drives both scenes, not yet loaded in Magic. Bridge scaling not yet observed in a live Blender.
 
 ## Decided by the user (2026-11-10)
 
