@@ -26,3 +26,13 @@ static func next(phase: Phase, event: Event) -> Phase:
 
 static func name_of(phase: Phase) -> String:
 	return Phase.keys()[phase].capitalize()
+
+
+## The event that moves `current` one step toward `goal`, or -1 to wait or when already there.
+## Phases only go forward: back to an earlier one means a Reset, which comes back to Approach.
+static func step_toward(current: Phase, goal: Phase) -> int:
+	if current == goal or current == Phase.RESET:
+		return -1
+	if goal == Phase.RESET or goal < current:
+		return Event.RESET_NOW
+	return Event.NEXT

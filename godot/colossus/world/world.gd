@@ -5,15 +5,6 @@ extends Node3D
 const SUN_ELEVATION_DEG := 4.0
 const SUN_COLOR := Color("e8c890")
 const STONE := Color("262d35")
-## The music signals with Magic quiet: they map onto the tuned overcast-dusk look below.
-const REST := {
-	"/vj/level": 1.0 / 3.0,
-	"/vj/fog": 0.1,
-	"/vj/fog_height": 0.375,
-	"/vj/haze": 0.05,
-	"/vj/intensity": 1.0,
-}
-
 var environment: Environment
 var sun: DirectionalLight3D
 var land: Land
@@ -32,24 +23,20 @@ func height_at(x: float, z: float) -> float:
 	return land.height_at(x, z)
 
 
-## Music drives weight, fog and light; values are 0..1 except intensity (0..2).
+## Music drives the light and the fog; the arguments are scene values (VjMap.scene_value):
+## sun energy, volumetric fog density, fog height in metres, distance haze density, exposure.
 ## Writes only values that moved, so a steady signal leaves the sky's radiance converged.
-func apply_signals(
-	level: float, fog: float, fog_height: float, haze: float, intensity: float
+func apply_look(
+	sun_energy: float, fog_density: float, fog_height_m: float, haze_density: float, exposure: float
 ) -> void:
-	var energy := lerpf(1.4, 2.6, level)
-	if _moved(sun.light_energy, energy):
-		sun.light_energy = energy
-	var vol := lerpf(0.002, 0.012, fog)
-	if _moved(environment.volumetric_fog_density, vol):
-		environment.volumetric_fog_density = vol
-	var fh := lerpf(10.0, 90.0, fog_height)
-	if _moved(environment.fog_height, fh):
-		environment.fog_height = fh
-	var depth := lerpf(0.0002, 0.0012, haze)
-	if _moved(environment.fog_density, depth):
-		environment.fog_density = depth
-	var exposure := clampf(intensity, 0.2, 2.0)
+	if _moved(sun.light_energy, sun_energy):
+		sun.light_energy = sun_energy
+	if _moved(environment.volumetric_fog_density, fog_density):
+		environment.volumetric_fog_density = fog_density
+	if _moved(environment.fog_height, fog_height_m):
+		environment.fog_height = fog_height_m
+	if _moved(environment.fog_density, haze_density):
+		environment.fog_density = haze_density
 	if _moved(environment.tonemap_exposure, exposure):
 		environment.tonemap_exposure = exposure
 

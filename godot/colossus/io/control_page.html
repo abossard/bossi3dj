@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Colossus Control</title>
+<style>
+  :root {
+    --bg: #0f1114; --panel: #181b20; --line: #2c3139; --fg: #e4dfd2; --dim: #8f8d86;
+    --accent: #c9a35a; --accent2: #8fb4c9; --ok: #6fcf97; --warn: #e2b04a; --bad: #e5736b; --mono: ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.4 -apple-system, system-ui, sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 16px; background: var(--panel);
+           border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 2; }
+  header h1 { font-size: 16px; margin: 0 6px 0 0; letter-spacing: .04em; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line);
+          font: 12px var(--mono); background: var(--bg); white-space: nowrap; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bad); } .dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); }
+  main { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 12px; padding: 12px 16px; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+  section.wide { grid-column: 1 / -1; }
+  section h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin: 0 0 8px;
+               display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .ctl { display: grid; grid-template-columns: 110px 1fr 56px 38px 24px; gap: 6px; align-items: center; margin: 3px 0; }
+  .ctl label { font: 12px var(--mono); color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ctl output { font: 12px var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+  .src { font: 10px var(--mono); color: var(--dim); text-align: center; }
+  .src.osc { color: var(--accent2); } .src.page { color: var(--accent); } .src.sim { color: var(--warn); }
+  .drives { grid-column: 2 / -1; font-size: 11px; color: var(--dim); margin: -2px 0 4px; }
+  .lock { padding: 0; width: 24px; height: 24px; font-size: 11px; line-height: 1; }
+  .lock.on { background: var(--warn); border-color: var(--warn); color: #1a1200; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  input[type=number] { width: 70px; font: 12px var(--mono); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; }
+  button { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+  button:hover { border-color: var(--accent2); }
+  button.on { background: var(--accent); border-color: var(--accent); color: #1a1405; }
+  button.fire { border-color: var(--accent); min-width: 90px; }
+  button.fire:active { background: var(--accent); color: #1a1405; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0; }
+  .muted { color: var(--dim); font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; font: 12px var(--mono); }
+  th, td { text-align: left; padding: 2px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { color: var(--dim); font-weight: 500; } td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.detail { white-space: normal; color: var(--dim); }
+  .v-effect { color: var(--ok); } .v-no-effect { color: var(--warn); } .v-error { color: var(--bad); }
+  tr.held td { color: var(--warn); }
+  .scroll { max-height: 360px; overflow: auto; }
+  @media (max-width: 480px) { main { padding: 10px; } .ctl { grid-template-columns: 84px 1fr 48px 34px 24px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Colossus Control</h1>
+  <span class="chip"><span id="linkdot" class="dot"></span><span id="linktxt">connecting</span></span>
+  <span class="chip">Phase <b id="phase">-</b></span>
+  <span class="chip">shot <b id="shot">-</b><span id="pin"></span></span>
+  <span class="chip"><b id="fps">-</b> fps <b id="ms">-</b> ms</span>
+  <span class="chip"><span id="oscdot" class="dot"></span>OSC <b id="osc">-</b></span>
+  <span class="chip"><span id="sydot" class="dot"></span>Syphon <b id="sy">-</b></span>
+  <span class="chip">Wanderer <b id="wand">-</b></span>
+  <span style="flex:1"></span>
+  <button id="defaults">Defaults</button>
+  <button id="release">Release holds</button>
+</header>
+<main>
+  <section>
+    <h2>Look and weight <span class="muted">move = hold; the lock gives it back to OSC</span></h2>
+    <div id="levels"></div>
+  </section>
+  <section>
+    <h2>Director shot</h2>
+    <div class="row" id="shots"></div>
+    <div class="muted">A pin holds that shot until Auto. Auto hands the cut back to the director.</div>
+    <h2 style="margin-top:14px">Arc</h2>
+    <div class="row" id="phases"></div>
+    <div class="muted">Going back to an earlier Phase passes through Reset: fade, next Colossus.</div>
+    <h2 style="margin-top:14px">Triggers</h2>
+    <div class="row">
+      <button class="fire" data-fire="/vj/shock" data-strength="1">Shake</button>
+      <button class="fire" data-fire="/vj/shock" data-strength="1.5">Shake + drop</button>
+      <button class="fire" data-fire="/vj/beat" data-strength="1">Beat</button>
+    </div>
+    <div class="muted">Shake acts only while the Wanderer hangs on the Colossus.</div>
+    <h2 style="margin-top:14px">Beat simulator <span class="muted">stands in for Magic</span></h2>
+    <div class="row">
+      <button id="simbtn">Start</button>
+      BPM <input type="number" id="bpm" value="124" min="40" max="240">
+      shock every <input type="number" id="every" value="8" min="0" max="64"> beats
+    </div>
+  </section>
+  <section class="wide">
+    <h2>Self-check <span><span class="muted" id="checksum"></span> <button id="checkall">Check all</button></span></h2>
+    <div class="muted">Drives each control through the OSC path, reads what the scene does and judges. Leaves values and holds as found and ends in Approach.</div>
+    <table><thead><tr><th>control</th><th>verdict</th><th>observed</th><th>expected</th><th>what</th><th></th></tr></thead><tbody id="checkrows"></tbody></table>
+  </section>
+  <section class="wide">
+    <h2>Values</h2>
+    <div class="scroll"><table><thead><tr><th>address</th><th>value</th><th>scene</th><th>source</th><th>writes</th><th>age s</th></tr></thead><tbody id="values"></tbody></table></div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const PHASES = ["Approach", "Climb", "Fall", "Reset"];
+const LEVEL = 0, TRIGGER = 1, SHOT = 2;   // VjMap.Kind
+let state = null, built = false, active = null, lastSent = 0;
+
+async function post(path, body) {
+  const r = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body || {})});
+  if (!r.ok) console.warn(path, r.status, await r.text());
+  return r.ok;
+}
+const fmt = v => v == null ? "-" : (Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 1 ? v.toFixed(2) : v.toFixed(3));
+const short = a => a.replace("/vj/", "");
+
+function build(s) {
+  $("levels").innerHTML = "";
+  for (const c of s.controls.filter(c => c.kind === LEVEL)) {
+    const step = (c.hi - c.lo) / 200;
+    const d = document.createElement("div");
+    d.innerHTML = `<div class="ctl" data-a="${c.address}"><label title="${c.address}">${short(c.address)}</label>
+      <input type="range" min="${c.lo}" max="${c.hi}" step="${step}" value="${c.rest}">
+      <output></output><span class="src"></span><button class="lock" title="hold: OSC cannot move it">&#128274;</button>
+      <div class="drives">${c.drives} (default ${fmt(c.rest)})</div></div>`;
+    const row = d.firstChild, slider = row.querySelector("input");
+    slider.addEventListener("pointerdown", () => active = c.address);
+    slider.addEventListener("pointerup", () => active = null);
+    slider.addEventListener("input", () => {
+      const now = performance.now();
+      if (now - lastSent < 40) return;
+      lastSent = now;
+      post("/api/set", {values: {[c.address]: +slider.value}, hold: true});
+    });
+    slider.addEventListener("change", () => post("/api/set", {values: {[c.address]: +slider.value}, hold: true}));
+    row.querySelector(".lock").addEventListener("click", () => post("/api/hold", {addresses: [c.address], on: !s.values[c.address].held}));
+    $("levels").appendChild(row);
+  }
+  $("shots").innerHTML = "";
+  for (let n = 0; n <= 5; n++) {
+    const b = document.createElement("button");
+    b.dataset.shot = n; b.textContent = n ? "Pin " + n : "Auto";
+    b.addEventListener("click", () => post("/api/set", {values: {"/vj/cam": n}, hold: n > 0}));
+    $("shots").appendChild(b);
+  }
+  $("phases").innerHTML = "";
+  for (const p of PHASES) {
+    const b = document.createElement("button");
+    b.dataset.phase = p; b.textContent = p;
+    b.addEventListener("click", () => post("/api/phase", {phase: p}));
+    $("phases").appendChild(b);
+  }
+  built = true;
+}
+
+function render(s) {
+  if (!built) build(s);
+  $("linkdot").className = "dot ok"; $("linktxt").textContent = "live";
+  $("phase").textContent = s.phase;
+  $("shot").textContent = s.shot;
+  $("pin").textContent = s.pinned ? " pinned" : " auto";
+  $("fps").textContent = s.display === "headless" ? "headless" : s.fps;
+  $("ms").textContent = s.frame_ms;
+  $("osc").textContent = `${s.osc.packets} pkts`;
+  $("oscdot").className = "dot " + (s.osc.live ? "ok" : "warn");
+  $("sy").textContent = s.syphon.active ? `${s.syphon.server} ${s.syphon.frames}` : "off";
+  $("sydot").className = "dot " + (s.syphon.active ? "ok" : "warn");
+  $("wand").textContent = s.wanderer_on_colossus ? "on the Colossus" : "on the ground";
+  for (const row of document.querySelectorAll(".ctl")) {
+    const a = row.dataset.a, v = s.values[a];
+    const slider = row.querySelector("input");
+    if (active !== a) slider.value = v.value;
+    row.querySelector("output").textContent = fmt(v.value);
+    const src = row.querySelector(".src");
+    src.textContent = v.source; src.className = "src " + v.source;
+    row.querySelector(".lock").classList.toggle("on", v.held);
+  }
+  for (const b of $("shots").children) b.classList.toggle("on", +b.dataset.shot === s.pinned);
+  for (const b of $("phases").children) b.classList.toggle("on", b.dataset.phase === s.phase);
+  $("simbtn").textContent = s.sim.on ? "Stop" : "Start"; $("simbtn").classList.toggle("on", s.sim.on);
+  $("values").innerHTML = s.controls.map(c => {
+    const v = s.values[c.address];
+    return `<tr class="${v.held ? "held" : ""}"><td>${c.address}</td><td class="num">${fmt(v.value)}</td><td class="num">${fmt(v.scene)}</td>
+      <td>${v.source}${v.held ? " (held)" : ""}</td><td class="num">${v.writes}</td><td class="num">${v.age == null ? "-" : v.age}</td></tr>`;
+  }).join("");
+  renderCheck(s.check);
+}
+
+function renderCheck(c) {
+  const sum = c.summary || {};
+  $("checksum").textContent = c.running ? "running: " + c.current
+    : c.results.length ? `${sum["effect"]} effect, ${sum["no effect"]} no effect, ${sum["error"]} error` : "not run";
+  $("checkall").disabled = c.running;
+  $("checkrows").innerHTML = c.results.map(r => `<tr><td>${r.id}</td><td class="v-${r.verdict.replace(" ", "-")}">${r.verdict}</td>
+    <td class="num">${JSON.stringify(r.observed)}</td><td class="num">${JSON.stringify(r.expected)}</td><td class="detail">${r.detail}</td>
+    <td><button data-id="${r.id}">again</button></td></tr>`).join("");
+}
+
+async function poll() {
+  try {
+    const r = await fetch("/api/state", {cache: "no-store"});
+    state = await r.json();
+    render(state);
+  } catch (e) {
+    $("linkdot").className = "dot"; $("linktxt").textContent = "no answer";
+  }
+  setTimeout(poll, 250);
+}
+
+$("defaults").onclick = () => post("/api/defaults");
+$("release").onclick = () => post("/api/hold", {on: false});
+$("checkall").onclick = () => post("/api/check");
+$("checkrows").addEventListener("click", e => { if (e.target.dataset.id) post("/api/check", {ids: [e.target.dataset.id]}); });
+$("simbtn").onclick = () => post("/api/sim", {on: !state.sim.on, bpm: +$("bpm").value, shock_every: +$("every").value});
+for (const b of document.querySelectorAll("[data-fire]")) b.onclick = () => post("/api/fire", {address: b.dataset.fire, strength: +b.dataset.strength});
+poll();
+</script>
+</body>
+</html>

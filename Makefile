@@ -6,7 +6,7 @@ SCENE   ?= planet
 BLEND_planet = $(SCENES)/synthwave_planet.blend
 BLEND_island = $(SCENES)/synthwave_pyramids.blend
 
-.PHONY: help status lab test magic-test godot-test godot-smoke godot-capture godot-import godot-lint \
+.PHONY: help status lab test magic-test godot-test godot-smoke godot-check godot-page-test godot-capture godot-import godot-lint \
         godot-open godot-kill blender-open blender-kill blender-rebuild blender-paths magic-build venv verify
 
 # Blender and Godot share one GPU: a live window of one refuses to start while the other runs.
@@ -23,6 +23,8 @@ help:
 	@echo "  magic-build       regenerate magic/projects/*.magic from the generators"
 	@echo "  godot-test        Colossus logic tests, headless"
 	@echo "  godot-smoke       one full Colossus Arc, headless, own OSC port and Syphon name"
+	@echo "  godot-check       feature self-check headless on page port 19211: one row per control, JSON to CHECK_OUT (default /tmp/colossus-feature-check.json)"
+	@echo "  godot-page-test   headless scene on 19211, then HTTP requests against its control page and its Check all"
 	@echo "  godot-open        run the Colossus Scene in a window: OSC 9202, Syphon COLOSSUS_OUT (refuses while Blender runs)"
 	@echo "  godot-kill        end every Godot window (headless runs are left alone)"
 	@echo "  godot-capture     render one frame per Phase on Metal into OUT=<dir> (opens a window, refuses while Blender runs)"
@@ -55,6 +57,13 @@ godot-test:
 
 godot-smoke:
 	$(GODOT) --headless --path $(COLOSSUS) --script res://tests/smoke.gd
+
+CHECK_OUT ?= /tmp/colossus-feature-check.json
+godot-check:
+	$(GODOT) --headless --path $(COLOSSUS) --script res://tests/check.gd -- $(CHECK_OUT)
+
+godot-page-test:
+	python3 tools/godot_page_test.py
 
 OUT ?= /tmp/colossus-capture
 godot-capture:

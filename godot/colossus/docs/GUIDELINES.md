@@ -37,6 +37,7 @@ Read [SPEC.md](SPEC.md) for numbers, [GLOSSARY.md](../../../GLOSSARY.md) for ter
 
 ## Verifying
 
+- `make godot-check` after every change to a control or a value mapping: one row per control, effect / no effect / error. A new control is a row in `io/feature_check.gd` and in `io/vj_map.gd`.
 - `make godot-test` after every logic change, `make godot-smoke` after every scene change, `make godot-lint` before both.
 - After adding addons or assets: `make godot-import`. Zero load errors, and check that `project.godot` did not change.
 - Drive the scene without Magic using the `lab.py` generators (beat pulse on `/vj/beat`, pad on `/vj/shock`).

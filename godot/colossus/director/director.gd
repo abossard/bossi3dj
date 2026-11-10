@@ -73,6 +73,11 @@ func pin(s: int) -> void:
 		_cut_to(Shots.pick(phase, _bars_in_phase, false, false, _aerial_bars))
 
 
+## The shot /vj/cam holds, 0 while the director cuts.
+func pinned() -> int:
+	return _pinned
+
+
 ## Jump to the current shot's framing on the next frame (after a teleport, hidden by a fade).
 func snap() -> void:
 	_snap = true

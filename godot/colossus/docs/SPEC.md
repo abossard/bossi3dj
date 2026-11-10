@@ -93,11 +93,13 @@ Only the performer advances Approach and Climb. Fall ends on its own.
 | `/vj/bass` | footfall weight (camera shake, dust size) |
 | `/vj/level` | sun glow through the cloud gap |
 | `/vj/shock` | triggers a Shake while the Wanderer is on the Colossus |
-| `/vj/fog`, `/vj/fog_height`, `/vj/haze` | volumetric fog density, height, distance haze |
-| `/vj/cam` | 1 to 5 hold that director shot; 0 hands the cut back to the director |
+| `/vj/fog`, `/vj/fog_height`, `/vj/haze` | volumetric fog density, fog height in metres (0..60), distance haze |
+| `/vj/cam` | 1 to 5 hold that director shot; 0 hands the cut back to the director (above 5 clamps to 5) |
 | `/vj/intensity` | overall exposure |
 
-Each address counts as missing 2 s after its last packet and falls back to its rest value (the tuned look). Missing `/vj/beat`: an internal 90 BPM beat, as the Blender runtime does.
+A value stays until the next packet, as in Blender (Magic sends only on change); before the first packet an address has its rest value (the tuned look). Missing `/vj/beat` (no write for 2 s): an internal 90 BPM beat, as the Blender runtime does. The table of ranges, scaling and rest values is `io/vj_map.gd`; until the contract decision, `/vj/fog_height` is metres clamped to 0..60 and `/vj/cam` is clamped to 0..5.
+
+The same values can be written from the control page on http 9211 (`/api/*`, see the README). Page values are held against OSC until released.
 
 ### Keyboard and mouse (Takeover)
 
