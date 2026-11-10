@@ -25,8 +25,10 @@ Updated 2026-11-10. Keep this file short and current: where each stream stands, 
 
 ## Godot: Colossus Scene
 
-- Works: full Arc (Approach, Climb, Fall, Reset), 263 logic tests, OSC in on 9202, Syphon `COLOSSUS_OUT` at 1080p, control page on 9211 with a self-check (`make godot-check`, 22 of 22 headless), values persist without packets. Not yet seen on Metal. Report: [docs/reports/godot-feature-check.md](docs/reports/godot-feature-check.md).
-- Open: real Colossus and Wanderer models (downloads need a login), stand-in ruins, the Colossus is lost in haze beyond 450 m, 60 fps with Blender closed is unmeasured, pickup in Magic's SyphonClient was never checked, Scenario was never signed in.
+- Works: full Arc (Approach, Climb, Fall, Reset), 332 logic tests, OSC in on 9202, control page on 9211 with a self-check (22 of 22 headless and on Metal, 2026-11-10), values persist without packets, Syphon `COLOSSUS_OUT` (app `Godot`) at 1080p with pixel content, nothing of the page in the frame. Report: [docs/reports/godot-feature-check.md](docs/reports/godot-feature-check.md).
+- Look round 1 (`godot/colossus/docs/look-rubric.md`, 21 frames): 14 pass, 7 fail. Flat black ground in the first seconds after start or a new Colossus and at `/vj/fog_height` 0; no Colossus visible on the long walk (1.6 km away); no Wanderer in the Shake close grip. Verdicts: `docs/reports/godot-look-verdict.json`.
+- Frame time, context only (foreign load): median 60 fps at load 41 to 58, 36 to 40 at load 80 to 96; a 490 ms hitch when Fall hands over to Reset.
+- Open: real Colossus and Wanderer models (downloads need a login), stand-in ruins, a trustworthy fps table, pickup in Magic's SyphonClient, Scenario was never signed in.
 - godot-mcp is installed and was never used in 43 h of work.
 
 ## OSC contract
