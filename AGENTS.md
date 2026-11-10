@@ -20,14 +20,15 @@ Live VJ scenes driven by one OSC contract: Magic Music Visuals sends `/vj/*`, a 
 
 - Every `/vj/*` address is a row in [osc/CONTROLS.md](osc/CONTROLS.md). Change the row first, then the Magic generator, then each scene.
 - A scene owns no music logic. Magic decides what the music means; scenes only take controls.
-- Ports: Magic to relay 9200, Blender bridge 9201, Godot 9202, Blender scene page 9210, relay page 8765. Syphon servers: `CAM_OUT - Blender`, `COLOSSUS_OUT`.
-- Tests and probes never bind those ports or publish those Syphon names. Godot tests use 19202 and `COLOSSUS_TEST`.
+- Ports: Magic to relay 9200, Blender bridge 9201, Godot 9202, Blender scene page 9210, Godot scene page 9211, relay page 8765. Syphon servers: `CAM_OUT - Blender`, `COLOSSUS_OUT`.
+- Tests and probes never bind those ports or publish those Syphon names. Godot tests use 19202, 19211 and `COLOSSUS_TEST`.
 
 ## Shared machine
 
 - One Blender at a time. A second instance halves the fps of the first and both collide on udp 9201. `make blender-open` and `make blender-rebuild` refuse to start a second one.
 - The Blender lock is automatic: a hook (`tools/blender_lock.py`) gives the live Blender to the first session that changes it and denies others until it has been idle for 5 minutes. A denied call means: do Blender-free work, don't message the owner for a slot.
 - You may kill the live Blender for a rebuild (`make blender-kill`, user permission of 2026-11-04). The scene files are generated, nothing in them needs saving. Reopen with `make blender-open` afterwards.
+- One live app at a time: `make blender-open`, `make godot-open` and `make godot-capture` refuse while the other app runs. A refusal means: do GPU-free work.
 - Blender and Godot share one GPU. An fps number counts only when `make status` says `fps_trustworthy` and no other GPU app runs. The show runs Godot alone on the GPU; never close the user's Blender to measure Godot, hand that measurement to the user.
 - Magic is the user's app. Never drive it with computer use. Read and write projects with `magicproj.py`, check its output with a Syphon grab.
 

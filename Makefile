@@ -7,7 +7,11 @@ BLEND_planet = $(SCENES)/synthwave_planet.blend
 BLEND_island = $(SCENES)/synthwave_pyramids.blend
 
 .PHONY: help status lab test magic-test godot-test godot-smoke godot-capture godot-import godot-lint \
-        blender-open blender-kill blender-rebuild blender-paths magic-build venv verify
+        godot-open godot-kill blender-open blender-kill blender-rebuild blender-paths magic-build venv verify
+
+# Blender and Godot share one GPU: a live window of one refuses to start while the other runs.
+BLENDER_RUNS   = pgrep -f "Blender.app/Contents/MacOS/Blender" >/dev/null
+GODOT_GUI_RUNS = pgrep -lf "Godot_mono.app/Contents/MacOS/Godot" | grep -v -e "--headless" >/dev/null
 
 help:
 	@echo "bossi3dj: Magic -> OSC -> Blender scene + Godot scene -> Syphon -> Magic"
@@ -19,10 +23,12 @@ help:
 	@echo "  magic-build       regenerate magic/projects/*.magic from the generators"
 	@echo "  godot-test        Colossus logic tests, headless"
 	@echo "  godot-smoke       one full Colossus Arc, headless, own OSC port and Syphon name"
-	@echo "  godot-capture     render one frame per Phase on Metal into OUT=<dir> (opens a window)"
+	@echo "  godot-open        run the Colossus Scene in a window: OSC 9202, Syphon COLOSSUS_OUT (refuses while Blender runs)"
+	@echo "  godot-kill        end every Godot window (headless runs are left alone)"
+	@echo "  godot-capture     render one frame per Phase on Metal into OUT=<dir> (opens a window, refuses while Blender runs)"
 	@echo "  godot-import      re-import the Godot project after adding assets or addons"
 	@echo "  godot-lint        gdlint + gdformat --check on the project's own scripts"
-	@echo "  blender-open      open SCENE=planet|island in the GUI with scripts allowed (refuses a second Blender)"
+	@echo "  blender-open      open SCENE=planet|island in the GUI with scripts allowed (refuses a second Blender or a Godot window)"
 	@echo "  blender-kill      end the running Blender (unsaved state is lost)"
 	@echo "  blender-rebuild   headless: rebuild synthwave_planet.blend from the island scene (no Blender may run)"
 	@echo "  blender-paths     list the external files each .blend points at"
@@ -52,7 +58,16 @@ godot-smoke:
 
 OUT ?= /tmp/colossus-capture
 godot-capture:
+	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
 	$(GODOT) --path $(COLOSSUS) --script res://tests/capture.gd -- $(OUT)
+
+godot-open:
+	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
+	@if $(GODOT_GUI_RUNS); then echo "a Godot window is already running (make status)"; exit 1; fi
+	$(GODOT) --path $(COLOSSUS) &
+
+godot-kill:
+	-pgrep -lf "Godot_mono.app/Contents/MacOS/Godot" | grep -v -e "--headless" | cut -d" " -f1 | xargs kill
 
 godot-import:
 	$(GODOT) --headless --path $(COLOSSUS) --import
@@ -63,7 +78,8 @@ godot-lint:
 	cd $(COLOSSUS) && find . -name '*.gd' -not -path './addons/*' -print0 | xargs -0 gdformat --check
 
 blender-open:
-	@if pgrep -f "Blender.app/Contents/MacOS/Blender" >/dev/null; then echo "a Blender is already running (make status)"; exit 1; fi
+	@if $(BLENDER_RUNS); then echo "a Blender is already running (make status)"; exit 1; fi
+	@if $(GODOT_GUI_RUNS); then echo "a Godot window runs and shares the GPU: make godot-kill first (make status)"; exit 1; fi
 	open -a /Applications/Blender.app --args --enable-autoexec "$(CURDIR)/$(BLEND_$(SCENE))"
 
 blender-kill:

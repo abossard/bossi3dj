@@ -2,6 +2,10 @@
 
 Updated 2026-11-10. Keep this file short and current: where each stream stands, what is open, what waits for the user. Details go to `docs/handover/`.
 
+## Now
+
+- Run to presentable: graph, nodes and rules in [docs/handover/presentable-plan.md](docs/handover/presentable-plan.md). Integration branch `integration/presentable`.
+
 ## Origin
 
 - Imported on 2026-11-10 from `abossard/swift-vj` at `f7094fb` (fresh import, history stays there).

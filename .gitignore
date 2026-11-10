@@ -6,6 +6,8 @@ __pycache__/
 
 # NASA SVS Deep Star Maps and filtered moon maps (downloaded or generated, 124 to 423 MB each)
 blender/scenes/planet_proto/starmaps/
+# the same folder as a symlink in a worktree
+blender/scenes/planet_proto/starmaps
 # review grabs, sheets and reference photos (local review material)
 blender/scenes/planet_proto/visual_check/
 
