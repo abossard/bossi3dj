@@ -129,6 +129,7 @@ class Sender:
         self.frames = 0
         self.failed = False
         self.small = None        # preview offscreen, made on the first preview request
+        self.previews = 0        # previews read back so far, so a reader can tell a new frame from the old one
         self.preview_t = 0.0
         self.handle = bpy.types.SpaceView3D.draw_handler_add(self.draw, (), "WINDOW", "POST_PIXEL")
 
@@ -168,6 +169,7 @@ class Sender:
         pixels = rgba[:, :, 2::-1].tobytes()                 # BGR; w * 3 is a multiple of 4, so no row padding
         header = b"BM" + struct.pack("<IHHI", 54 + len(pixels), 0, 0, 54) + struct.pack("<IiiHHIIiiII", 40, w, h, 1, 24, 0, len(pixels), 2835, 2835, 0, 0)
         bpy.app.driver_namespace[PREVIEW_KEY] = header + pixels
+        self.previews += 1
 
     def composite(self, target, viewport, region, rect):
         # Draw the viewport texture at the origin, as on screen, under a projection that crops to the camera frame.

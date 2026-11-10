@@ -44,6 +44,8 @@
   th, td { text-align: left; padding: 2px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
   th { color: var(--dim); font-weight: 500; } td.num { text-align: right; font-variant-numeric: tabular-nums; }
   tr.stale td { color: var(--dim); } tr.held td { color: var(--warn); }
+  td.effect { color: var(--ok); } td.no-effect { color: var(--bad); } td.error { color: var(--warn); }
+  [hidden] { display: none; }
   .scroll { max-height: 300px; overflow: auto; }
   pre.log { margin: 0; height: 240px; overflow: auto; font: 11px/1.35 var(--mono); background: var(--bg); padding: 6px; border-radius: 6px; }
   .kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 4px 12px; font: 12px var(--mono); margin-bottom: 8px; }
@@ -62,12 +64,17 @@
   <button id="defaults">Reset to defaults</button>
   <button id="holdall" title="Skip all incoming OSC for vj_* so this page owns the scene">Hold all OSC</button>
   <button id="release">Release all</button>
+  <button id="checkall" title="Set every control to min, default and max and measure the frame; takes a few minutes, restores the defaults">Check all</button>
 </header>
 <main id="main">
   <section id="preview-sec">
     <h2>Camera output <label class="muted"><input type="checkbox" id="pv"> live preview</label></h2>
     <img id="frame" class="preview" alt="">
     <div class="muted" id="pvinfo">The preview reads the Syphon frame back at 640×360, about 10 fps, and only while this box is ticked.</div>
+  </section>
+  <section class="wide" id="check-sec" hidden>
+    <h2>Feature check <span class="row" style="margin:0"><span class="muted" id="checksum"></span><button id="checkabort">Abort</button></span></h2>
+    <div class="scroll" style="max-height:none"><table><thead><tr><th>control</th><th>range</th><th>verdict</th><th class="num">effect</th><th class="num">x floor</th><th>cam</th><th>readers</th><th>note</th></tr></thead><tbody id="checkrows"></tbody></table></div>
   </section>
   <section>
     <h2>Beat simulator</h2>
@@ -273,8 +280,35 @@ $("bpm").onchange = $("every").onchange = () => simCfg({});
 $("defaults").onclick = () => post("/api/defaults");
 $("holdall").onclick = () => post("/api/hold", {on: true});
 $("release").onclick = () => post("/api/hold", {on: false});
+// Feature check: the runtime does the work (synthwave_check.py); the page starts it and shows the rows.
+let checkTimer = null;
+function renderCheck(s) {
+  $("check-sec").hidden = s.state === "idle";
+  const c = s.counts || {}, p = s.progress || {};
+  const parts = [s.state + (p.total ? ` ${p.done}/${p.total}` : "") + (p.current ? ` ${p.current}` : "")];
+  for (const k of ["effect", "no effect", "error"]) if (c[k]) parts.push(`${c[k]} ${k}`);
+  if (s.noise_floor) parts.push(`noise floor ${s.noise_floor.mad}`);
+  if (s.defaults_restored != null) parts.push(s.defaults_restored ? "defaults restored" : "DEFAULTS NOT RESTORED");
+  if (s.error) parts.push(s.error.split("\n").slice(-2)[0]);
+  $("checksum").textContent = parts.join(" · ");
+  $("checkrows").innerHTML = (s.rows || []).map(r => {
+    const cls = r.verdict.replace(" ", "-");
+    return `<tr><td>${r.key}</td><td>${r.min}..${r.max}</td><td class="${cls}">${r.verdict}</td>` +
+           `<td class="num">${r.effect_mad ?? ""}</td><td class="num">${r.ratio ?? ""}</td><td>${r.cam ?? ""}</td>` +
+           `<td>${r.readers ? r.readers.nodes + "n " + r.readers.drivers + "d" : ""}</td><td>${r.note || ""}</td></tr>`;
+  }).join("");
+  $("checkall").disabled = s.state === "running";
+}
+async function checkPoll() {
+  clearTimeout(checkTimer);
+  try { const s = await (await fetch("/api/check", {cache: "no-store"})).json(); renderCheck(s); if (s.state === "running") checkTimer = setTimeout(checkPoll, 700); }
+  catch (e) { checkTimer = setTimeout(checkPoll, 2000); }
+}
+$("checkall").onclick = async () => { await post("/api/check", {}); setTimeout(checkPoll, 300); };
+$("checkabort").onclick = () => post("/api/check/abort");
 renderPresets();
 poll();
+checkPoll();
 </script>
 </body>
 </html>

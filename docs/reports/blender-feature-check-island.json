@@ -1,0 +1,8685 @@
+{
+ "scene": "Scene",
+ "time": "2026-11-10 17:26:35",
+ "controls": 37,
+ "contract": [
+  {
+   "address": "/vj/fog_height",
+   "kind": "range not numeric",
+   "detail": "contract 'm', page 1..200"
+  },
+  {
+   "address": "/vj/fog_scale",
+   "kind": "range not numeric",
+   "detail": "contract 'm', page 10..1000"
+  },
+  {
+   "address": "/vj/fog_speed",
+   "kind": "range not numeric",
+   "detail": "contract 'm/s', page 0..40"
+  },
+  {
+   "address": "/vj/grid_speed",
+   "kind": "range not numeric",
+   "detail": "contract 'grid cells/s', page 0..4"
+  }
+ ],
+ "osc_probe": {
+  "sent": 37,
+  "received": 37,
+  "applied": 37,
+  "missing": [],
+  "errors": 0
+ },
+ "check": {
+  "state": "done",
+  "scene": "Scene",
+  "rows": [
+   {
+    "key": "vj_bass",
+    "address": "/vj/bass",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.0,
+    "trigger": false,
+    "why": "",
+    "readers": {
+     "nodes": 3,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_beat",
+    "address": "/vj/beat",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.0,
+    "trigger": false,
+    "why": "",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": "no shader or driver reads it"
+   },
+   {
+    "key": "vj_blend",
+    "address": "/vj/blend",
+    "min": 0.0,
+    "max": 2.0,
+    "default": 1.0,
+    "trigger": false,
+    "why": "shows on a cut, a moment after it",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": [
+      "flight_rt.frame"
+     ]
+    },
+    "cams_tried": [
+     1,
+     0,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 1,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": "read only in Python by flight_rt.frame"
+   },
+   {
+    "key": "vj_boost",
+    "address": "/vj/boost",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.0,
+    "trigger": false,
+    "why": "the accelerator works while Flight skims",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": [
+      "flight_rt.frame"
+     ]
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": "read only in Python by flight_rt.frame"
+   },
+   {
+    "key": "vj_cam",
+    "address": "/vj/cam",
+    "min": 0.0,
+    "max": 6.0,
+    "default": 0.0,
+    "trigger": false,
+    "why": "",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 24.1412,
+        "frac": 0.455469,
+        "bias": 4.2979,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 4554.7
+       },
+       {
+        "value": 2.0,
+        "mad": 61.3847,
+        "frac": 0.829657,
+        "bias": 15.0337,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 8296.6
+       },
+       {
+        "value": 3.0,
+        "mad": 53.48,
+        "frac": 0.808984,
+        "bias": 21.9897,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 10994.8
+       },
+       {
+        "value": 4.0,
+        "mad": 77.1755,
+        "frac": 0.727166,
+        "bias": 67.5252,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 33762.6
+       },
+       {
+        "value": 5.0,
+        "mad": 39.2778,
+        "frac": 0.894193,
+        "bias": 28.6339,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 14317.0
+       },
+       {
+        "value": 6.0,
+        "mad": 47.2552,
+        "frac": 0.860226,
+        "bias": 4.7995,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 8602.3
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "effect",
+    "cam": 0,
+    "effect_mad": 77.1755,
+    "effect_frac": 0.727166,
+    "effect_bias": 67.5252,
+    "ratio": 33762.6,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_cam_speed",
+    "address": "/vj/cam_speed",
+    "min": 0.0,
+    "max": 4.0,
+    "default": 1.0,
+    "trigger": false,
+    "why": "only shots on a path move with it",
+    "readers": {
+     "nodes": 0,
+     "drivers": 16,
+     "python": []
+    },
+    "cams_tried": [
+     4
+    ],
+    "attempts": [
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 7.8134,
+        "frac": 0.130807,
+        "bias": 7.0613,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 3530.7
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 5.8212,
+        "frac": 0.084175,
+        "bias": 5.6643,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 2832.2
+       },
+       {
+        "value": 4.0,
+        "mad": 9.1429,
+        "frac": 0.126458,
+        "bias": 8.3613,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 4180.6
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "effect",
+    "cam": 4,
+    "effect_mad": 9.1429,
+    "effect_frac": 0.126458,
+    "effect_bias": 8.3613,
+    "ratio": 4180.6,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_eclipse",
+    "address": "/vj/eclipse",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.0,
+    "trigger": false,
+    "why": "lunar eclipse needs a full moon at night",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": [
+      "star_system.sync"
+     ]
+    },
+    "cams_tried": [
+     3,
+     0,
+     1,
+     2,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 3,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": "read only in Python by star_system.sync"
+   },
+   {
+    "key": "vj_energy",
+    "address": "/vj/energy",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.3,
+    "trigger": false,
+    "why": "eased over seconds",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": [
+      "flight_rt.frame"
+     ]
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.3,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": "read only in Python by flight_rt.frame"
+   },
+   {
+    "key": "vj_flamingos",
+    "address": "/vj/flamingos",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 1.0,
+    "trigger": false,
+    "why": "",
+    "readers": {
+     "nodes": 0,
+     "drivers": 2,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0205,
+        "frac": 0.000751,
+        "bias": 0.019,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 9.5
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0212,
+        "frac": 0.000794,
+        "bias": 0.0132,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 7.9
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0634,
+        "frac": 0.002339,
+        "bias": 0.0352,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 23.4
+       },
+       {
+        "value": 0.5,
+        "mad": 0.069,
+        "frac": 0.002465,
+        "bias": 0.0226,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 24.7
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "effect",
+    "cam": 1,
+    "effect_mad": 0.069,
+    "effect_frac": 0.002465,
+    "effect_bias": 0.0226,
+    "ratio": 24.7,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_flight",
+    "address": "/vj/flight",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.0,
+    "trigger": false,
+    "why": "damped: a jump flies",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": [
+      "flight_rt.frame"
+     ]
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": "read only in Python by flight_rt.frame"
+   },
+   {
+    "key": "vj_fog",
+    "address": "/vj/fog",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.35,
+    "trigger": false,
+    "why": "",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.35,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_fog_beat",
+    "address": "/vj/fog_beat",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.5,
+    "trigger": false,
+    "why": "the fog pumps with the beat",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_fog_glow",
+    "address": "/vj/fog_glow",
+    "min": 0.0,
+    "max": 2.0,
+    "default": 0.6,
+    "trigger": false,
+    "why": "self-glow of a dense fog bank shows at dusk",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.6,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_fog_height",
+    "address": "/vj/fog_height",
+    "min": 1.0,
+    "max": 200.0,
+    "default": 25.0,
+    "trigger": false,
+    "why": "needs a fog bank",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 25.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 100.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 200.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 200.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 200.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 200.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 200.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 200.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 200.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_fog_hue",
+    "address": "/vj/fog_hue",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.0,
+    "trigger": false,
+    "why": "tints a dense fog bank, most at dusk",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_fog_noise",
+    "address": "/vj/fog_noise",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.6,
+    "trigger": false,
+    "why": "needs a fog bank",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.6,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_fog_scale",
+    "address": "/vj/fog_scale",
+    "min": 10.0,
+    "max": 1000.0,
+    "default": 260.0,
+    "trigger": false,
+    "why": "needs a fog bank",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 260.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 505.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1000.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1000.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1000.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1000.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1000.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1000.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1000.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_fog_speed",
+    "address": "/vj/fog_speed",
+    "min": 0.0,
+    "max": 40.0,
+    "default": 10.0,
+    "trigger": false,
+    "why": "wind moves the fog bank",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 20.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 40.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 40.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 40.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 40.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 40.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 40.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 40.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_grid",
+    "address": "/vj/grid",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 1.0,
+    "trigger": false,
+    "why": "",
+    "readers": {
+     "nodes": 2,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_grid_speed",
+    "address": "/vj/grid_speed",
+    "min": 0.0,
+    "max": 4.0,
+    "default": 0.6,
+    "trigger": false,
+    "why": "the grid scrolls on the night ground",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.6,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 4.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 4.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 4.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 4.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 4.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 4.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 4.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_haze",
+    "address": "/vj/haze",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 1.0,
+    "trigger": false,
+    "why": "",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_hit",
+    "address": "/vj/hit",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.0,
+    "trigger": true,
+    "why": "a surge of speed",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": [
+      "flight_rt.frame"
+     ]
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": "read only in Python by flight_rt.frame"
+   },
+   {
+    "key": "vj_hue",
+    "address": "/vj/hue",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.0,
+    "trigger": false,
+    "why": "",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_intensity",
+    "address": "/vj/intensity",
+    "min": 0.0,
+    "max": 2.0,
+    "default": 1.0,
+    "trigger": false,
+    "why": "",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_level",
+    "address": "/vj/level",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.5,
+    "trigger": false,
+    "why": "",
+    "readers": {
+     "nodes": 6,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_meteor",
+    "address": "/vj/meteor",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.0,
+    "trigger": true,
+    "why": "a shooting star is brightest at night and lasts about a second",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": [
+      "synthwave_runtime.meteors"
+     ]
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": "the runtime took the trigger (rt_met0_a, ...) but no camera tried shows it; read only in Python by synthwave_runtime.meteors"
+   },
+   {
+    "key": "vj_moon",
+    "address": "/vj/moon",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 1.0,
+    "trigger": false,
+    "why": "the moon is up at night",
+    "readers": {
+     "nodes": 1,
+     "drivers": 3,
+     "python": []
+    },
+    "cams_tried": [
+     4
+    ],
+    "attempts": [
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.5275,
+        "frac": 0.009392,
+        "bias": 0.5546,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 277.3
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.5275,
+        "frac": 0.009392,
+        "bias": 0.5546,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 277.3
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "effect",
+    "cam": 4,
+    "effect_mad": 0.5275,
+    "effect_frac": 0.009392,
+    "effect_bias": 0.5546,
+    "ratio": 277.3,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_moon_phase",
+    "address": "/vj/moon_phase",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 1.0,
+    "trigger": false,
+    "why": "the moon is up at night",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": [
+      "star_system.sync"
+     ]
+    },
+    "cams_tried": [
+     3,
+     0,
+     1,
+     2,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 3,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_nebula",
+    "address": "/vj/nebula",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 1.0,
+    "trigger": false,
+    "why": "the nebula is part of the night sky",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     10,
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 10,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 10,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_night",
+    "address": "/vj/night",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.0,
+    "trigger": false,
+    "why": "",
+    "readers": {
+     "nodes": 1,
+     "drivers": 3,
+     "python": []
+    },
+    "cams_tried": [
+     0
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 22.1539,
+        "frac": 0.30974,
+        "bias": 21.8706,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 10935.3
+       },
+       {
+        "value": 1.0,
+        "mad": 36.0186,
+        "frac": 0.432075,
+        "bias": 26.566,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 13283.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "effect",
+    "cam": 0,
+    "effect_mad": 36.0186,
+    "effect_frac": 0.432075,
+    "effect_bias": 26.566,
+    "ratio": 13283.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_pyramids",
+    "address": "/vj/pyramids",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 1.0,
+    "trigger": false,
+    "why": "",
+    "readers": {
+     "nodes": 0,
+     "drivers": 4,
+     "python": []
+    },
+    "cams_tried": [
+     0
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.1298,
+        "frac": 0.002817,
+        "bias": 0.1135,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 56.8
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.091,
+        "frac": 0.002652,
+        "bias": 0.0766,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 38.3
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "effect",
+    "cam": 0,
+    "effect_mad": 0.1298,
+    "effect_frac": 0.002817,
+    "effect_bias": 0.1135,
+    "ratio": 56.8,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_shock",
+    "address": "/vj/shock",
+    "min": 0.0,
+    "max": 1.5,
+    "default": 0.0,
+    "trigger": true,
+    "why": "the wave needs a second to leave the pyramid",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": [
+      "synthwave_runtime.shockwave"
+     ]
+    },
+    "cams_tried": [
+     2
+    ],
+    "attempts": [
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 0.6264,
+        "frac": 0.014874,
+        "bias": 0.1292,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": true,
+        "ratio": 148.7
+       },
+       {
+        "value": 1.0,
+        "mad": 1.2175,
+        "frac": 0.024579,
+        "bias": 0.0139,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": true,
+        "ratio": 245.8
+       },
+       {
+        "value": 1.5,
+        "mad": 1.8978,
+        "frac": 0.036194,
+        "bias": 0.149,
+        "readback": true,
+        "settled": true,
+        "probe": true,
+        "effect": true,
+        "ratio": 361.9
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "effect",
+    "cam": 2,
+    "effect_mad": 1.8978,
+    "effect_frac": 0.036194,
+    "effect_bias": 0.149,
+    "ratio": 361.9,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_star_speed",
+    "address": "/vj/star_speed",
+    "min": 0.0,
+    "max": 10.0,
+    "default": 0.0,
+    "trigger": false,
+    "why": "the stars drift against the sun",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": [
+      "star_system.sync"
+     ]
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 5.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 10.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": "read only in Python by star_system.sync"
+   },
+   {
+    "key": "vj_stars",
+    "address": "/vj/stars",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 1.0,
+    "trigger": false,
+    "why": "stars show at night",
+    "readers": {
+     "nodes": 3,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_strobe",
+    "address": "/vj/strobe",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.0,
+    "trigger": false,
+    "why": "",
+    "readers": {
+     "nodes": 1,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 0,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_sun",
+    "address": "/vj/sun",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 1.0,
+    "trigger": false,
+    "why": "",
+    "readers": {
+     "nodes": 1,
+     "drivers": 1,
+     "python": []
+    },
+    "cams_tried": [
+     0
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 22.1539,
+        "frac": 0.30974,
+        "bias": 21.8706,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 10935.3
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 28.3044,
+        "frac": 0.300113,
+        "bias": 19.3388,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 9669.4
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "effect",
+    "cam": 0,
+    "effect_mad": 22.1539,
+    "effect_frac": 0.30974,
+    "effect_bias": 21.8706,
+    "ratio": 10935.3,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   },
+   {
+    "key": "vj_water",
+    "address": "/vj/water",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 1.0,
+    "trigger": false,
+    "why": "the sea shows from the low river shot",
+    "readers": {
+     "nodes": 3,
+     "drivers": 0,
+     "python": []
+    },
+    "cams_tried": [
+     1,
+     0,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "attempts": [
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.0,
+        "frac": 0.0,
+        "bias": 0.0,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.0
+       }
+      ],
+      "floor": [
+       0.0,
+       0.0,
+       0.0
+      ]
+     }
+    ],
+    "verdict": "no effect",
+    "cam": 1,
+    "effect_mad": 0.0,
+    "effect_frac": 0.0,
+    "effect_bias": 0.0,
+    "ratio": 0.0,
+    "floor_mad": 0.0,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0,
+    "note": ""
+   }
+  ],
+  "progress": {
+   "done": 37,
+   "total": 37,
+   "current": null
+  },
+  "started": 1794327997.734308,
+  "error": null,
+  "noise_floor": {
+   "mad": 0.0,
+   "frac": 0.0,
+   "bias": 0.0
+  },
+  "settings": {
+   "average": 8,
+   "replicates": 3,
+   "changed": 8,
+   "mad_min": 0.05,
+   "frac_min": 0.0005,
+   "bias_min": 0.02,
+   "noise_factor": 2.0,
+   "step_s": 0.1
+  },
+  "defaults_restored": true,
+  "off_default": {},
+  "finished": 1794329851.1869812,
+  "counts": {
+   "no effect": 29,
+   "effect": 8
+  }
+ },
+ "state_equals_defaults": true,
+ "off_default": {},
+ "holds_released": true
+}

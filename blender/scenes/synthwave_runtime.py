@@ -18,10 +18,16 @@ file load when Blender allows Auto Run Python Scripts. It then:
   the zero-copy Syphon sender syphon_out.py (server CAM_OUT) and the web
   control page synthwave_web.py (http://127.0.0.1:9210). The page builds
   its controls from RANGES and TRIGGERS, stored on the props as UI data.
+
+The feature check (synthwave_check.py, started from the page) drives the clocks through
+driver_namespace["vj_runtime"]: freeze() stops them, advance(s) steps them a fixed
+STEP at a time, quiesce() drops the events in flight. A freeze that is not renewed
+within FREEZE_LAPSE seconds lapses by itself. Nothing here costs anything while no check runs.
 """
 import math
 import random
 import time
+import types
 
 import bpy
 
@@ -70,10 +76,54 @@ IDLE_BPM = 124.0
 IDLE_DEPTH = 0.45     # idle pulse peak, 0..1
 BRIDGE_TEXT = "blender_osc_bridge.py"
 OUTPUT_CAMERA = "CAM_OUT"
+STEP = 0.1            # s of clock time per frame while a check steps the clocks (the cap on a frame's dt)
+FREEZE_LAPSE = 4.0    # s after which a freeze that nobody renews ends by itself
+RUNTIME_KEY = "vj_runtime"
 
 _state = {"last": None, "changed": -1e9, "snapshot": None, "idle": 1.0,
           "shock_prev": 0.0, "shock_src": -1, "shock_idle": 0.0, "shock_slot": 0, "shocks": [None] * SHOCKS,
           "meteor_prev": 0.0, "meteor_wait": METEOR_IDLE[0], "meteor_slot": 0, "meteors": [None] * METEORS}
+_clock = {"frozen": False, "steps": 0, "deadline": 0.0}
+
+
+def freeze(on=True):
+    """Stops the clocks (dt 0) until advance() steps them; renew every FREEZE_LAPSE s or it lapses."""
+    _clock["frozen"] = bool(on)
+    _clock["deadline"] = time.perf_counter() + FREEZE_LAPSE
+    if not on:
+        _clock["steps"] = 0
+
+
+def advance(seconds):
+    """While frozen: the next frames each run one STEP of clock time, `seconds` in all, whatever the frame rate."""
+    _clock["steps"] += max(int(round(seconds / STEP)), 0)
+
+
+def steps_left():
+    return _clock["steps"]
+
+
+def quiesce():
+    """Drops what a past trigger left running (shock waves, shooting stars), the idle pulse and the star drift."""
+    _state.update(idle=0.0, changed=time.perf_counter(), shock_prev=0.0, shock_src=-1, shock_idle=0.0, shock_slot=0,
+                  shocks=[None] * SHOCKS, meteor_prev=0.0, meteor_wait=METEOR_IDLE[0], meteor_slot=0,
+                  meteors=[None] * METEORS)
+    if _state.get("star_system"):
+        _state["star_system"]._state["beta"] = 0.0
+    random.seed(1)     # the same shooting star every time
+
+
+def clock_dt(now, dt):
+    c = _clock
+    if not c["frozen"]:
+        return dt
+    if now > c["deadline"]:
+        c["frozen"] = False
+        return dt
+    if c["steps"] > 0:
+        c["steps"] -= 1
+        return STEP
+    return 0.0
 
 
 def ensure_props(scene):
@@ -92,12 +142,13 @@ def synthwave_tick(scene, depsgraph=None):
     now = time.perf_counter()
     dt = 0.0 if _state["last"] is None else min(max(now - _state["last"], 0.0), 0.1)
     _state["last"] = now
+    dt = clock_dt(now, dt)
 
     snapshot = tuple(scene.get(k, 0.0) for k in DEFAULTS)
     if snapshot != _state["snapshot"]:
         _state["snapshot"] = snapshot
         _state["changed"] = now
-    target = 1.0 if now - _state["changed"] > IDLE_AFTER else 0.0
+    target = _state["idle"] if _clock["frozen"] else 1.0 if now - _state["changed"] > IDLE_AFTER else 0.0
     _state["idle"] += (target - _state["idle"]) * min(dt * 1.5, 1.0)
 
     t = scene.get("rt_time", 0.0) + dt
@@ -305,6 +356,8 @@ def _play():
 
 def main():
     ensure_props(bpy.context.scene)
+    bpy.app.driver_namespace[RUNTIME_KEY] = types.SimpleNamespace(
+        freeze=freeze, advance=advance, steps_left=steps_left, quiesce=quiesce, CLOCKS=CLOCKS, STEP=STEP)
     install_handler()
     start_bridge()
     _state["star_system"] = load_sibling(STAR_SYSTEM_FILE, "star system")

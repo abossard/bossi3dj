@@ -15,3 +15,5 @@ blender/scenes/planet_proto/visual_check/
 .claude/settings.local.json
 .claude/worktrees/
 blender/review/*.ppm
+# feature check output (JSON and frames of the failing controls)
+blender/review/out/
