@@ -40,7 +40,7 @@ class PlanTests(unittest.TestCase):
 
 class EncodingTests(unittest.TestCase):
     def test_message_decodes_to_one_float(self):
-        for address, v in (("/vj/level", 0.5), ("/vj/fog_height", 0.42), ("/vj/shock", 1.4), ("/vj/cam", 10.0)):
+        for address, v in (("/vj/level", 0.5), ("/vj/fog_height", 0.41), ("/vj/shock", 1.4), ("/vj/cam", 10.0)):
             with self.subTest(address=address, v=v):
                 data = sweep.osc_message(address, v)
                 self.assertEqual(len(data) % 4, 0)
@@ -59,7 +59,7 @@ class RunTests(unittest.TestCase):
     def test_values_are_held_at_the_rate_and_the_default_comes_back(self):
         sent, waited, said = self.walk([BY["/vj/fog_height"]])
         self.assertEqual(sent[0], ("/vj/fog_height", 0))
-        self.assertEqual(sent[-1], ("/vj/fog_height", 0.42))
+        self.assertEqual(sent[-1], ("/vj/fog_height", 0.41))
         self.assertEqual(sent.count(("/vj/fog_height", 1)), 10)
         self.assertEqual(len(said), 3)
         self.assertAlmostEqual(sum(waited), 3.0)

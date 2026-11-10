@@ -1,34 +1,8 @@
 {
  "scene": "Scene",
- "time": "2026-11-10 16:58:04",
+ "time": "2026-11-10 19:45:14",
  "controls": 37,
- "contract": [
-  {
-   "address": "/vj/cam",
-   "kind": "range",
-   "detail": "contract 0..6, page 0..10"
-  },
-  {
-   "address": "/vj/fog_height",
-   "kind": "range not numeric",
-   "detail": "contract 'm', page 1..200"
-  },
-  {
-   "address": "/vj/fog_scale",
-   "kind": "range not numeric",
-   "detail": "contract 'm', page 10..1000"
-  },
-  {
-   "address": "/vj/fog_speed",
-   "kind": "range not numeric",
-   "detail": "contract 'm/s', page 0..40"
-  },
-  {
-   "address": "/vj/grid_speed",
-   "kind": "range not numeric",
-   "detail": "contract 'grid cells/s', page 0..4"
-  }
- ],
+ "contract": [],
  "osc_probe": {
   "sent": 37,
   "received": 37,
@@ -36,6 +10,56 @@
   "missing": [],
   "errors": 0
  },
+ "bridge_check": [
+  {
+   "address": "/vj/intensity",
+   "wire": 0.5,
+   "property": "vj_intensity",
+   "expected": 1.0,
+   "got": 1.0,
+   "ok": true
+  },
+  {
+   "address": "/vj/fog_height",
+   "wire": 0.42,
+   "property": "vj_fog_height",
+   "expected": 25.78,
+   "got": 25.78,
+   "ok": true
+  },
+  {
+   "address": "/vj/fog_scale",
+   "wire": 0.26,
+   "property": "vj_fog_scale",
+   "expected": 267.4,
+   "got": 267.4,
+   "ok": true
+  },
+  {
+   "address": "/vj/cam",
+   "wire": 12,
+   "property": "vj_cam",
+   "expected": 10,
+   "got": 10.0,
+   "ok": true,
+   "camera": "CAM_10"
+  },
+  {
+   "address": "/vj/shock",
+   "wire": 1.4,
+   "property": "vj_shock",
+   "expected": 1.4,
+   "got": 1.4,
+   "ok": true
+  },
+  {
+   "address": "/vj/cam_auto",
+   "wire": 0,
+   "property": null,
+   "ignored": 1,
+   "ok": true
+  }
+ ],
  "check": {
   "state": "done",
   "scene": "Scene",
@@ -62,54 +86,54 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0818,
-        "frac": 3.5e-05,
-        "bias": 0.064,
+        "mad": 0.1184,
+        "frac": 1.3e-05,
+        "bias": 0.0496,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.0
+        "ratio": 0.9
        },
        {
         "value": 0.5,
-        "mad": 1.1834,
-        "frac": 0.084497,
-        "bias": 1.8342,
+        "mad": 1.2785,
+        "frac": 0.094089,
+        "bias": 1.9585,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 845.0
+        "ratio": 940.9
        },
        {
         "value": 1.0,
-        "mad": 2.0194,
-        "frac": 0.138477,
-        "bias": 3.1269,
+        "mad": 2.1004,
+        "frac": 0.143698,
+        "bias": 3.2662,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 1384.8
+        "ratio": 1437.0
        }
       ],
       "floor": [
-       0.0818,
-       3.5e-05,
-       0.064
+       0.1284,
+       1.3e-05,
+       0.0744
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 2.0194,
-    "effect_frac": 0.138477,
-    "effect_bias": 3.1269,
-    "ratio": 1384.8,
-    "floor_mad": 0.0818,
-    "floor_frac": 3.5e-05,
-    "floor_bias": 0.064,
+    "effect_mad": 2.1004,
+    "effect_frac": 0.143698,
+    "effect_bias": 3.2662,
+    "ratio": 1437.0,
+    "floor_mad": 0.1284,
+    "floor_frac": 1.3e-05,
+    "floor_bias": 0.0744,
     "note": ""
    },
    {
@@ -134,9 +158,9 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0988,
-        "frac": 4.8e-05,
-        "bias": 0.0162,
+        "mad": 0.1641,
+        "frac": 3e-05,
+        "bias": 0.1086,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -145,43 +169,43 @@
        },
        {
         "value": 0.5,
-        "mad": 2.5174,
-        "frac": 0.228455,
-        "bias": 3.4442,
+        "mad": 2.5921,
+        "frac": 0.237925,
+        "bias": 3.5533,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 2284.5
+        "ratio": 2379.2
        },
        {
         "value": 1.0,
-        "mad": 4.7812,
-        "frac": 0.330885,
-        "bias": 6.5485,
+        "mad": 4.8515,
+        "frac": 0.337912,
+        "bias": 6.6581,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 3308.8
+        "ratio": 3379.1
        }
       ],
       "floor": [
-       0.0988,
-       4.8e-05,
-       0.0617
+       0.1641,
+       3e-05,
+       0.1086
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 4.7812,
-    "effect_frac": 0.330885,
-    "effect_bias": 6.5485,
-    "ratio": 3308.8,
-    "floor_mad": 0.0988,
-    "floor_frac": 4.8e-05,
-    "floor_bias": 0.0617,
+    "effect_mad": 4.8515,
+    "effect_frac": 0.337912,
+    "effect_bias": 6.6581,
+    "ratio": 3379.1,
+    "floor_mad": 0.1641,
+    "floor_frac": 3e-05,
+    "floor_bias": 0.1086,
     "note": ""
    },
    {
@@ -218,20 +242,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0424,
-        "frac": 3.9e-05,
-        "bias": 0.0018,
+        "mad": 0.0487,
+        "frac": 6.1e-05,
+        "bias": 0.0089,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.8
+        "ratio": 1.1
        },
        {
         "value": 1.0,
-        "mad": 0.0381,
+        "mad": 0.0487,
         "frac": 2.2e-05,
-        "bias": 0.0036,
+        "bias": 0.0081,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -240,20 +264,20 @@
        },
        {
         "value": 2.0,
-        "mad": 0.0449,
-        "frac": 6.9e-05,
-        "bias": 0.0026,
+        "mad": 0.0367,
+        "frac": 3e-05,
+        "bias": 0.0007,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.9
+        "ratio": 0.7
        }
       ],
       "floor": [
-       0.0525,
-       3.9e-05,
-       0.0036
+       0.0505,
+       5.2e-05,
+       0.0081
       ]
      },
      {
@@ -261,52 +285,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0335,
-        "frac": 1.3e-05,
+        "mad": 0.035,
+        "frac": 1.7e-05,
+        "bias": 0.0023,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.8
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0499,
+        "frac": 3.9e-05,
         "bias": 0.0025,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.8
-       },
-       {
-        "value": 2.0,
-        "mad": 0.0396,
-        "frac": 1.3e-05,
-        "bias": 0.0061,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.6
-       }
-      ],
-      "floor": [
-       0.0434,
-       1.7e-05,
-       0.0039
-      ]
-     },
-     {
-      "cam": 2,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0447,
-        "frac": 1.3e-05,
-        "bias": 0.0038,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.8
-       },
-       {
-        "value": 2.0,
-        "mad": 0.0435,
-        "frac": 9e-06,
-        "bias": 0.0053,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -315,19 +307,19 @@
        }
       ],
       "floor": [
-       0.0559,
+       0.0451,
        1.3e-05,
-       0.0048
+       0.0054
       ]
      },
      {
-      "cam": 3,
+      "cam": 2,
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0396,
-        "frac": 1.3e-05,
-        "bias": 0.0014,
+        "mad": 0.057,
+        "frac": 6.1e-05,
+        "bias": 0.0046,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -336,9 +328,233 @@
        },
        {
         "value": 2.0,
-        "mad": 0.0519,
+        "mad": 0.0391,
+        "frac": 9e-06,
+        "bias": 0.0005,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.7
+       }
+      ],
+      "floor": [
+       0.0598,
+       8.7e-05,
+       0.0045
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0472,
+        "frac": 4.8e-05,
+        "bias": 0.0021,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0662,
+        "frac": 9.5e-05,
+        "bias": 0.0067,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.8
+       }
+      ],
+      "floor": [
+       0.0493,
+       8.7e-05,
+       0.0037
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0412,
+        "frac": 1.7e-05,
+        "bias": 0.0055,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.3
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0422,
+        "frac": 1.7e-05,
+        "bias": 0.0048,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.3
+       }
+      ],
+      "floor": [
+       0.0316,
+       4e-06,
+       0.0048
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0424,
         "frac": 4.3e-05,
-        "bias": 0.003,
+        "bias": 0.001,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.9
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0512,
+        "frac": 2.6e-05,
+        "bias": 0.0042,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.1
+       }
+      ],
+      "floor": [
+       0.049,
+       3e-05,
+       0.0037
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0314,
+        "frac": 9e-06,
+        "bias": 0.0006,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.6
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0433,
+        "frac": 3e-05,
+        "bias": 0.0048,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.2
+       }
+      ],
+      "floor": [
+       0.0522,
+       3e-05,
+       0.0038
+      ]
+     },
+     {
+      "cam": 7,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0387,
+        "frac": 5.2e-05,
+        "bias": 0.0006,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.7
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0414,
+        "frac": 1.3e-05,
+        "bias": 0.0035,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.8
+       }
+      ],
+      "floor": [
+       0.0551,
+       8.7e-05,
+       0.0043
+      ]
+     },
+     {
+      "cam": 8,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0289,
+        "frac": 3.9e-05,
+        "bias": 0.0019,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.9
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0362,
+        "frac": 3e-05,
+        "bias": 0.0024,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.2
+       }
+      ],
+      "floor": [
+       0.0591,
+       0.000117,
+       0.0015
+      ]
+     },
+     {
+      "cam": 9,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0464,
+        "frac": 1.7e-05,
+        "bias": 0.0034,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.3
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0419,
+        "frac": 0.000143,
+        "bias": 0.0031,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -347,201 +563,9 @@
        }
       ],
       "floor": [
-       0.0382,
-       2.6e-05,
-       0.0022
-      ]
-     },
-     {
-      "cam": 4,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0137,
-        "frac": 0.0,
-        "bias": 0.0007,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.3
-       },
-       {
-        "value": 2.0,
-        "mad": 0.0422,
-        "frac": 4e-06,
-        "bias": 0.001,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.9
-       }
-      ],
-      "floor": [
-       0.0472,
-       9e-06,
-       0.0033
-      ]
-     },
-     {
-      "cam": 5,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0572,
-        "frac": 6.9e-05,
-        "bias": 0.0024,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.9
-       },
-       {
-        "value": 2.0,
-        "mad": 0.0296,
-        "frac": 2.2e-05,
-        "bias": 0.0027,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.7
-       }
-      ],
-      "floor": [
-       0.0604,
-       6.1e-05,
-       0.004
-      ]
-     },
-     {
-      "cam": 6,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0491,
-        "frac": 3.9e-05,
-        "bias": 0.001,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 2.0,
-        "mad": 0.0598,
-        "frac": 3.9e-05,
-        "bias": 0.0017,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.2
-       }
-      ],
-      "floor": [
-       0.051,
+       0.0514,
        3.5e-05,
-       0.0035
-      ]
-     },
-     {
-      "cam": 7,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0383,
-        "frac": 9e-06,
-        "bias": 0.0016,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.7
-       },
-       {
-        "value": 2.0,
-        "mad": 0.0502,
-        "frac": 9e-06,
-        "bias": 0.0032,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.9
-       }
-      ],
-      "floor": [
-       0.0565,
-       4.8e-05,
-       0.0037
-      ]
-     },
-     {
-      "cam": 8,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0641,
-        "frac": 3e-05,
-        "bias": 0.0063,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.2
-       },
-       {
-        "value": 2.0,
-        "mad": 0.0517,
-        "frac": 1.7e-05,
-        "bias": 0.0058,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       }
-      ],
-      "floor": [
-       0.0526,
-       2.2e-05,
-       0.007
-      ]
-     },
-     {
-      "cam": 9,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0445,
-        "frac": 2.2e-05,
-        "bias": 0.0027,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.9
-       },
-       {
-        "value": 2.0,
-        "mad": 0.0357,
-        "frac": 4e-06,
-        "bias": 0.0029,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.7
-       }
-      ],
-      "floor": [
-       0.0503,
-       3.9e-05,
-       0.0048
+       0.0027
       ]
      },
      {
@@ -549,43 +573,43 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0407,
-        "frac": 2.6e-05,
-        "bias": 0.0033,
+        "mad": 0.045,
+        "frac": 1.3e-05,
+        "bias": 0.0014,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.1
+        "ratio": 0.9
        },
        {
         "value": 2.0,
-        "mad": 0.0494,
-        "frac": 1.3e-05,
-        "bias": 0.0034,
+        "mad": 0.0463,
+        "frac": 2.6e-05,
+        "bias": 0.0032,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.1
+        "ratio": 1.0
        }
       ],
       "floor": [
-       0.0535,
-       2.6e-05,
-       0.0031
+       0.0491,
+       4.8e-05,
+       0.0032
       ]
      }
     ],
     "verdict": "no effect",
-    "cam": 0,
-    "effect_mad": 0.0396,
-    "effect_frac": 1.3e-05,
-    "effect_bias": 0.0061,
-    "ratio": 1.6,
-    "floor_mad": 0.0434,
-    "floor_frac": 1.7e-05,
-    "floor_bias": 0.0039,
+    "cam": 3,
+    "effect_mad": 0.0662,
+    "effect_frac": 9.5e-05,
+    "effect_bias": 0.0067,
+    "ratio": 1.8,
+    "floor_mad": 0.0493,
+    "floor_frac": 8.7e-05,
+    "floor_bias": 0.0037,
     "note": "read only in Python by flight_rt.frame"
    },
    {
@@ -622,287 +646,31 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.1021,
-        "frac": 6.1e-05,
-        "bias": 0.0061,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 0.5,
-        "mad": 0.1094,
-        "frac": 7.8e-05,
-        "bias": 0.0403,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": true,
-        "ratio": 2.3
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0997,
-        "frac": 4.8e-05,
-        "bias": 0.0349,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 2.0
-       }
-      ],
-      "floor": [
-       0.1055,
-       0.000122,
-       0.0175
-      ]
-     },
-     {
-      "cam": 1,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0527,
-        "frac": 3.5e-05,
-        "bias": 0.0029,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0708,
-        "frac": 0.000204,
-        "bias": 0.0037,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 2.0
-       }
-      ],
-      "floor": [
-       0.0527,
-       3.5e-05,
-       0.0039
-      ]
-     },
-     {
-      "cam": 2,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.1015,
-        "frac": 0.001003,
-        "bias": 0.0794,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.1097,
-        "frac": 0.001072,
-        "bias": 0.079,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       }
-      ],
-      "floor": [
-       0.1085,
-       0.001046,
-       0.0794
-      ]
-     },
-     {
-      "cam": 3,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0752,
-        "frac": 0.000291,
-        "bias": 0.01,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.2
-       },
-       {
-        "value": 1.0,
-        "mad": 0.8394,
-        "frac": 0.022791,
-        "bias": 0.0432,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       }
-      ],
-      "floor": [
-       0.8406,
-       0.023047,
-       0.0526
-      ]
-     },
-     {
-      "cam": 4,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0388,
-        "frac": 4e-06,
-        "bias": 0.0034,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0356,
-        "frac": 4e-06,
-        "bias": 0.0044,
+        "mad": 0.1199,
+        "frac": 2.2e-05,
+        "bias": 0.063,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
         "ratio": 0.9
-       }
-      ],
-      "floor": [
-       0.0388,
-       4e-06,
-       0.0059
-      ]
-     },
-     {
-      "cam": 5,
-      "cells": [
+       },
        {
-        "value": 0.0,
-        "mad": 0.0999,
-        "frac": 0.000326,
-        "bias": 0.0151,
+        "value": 0.5,
+        "mad": 0.1386,
+        "frac": 6.1e-05,
+        "bias": 0.0874,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.0
+        "ratio": 1.2
        },
        {
         "value": 1.0,
-        "mad": 0.1026,
-        "frac": 0.000482,
-        "bias": 0.0078,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.4
-       }
-      ],
-      "floor": [
-       0.0999,
-       0.000356,
-       0.0162
-      ]
-     },
-     {
-      "cam": 6,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0814,
-        "frac": 0.00079,
-        "bias": 0.0035,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0614,
-        "frac": 0.00036,
-        "bias": 0.0016,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.8
-       }
-      ],
-      "floor": [
-       0.0814,
-       0.00079,
-       0.0035
-      ]
-     },
-     {
-      "cam": 7,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.081,
-        "frac": 0.00036,
-        "bias": 0.005,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0432,
-        "frac": 0.000165,
-        "bias": 0.0029,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.6
-       }
-      ],
-      "floor": [
-       0.081,
-       0.00036,
-       0.005
-      ]
-     },
-     {
-      "cam": 8,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0475,
-        "frac": 4.3e-05,
-        "bias": 0.0049,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0461,
-        "frac": 3.9e-05,
-        "bias": 0.0052,
+        "mad": 0.1269,
+        "frac": 5.2e-05,
+        "bias": 0.0781,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -911,9 +679,265 @@
        }
       ],
       "floor": [
-       0.0475,
-       4.3e-05,
-       0.0049
+       0.1356,
+       0.000677,
+       0.0721
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0541,
+        "frac": 5.2e-05,
+        "bias": 0.0082,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.9
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0523,
+        "frac": 4.3e-05,
+        "bias": 0.0107,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       }
+      ],
+      "floor": [
+       0.0627,
+       0.000174,
+       0.0104
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0843,
+        "frac": 0.000716,
+        "bias": 0.0342,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.084,
+        "frac": 0.000768,
+        "bias": 0.0377,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.1
+       }
+      ],
+      "floor": [
+       0.0927,
+       0.000803,
+       0.0351
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.3151,
+        "frac": 0.003581,
+        "bias": 0.0516,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.9
+       },
+       {
+        "value": 1.0,
+        "mad": 0.3142,
+        "frac": 0.003646,
+        "bias": 0.0578,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       }
+      ],
+      "floor": [
+       0.4113,
+       0.005009,
+       0.0566
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0326,
+        "frac": 0.0,
+        "bias": 0.0031,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0353,
+        "frac": 0.0,
+        "bias": 0.002,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.1
+       }
+      ],
+      "floor": [
+       0.0326,
+       9e-06,
+       0.0074
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0777,
+        "frac": 0.000278,
+        "bias": 0.0124,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.7
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0679,
+        "frac": 0.000326,
+        "bias": 0.0204,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.8
+       }
+      ],
+      "floor": [
+       0.1152,
+       0.000599,
+       0.0259
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0734,
+        "frac": 0.000569,
+        "bias": 0.0095,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.076,
+        "frac": 0.000655,
+        "bias": 0.0075,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.2
+       }
+      ],
+      "floor": [
+       0.0734,
+       0.000569,
+       0.0095
+      ]
+     },
+     {
+      "cam": 7,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0995,
+        "frac": 0.000742,
+        "bias": 0.0037,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.1041,
+        "frac": 0.000829,
+        "bias": 0.0086,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 2.3
+       }
+      ],
+      "floor": [
+       0.0995,
+       0.000742,
+       0.0037
+      ]
+     },
+     {
+      "cam": 8,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0665,
+        "frac": 6.5e-05,
+        "bias": 0.0026,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0507,
+        "frac": 1.3e-05,
+        "bias": 0.0076,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 2.9
+       }
+      ],
+      "floor": [
+       0.0665,
+       6.5e-05,
+       0.0026
       ]
      },
      {
@@ -921,31 +945,31 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.9113,
-        "frac": 0.042752,
-        "bias": 0.0898,
+        "mad": 0.2876,
+        "frac": 0.002496,
+        "bias": 0.0176,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.0
+        "ratio": 0.3
        },
        {
         "value": 1.0,
-        "mad": 0.0744,
-        "frac": 0.000556,
-        "bias": 0.0155,
+        "mad": 0.2922,
+        "frac": 0.002491,
+        "bias": 0.0153,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.2
+        "ratio": 0.3
        }
       ],
       "floor": [
-       0.9113,
-       0.042752,
-       0.0898
+       0.9911,
+       0.041536,
+       0.0992
       ]
      },
      {
@@ -953,43 +977,43 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0411,
-        "frac": 0.000395,
-        "bias": 0.0051,
+        "mad": 0.0322,
+        "frac": 9e-06,
+        "bias": 0.0027,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.0
+        "ratio": 0.9
        },
        {
         "value": 1.0,
-        "mad": 0.0284,
-        "frac": 0.0,
-        "bias": 0.0034,
+        "mad": 0.0514,
+        "frac": 0.000339,
+        "bias": 0.0006,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.7
+        "ratio": 3.4
        }
       ],
       "floor": [
-       0.0411,
-       0.000395,
-       0.0051
+       0.0408,
+       5.2e-05,
+       0.0029
       ]
      }
     ],
     "verdict": "no effect",
-    "cam": 0,
-    "effect_mad": 0.1094,
-    "effect_frac": 7.8e-05,
-    "effect_bias": 0.0403,
-    "ratio": 2.3,
-    "floor_mad": 0.1055,
-    "floor_frac": 0.000122,
-    "floor_bias": 0.0175,
+    "cam": 10,
+    "effect_mad": 0.0514,
+    "effect_frac": 0.000339,
+    "effect_bias": 0.0006,
+    "ratio": 3.4,
+    "floor_mad": 0.0408,
+    "floor_frac": 5.2e-05,
+    "floor_bias": 0.0029,
     "note": "read only in Python by flight_rt.frame"
    },
    {
@@ -1014,9 +1038,9 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.2625,
-        "frac": 0.004119,
-        "bias": 0.2551,
+        "mad": 0.3646,
+        "frac": 0.012743,
+        "bias": 0.3304,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -1025,131 +1049,131 @@
        },
        {
         "value": 1.0,
-        "mad": 44.6171,
-        "frac": 0.91332,
-        "bias": 30.5787,
+        "mad": 44.8295,
+        "frac": 0.915091,
+        "bias": 31.0445,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 221.7
+        "ratio": 123.0
        },
        {
         "value": 2.0,
-        "mad": 47.8475,
-        "frac": 0.843194,
-        "bias": 14.9776,
+        "mad": 47.8347,
+        "frac": 0.845313,
+        "bias": 14.849,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 204.7
+        "ratio": 131.2
        },
        {
         "value": 3.0,
-        "mad": 50.964,
-        "frac": 0.789722,
-        "bias": 48.2907,
+        "mad": 50.9295,
+        "frac": 0.78957,
+        "bias": 48.3406,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 194.1
+        "ratio": 146.3
        },
        {
         "value": 4.0,
-        "mad": 57.7757,
-        "frac": 0.912135,
-        "bias": 53.2116,
+        "mad": 57.4342,
+        "frac": 0.909397,
+        "bias": 52.9505,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 221.4
+        "ratio": 160.3
        },
        {
         "value": 5.0,
-        "mad": 42.9596,
-        "frac": 0.757969,
-        "bias": 11.7839,
+        "mad": 43.9734,
+        "frac": 0.757826,
+        "bias": 9.9284,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 184.0
+        "ratio": 120.6
        },
        {
         "value": 6.0,
-        "mad": 103.6807,
-        "frac": 0.999223,
-        "bias": 107.151,
+        "mad": 103.3342,
+        "frac": 0.999327,
+        "bias": 105.4213,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 420.0
+        "ratio": 319.1
        },
        {
         "value": 7.0,
-        "mad": 45.4227,
-        "frac": 0.947587,
-        "bias": 28.8961,
+        "mad": 45.2301,
+        "frac": 0.944006,
+        "bias": 28.7955,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 230.1
+        "ratio": 124.1
        },
        {
         "value": 8.0,
-        "mad": 44.8913,
-        "frac": 0.903772,
-        "bias": 33.1698,
+        "mad": 45.0043,
+        "frac": 0.902548,
+        "bias": 33.4234,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 219.4
+        "ratio": 123.4
        },
        {
         "value": 9.0,
-        "mad": 64.2424,
-        "frac": 0.989314,
-        "bias": 57.2487,
+        "mad": 64.4107,
+        "frac": 0.989588,
+        "bias": 57.5326,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 244.7
+        "ratio": 176.7
        },
        {
         "value": 10.0,
-        "mad": 46.7281,
-        "frac": 0.928863,
-        "bias": 30.4859,
+        "mad": 46.9725,
+        "frac": 0.932031,
+        "bias": 31.2116,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 225.5
+        "ratio": 128.8
        }
       ],
       "floor": [
-       0.2625,
-       0.004119,
-       0.2551
+       0.3646,
+       0.012743,
+       0.3304
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 103.6807,
-    "effect_frac": 0.999223,
-    "effect_bias": 107.151,
-    "ratio": 420.0,
-    "floor_mad": 0.2625,
-    "floor_frac": 0.004119,
-    "floor_bias": 0.2551,
+    "effect_mad": 103.3342,
+    "effect_frac": 0.999327,
+    "effect_bias": 105.4213,
+    "ratio": 319.1,
+    "floor_mad": 0.3646,
+    "floor_frac": 0.012743,
+    "floor_bias": 0.3304,
     "note": ""
    },
    {
@@ -1174,65 +1198,65 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 5.4171,
-        "frac": 0.253655,
-        "bias": 0.7532,
+        "mad": 6.0887,
+        "frac": 0.288038,
+        "bias": 1.4522,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 2536.6
+        "ratio": 2880.4
        },
        {
         "value": 1.0,
-        "mad": 0.0374,
-        "frac": 4e-06,
-        "bias": 0.0017,
+        "mad": 0.0389,
+        "frac": 0.0,
+        "bias": 0.0078,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.9
+        "ratio": 1.0
        },
        {
         "value": 2.0,
-        "mad": 5.8825,
-        "frac": 0.279531,
-        "bias": 1.2165,
+        "mad": 6.8637,
+        "frac": 0.327387,
+        "bias": 3.0038,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 2795.3
+        "ratio": 3273.9
        },
        {
         "value": 4.0,
-        "mad": 12.6353,
-        "frac": 0.433047,
-        "bias": 7.0986,
+        "mad": 12.9137,
+        "frac": 0.441688,
+        "bias": 8.1547,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 4330.5
+        "ratio": 4416.9
        }
       ],
       "floor": [
-       0.0397,
-       4e-06,
-       0.0036
+       0.0389,
+       0.0,
+       0.0078
       ]
      }
     ],
     "verdict": "effect",
     "cam": 4,
-    "effect_mad": 12.6353,
-    "effect_frac": 0.433047,
-    "effect_bias": 7.0986,
-    "ratio": 4330.5,
-    "floor_mad": 0.0397,
-    "floor_frac": 4e-06,
-    "floor_bias": 0.0036,
+    "effect_mad": 12.9137,
+    "effect_frac": 0.441688,
+    "effect_bias": 8.1547,
+    "ratio": 4416.9,
+    "floor_mad": 0.0389,
+    "floor_frac": 0.0,
+    "floor_bias": 0.0078,
     "note": ""
    },
    {
@@ -1259,9 +1283,9 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0902,
-        "frac": 0.000807,
-        "bias": 0.0488,
+        "mad": 1.0626,
+        "frac": 0.025117,
+        "bias": 0.038,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -1270,43 +1294,43 @@
        },
        {
         "value": 0.5,
-        "mad": 0.0968,
-        "frac": 0.000829,
-        "bias": 0.05,
+        "mad": 1.0549,
+        "frac": 0.024865,
+        "bias": 0.0399,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.0
+        "ratio": 1.1
        },
        {
         "value": 1.0,
-        "mad": 11.06,
-        "frac": 0.457209,
-        "bias": 8.3849,
+        "mad": 11.0644,
+        "frac": 0.461962,
+        "bias": 8.4188,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 566.6
+        "ratio": 221.5
        }
       ],
       "floor": [
-       0.0998,
-       0.000807,
-       0.0488
+       1.0626,
+       0.025117,
+       0.038
       ]
      }
     ],
     "verdict": "effect",
     "cam": 3,
-    "effect_mad": 11.06,
-    "effect_frac": 0.457209,
-    "effect_bias": 8.3849,
-    "ratio": 566.6,
-    "floor_mad": 0.0998,
-    "floor_frac": 0.000807,
-    "floor_bias": 0.0488,
+    "effect_mad": 11.0644,
+    "effect_frac": 0.461962,
+    "effect_bias": 8.4188,
+    "ratio": 221.5,
+    "floor_mad": 1.0626,
+    "floor_frac": 0.025117,
+    "floor_bias": 0.038,
     "note": ""
    },
    {
@@ -1328,7 +1352,13 @@
      0,
      1,
      2,
-     3
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9
     ],
     "attempts": [
      {
@@ -1336,20 +1366,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0927,
-        "frac": 2.6e-05,
-        "bias": 0.0345,
+        "mad": 0.0683,
+        "frac": 1.7e-05,
+        "bias": 0.0071,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.8
+        "ratio": 0.8
        },
        {
         "value": 0.3,
-        "mad": 0.0515,
-        "frac": 9e-06,
-        "bias": 0.0241,
+        "mad": 0.0866,
+        "frac": 3.5e-05,
+        "bias": 0.01,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -1358,41 +1388,9 @@
        },
        {
         "value": 0.5,
-        "mad": 0.1023,
-        "frac": 8.2e-05,
-        "bias": 0.0335,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 2.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.1587,
-        "frac": 0.000286,
-        "bias": 0.0462,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": true,
-        "ratio": 3.1
-       }
-      ],
-      "floor": [
-       0.0515,
-       9e-06,
-       0.0241
-      ]
-     },
-     {
-      "cam": 1,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0601,
-        "frac": 0.0001,
-        "bias": 0.0112,
+        "mad": 0.0921,
+        "frac": 2.6e-05,
+        "bias": 0.0098,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -1401,9 +1399,201 @@
        },
        {
         "value": 1.0,
-        "mad": 0.0512,
-        "frac": 3.9e-05,
-        "bias": 0.0062,
+        "mad": 0.0852,
+        "frac": 2.6e-05,
+        "bias": 0.0072,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       }
+      ],
+      "floor": [
+       0.0866,
+       3.5e-05,
+       0.0129
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0487,
+        "frac": 1.3e-05,
+        "bias": 0.0051,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 2.6
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0487,
+        "frac": 1.3e-05,
+        "bias": 0.0042,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 2.4
+       }
+      ],
+      "floor": [
+       0.0203,
+       9e-06,
+       0.0015
+      ]
+     },
+     {
+      "cam": 2,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0633,
+        "frac": 0.000187,
+        "bias": 0.0195,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.9
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0659,
+        "frac": 0.000243,
+        "bias": 0.0238,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.1
+       }
+      ],
+      "floor": [
+       0.067,
+       0.00023,
+       0.0212
+      ]
+     },
+     {
+      "cam": 3,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0663,
+        "frac": 0.000352,
+        "bias": 0.0052,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.2
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0574,
+        "frac": 0.000191,
+        "bias": 0.009,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       }
+      ],
+      "floor": [
+       0.058,
+       0.000304,
+       0.0207
+      ]
+     },
+     {
+      "cam": 4,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0302,
+        "frac": 4e-06,
+        "bias": 0.0059,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.2
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0339,
+        "frac": 4e-06,
+        "bias": 0.0054,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.1
+       }
+      ],
+      "floor": [
+       0.034,
+       9e-06,
+       0.0047
+      ]
+     },
+     {
+      "cam": 5,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0771,
+        "frac": 0.000404,
+        "bias": 0.0177,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.5
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0789,
+        "frac": 0.000395,
+        "bias": 0.0127,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.1
+       }
+      ],
+      "floor": [
+       0.145,
+       0.000556,
+       0.0115
+      ]
+     },
+     {
+      "cam": 6,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0608,
+        "frac": 0.000464,
+        "bias": 0.0027,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.8
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0534,
+        "frac": 0.000373,
+        "bias": 0.0026,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -1412,30 +1602,30 @@
        }
       ],
       "floor": [
-       0.0713,
-       0.000178,
-       0.0103
+       0.0762,
+       0.000625,
+       0.0062
       ]
      },
      {
-      "cam": 2,
+      "cam": 7,
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0687,
-        "frac": 0.000395,
-        "bias": 0.035,
+        "mad": 0.107,
+        "frac": 0.000959,
+        "bias": 0.0069,
         "readback": true,
         "settled": true,
         "probe": null,
-        "effect": false,
-        "ratio": 1.0
+        "effect": true,
+        "ratio": 3.9
        },
        {
         "value": 1.0,
-        "mad": 0.0744,
-        "frac": 0.000582,
-        "bias": 0.0346,
+        "mad": 0.0432,
+        "frac": 0.000213,
+        "bias": 0.002,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -1444,53 +1634,85 @@
        }
       ],
       "floor": [
-       0.0831,
-       0.000599,
-       0.0347
+       0.0417,
+       0.000243,
+       0.0011
       ]
      },
      {
-      "cam": 3,
+      "cam": 8,
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.108,
-        "frac": 0.001124,
-        "bias": 0.0099,
+        "mad": 0.0498,
+        "frac": 3.9e-05,
+        "bias": 0.0022,
         "readback": true,
         "settled": true,
         "probe": null,
-        "effect": true,
-        "ratio": 4.9
+        "effect": false,
+        "ratio": 2.4
        },
        {
         "value": 1.0,
-        "mad": 0.8012,
-        "frac": 0.025629,
-        "bias": 0.0894,
+        "mad": 0.0605,
+        "frac": 5.6e-05,
+        "bias": 0.0027,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 111.4
+        "ratio": 2.9
        }
       ],
       "floor": [
-       0.063,
-       0.00023,
-       0.0029
+       0.0209,
+       2.6e-05,
+       0.0008
+      ]
+     },
+     {
+      "cam": 9,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0713,
+        "frac": 0.000812,
+        "bias": 0.0249,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.8
+       },
+       {
+        "value": 1.0,
+        "mad": 0.8952,
+        "frac": 0.041593,
+        "bias": 0.0903,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 91.3
+       }
+      ],
+      "floor": [
+       0.0675,
+       0.000456,
+       0.0211
       ]
      }
     ],
     "verdict": "effect",
-    "cam": 3,
-    "effect_mad": 0.8012,
-    "effect_frac": 0.025629,
-    "effect_bias": 0.0894,
-    "ratio": 111.4,
-    "floor_mad": 0.063,
-    "floor_frac": 0.00023,
-    "floor_bias": 0.0029,
+    "cam": 9,
+    "effect_mad": 0.8952,
+    "effect_frac": 0.041593,
+    "effect_bias": 0.0903,
+    "ratio": 91.3,
+    "floor_mad": 0.0675,
+    "floor_frac": 0.000456,
+    "floor_bias": 0.0211,
     "note": ""
    },
    {
@@ -1507,14 +1729,7 @@
      "python": []
     },
     "cams_tried": [
-     0,
-     1,
-     2,
-     3,
-     4,
-     5,
-     6,
-     7
+     0
     ],
     "attempts": [
      {
@@ -1522,52 +1737,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.149,
-        "frac": 7.4e-05,
-        "bias": 0.0259,
+        "mad": 0.3163,
+        "frac": 0.010304,
+        "bias": 0.4038,
         "readback": true,
         "settled": true,
         "probe": null,
-        "effect": false,
-        "ratio": 1.8
+        "effect": true,
+        "ratio": 103.0
        },
        {
         "value": 1.0,
-        "mad": 0.0644,
-        "frac": 1.3e-05,
-        "bias": 0.0515,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.8
-       },
-       {
-        "value": 0.5,
-        "mad": 0.1225,
-        "frac": 4.8e-05,
-        "bias": 0.0436,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.5
-       }
-      ],
-      "floor": [
-       0.0806,
-       3.5e-05,
-       0.0617
-      ]
-     },
-     {
-      "cam": 1,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0553,
-        "frac": 8.7e-05,
-        "bias": 0.0047,
+        "mad": 0.1482,
+        "frac": 5.2e-05,
+        "bias": 0.062,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -1576,224 +1759,32 @@
        },
        {
         "value": 0.5,
-        "mad": 0.0503,
-        "frac": 9.1e-05,
-        "bias": 0.0056,
+        "mad": 0.1454,
+        "frac": 6.1e-05,
+        "bias": 0.0438,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.9
+        "ratio": 1.0
        }
       ],
       "floor": [
-       0.053,
-       6.9e-05,
-       0.0091
-      ]
-     },
-     {
-      "cam": 2,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.134,
-        "frac": 0.00197,
-        "bias": 0.1131,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.1
-       },
-       {
-        "value": 0.5,
-        "mad": 0.1402,
-        "frac": 0.002144,
-        "bias": 0.1152,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.2
-       }
-      ],
-      "floor": [
-       0.133,
-       0.001836,
-       0.1134
-      ]
-     },
-     {
-      "cam": 3,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0591,
-        "frac": 0.000369,
-        "bias": 0.0072,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.9
-       },
-       {
-        "value": 0.5,
-        "mad": 0.0962,
-        "frac": 0.000647,
-        "bias": 0.0088,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.1
-       }
-      ],
-      "floor": [
-       0.0958,
-       0.000634,
-       0.0077
-      ]
-     },
-     {
-      "cam": 4,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0277,
-        "frac": 9e-06,
-        "bias": 0.0028,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.4
-       },
-       {
-        "value": 0.5,
-        "mad": 0.0328,
-        "frac": 1.3e-05,
-        "bias": 0.0053,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 2.6
-       }
-      ],
-      "floor": [
-       0.0322,
-       9e-06,
-       0.002
-      ]
-     },
-     {
-      "cam": 5,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.1784,
-        "frac": 0.001059,
-        "bias": 0.0505,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.5
-       },
-       {
-        "value": 0.5,
-        "mad": 0.1779,
-        "frac": 0.001024,
-        "bias": 0.0506,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.5
-       }
-      ],
-      "floor": [
-       0.1817,
-       0.00128,
-       0.0341
-      ]
-     },
-     {
-      "cam": 6,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.06,
-        "frac": 0.000378,
-        "bias": 0.0051,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.1
-       },
-       {
-        "value": 0.5,
-        "mad": 0.0678,
-        "frac": 0.00049,
-        "bias": 0.0022,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.2
-       }
-      ],
-      "floor": [
-       0.0619,
-       0.000408,
-       0.0045
-      ]
-     },
-     {
-      "cam": 7,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 4.8699,
-        "frac": 0.093815,
-        "bias": 5.8033,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": true,
-        "ratio": 766.8
-       },
-       {
-        "value": 0.5,
-        "mad": 5.6153,
-        "frac": 0.112279,
-        "bias": 3.5664,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": true,
-        "ratio": 471.2
-       }
-      ],
-      "floor": [
-       0.1166,
-       0.001181,
-       0.0076
+       0.1482,
+       5.2e-05,
+       0.0744
       ]
      }
     ],
     "verdict": "effect",
-    "cam": 7,
-    "effect_mad": 4.8699,
-    "effect_frac": 0.093815,
-    "effect_bias": 5.8033,
-    "ratio": 766.8,
-    "floor_mad": 0.1166,
-    "floor_frac": 0.001181,
-    "floor_bias": 0.0076,
+    "cam": 0,
+    "effect_mad": 0.3163,
+    "effect_frac": 0.010304,
+    "effect_bias": 0.4038,
+    "ratio": 103.0,
+    "floor_mad": 0.1482,
+    "floor_frac": 5.2e-05,
+    "floor_bias": 0.0744,
     "note": ""
    },
    {
@@ -1830,9 +1821,9 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0658,
-        "frac": 0.0,
-        "bias": 0.0322,
+        "mad": 0.1645,
+        "frac": 6.1e-05,
+        "bias": 0.0745,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -1841,20 +1832,52 @@
        },
        {
         "value": 0.5,
-        "mad": 0.0568,
-        "frac": 0.0,
-        "bias": 0.0296,
+        "mad": 0.0914,
+        "frac": 3.5e-05,
+        "bias": 0.0278,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.6
+       },
+       {
+        "value": 1.0,
+        "mad": 0.1232,
+        "frac": 3.5e-05,
+        "bias": 0.0692,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
         "ratio": 0.9
+       }
+      ],
+      "floor": [
+       0.1645,
+       6.1e-05,
+       0.0745
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0222,
+        "frac": 0.0,
+        "bias": 0.0034,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
        },
        {
         "value": 1.0,
-        "mad": 0.1024,
-        "frac": 7.4e-05,
-        "bias": 0.0396,
+        "mad": 0.0245,
+        "frac": 0.0,
+        "bias": 0.0054,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -1863,41 +1886,9 @@
        }
       ],
       "floor": [
-       0.0658,
-       0.0,
-       0.0322
-      ]
-     },
-     {
-      "cam": 1,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0525,
-        "frac": 3e-05,
-        "bias": 0.0093,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.9
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0329,
-        "frac": 2.6e-05,
-        "bias": 0.0052,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.5
-       }
-      ],
-      "floor": [
-       0.0713,
-       0.000178,
-       0.0103
+       0.0222,
+       9e-06,
+       0.0034
       ]
      },
      {
@@ -1905,20 +1896,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0356,
-        "frac": 9.5e-05,
-        "bias": 0.0032,
+        "mad": 0.0549,
+        "frac": 7.8e-05,
+        "bias": 0.0027,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.4
+        "ratio": 0.8
        },
        {
         "value": 1.0,
-        "mad": 0.0779,
-        "frac": 0.000547,
-        "bias": 0.0338,
+        "mad": 0.0658,
+        "frac": 0.000165,
+        "bias": 0.0213,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -1927,9 +1918,9 @@
        }
       ],
       "floor": [
-       0.0831,
-       0.000599,
-       0.0347
+       0.067,
+       0.00023,
+       0.0212
       ]
      },
      {
@@ -1937,31 +1928,31 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0892,
-        "frac": 0.000577,
-        "bias": 0.0381,
+        "mad": 0.0301,
+        "frac": 2.2e-05,
+        "bias": 0.016,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.0
+        "ratio": 0.8
        },
        {
         "value": 1.0,
-        "mad": 0.0267,
-        "frac": 3e-05,
-        "bias": 0.0077,
+        "mad": 0.0873,
+        "frac": 0.000556,
+        "bias": 0.007,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.3
+        "ratio": 1.8
        }
       ],
       "floor": [
-       0.0892,
-       0.000577,
-       0.0381
+       0.058,
+       0.000304,
+       0.0207
       ]
      },
      {
@@ -1969,20 +1960,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0328,
-        "frac": 4e-06,
-        "bias": 0.0047,
+        "mad": 0.0373,
+        "frac": 9e-06,
+        "bias": 0.0049,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.9
+        "ratio": 1.0
        },
        {
         "value": 1.0,
-        "mad": 0.0413,
+        "mad": 0.0392,
         "frac": 4e-06,
-        "bias": 0.0056,
+        "bias": 0.0054,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -1991,9 +1982,9 @@
        }
       ],
       "floor": [
-       0.0384,
-       4e-06,
-       0.0061
+       0.0373,
+       9e-06,
+       0.0049
       ]
      },
      {
@@ -2001,31 +1992,31 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0525,
-        "frac": 0.00026,
-        "bias": 0.0137,
+        "mad": 0.1402,
+        "frac": 0.000469,
+        "bias": 0.0048,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.6
+        "ratio": 1.0
        },
        {
         "value": 1.0,
-        "mad": 0.1052,
-        "frac": 0.000417,
-        "bias": 0.0194,
+        "mad": 0.1383,
+        "frac": 0.00049,
+        "bias": 0.0091,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.1
+        "ratio": 1.0
        }
       ],
       "floor": [
-       0.0975,
-       0.000456,
-       0.0266
+       0.145,
+       0.000556,
+       0.0115
       ]
      },
      {
@@ -2033,9 +2024,9 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0673,
-        "frac": 0.000391,
-        "bias": 0.0006,
+        "mad": 0.0756,
+        "frac": 0.000525,
+        "bias": 0.0066,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -2044,20 +2035,20 @@
        },
        {
         "value": 1.0,
-        "mad": 0.0352,
-        "frac": 0.000308,
-        "bias": 0.0003,
+        "mad": 0.0709,
+        "frac": 0.000608,
+        "bias": 0.003,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.7
+        "ratio": 1.0
        }
       ],
       "floor": [
-       0.0673,
-       0.000425,
-       0.0019
+       0.0762,
+       0.000625,
+       0.0066
       ]
      },
      {
@@ -2065,31 +2056,31 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0588,
-        "frac": 0.000139,
-        "bias": 0.002,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.6
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0997,
-        "frac": 0.000356,
-        "bias": 0.0054,
+        "mad": 0.0978,
+        "frac": 0.00089,
+        "bias": 0.0032,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
         "ratio": 1.0
+       },
+       {
+        "value": 1.0,
+        "mad": 0.1113,
+        "frac": 0.000686,
+        "bias": 0.0106,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 3.3
        }
       ],
       "floor": [
-       0.1017,
-       0.000482,
-       0.006
+       0.0978,
+       0.00089,
+       0.0032
       ]
      },
      {
@@ -2097,9 +2088,9 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0582,
-        "frac": 0.000187,
-        "bias": 0.0084,
+        "mad": 0.0609,
+        "frac": 5.2e-05,
+        "bias": 0.0004,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -2108,20 +2099,20 @@
        },
        {
         "value": 1.0,
-        "mad": 0.0625,
-        "frac": 0.000317,
-        "bias": 0.0062,
+        "mad": 0.0393,
+        "frac": 3e-05,
+        "bias": 0.007,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.0
+        "ratio": 3.5
        }
       ],
       "floor": [
-       0.0715,
-       0.000321,
-       0.0084
+       0.0609,
+       5.2e-05,
+       0.0008
       ]
      },
      {
@@ -2129,9 +2120,9 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.9021,
-        "frac": 0.042591,
-        "bias": 0.114,
+        "mad": 0.0698,
+        "frac": 0.000469,
+        "bias": 0.0214,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -2140,9 +2131,9 @@
        },
        {
         "value": 1.0,
-        "mad": 0.905,
-        "frac": 0.042548,
-        "bias": 0.1096,
+        "mad": 0.0689,
+        "frac": 0.000464,
+        "bias": 0.0212,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -2151,9 +2142,9 @@
        }
       ],
       "floor": [
-       0.903,
-       0.042591,
-       0.1182
+       0.0698,
+       0.000469,
+       0.0214
       ]
      },
      {
@@ -2161,9 +2152,9 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0339,
-        "frac": 3.9e-05,
-        "bias": 0.0027,
+        "mad": 0.0534,
+        "frac": 0.000365,
+        "bias": 0.0026,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -2172,32 +2163,32 @@
        },
        {
         "value": 1.0,
-        "mad": 0.0409,
-        "frac": 0.000174,
-        "bias": 0.0021,
+        "mad": 0.0154,
+        "frac": 0.0,
+        "bias": 0.001,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.9
+        "ratio": 0.4
        }
       ],
       "floor": [
-       0.0466,
-       0.000308,
-       0.0027
+       0.0534,
+       0.000365,
+       0.0026
       ]
      }
     ],
     "verdict": "no effect",
-    "cam": 0,
-    "effect_mad": 0.1024,
-    "effect_frac": 7.4e-05,
-    "effect_bias": 0.0396,
-    "ratio": 1.6,
-    "floor_mad": 0.0658,
-    "floor_frac": 0.0,
-    "floor_bias": 0.0322,
+    "cam": 8,
+    "effect_mad": 0.0393,
+    "effect_frac": 3e-05,
+    "effect_bias": 0.007,
+    "ratio": 3.5,
+    "floor_mad": 0.0609,
+    "floor_frac": 5.2e-05,
+    "floor_bias": 0.0008,
     "note": "read only in Python by flight_rt.frame"
    },
    {
@@ -2222,20 +2213,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 2.3722,
-        "frac": 0.103837,
-        "bias": 3.2048,
+        "mad": 2.3553,
+        "frac": 0.103203,
+        "bias": 3.0304,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 1038.4
+        "ratio": 1032.0
        },
        {
         "value": 0.35,
-        "mad": 0.1192,
-        "frac": 4.8e-05,
-        "bias": 0.0556,
+        "mad": 0.1668,
+        "frac": 3e-05,
+        "bias": 0.0937,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -2244,43 +2235,43 @@
        },
        {
         "value": 0.5,
-        "mad": 2.3482,
-        "frac": 0.119036,
-        "bias": 2.9941,
+        "mad": 2.4037,
+        "frac": 0.120534,
+        "bias": 3.1036,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 1190.4
+        "ratio": 1205.3
        },
        {
         "value": 1.0,
-        "mad": 13.3947,
-        "frac": 0.418689,
-        "bias": 16.9753,
+        "mad": 13.5395,
+        "frac": 0.422917,
+        "bias": 17.2274,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 4186.9
+        "ratio": 4229.2
        }
       ],
       "floor": [
-       0.1192,
-       4.8e-05,
-       0.0617
+       0.1668,
+       3e-05,
+       0.0937
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 13.3947,
-    "effect_frac": 0.418689,
-    "effect_bias": 16.9753,
-    "ratio": 4186.9,
-    "floor_mad": 0.1192,
-    "floor_frac": 4.8e-05,
-    "floor_bias": 0.0617,
+    "effect_mad": 13.5395,
+    "effect_frac": 0.422917,
+    "effect_bias": 17.2274,
+    "ratio": 4229.2,
+    "floor_mad": 0.1668,
+    "floor_frac": 3e-05,
+    "floor_bias": 0.0937,
     "note": ""
    },
    {
@@ -2305,20 +2296,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 2.7914,
-        "frac": 0.144783,
-        "bias": 3.3823,
+        "mad": 2.8934,
+        "frac": 0.148151,
+        "bias": 3.4967,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 354.9
+        "ratio": 213.3
        },
        {
         "value": 0.5,
-        "mad": 0.2494,
-        "frac": 0.000408,
-        "bias": 0.0376,
+        "mad": 0.2045,
+        "frac": 0.000525,
+        "bias": 0.1143,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -2327,32 +2318,32 @@
        },
        {
         "value": 1.0,
-        "mad": 2.3048,
-        "frac": 0.124948,
-        "bias": 2.8452,
+        "mad": 2.2608,
+        "frac": 0.123728,
+        "bias": 2.759,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 306.2
+        "ratio": 178.2
        }
       ],
       "floor": [
-       0.2494,
-       0.000408,
-       0.0593
+       0.2116,
+       0.000694,
+       0.1143
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 2.7914,
-    "effect_frac": 0.144783,
-    "effect_bias": 3.3823,
-    "ratio": 354.9,
-    "floor_mad": 0.2494,
-    "floor_frac": 0.000408,
-    "floor_bias": 0.0593,
+    "effect_mad": 2.8934,
+    "effect_frac": 0.148151,
+    "effect_bias": 3.4967,
+    "ratio": 213.3,
+    "floor_mad": 0.2116,
+    "floor_frac": 0.000694,
+    "floor_bias": 0.1143,
     "note": ""
    },
    {
@@ -2377,20 +2368,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 5.3159,
-        "frac": 0.272313,
-        "bias": 7.1072,
+        "mad": 5.378,
+        "frac": 0.283585,
+        "bias": 7.1972,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 92.8
+        "ratio": 159.3
        },
        {
         "value": 0.6,
-        "mad": 0.3649,
-        "frac": 0.002934,
-        "bias": 0.249,
+        "mad": 0.3377,
+        "frac": 0.00178,
+        "bias": 0.2019,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -2399,50 +2390,50 @@
        },
        {
         "value": 1.0,
-        "mad": 2.9146,
-        "frac": 0.158481,
-        "bias": 3.7888,
+        "mad": 2.8866,
+        "frac": 0.159557,
+        "bias": 3.7831,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 54.0
+        "ratio": 89.6
        },
        {
         "value": 2.0,
-        "mad": 9.0779,
-        "frac": 0.442426,
-        "bias": 11.6526,
+        "mad": 9.0477,
+        "frac": 0.443485,
+        "bias": 11.695,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 150.8
+        "ratio": 249.1
        }
       ],
       "floor": [
-       0.3649,
-       0.002934,
-       0.249
+       0.3377,
+       0.00178,
+       0.2019
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 9.0779,
-    "effect_frac": 0.442426,
-    "effect_bias": 11.6526,
-    "ratio": 150.8,
-    "floor_mad": 0.3649,
-    "floor_frac": 0.002934,
-    "floor_bias": 0.249,
+    "effect_mad": 9.0477,
+    "effect_frac": 0.443485,
+    "effect_bias": 11.695,
+    "ratio": 249.1,
+    "floor_mad": 0.3377,
+    "floor_frac": 0.00178,
+    "floor_bias": 0.2019,
     "note": ""
    },
    {
     "key": "vj_fog_height",
     "address": "/vj/fog_height",
     "min": 1.0,
-    "max": 200.0,
+    "max": 60.0,
     "default": 25.0,
     "trigger": false,
     "why": "needs a fog bank",
@@ -2460,20 +2451,20 @@
       "cells": [
        {
         "value": 1.0,
-        "mad": 8.3387,
-        "frac": 0.249592,
-        "bias": 10.9771,
+        "mad": 8.3004,
+        "frac": 0.256858,
+        "bias": 10.9287,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 191.7
+        "ratio": 610.1
        },
        {
         "value": 25.0,
-        "mad": 0.2423,
-        "frac": 0.001302,
-        "bias": 0.1143,
+        "mad": 0.1781,
+        "frac": 0.000352,
+        "bias": 0.0757,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -2481,44 +2472,44 @@
         "ratio": 1.0
        },
        {
-        "value": 100.5,
-        "mad": 26.6751,
-        "frac": 0.610742,
-        "bias": 32.983,
+        "value": 30.5,
+        "mad": 2.641,
+        "frac": 0.111332,
+        "bias": 3.2993,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 469.1
+        "ratio": 264.4
        },
        {
-        "value": 200.0,
-        "mad": 49.1048,
-        "frac": 0.876437,
-        "bias": 61.41,
+        "value": 60.0,
+        "mad": 14.7679,
+        "frac": 0.506224,
+        "bias": 18.4708,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 673.1
+        "ratio": 1202.4
        }
       ],
       "floor": [
-       0.2423,
-       0.001302,
-       0.1396
+       0.1781,
+       0.000421,
+       0.1084
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 49.1048,
-    "effect_frac": 0.876437,
-    "effect_bias": 61.41,
-    "ratio": 673.1,
-    "floor_mad": 0.2423,
-    "floor_frac": 0.001302,
-    "floor_bias": 0.1396,
+    "effect_mad": 14.7679,
+    "effect_frac": 0.506224,
+    "effect_bias": 18.4708,
+    "ratio": 1202.4,
+    "floor_mad": 0.1781,
+    "floor_frac": 0.000421,
+    "floor_bias": 0.1084,
     "note": ""
    },
    {
@@ -2543,9 +2534,9 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.32,
-        "frac": 0.003064,
-        "bias": 0.0271,
+        "mad": 0.2803,
+        "frac": 0.001684,
+        "bias": 0.062,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -2554,43 +2545,43 @@
        },
        {
         "value": 0.5,
-        "mad": 4.4571,
-        "frac": 0.250156,
-        "bias": 6.7547,
+        "mad": 4.3792,
+        "frac": 0.257778,
+        "bias": 6.8371,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 81.6
+        "ratio": 153.1
        },
        {
         "value": 1.0,
-        "mad": 0.4148,
-        "frac": 0.003142,
-        "bias": 0.1922,
+        "mad": 0.2991,
+        "frac": 0.001359,
+        "bias": 0.1496,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.2
+        "ratio": 1.1
        }
       ],
       "floor": [
-       0.3336,
-       0.003064,
-       0.1627
+       0.2842,
+       0.001684,
+       0.1551
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 4.4571,
-    "effect_frac": 0.250156,
-    "effect_bias": 6.7547,
-    "ratio": 81.6,
-    "floor_mad": 0.3336,
-    "floor_frac": 0.003064,
-    "floor_bias": 0.1627,
+    "effect_mad": 4.3792,
+    "effect_frac": 0.257778,
+    "effect_bias": 6.8371,
+    "ratio": 153.1,
+    "floor_mad": 0.2842,
+    "floor_frac": 0.001684,
+    "floor_bias": 0.1551,
     "note": ""
    },
    {
@@ -2615,20 +2606,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.9465,
-        "frac": 0.035135,
-        "bias": 0.643,
+        "mad": 0.9754,
+        "frac": 0.035195,
+        "bias": 0.579,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 29.4
+        "ratio": 63.3
        },
        {
         "value": 0.6,
-        "mad": 0.2386,
-        "frac": 0.001189,
-        "bias": 0.1217,
+        "mad": 0.1786,
+        "frac": 0.000556,
+        "bias": 0.0904,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -2637,43 +2628,43 @@
        },
        {
         "value": 0.5,
-        "mad": 0.2803,
-        "frac": 0.001228,
-        "bias": 0.0407,
+        "mad": 0.2954,
+        "frac": 0.000521,
+        "bias": 0.0496,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.2
+        "ratio": 1.7
        },
        {
         "value": 1.0,
-        "mad": 0.6403,
-        "frac": 0.015252,
-        "bias": 0.3895,
+        "mad": 0.6776,
+        "frac": 0.014644,
+        "bias": 0.4339,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 12.8
+        "ratio": 26.3
        }
       ],
       "floor": [
-       0.2386,
-       0.001194,
-       0.1396
+       0.1786,
+       0.000556,
+       0.1084
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 0.9465,
-    "effect_frac": 0.035135,
-    "effect_bias": 0.643,
-    "ratio": 29.4,
-    "floor_mad": 0.2386,
-    "floor_frac": 0.001194,
-    "floor_bias": 0.1396,
+    "effect_mad": 0.9754,
+    "effect_frac": 0.035195,
+    "effect_bias": 0.579,
+    "ratio": 63.3,
+    "floor_mad": 0.1786,
+    "floor_frac": 0.000556,
+    "floor_bias": 0.1084,
     "note": ""
    },
    {
@@ -2698,20 +2689,20 @@
       "cells": [
        {
         "value": 10.0,
-        "mad": 2.3768,
-        "frac": 0.091654,
-        "bias": 1.1995,
+        "mad": 2.4718,
+        "frac": 0.09645,
+        "bias": 1.1955,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 65.2
+        "ratio": 229.1
        },
        {
         "value": 260.0,
-        "mad": 0.1878,
-        "frac": 0.001406,
-        "bias": 0.0908,
+        "mad": 0.1709,
+        "frac": 0.000226,
+        "bias": 0.0666,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -2720,43 +2711,43 @@
        },
        {
         "value": 505.0,
-        "mad": 3.2203,
-        "frac": 0.116471,
-        "bias": 1.2348,
+        "mad": 3.3304,
+        "frac": 0.124822,
+        "bias": 1.7208,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 82.8
+        "ratio": 296.5
        },
        {
         "value": 1000.0,
-        "mad": 3.1522,
-        "frac": 0.128859,
-        "bias": 2.3542,
+        "mad": 3.2416,
+        "frac": 0.133485,
+        "bias": 2.3938,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 91.6
+        "ratio": 317.1
        }
       ],
       "floor": [
-       0.2262,
-       0.001406,
-       0.1396
+       0.1709,
+       0.000421,
+       0.1084
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 3.1522,
-    "effect_frac": 0.128859,
-    "effect_bias": 2.3542,
-    "ratio": 91.6,
-    "floor_mad": 0.2262,
-    "floor_frac": 0.001406,
-    "floor_bias": 0.1396,
+    "effect_mad": 3.2416,
+    "effect_frac": 0.133485,
+    "effect_bias": 2.3938,
+    "ratio": 317.1,
+    "floor_mad": 0.1709,
+    "floor_frac": 0.000421,
+    "floor_bias": 0.1084,
     "note": ""
    },
    {
@@ -2781,65 +2772,65 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.5662,
-        "frac": 0.008611,
-        "bias": 0.1438,
+        "mad": 0.5265,
+        "frac": 0.007088,
+        "bias": 0.1106,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 15.4
+        "ratio": 33.3
        },
        {
         "value": 10.0,
-        "mad": 0.1595,
-        "frac": 0.000551,
-        "bias": 0.081,
+        "mad": 0.13,
+        "frac": 8.2e-05,
+        "bias": 0.0203,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.0
+        "ratio": 0.9
        },
        {
         "value": 20.0,
-        "mad": 0.5335,
-        "frac": 0.006476,
-        "bias": 0.0447,
+        "mad": 0.5575,
+        "frac": 0.006558,
+        "bias": 0.0451,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 11.6
+        "ratio": 30.8
        },
        {
         "value": 40.0,
-        "mad": 1.323,
-        "frac": 0.055516,
-        "bias": 0.0999,
+        "mad": 1.311,
+        "frac": 0.05497,
+        "bias": 0.0715,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 99.2
+        "ratio": 258.5
        }
       ],
       "floor": [
-       0.1595,
-       0.00056,
-       0.081
+       0.1483,
+       0.000213,
+       0.0664
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 1.323,
-    "effect_frac": 0.055516,
-    "effect_bias": 0.0999,
-    "ratio": 99.2,
-    "floor_mad": 0.1595,
-    "floor_frac": 0.00056,
-    "floor_bias": 0.081,
+    "effect_mad": 1.311,
+    "effect_frac": 0.05497,
+    "effect_bias": 0.0715,
+    "ratio": 258.5,
+    "floor_mad": 0.1483,
+    "floor_frac": 0.000213,
+    "floor_bias": 0.0664,
     "note": ""
    },
    {
@@ -2864,20 +2855,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 3.693,
-        "frac": 0.13579,
-        "bias": 6.2782,
+        "mad": 3.6386,
+        "frac": 0.134245,
+        "bias": 6.1487,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 132.0
+        "ratio": 372.9
        },
        {
         "value": 1.0,
-        "mad": 0.221,
-        "frac": 0.001029,
-        "bias": 0.3223,
+        "mad": 0.2233,
+        "frac": 0.00036,
+        "bias": 0.2235,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -2886,32 +2877,32 @@
        },
        {
         "value": 0.5,
-        "mad": 1.4084,
-        "frac": 0.098537,
-        "bias": 2.2172,
+        "mad": 1.3519,
+        "frac": 0.093976,
+        "bias": 2.0752,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 95.8
+        "ratio": 261.0
        }
       ],
       "floor": [
-       0.221,
-       0.001029,
-       0.3223
+       0.2233,
+       0.00036,
+       0.2235
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 3.693,
-    "effect_frac": 0.13579,
-    "effect_bias": 6.2782,
-    "ratio": 132.0,
-    "floor_mad": 0.221,
-    "floor_frac": 0.001029,
-    "floor_bias": 0.3223,
+    "effect_mad": 3.6386,
+    "effect_frac": 0.134245,
+    "effect_bias": 6.1487,
+    "ratio": 372.9,
+    "floor_mad": 0.2233,
+    "floor_frac": 0.00036,
+    "floor_bias": 0.2235,
     "note": ""
    },
    {
@@ -2923,22 +2914,12 @@
     "trigger": false,
     "why": "the grid scrolls on the night ground",
     "readers": {
-     "nodes": 0,
+     "nodes": 1,
      "drivers": 0,
      "python": []
     },
     "cams_tried": [
-     0,
-     1,
-     2,
-     3,
-     4,
-     5,
-     6,
-     7,
-     8,
-     9,
-     10
+     0
     ],
     "attempts": [
      {
@@ -2946,287 +2927,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.1943,
-        "frac": 0.002331,
-        "bias": 0.1458,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 0.6,
-        "mad": 0.2018,
-        "frac": 0.002218,
-        "bias": 0.1417,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 2.0,
-        "mad": 0.1546,
-        "frac": 0.002274,
-        "bias": 0.1409,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 4.0,
-        "mad": 0.2703,
-        "frac": 0.002656,
-        "bias": 0.1435,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       }
-      ],
-      "floor": [
-       0.2673,
-       0.00276,
-       0.1435
-      ]
-     },
-     {
-      "cam": 1,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0677,
-        "frac": 0.00056,
-        "bias": 0.0015,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.7
-       },
-       {
-        "value": 4.0,
-        "mad": 0.0555,
-        "frac": 0.000421,
-        "bias": 0.0031,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.6
-       }
-      ],
-      "floor": [
-       0.0931,
-       0.000851,
-       0.0067
-      ]
-     },
-     {
-      "cam": 2,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.1404,
-        "frac": 0.000707,
-        "bias": 0.1517,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.2
-       },
-       {
-        "value": 4.0,
-        "mad": 0.1381,
-        "frac": 0.000616,
-        "bias": 0.1452,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       }
-      ],
-      "floor": [
-       0.1362,
-       0.000599,
-       0.1524
-      ]
-     },
-     {
-      "cam": 3,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 1.1179,
-        "frac": 0.044249,
-        "bias": 0.0449,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 4.0,
-        "mad": 1.1008,
-        "frac": 0.043368,
-        "bias": 0.0818,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       }
-      ],
-      "floor": [
-       1.1238,
-       0.045317,
-       0.083
-      ]
-     },
-     {
-      "cam": 4,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0864,
-        "frac": 0.000182,
-        "bias": 0.0196,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.8
-       },
-       {
-        "value": 4.0,
-        "mad": 0.1077,
-        "frac": 0.000295,
-        "bias": 0.0252,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 3.0
-       }
-      ],
-      "floor": [
-       0.0596,
-       7.4e-05,
-       0.027
-      ]
-     },
-     {
-      "cam": 5,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.1866,
-        "frac": 0.003607,
-        "bias": 0.0365,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.1
-       },
-       {
-        "value": 4.0,
-        "mad": 0.1679,
-        "frac": 0.002934,
-        "bias": 0.0531,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.6
-       }
-      ],
-      "floor": [
-       0.2434,
-       0.00464,
-       0.0336
-      ]
-     },
-     {
-      "cam": 6,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0447,
-        "frac": 0.000408,
-        "bias": 0.0015,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 4.0,
-        "mad": 0.0477,
-        "frac": 0.000464,
-        "bias": 0.0042,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       }
-      ],
-      "floor": [
-       0.0463,
-       0.000456,
-       0.0047
-      ]
-     },
-     {
-      "cam": 7,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0838,
-        "frac": 0.000321,
-        "bias": 0.0085,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.6
-       },
-       {
-        "value": 4.0,
-        "mad": 0.1594,
-        "frac": 0.004848,
-        "bias": 0.0286,
+        "mad": 6.5747,
+        "frac": 0.209058,
+        "bias": 0.1597,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 2.0
-       }
-      ],
-      "floor": [
-       0.1729,
-       0.006476,
-       0.0141
-      ]
-     },
-     {
-      "cam": 8,
-      "cells": [
+        "ratio": 20.2
+       },
        {
-        "value": 0.0,
-        "mad": 0.0345,
-        "frac": 0.000577,
-        "bias": 0.003,
+        "value": 0.6,
+        "mad": 0.1628,
+        "frac": 0.001402,
+        "bias": 0.0709,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -3234,98 +2948,45 @@
         "ratio": 0.4
        },
        {
-        "value": 4.0,
-        "mad": 0.0999,
-        "frac": 0.001832,
-        "bias": 0.0057,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.4
-       }
-      ],
-      "floor": [
-       0.0891,
-       0.00135,
-       0.0083
-      ]
-     },
-     {
-      "cam": 9,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.1738,
-        "frac": 0.003611,
-        "bias": 0.0435,
+        "value": 2.0,
+        "mad": 6.5117,
+        "frac": 0.207261,
+        "bias": 0.0482,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 2.3
+        "ratio": 20.0
        },
        {
         "value": 4.0,
-        "mad": 0.0786,
-        "frac": 0.002413,
-        "bias": 0.0162,
+        "mad": 6.5469,
+        "frac": 0.207891,
+        "bias": 0.0473,
         "readback": true,
         "settled": true,
         "probe": null,
-        "effect": false,
-        "ratio": 0.9
+        "effect": true,
+        "ratio": 20.0
        }
       ],
       "floor": [
-       0.2257,
-       0.005078,
-       0.019
-      ]
-     },
-     {
-      "cam": 10,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0801,
-        "frac": 0.000486,
-        "bias": 0.0048,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.8
-       },
-       {
-        "value": 4.0,
-        "mad": 0.0669,
-        "frac": 0.000317,
-        "bias": 0.0032,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.2
-       }
-      ],
-      "floor": [
-       0.0644,
-       0.000326,
-       0.0027
+       0.3772,
+       0.010369,
+       0.3042
       ]
      }
     ],
-    "verdict": "no effect",
-    "cam": 4,
-    "effect_mad": 0.1077,
-    "effect_frac": 0.000295,
-    "effect_bias": 0.0252,
-    "ratio": 3.0,
-    "floor_mad": 0.0596,
-    "floor_frac": 7.4e-05,
-    "floor_bias": 0.027,
-    "note": "no shader or driver reads it"
+    "verdict": "effect",
+    "cam": 0,
+    "effect_mad": 6.5747,
+    "effect_frac": 0.209058,
+    "effect_bias": 0.1597,
+    "ratio": 20.2,
+    "floor_mad": 0.3772,
+    "floor_frac": 0.010369,
+    "floor_bias": 0.3042,
+    "note": ""
    },
    {
     "key": "vj_haze",
@@ -3349,20 +3010,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 3.2684,
-        "frac": 0.147348,
-        "bias": 4.7068,
+        "mad": 3.2115,
+        "frac": 0.146884,
+        "bias": 4.6216,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 1473.5
+        "ratio": 1468.8
        },
        {
         "value": 1.0,
-        "mad": 0.1428,
-        "frac": 3.5e-05,
-        "bias": 0.1178,
+        "mad": 0.1915,
+        "frac": 5.6e-05,
+        "bias": 0.0352,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -3371,32 +3032,32 @@
        },
        {
         "value": 0.5,
-        "mad": 1.4738,
-        "frac": 0.105247,
-        "bias": 2.0509,
+        "mad": 1.5007,
+        "frac": 0.105004,
+        "bias": 1.9326,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 1052.5
+        "ratio": 1050.0
        }
       ],
       "floor": [
-       0.1428,
-       3.5e-05,
-       0.1178
+       0.1915,
+       5.6e-05,
+       0.0744
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 3.2684,
-    "effect_frac": 0.147348,
-    "effect_bias": 4.7068,
-    "ratio": 1473.5,
-    "floor_mad": 0.1428,
-    "floor_frac": 3.5e-05,
-    "floor_bias": 0.1178,
+    "effect_mad": 3.2115,
+    "effect_frac": 0.146884,
+    "effect_bias": 4.6216,
+    "ratio": 1468.8,
+    "floor_mad": 0.1915,
+    "floor_frac": 5.6e-05,
+    "floor_bias": 0.0744,
     "note": ""
    },
    {
@@ -3418,14 +3079,7 @@
      0,
      1,
      2,
-     3,
-     4,
-     5,
-     6,
-     7,
-     8,
-     9,
-     10
+     3
     ],
     "attempts": [
      {
@@ -3433,31 +3087,31 @@
       "cells": [
        {
         "value": 0.5,
-        "mad": 0.0388,
-        "frac": 1.7e-05,
-        "bias": 0.0161,
+        "mad": 0.1112,
+        "frac": 3e-05,
+        "bias": 0.0427,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.6
+        "ratio": 1.6
        },
        {
         "value": 1.0,
-        "mad": 0.1025,
-        "frac": 6.9e-05,
-        "bias": 0.0062,
+        "mad": 0.1335,
+        "frac": 0.00026,
+        "bias": 0.0078,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.1
+        "ratio": 1.0
        }
       ],
       "floor": [
-       0.0976,
-       0.000104,
-       0.0251
+       0.1292,
+       0.000252,
+       0.0262
       ]
      },
      {
@@ -3465,31 +3119,31 @@
       "cells": [
        {
         "value": 0.5,
-        "mad": 0.0724,
-        "frac": 0.000113,
-        "bias": 0.0044,
+        "mad": 0.063,
+        "frac": 9.1e-05,
+        "bias": 0.0139,
         "readback": true,
         "settled": true,
         "probe": null,
-        "effect": false,
-        "ratio": 1.0
+        "effect": true,
+        "ratio": 6.9
        },
        {
         "value": 1.0,
-        "mad": 0.0226,
-        "frac": 4e-06,
-        "bias": 0.0018,
+        "mad": 0.0529,
+        "frac": 3.9e-05,
+        "bias": 0.0054,
         "readback": true,
         "settled": true,
         "probe": null,
-        "effect": false,
-        "ratio": 0.3
+        "effect": true,
+        "ratio": 2.7
        }
       ],
       "floor": [
-       0.0729,
-       0.000113,
-       0.0114
+       0.0198,
+       9e-06,
+       0.0019
       ]
      },
      {
@@ -3497,31 +3151,31 @@
       "cells": [
        {
         "value": 0.5,
-        "mad": 0.1283,
-        "frac": 0.001871,
-        "bias": 0.1036,
+        "mad": 0.1025,
+        "frac": 0.000985,
+        "bias": 0.0575,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.1
+        "ratio": 1.3
        },
        {
         "value": 1.0,
-        "mad": 0.1302,
-        "frac": 0.001992,
-        "bias": 0.1021,
+        "mad": 0.1035,
+        "frac": 0.000968,
+        "bias": 0.0608,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.1
+        "ratio": 1.3
        }
       ],
       "floor": [
-       0.1416,
-       0.002266,
-       0.097
+       0.0816,
+       0.000786,
+       0.0561
       ]
      },
      {
@@ -3529,268 +3183,44 @@
       "cells": [
        {
         "value": 0.5,
-        "mad": 0.05,
-        "frac": 9.5e-05,
-        "bias": 0.0029,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.5
-       },
-       {
-        "value": 1.0,
-        "mad": 0.063,
-        "frac": 0.000174,
-        "bias": 0.0051,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.9
-       }
-      ],
-      "floor": [
-       0.0924,
-       0.001532,
-       0.0056
-      ]
-     },
-     {
-      "cam": 4,
-      "cells": [
-       {
-        "value": 0.5,
-        "mad": 0.0506,
-        "frac": 0.0,
-        "bias": 0.0053,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.2
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0504,
-        "frac": 0.0,
-        "bias": 0.0053,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.2
-       }
-      ],
-      "floor": [
-       0.0413,
-       4e-06,
-       0.0057
-      ]
-     },
-     {
-      "cam": 5,
-      "cells": [
-       {
-        "value": 0.5,
-        "mad": 0.1297,
-        "frac": 0.000451,
-        "bias": 0.0172,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.7
-       },
-       {
-        "value": 1.0,
-        "mad": 0.1398,
-        "frac": 0.000668,
-        "bias": 0.032,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.8
-       }
-      ],
-      "floor": [
-       0.1751,
-       0.001432,
-       0.0474
-      ]
-     },
-     {
-      "cam": 6,
-      "cells": [
-       {
-        "value": 0.5,
-        "mad": 0.0634,
-        "frac": 0.000356,
-        "bias": 0.0037,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.4
-       },
-       {
-        "value": 1.0,
-        "mad": 0.06,
-        "frac": 0.000317,
-        "bias": 0.0034,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.3
-       }
-      ],
-      "floor": [
-       0.0676,
-       0.000434,
-       0.0026
-      ]
-     },
-     {
-      "cam": 7,
-      "cells": [
-       {
-        "value": 0.5,
-        "mad": 0.1019,
-        "frac": 0.000599,
-        "bias": 0.0059,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.9
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0546,
-        "frac": 0.000365,
-        "bias": 0.0024,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       }
-      ],
-      "floor": [
-       0.0564,
-       0.000404,
-       0.0031
-      ]
-     },
-     {
-      "cam": 8,
-      "cells": [
-       {
-        "value": 0.5,
-        "mad": 0.0536,
-        "frac": 0.000117,
-        "bias": 0.0081,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.3
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0315,
-        "frac": 7.4e-05,
-        "bias": 0.0069,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.1
-       }
-      ],
-      "floor": [
-       0.0575,
-       0.000165,
-       0.0063
-      ]
-     },
-     {
-      "cam": 9,
-      "cells": [
-       {
-        "value": 0.5,
-        "mad": 0.0839,
-        "frac": 0.000508,
-        "bias": 0.0079,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.8
-       },
-       {
-        "value": 1.0,
-        "mad": 0.3164,
-        "frac": 0.003997,
-        "bias": 0.0448,
+        "mad": 0.8324,
+        "frac": 0.022192,
+        "bias": 0.1121,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 5.0
-       }
-      ],
-      "floor": [
-       0.1084,
-       0.000799,
-       0.0225
-      ]
-     },
-     {
-      "cam": 10,
-      "cells": [
-       {
-        "value": 0.5,
-        "mad": 0.0512,
-        "frac": 0.000447,
-        "bias": 0.0029,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
+        "ratio": 82.5
        },
        {
         "value": 1.0,
-        "mad": 0.0393,
-        "frac": 0.000365,
-        "bias": 0.0044,
+        "mad": 0.0667,
+        "frac": 0.00036,
+        "bias": 0.0327,
         "readback": true,
         "settled": true,
         "probe": null,
-        "effect": false,
-        "ratio": 0.8
+        "effect": true,
+        "ratio": 4.7
        }
       ],
       "floor": [
-       0.0535,
-       0.000438,
-       0.0064
+       0.0781,
+       0.000269,
+       0.007
       ]
      }
     ],
-    "verdict": "no effect",
-    "cam": 9,
-    "effect_mad": 0.3164,
-    "effect_frac": 0.003997,
-    "effect_bias": 0.0448,
-    "ratio": 5.0,
-    "floor_mad": 0.1084,
-    "floor_frac": 0.000799,
-    "floor_bias": 0.0225,
-    "note": "read only in Python by flight_rt.frame"
+    "verdict": "effect",
+    "cam": 3,
+    "effect_mad": 0.8324,
+    "effect_frac": 0.022192,
+    "effect_bias": 0.1121,
+    "ratio": 82.5,
+    "floor_mad": 0.0781,
+    "floor_frac": 0.000269,
+    "floor_bias": 0.007,
+    "note": ""
    },
    {
     "key": "vj_hue",
@@ -3806,17 +3236,7 @@
      "python": []
     },
     "cams_tried": [
-     0,
-     1,
-     2,
-     3,
-     4,
-     5,
-     6,
-     7,
-     8,
-     9,
-     10
+     0
     ],
     "attempts": [
      {
@@ -3824,9 +3244,9 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.2283,
-        "frac": 0.002005,
-        "bias": 0.2088,
+        "mad": 0.1914,
+        "frac": 7.8e-05,
+        "bias": 0.0759,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -3835,363 +3255,43 @@
        },
        {
         "value": 0.5,
-        "mad": 0.1219,
-        "frac": 3e-05,
-        "bias": 0.0397,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.5
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0994,
-        "frac": 1.7e-05,
-        "bias": 0.0353,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.4
-       }
-      ],
-      "floor": [
-       0.2283,
-       0.002005,
-       0.2088
-      ]
-     },
-     {
-      "cam": 1,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0844,
-        "frac": 0.000247,
-        "bias": 0.0061,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0769,
-        "frac": 0.0001,
-        "bias": 0.0074,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.9
-       }
-      ],
-      "floor": [
-       0.0844,
-       0.000247,
-       0.0091
-      ]
-     },
-     {
-      "cam": 2,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.065,
-        "frac": 0.000122,
-        "bias": 0.0222,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.5
-       },
-       {
-        "value": 1.0,
-        "mad": 0.1353,
-        "frac": 0.001076,
-        "bias": 0.1084,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       }
-      ],
-      "floor": [
-       0.133,
-       0.001836,
-       0.1134
-      ]
-     },
-     {
-      "cam": 3,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.1026,
-        "frac": 0.000959,
-        "bias": 0.0116,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0834,
-        "frac": 0.000521,
-        "bias": 0.0232,
+        "mad": 63.3363,
+        "frac": 1.0,
+        "bias": 60.5027,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 2.0
-       }
-      ],
-      "floor": [
-       0.1026,
-       0.000959,
-       0.0116
-      ]
-     },
-     {
-      "cam": 4,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0585,
-        "frac": 2.6e-05,
-        "bias": 0.0063,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
+        "ratio": 10000.0
        },
        {
         "value": 1.0,
-        "mad": 0.0434,
-        "frac": 1.3e-05,
-        "bias": 0.0041,
+        "mad": 0.4511,
+        "frac": 0.021181,
+        "bias": 0.5317,
         "readback": true,
         "settled": true,
         "probe": null,
-        "effect": false,
-        "ratio": 0.7
+        "effect": true,
+        "ratio": 211.8
        }
       ],
       "floor": [
-       0.0585,
-       2.6e-05,
-       0.0063
-      ]
-     },
-     {
-      "cam": 5,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.2157,
-        "frac": 0.00148,
-        "bias": 0.0107,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.1861,
-        "frac": 0.001011,
-        "bias": 0.0341,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       }
-      ],
-      "floor": [
-       0.2157,
-       0.00148,
-       0.0341
-      ]
-     },
-     {
-      "cam": 6,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0645,
-        "frac": 0.000438,
-        "bias": 0.005,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0592,
-        "frac": 0.000412,
-        "bias": 0.0047,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.9
-       }
-      ],
-      "floor": [
-       0.0645,
-       0.000438,
-       0.005
-      ]
-     },
-     {
-      "cam": 7,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.083,
-        "frac": 0.001133,
-        "bias": 0.0048,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.1172,
-        "frac": 0.000907,
-        "bias": 0.0047,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       }
-      ],
-      "floor": [
-       0.1166,
-       0.001181,
-       0.0076
-      ]
-     },
-     {
-      "cam": 8,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0605,
-        "frac": 7.4e-05,
-        "bias": 0.0088,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0523,
-        "frac": 6.5e-05,
-        "bias": 0.0106,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.2
-       }
-      ],
-      "floor": [
-       0.0605,
-       7.4e-05,
-       0.0088
-      ]
-     },
-     {
-      "cam": 9,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.1301,
-        "frac": 0.001406,
-        "bias": 0.0377,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.1572,
-        "frac": 0.001337,
-        "bias": 0.0545,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.4
-       }
-      ],
-      "floor": [
-       0.2628,
-       0.006398,
-       0.0377
-      ]
-     },
-     {
-      "cam": 10,
-      "cells": [
-       {
-        "value": 0.0,
-        "mad": 0.0539,
-        "frac": 0.000477,
-        "bias": 0.0039,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.0
-       },
-       {
-        "value": 1.0,
-        "mad": 0.0435,
-        "frac": 0.000234,
-        "bias": 0.0019,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.7
-       }
-      ],
-      "floor": [
-       0.058,
-       0.000538,
-       0.0039
+       0.1914,
+       7.8e-05,
+       0.0759
       ]
      }
     ],
-    "verdict": "no effect",
-    "cam": 3,
-    "effect_mad": 0.0834,
-    "effect_frac": 0.000521,
-    "effect_bias": 0.0232,
-    "ratio": 2.0,
-    "floor_mad": 0.1026,
-    "floor_frac": 0.000959,
-    "floor_bias": 0.0116,
+    "verdict": "effect",
+    "cam": 0,
+    "effect_mad": 63.3363,
+    "effect_frac": 1.0,
+    "effect_bias": 60.5027,
+    "ratio": 10000.0,
+    "floor_mad": 0.1914,
+    "floor_frac": 7.8e-05,
+    "floor_bias": 0.0759,
     "note": ""
    },
    {
@@ -4216,20 +3316,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 124.7326,
+        "mad": 124.6825,
         "frac": 1.0,
-        "bias": 141.7594,
+        "bias": 141.7044,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 662.3
+        "ratio": 3906.2
        },
        {
         "value": 1.0,
-        "mad": 0.265,
-        "frac": 0.00151,
-        "bias": 0.2996,
+        "mad": 0.2071,
+        "frac": 0.000256,
+        "bias": 0.1115,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -4238,32 +3338,32 @@
        },
        {
         "value": 2.0,
-        "mad": 39.936,
+        "mad": 40.0966,
         "frac": 0.999996,
-        "bias": 42.4788,
+        "bias": 42.6552,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 662.2
+        "ratio": 3906.2
        }
       ],
       "floor": [
-       0.265,
-       0.00151,
-       0.2996
+       0.2071,
+       0.000256,
+       0.1115
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 124.7326,
+    "effect_mad": 124.6825,
     "effect_frac": 1.0,
-    "effect_bias": 141.7594,
-    "ratio": 662.3,
-    "floor_mad": 0.265,
-    "floor_frac": 0.00151,
-    "floor_bias": 0.2996,
+    "effect_bias": 141.7044,
+    "ratio": 3906.2,
+    "floor_mad": 0.2071,
+    "floor_frac": 0.000256,
+    "floor_bias": 0.1115,
     "note": ""
    },
    {
@@ -4288,20 +3388,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 3.0251,
-        "frac": 0.201936,
-        "bias": 3.4802,
+        "mad": 3.0058,
+        "frac": 0.201671,
+        "bias": 3.4661,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 2019.4
+        "ratio": 2016.7
        },
        {
         "value": 0.5,
-        "mad": 0.1328,
-        "frac": 7.8e-05,
-        "bias": 0.0529,
+        "mad": 0.1612,
+        "frac": 4.8e-05,
+        "bias": 0.0468,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -4310,32 +3410,32 @@
        },
        {
         "value": 1.0,
-        "mad": 2.7215,
-        "frac": 0.206311,
-        "bias": 3.3731,
+        "mad": 2.7736,
+        "frac": 0.206484,
+        "bias": 3.4467,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 2063.1
+        "ratio": 2064.8
        }
       ],
       "floor": [
-       0.1328,
-       7.8e-05,
-       0.0617
+       0.1612,
+       4.8e-05,
+       0.0744
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 2.7215,
-    "effect_frac": 0.206311,
-    "effect_bias": 3.3731,
-    "ratio": 2063.1,
-    "floor_mad": 0.1328,
-    "floor_frac": 7.8e-05,
-    "floor_bias": 0.0617,
+    "effect_mad": 2.7736,
+    "effect_frac": 0.206484,
+    "effect_bias": 3.4467,
+    "ratio": 2064.8,
+    "floor_mad": 0.1612,
+    "floor_frac": 4.8e-05,
+    "floor_bias": 0.0744,
     "note": ""
    },
    {
@@ -4364,20 +3464,20 @@
       "cells": [
        {
         "value": 0.5,
-        "mad": 0.2222,
-        "frac": 0.001298,
-        "bias": 0.1794,
+        "mad": 0.1436,
+        "frac": 0.000998,
+        "bias": 0.0562,
         "readback": true,
         "settled": true,
         "probe": true,
         "effect": false,
-        "ratio": 1.0
+        "ratio": 1.1
        },
        {
         "value": 1.0,
-        "mad": 0.2271,
-        "frac": 0.001359,
-        "bias": 0.179,
+        "mad": 0.1182,
+        "frac": 0.000616,
+        "bias": 0.0516,
         "readback": true,
         "settled": true,
         "probe": true,
@@ -4386,9 +3486,9 @@
        }
       ],
       "floor": [
-       0.2237,
-       0.001723,
-       0.1775
+       0.1445,
+       0.000929,
+       0.0535
       ]
      },
      {
@@ -4396,31 +3496,31 @@
       "cells": [
        {
         "value": 0.5,
-        "mad": 0.0758,
-        "frac": 0.001137,
-        "bias": 0.0139,
+        "mad": 0.0628,
+        "frac": 0.000521,
+        "bias": 0.0066,
         "readback": true,
         "settled": true,
         "probe": true,
-        "effect": false,
-        "ratio": 1.2
+        "effect": true,
+        "ratio": 2.2
        },
        {
         "value": 1.0,
-        "mad": 0.07,
-        "frac": 0.001207,
-        "bias": 0.0043,
+        "mad": 0.0628,
+        "frac": 0.000512,
+        "bias": 0.0062,
         "readback": true,
         "settled": true,
         "probe": true,
-        "effect": false,
-        "ratio": 1.3
+        "effect": true,
+        "ratio": 2.2
        }
       ],
       "floor": [
-       0.0687,
-       0.000955,
-       0.0142
+       0.0287,
+       0.000334,
+       0.0082
       ]
      },
      {
@@ -4428,43 +3528,43 @@
       "cells": [
        {
         "value": 0.5,
-        "mad": 0.6312,
-        "frac": 0.009787,
-        "bias": 0.6634,
+        "mad": 0.5482,
+        "frac": 0.009601,
+        "bias": 0.5489,
         "readback": true,
         "settled": true,
         "probe": true,
         "effect": true,
-        "ratio": 12.9
+        "ratio": 29.1
        },
        {
         "value": 1.0,
-        "mad": 0.6152,
-        "frac": 0.009714,
-        "bias": 0.6525,
+        "mad": 0.5589,
+        "frac": 0.009648,
+        "bias": 0.5453,
         "readback": true,
         "settled": true,
         "probe": true,
         "effect": true,
-        "ratio": 12.8
+        "ratio": 29.2
        }
       ],
       "floor": [
-       0.1462,
-       0.00076,
-       0.1817
+       0.0981,
+       0.00033,
+       0.0577
       ]
      }
     ],
     "verdict": "effect",
     "cam": 2,
-    "effect_mad": 0.6312,
-    "effect_frac": 0.009787,
-    "effect_bias": 0.6634,
-    "ratio": 12.9,
-    "floor_mad": 0.1462,
-    "floor_frac": 0.00076,
-    "floor_bias": 0.1817,
+    "effect_mad": 0.5589,
+    "effect_frac": 0.009648,
+    "effect_bias": 0.5453,
+    "ratio": 29.2,
+    "floor_mad": 0.0981,
+    "floor_frac": 0.00033,
+    "floor_bias": 0.0577,
     "note": ""
    },
    {
@@ -4489,20 +3589,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 19.4885,
-        "frac": 0.152439,
-        "bias": 19.4043,
+        "mad": 19.4277,
+        "frac": 0.150608,
+        "bias": 19.3656,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 431.8
+        "ratio": 647.7
        },
        {
         "value": 1.0,
-        "mad": 0.1479,
-        "frac": 0.00069,
-        "bias": 0.0334,
+        "mad": 0.1149,
+        "frac": 0.000421,
+        "bias": 0.0299,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -4511,32 +3611,32 @@
        },
        {
         "value": 0.5,
-        "mad": 15.2478,
-        "frac": 0.144497,
-        "bias": 14.6301,
+        "mad": 15.2361,
+        "frac": 0.142747,
+        "bias": 14.6591,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 325.5
+        "ratio": 490.3
        }
       ],
       "floor": [
-       0.1479,
-       0.00069,
-       0.0449
+       0.1149,
+       0.000421,
+       0.0299
       ]
      }
     ],
     "verdict": "effect",
     "cam": 4,
-    "effect_mad": 19.4885,
-    "effect_frac": 0.152439,
-    "effect_bias": 19.4043,
-    "ratio": 431.8,
-    "floor_mad": 0.1479,
-    "floor_frac": 0.00069,
-    "floor_bias": 0.0449,
+    "effect_mad": 19.4277,
+    "effect_frac": 0.150608,
+    "effect_bias": 19.3656,
+    "ratio": 647.7,
+    "floor_mad": 0.1149,
+    "floor_frac": 0.000421,
+    "floor_bias": 0.0299,
     "note": ""
    },
    {
@@ -4563,54 +3663,54 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.1067,
-        "frac": 0.000681,
-        "bias": 0.0277,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.7
-       },
-       {
-        "value": 1.0,
-        "mad": 0.114,
-        "frac": 0.001155,
-        "bias": 0.0205,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 0.5
-       },
-       {
-        "value": 0.5,
-        "mad": 29.1753,
-        "frac": 0.772773,
-        "bias": 21.8171,
+        "mad": 0.6714,
+        "frac": 0.013437,
+        "bias": 0.1756,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 540.6
+        "ratio": 5.5
+       },
+       {
+        "value": 1.0,
+        "mad": 1.0642,
+        "frac": 0.024731,
+        "bias": 0.0282,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       },
+       {
+        "value": 0.5,
+        "mad": 29.1405,
+        "frac": 0.77217,
+        "bias": 21.8155,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 678.0
        }
       ],
       "floor": [
-       0.4381,
-       0.014891,
-       0.0404
+       1.0642,
+       0.024779,
+       0.0322
       ]
      }
     ],
     "verdict": "effect",
     "cam": 3,
-    "effect_mad": 29.1753,
-    "effect_frac": 0.772773,
-    "effect_bias": 21.8171,
-    "ratio": 540.6,
-    "floor_mad": 0.4381,
-    "floor_frac": 0.014891,
-    "floor_bias": 0.0404,
+    "effect_mad": 29.1405,
+    "effect_frac": 0.77217,
+    "effect_bias": 21.8155,
+    "ratio": 678.0,
+    "floor_mad": 1.0642,
+    "floor_frac": 0.024779,
+    "floor_bias": 0.0322,
     "note": ""
    },
    {
@@ -4645,20 +3745,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0933,
-        "frac": 0.000486,
-        "bias": 0.006,
+        "mad": 0.0566,
+        "frac": 0.000265,
+        "bias": 0.019,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.6
+        "ratio": 0.9
        },
        {
         "value": 1.0,
-        "mad": 0.0707,
-        "frac": 0.000256,
-        "bias": 0.0074,
+        "mad": 0.0637,
+        "frac": 0.00026,
+        "bias": 0.0214,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -4667,20 +3767,20 @@
        },
        {
         "value": 0.5,
-        "mad": 0.0896,
-        "frac": 0.000473,
-        "bias": 0.0027,
+        "mad": 0.0336,
+        "frac": 8.7e-05,
+        "bias": 0.0158,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.6
+        "ratio": 0.7
        }
       ],
       "floor": [
-       0.0797,
-       0.000295,
-       0.0074
+       0.0645,
+       0.000373,
+       0.0214
       ]
      },
      {
@@ -4688,31 +3788,31 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.3281,
-        "frac": 0.004557,
-        "bias": 0.3968,
+        "mad": 0.2646,
+        "frac": 0.0026,
+        "bias": 0.3038,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       },
+       {
+        "value": 0.5,
+        "mad": 0.2836,
+        "frac": 0.002834,
+        "bias": 0.2816,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
         "ratio": 1.1
-       },
-       {
-        "value": 0.5,
-        "mad": 0.3535,
-        "frac": 0.004744,
-        "bias": 0.4088,
-        "readback": true,
-        "settled": true,
-        "probe": null,
-        "effect": false,
-        "ratio": 1.2
        }
       ],
       "floor": [
-       0.2965,
-       0.004262,
-       0.3952
+       0.2687,
+       0.002483,
+       0.3042
       ]
      },
      {
@@ -4720,20 +3820,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0835,
-        "frac": 0.002161,
-        "bias": 0.0337,
+        "mad": 0.0677,
+        "frac": 0.00099,
+        "bias": 0.0294,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.9
+        "ratio": 1.1
        },
        {
         "value": 0.5,
-        "mad": 0.0928,
-        "frac": 0.002131,
-        "bias": 0.0192,
+        "mad": 0.0677,
+        "frac": 0.000981,
+        "bias": 0.0297,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -4742,9 +3842,9 @@
        }
       ],
       "floor": [
-       0.0916,
-       0.002049,
-       0.0182
+       0.0625,
+       0.001042,
+       0.031
       ]
      },
      {
@@ -4752,9 +3852,9 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.1812,
-        "frac": 0.000547,
-        "bias": 0.2018,
+        "mad": 0.1546,
+        "frac": 0.00079,
+        "bias": 0.1627,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -4763,20 +3863,20 @@
        },
        {
         "value": 0.5,
-        "mad": 0.1788,
-        "frac": 0.00056,
-        "bias": 0.1991,
+        "mad": 0.1549,
+        "frac": 0.000799,
+        "bias": 0.1649,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.4
+        "ratio": 1.3
        }
       ],
       "floor": [
-       0.1595,
-       0.000412,
-       0.204
+       0.1305,
+       0.000599,
+       0.1548
       ]
      },
      {
@@ -4784,31 +3884,31 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.181,
-        "frac": 0.00276,
-        "bias": 0.0157,
+        "mad": 1.0528,
+        "frac": 0.024531,
+        "bias": 0.0143,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.4
+        "ratio": 1.0
        },
        {
         "value": 0.5,
-        "mad": 0.1409,
-        "frac": 0.001801,
-        "bias": 0.0091,
+        "mad": 0.6044,
+        "frac": 0.012578,
+        "bias": 0.1215,
         "readback": true,
         "settled": true,
         "probe": null,
-        "effect": false,
-        "ratio": 0.3
+        "effect": true,
+        "ratio": 3.8
        }
       ],
       "floor": [
-       0.4381,
-       0.014891,
-       0.0404
+       1.0616,
+       0.024779,
+       0.0322
       ]
      },
      {
@@ -4816,31 +3916,31 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.1169,
-        "frac": 0.000295,
-        "bias": 0.0274,
+        "mad": 0.1203,
+        "frac": 0.000234,
+        "bias": 0.0544,
         "readback": true,
         "settled": true,
         "probe": null,
-        "effect": false,
-        "ratio": 1.1
+        "effect": true,
+        "ratio": 2.0
        },
        {
         "value": 0.5,
-        "mad": 0.1199,
-        "frac": 0.000195,
-        "bias": 0.0313,
+        "mad": 0.0944,
+        "frac": 0.000217,
+        "bias": 0.0093,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.9
+        "ratio": 1.9
        }
       ],
       "floor": [
-       0.1279,
-       0.000265,
-       0.0449
+       0.0651,
+       0.000117,
+       0.0272
       ]
      },
      {
@@ -4848,20 +3948,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.1592,
-        "frac": 0.001706,
-        "bias": 0.0303,
+        "mad": 0.1946,
+        "frac": 0.002396,
+        "bias": 0.0382,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.0
+        "ratio": 1.1
        },
        {
         "value": 0.5,
-        "mad": 0.1832,
-        "frac": 0.001732,
-        "bias": 0.0487,
+        "mad": 0.1938,
+        "frac": 0.002448,
+        "bias": 0.0412,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -4870,9 +3970,9 @@
        }
       ],
       "floor": [
-       0.1695,
-       0.001675,
-       0.0465
+       0.2132,
+       0.002179,
+       0.0374
       ]
      },
      {
@@ -4880,31 +3980,31 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0407,
-        "frac": 0.000195,
-        "bias": 0.0072,
+        "mad": 0.0344,
+        "frac": 0.000239,
+        "bias": 0.0062,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.9
+        "ratio": 1.3
        },
        {
         "value": 0.5,
-        "mad": 0.0402,
-        "frac": 0.000182,
-        "bias": 0.0088,
+        "mad": 0.0474,
+        "frac": 0.000404,
+        "bias": 0.006,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.9
+        "ratio": 1.2
        }
       ],
       "floor": [
-       0.0458,
-       0.000221,
-       0.011
+       0.0504,
+       0.000451,
+       0.0049
       ]
      },
      {
@@ -4912,31 +4012,31 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.1506,
-        "frac": 0.003859,
-        "bias": 0.0333,
+        "mad": 0.1633,
+        "frac": 0.005256,
+        "bias": 0.0669,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.4
+        "ratio": 1.0
        },
        {
         "value": 0.5,
-        "mad": 0.1583,
-        "frac": 0.004084,
-        "bias": 0.0461,
+        "mad": 0.1858,
+        "frac": 0.006441,
+        "bias": 0.0647,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.5
+        "ratio": 1.0
        }
       ],
       "floor": [
-       0.1086,
-       0.003828,
-       0.0438
+       0.1915,
+       0.006406,
+       0.0663
       ]
      },
      {
@@ -4944,31 +4044,31 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0863,
-        "frac": 0.001011,
-        "bias": 0.0342,
+        "mad": 0.0741,
+        "frac": 0.001063,
+        "bias": 0.0344,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.8
+        "ratio": 1.2
        },
        {
         "value": 0.5,
-        "mad": 0.0762,
-        "frac": 0.00082,
-        "bias": 0.0401,
+        "mad": 0.0637,
+        "frac": 0.000981,
+        "bias": 0.0331,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.9
+        "ratio": 1.2
        }
       ],
       "floor": [
-       0.108,
-       0.001645,
-       0.0434
+       0.0737,
+       0.000851,
+       0.0335
       ]
      },
      {
@@ -4976,43 +4076,43 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.1316,
-        "frac": 0.003568,
-        "bias": 0.0437,
+        "mad": 0.1753,
+        "frac": 0.002049,
+        "bias": 0.0911,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.0
+        "ratio": 1.2
        },
        {
         "value": 0.5,
-        "mad": 0.1449,
-        "frac": 0.003694,
-        "bias": 0.0338,
+        "mad": 0.1585,
+        "frac": 0.002153,
+        "bias": 0.0676,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.0
+        "ratio": 1.1
        }
       ],
       "floor": [
-       0.1552,
-       0.003576,
-       0.042
+       0.1481,
+       0.00204,
+       0.0802
       ]
      }
     ],
     "verdict": "no effect",
-    "cam": 1,
-    "effect_mad": 0.0835,
-    "effect_frac": 0.002161,
-    "effect_bias": 0.0337,
-    "ratio": 1.9,
-    "floor_mad": 0.0916,
-    "floor_frac": 0.002049,
-    "floor_bias": 0.0182,
+    "cam": 3,
+    "effect_mad": 0.6044,
+    "effect_frac": 0.012578,
+    "effect_bias": 0.1215,
+    "ratio": 3.8,
+    "floor_mad": 1.0616,
+    "floor_frac": 0.024779,
+    "floor_bias": 0.0322,
     "note": ""
    },
    {
@@ -5037,9 +4137,9 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.2561,
-        "frac": 0.000911,
-        "bias": 0.2715,
+        "mad": 0.3046,
+        "frac": 0.002487,
+        "bias": 0.1549,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -5048,43 +4148,43 @@
        },
        {
         "value": 0.5,
-        "mad": 52.1844,
-        "frac": 0.999891,
-        "bias": 48.6341,
+        "mad": 52.072,
+        "frac": 0.999701,
+        "bias": 48.5585,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 1097.6
+        "ratio": 402.0
        },
        {
         "value": 1.0,
-        "mad": 117.5929,
+        "mad": 117.5487,
         "frac": 1.0,
-        "bias": 136.5713,
+        "bias": 136.543,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 1097.7
+        "ratio": 881.5
        }
       ],
       "floor": [
-       0.2561,
-       0.000911,
-       0.2715
+       0.3046,
+       0.002487,
+       0.1549
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 117.5929,
+    "effect_mad": 117.5487,
     "effect_frac": 1.0,
-    "effect_bias": 136.5713,
-    "ratio": 1097.7,
-    "floor_mad": 0.2561,
-    "floor_frac": 0.000911,
-    "floor_bias": 0.2715,
+    "effect_bias": 136.543,
+    "ratio": 881.5,
+    "floor_mad": 0.3046,
+    "floor_frac": 0.002487,
+    "floor_bias": 0.1549,
     "note": ""
    },
    {
@@ -5109,20 +4209,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 1.0654,
-        "frac": 0.049497,
-        "bias": 0.5938,
+        "mad": 0.472,
+        "frac": 0.003121,
+        "bias": 0.1281,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 495.0
+        "ratio": 31.2
        },
        {
         "value": 1.0,
-        "mad": 0.0939,
-        "frac": 1.7e-05,
-        "bias": 0.1084,
+        "mad": 0.1549,
+        "frac": 5.6e-05,
+        "bias": 0.0277,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -5131,32 +4231,32 @@
        },
        {
         "value": 0.5,
-        "mad": 0.2419,
-        "frac": 0.002348,
-        "bias": 0.0879,
+        "mad": 0.2708,
+        "frac": 0.00237,
+        "bias": 0.1716,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 23.5
+        "ratio": 23.7
        }
       ],
       "floor": [
-       0.0939,
-       3.5e-05,
-       0.1084
+       0.1549,
+       5.6e-05,
+       0.0744
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 1.0654,
-    "effect_frac": 0.049497,
-    "effect_bias": 0.5938,
-    "ratio": 495.0,
-    "floor_mad": 0.0939,
-    "floor_frac": 3.5e-05,
-    "floor_bias": 0.1084,
+    "effect_mad": 0.472,
+    "effect_frac": 0.003121,
+    "effect_bias": 0.1281,
+    "ratio": 31.2,
+    "floor_mad": 0.1549,
+    "floor_frac": 5.6e-05,
+    "floor_bias": 0.0744,
     "note": ""
    },
    {
@@ -5183,54 +4283,54 @@
       "cells": [
        {
         "value": 0.5,
-        "mad": 5.2011,
-        "frac": 0.180178,
-        "bias": 1.7089,
+        "mad": 5.086,
+        "frac": 0.183433,
+        "bias": 1.7274,
         "readback": true,
         "settled": true,
         "probe": true,
         "effect": true,
-        "ratio": 332.1
+        "ratio": 406.4
        },
        {
         "value": 1.0,
-        "mad": 47.0718,
-        "frac": 0.998121,
-        "bias": 39.1848,
+        "mad": 46.685,
+        "frac": 0.997617,
+        "bias": 39.0466,
         "readback": true,
         "settled": true,
         "probe": true,
         "effect": true,
-        "ratio": 1839.7
+        "ratio": 2247.8
        },
        {
         "value": 1.5,
-        "mad": 43.8188,
-        "frac": 0.988251,
-        "bias": 37.9405,
+        "mad": 43.77,
+        "frac": 0.986233,
+        "bias": 38.0142,
         "readback": true,
         "settled": true,
         "probe": true,
         "effect": true,
-        "ratio": 1821.5
+        "ratio": 2188.4
        }
       ],
       "floor": [
-       0.0936,
-       0.000543,
-       0.0271
+       0.084,
+       0.000451,
+       0.0174
       ]
      }
     ],
     "verdict": "effect",
     "cam": 2,
-    "effect_mad": 47.0718,
-    "effect_frac": 0.998121,
-    "effect_bias": 39.1848,
-    "ratio": 1839.7,
-    "floor_mad": 0.0936,
-    "floor_frac": 0.000543,
-    "floor_bias": 0.0271,
+    "effect_mad": 46.685,
+    "effect_frac": 0.997617,
+    "effect_bias": 39.0466,
+    "ratio": 2247.8,
+    "floor_mad": 0.084,
+    "floor_frac": 0.000451,
+    "floor_bias": 0.0174,
     "note": ""
    },
    {
@@ -5249,7 +4349,8 @@
      ]
     },
     "cams_tried": [
-     0
+     0,
+     1
     ],
     "attempts": [
      {
@@ -5257,54 +4358,86 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.0818,
-        "frac": 0.000165,
-        "bias": 0.004,
+        "mad": 0.1285,
+        "frac": 0.000421,
+        "bias": 0.0317,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 0.7
+        "ratio": 1.0
        },
        {
         "value": 5.0,
-        "mad": 0.2837,
-        "frac": 0.003472,
-        "bias": 0.1088,
+        "mad": 0.3544,
+        "frac": 0.003477,
+        "bias": 0.053,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 13.6
+        "ratio": 8.3
        },
        {
         "value": 10.0,
-        "mad": 0.2647,
-        "frac": 0.003151,
-        "bias": 0.1,
+        "mad": 0.3349,
+        "frac": 0.003229,
+        "bias": 0.0628,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 12.3
+        "ratio": 7.7
        }
       ],
       "floor": [
-       0.1208,
-       0.000256,
-       0.019
+       0.1285,
+       0.000421,
+       0.0317
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0796,
+        "frac": 0.000612,
+        "bias": 0.0029,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       },
+       {
+        "value": 10.0,
+        "mad": 1.1493,
+        "frac": 0.046671,
+        "bias": 1.2681,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 276.5
+       }
+      ],
+      "floor": [
+       0.0796,
+       0.000612,
+       0.0046
       ]
      }
     ],
     "verdict": "effect",
-    "cam": 0,
-    "effect_mad": 0.2837,
-    "effect_frac": 0.003472,
-    "effect_bias": 0.1088,
-    "ratio": 13.6,
-    "floor_mad": 0.1208,
-    "floor_frac": 0.000256,
-    "floor_bias": 0.019,
+    "cam": 1,
+    "effect_mad": 1.1493,
+    "effect_frac": 0.046671,
+    "effect_bias": 1.2681,
+    "ratio": 276.5,
+    "floor_mad": 0.0796,
+    "floor_frac": 0.000612,
+    "floor_bias": 0.0046,
     "note": ""
    },
    {
@@ -5330,20 +4463,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.525,
-        "frac": 0.007439,
-        "bias": 0.2853,
+        "mad": 0.3673,
+        "frac": 0.002973,
+        "bias": 0.0891,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.5
+        "ratio": 1.3
        },
        {
         "value": 1.0,
-        "mad": 0.3618,
-        "frac": 0.005039,
-        "bias": 0.4097,
+        "mad": 0.2847,
+        "frac": 0.0025,
+        "bias": 0.2884,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -5352,20 +4485,20 @@
        },
        {
         "value": 0.5,
-        "mad": 0.4137,
-        "frac": 0.005625,
-        "bias": 0.3457,
+        "mad": 0.3262,
+        "frac": 0.003398,
+        "bias": 0.2519,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": false,
-        "ratio": 1.1
+        "ratio": 1.4
        }
       ],
       "floor": [
-       0.3618,
-       0.005039,
-       0.4097
+       0.2847,
+       0.0025,
+       0.3042
       ]
      },
      {
@@ -5373,43 +4506,43 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 1.1494,
-        "frac": 0.048893,
-        "bias": 1.3551,
+        "mad": 1.1273,
+        "frac": 0.048168,
+        "bias": 1.3649,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 74.6
+        "ratio": 46.2
        },
        {
         "value": 0.5,
-        "mad": 0.5389,
-        "frac": 0.018142,
-        "bias": 0.5802,
+        "mad": 0.5133,
+        "frac": 0.016871,
+        "bias": 0.5862,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 31.9
+        "ratio": 18.9
        }
       ],
       "floor": [
-       0.0916,
-       0.002049,
-       0.0182
+       0.0625,
+       0.001042,
+       0.031
       ]
      }
     ],
     "verdict": "effect",
     "cam": 1,
-    "effect_mad": 1.1494,
-    "effect_frac": 0.048893,
-    "effect_bias": 1.3551,
-    "ratio": 74.6,
-    "floor_mad": 0.0916,
-    "floor_frac": 0.002049,
-    "floor_bias": 0.0182,
+    "effect_mad": 1.1273,
+    "effect_frac": 0.048168,
+    "effect_bias": 1.3649,
+    "ratio": 46.2,
+    "floor_mad": 0.0625,
+    "floor_frac": 0.001042,
+    "floor_bias": 0.031,
     "note": ""
    },
    {
@@ -5434,9 +4567,9 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 0.1407,
-        "frac": 5.6e-05,
-        "bias": 0.0959,
+        "mad": 0.1557,
+        "frac": 0.000152,
+        "bias": 0.0197,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -5445,43 +4578,43 @@
        },
        {
         "value": 0.5,
-        "mad": 121.5366,
+        "mad": 121.6089,
         "frac": 0.999996,
-        "bias": 152.3169,
+        "bias": 152.4167,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 10000.0
+        "ratio": 6578.9
        },
        {
         "value": 1.0,
-        "mad": 121.5366,
+        "mad": 121.6089,
         "frac": 0.999996,
-        "bias": 152.3169,
+        "bias": 152.4167,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 10000.0
+        "ratio": 6578.9
        }
       ],
       "floor": [
-       0.1407,
-       5.6e-05,
-       0.0959
+       0.1557,
+       0.000152,
+       0.0744
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 121.5366,
+    "effect_mad": 121.6089,
     "effect_frac": 0.999996,
-    "effect_bias": 152.3169,
-    "ratio": 10000.0,
-    "floor_mad": 0.1407,
-    "floor_frac": 5.6e-05,
-    "floor_bias": 0.0959,
+    "effect_bias": 152.4167,
+    "ratio": 6578.9,
+    "floor_mad": 0.1557,
+    "floor_frac": 0.000152,
+    "floor_bias": 0.0744,
     "note": ""
    },
    {
@@ -5506,20 +4639,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 14.5879,
-        "frac": 0.234653,
-        "bias": 17.6328,
+        "mad": 14.6349,
+        "frac": 0.239939,
+        "bias": 17.5929,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 1640.9
+        "ratio": 987.4
        },
        {
         "value": 1.0,
-        "mad": 0.1192,
-        "frac": 0.000143,
-        "bias": 0.0585,
+        "mad": 0.1149,
+        "frac": 0.000243,
+        "bias": 0.0521,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -5528,32 +4661,32 @@
        },
        {
         "value": 0.5,
-        "mad": 9.5114,
-        "frac": 0.223524,
-        "bias": 9.6578,
+        "mad": 9.5484,
+        "frac": 0.223845,
+        "bias": 9.6576,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 1563.1
+        "ratio": 921.2
        }
       ],
       "floor": [
-       0.1192,
-       0.000143,
-       0.0617
+       0.1284,
+       0.000243,
+       0.0744
       ]
      }
     ],
     "verdict": "effect",
     "cam": 0,
-    "effect_mad": 14.5879,
-    "effect_frac": 0.234653,
-    "effect_bias": 17.6328,
-    "ratio": 1640.9,
-    "floor_mad": 0.1192,
-    "floor_frac": 0.000143,
-    "floor_bias": 0.0617,
+    "effect_mad": 14.6349,
+    "effect_frac": 0.239939,
+    "effect_bias": 17.5929,
+    "ratio": 987.4,
+    "floor_mad": 0.1284,
+    "floor_frac": 0.000243,
+    "floor_bias": 0.0744,
     "note": ""
    },
    {
@@ -5578,20 +4711,20 @@
       "cells": [
        {
         "value": 0.0,
-        "mad": 14.0739,
-        "frac": 0.365864,
-        "bias": 18.4404,
+        "mad": 14.8347,
+        "frac": 0.374644,
+        "bias": 19.3944,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 3237.7
+        "ratio": 2058.5
        },
        {
         "value": 1.0,
-        "mad": 0.0707,
-        "frac": 0.000113,
-        "bias": 0.0143,
+        "mad": 0.0685,
+        "frac": 0.000182,
+        "bias": 0.0119,
         "readback": true,
         "settled": true,
         "probe": null,
@@ -5600,32 +4733,32 @@
        },
        {
         "value": 0.5,
-        "mad": 6.1592,
-        "frac": 0.364705,
-        "bias": 7.9478,
+        "mad": 6.5349,
+        "frac": 0.373707,
+        "bias": 8.4143,
         "readback": true,
         "settled": true,
         "probe": null,
         "effect": true,
-        "ratio": 3227.5
+        "ratio": 2053.3
        }
       ],
       "floor": [
-       0.0707,
-       0.000113,
-       0.0143
+       0.0685,
+       0.000182,
+       0.0119
       ]
      }
     ],
     "verdict": "effect",
     "cam": 1,
-    "effect_mad": 14.0739,
-    "effect_frac": 0.365864,
-    "effect_bias": 18.4404,
-    "ratio": 3237.7,
-    "floor_mad": 0.0707,
-    "floor_frac": 0.000113,
-    "floor_bias": 0.0143,
+    "effect_mad": 14.8347,
+    "effect_frac": 0.374644,
+    "effect_bias": 19.3944,
+    "ratio": 2058.5,
+    "floor_mad": 0.0685,
+    "floor_frac": 0.000182,
+    "floor_bias": 0.0119,
     "note": ""
    }
   ],
@@ -5634,12 +4767,12 @@
    "total": 37,
    "current": null
   },
-  "started": 1794326286.425625,
+  "started": 1794336321.891892,
   "error": null,
   "noise_floor": {
-   "mad": 1.1238,
-   "frac": 0.045317,
-   "bias": 0.3952
+   "mad": 1.0616,
+   "frac": 0.041536,
+   "bias": 0.3042
   },
   "settings": {
    "average": 8,
@@ -5653,10 +4786,10 @@
   },
   "defaults_restored": true,
   "off_default": {},
-  "finished": 1794327798.524343,
+  "finished": 1794337485.3550239,
   "counts": {
-   "effect": 30,
-   "no effect": 7
+   "effect": 33,
+   "no effect": 4
   }
  },
  "state_equals_defaults": true,

@@ -6,9 +6,9 @@ Build rules and pitfalls: [GUIDELINES.md](GUIDELINES.md). Addresses, ranges and 
 
 `scenes/synthwave_pyramids.blend`: one island world (valley with pyramids, rivers into the surrounding ocean, low-poly mountains) under a striped sun and the real Moon. Sky and stars are computed from the view direction. Sun and Moon are real spheres far out over the sea (26 km and 21 km), so flyovers get parallax and ridges can hide them. The sun has limb darkening, boiling granulation and a smooth corona glow. The Moon rises and sets on its own arc with the time of day: below the sea by day, up behind the mountains at dusk, at its night height after twilight. The Moon is lit by a virtual sun (Lommel-Seeliger phase lighting, crater shadows marched over the LOLA elevation map, earthshine). Water reflections come from a mirrored copy of the land, sun and moon, so every camera angle and flyover stays consistent. Water is a Geometry Nodes grid (built on load, not stored) displaced on the GPU by gust-modulated deep-water waves, with flow-mapped ripples that run downstream along the rivers. Flocks of low-poly flamingos stand in the shallows (fixed seed, same spots every load) and fly off into the sunset at dusk. Everything is emission shading with no lights, shadows or ray tracing.
 
-Open it with Blender's *Auto Run Python Scripts* allowed (Preferences > Save & Load, or trust the `scenes/` folder, or `make blender-open`). The registered text block `synthwave_runtime.py` then:
+Open it with Blender's *Auto Run Python Scripts* allowed (Preferences > Save & Load, or trust the `scenes/` folder, or `make blender-open`). The registered text block `vj_loader.py` runs `synthwave_runtime.py` from disk, which then:
 
-- starts the OSC bridge (the `.blend` links `../blender_osc_bridge.py`, no copy);
+- starts the OSC bridge (`../blender_osc_bridge.py`, read from disk);
 - sets defaults for every `/vj/*` property, integrates the clocks (`rt_time`, `rt_grid_phase`, `rt_cam_phase`) so speed changes never jump, and fades in an idle 124 BPM pulse after 2 s without OSC;
 - runs the shockwave, three shooting-star slots and the flamingo flight clock (`rt_flock`: counts up from sunset, back down in daylight, so the flocks fly home and land);
 - starts playback, keeps `CAM_OUT` on the active camera and starts the Syphon sender `CAM_OUT - Blender` (`scenes/syphon_out.py`; it switches the TextureSharing sender on `CAM_OUT` off and replaces it). The sender publishes the camera-view viewport itself, compositor bloom and colour management included, at 1920×1080 without any GPU→CPU readback: a `POST_PIXEL` draw handler redraws the viewport's render texture through Blender's own display transform (`GPU_viewport_draw_to_screen_ex`, via ctypes) into a private offscreen cropped to the camera frame, and hands that offscreen's Metal texture (`MTLTexture::get_metal_handle`) to Syphon on Blender's Metal command queue. Measured back to back on an M1 Max with a 2832×1854 Retina region (Blender 5.2.3): no sender 22.9 fps, this sender 23.0 fps, the TextureSharing add-on 7.9 fps. Needs `syphon-python` and PyObjC (`~/.local/lib/python3.13/site-packages`) and the Metal backend.
@@ -19,6 +19,13 @@ Open it with Blender's *Auto Run Python Scripts* allowed (Preferences > Save & L
   - incoming OSC per address (value, rate, count, age, sender, held), bridge counters and a packet log;
   - a beat simulator (BPM, shockwave every N beats) writing `vj_beat`, `vj_bass`, `vj_level` and `vj_shock`, and presets saved in the browser;
   - playback fps, active camera and Syphon frame count in the header.
+
+## Show start
+
+- `make blender-open` (planet) or `make blender-open SCENE=island` opens the scene, then waits until `review/start_check.py` reports ready: camera view in Rendered shading, runtime playing, bridge on udp 9201, Syphon `CAM_OUT - Blender` drawing (mean and variance of a frame, one grabbed frame), page on 9210, defaults, `review/health.py` clean (also `GET /api/health`).
+- Both `.blend` files embed one text block, `vj_loader.py`. It runs `synthwave_runtime.py`, which loads the bridge, Syphon sender and page from their files, so an edit takes effect on the next open without a rebuild. `health.py` lists any embedded text that differs from its file.
+- Blender opens 3D views in Solid shading whatever the file stores; the runtime switches the view to camera and Rendered once the window exists.
+- `make blender-prepare` puts the loader into the island file, then `make blender-rebuild` builds the planet from it. `make blender-check` checks every control.
 
 Without auto-run the scene still renders, but the clocks stand still and OSC is off.
 

@@ -30,6 +30,12 @@ def main(path):
     print("|---|---|---|")
     for m in report.get("contract", []):
         print("| `%s` | %s | %s |" % (m["address"], m["kind"], m["detail"]))
+    if report.get("bridge_check"):
+        print("\n| message | property | expected | got | ok |")
+        print("|---|---|---|---|---|")
+        for b in report["bridge_check"]:
+            print("| `%s %g` | %s | %s | %s | %s |" % (b["address"], b["wire"], b.get("property") or "none (ignored +%s)" % b.get("ignored"),
+                                                 b.get("expected", "-"), b.get("got", "-"), "yes" if b["ok"] else "NO"))
     probe = report.get("osc_probe")
     if probe:
         print("\nudp 9201: sent %(sent)d, received %(received)d, applied %(applied)d, errors %(errors)d, not seen %(missing)s" % probe)

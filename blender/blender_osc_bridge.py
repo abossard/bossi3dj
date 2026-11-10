@@ -84,11 +84,11 @@ SCALES = {
     '/vj/meteor': ('trigger', 0, 1, None, None),
     '/vj/flamingos': ('float', 0, 1, 0, 1),
     '/vj/fog': ('float', 0, 1, 0, 1),
-    '/vj/fog_height': ('float', 0, 1, 0, 60),
+    '/vj/fog_height': ('float', 0, 1, 1, 60),
     '/vj/fog_glow': ('float', 0, 1, 0, 2),
     '/vj/fog_hue': ('float', 0, 1, 0, 1),
     '/vj/fog_noise': ('float', 0, 1, 0, 1),
-    '/vj/fog_scale': ('float', 0, 1, 0, 1000),
+    '/vj/fog_scale': ('float', 0, 1, 10, 1000),
     '/vj/fog_speed': ('float', 0, 1, 0, 40),
     '/vj/fog_beat': ('float', 0, 1, 0, 1),
     '/vj/haze': ('float', 0, 1, 0, 1),
@@ -285,9 +285,9 @@ class Bridge:
         return TICK
 
     def fit(self, addr, args):
-        """Keeps a scaled float inside the property's own min and max, which can be narrower than the contract's range."""
+        """Keeps a scaled float or index inside the property's own min and max, which can be narrower than the contract's range."""
         k = prop_name(addr)
-        if SCALES[addr][0] != "float":
+        if SCALES[addr][0] == "trigger":
             return args
         lim = self.limits.get(k)
         if lim is None:
