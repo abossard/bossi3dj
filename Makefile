@@ -18,7 +18,7 @@ help:
 	@echo ""
 	@echo "  status            what runs now: Blender, bridge, Syphon, Godot, Magic, relay, lock, load"
 	@echo "  lab               OSC relay and debug page: Magic udp 9200 -> Blender 9201 + Godot 9202, http 8765"
-	@echo "  test              magic-test + osc-test + blender-test + godot-test (no GUI, no GPU)"
+	@echo "  test              magic-test + osc-test + blender-test + godot-test + godot-check (no GUI, no GPU)"
 	@echo "  magic-test        Magic project tooling and generator unit tests"
 	@echo "  osc-test          contract table, CONTROLS.md and sweep tests"
 	@echo "  blender-test      the bridge's wire-to-scene scaling, without Blender"
@@ -48,7 +48,7 @@ status:
 lab:
 	@python3 osc/lab.py
 
-test: magic-test osc-test blender-test godot-test
+test: magic-test osc-test blender-test godot-test godot-check
 
 magic-test:
 	python3 -m unittest discover magic/tests

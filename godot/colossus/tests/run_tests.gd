@@ -19,6 +19,7 @@ func _init() -> void:
 	_test_fov()
 	_test_brain()
 	_test_vj_map()
+	_test_vj_map_matches_contract()
 	_test_values_persist()
 	_test_hold_and_defaults()
 	_test_step_toward()
@@ -289,39 +290,36 @@ func _test_brain() -> void:
 func _test_vj_map() -> void:
 	var cases := [
 		# address, wire value, stored value, scene value
-		["/vj/fog_height", 0.42, 0.42, 40.0],
-		["/vj/fog_height", 0.0, 0.0, 10.0],
-		["/vj/fog_height", 1.0, 1.0, 90.0],
-		["/vj/fog_height", 0.71, 0.71, 65.0],
-		["/vj/fog_height", 25.0, 1.0, 90.0],
-		["/vj/fog_height", -3.0, 0.0, 10.0],
-		["/vj/fog", 0.0, 0.0, 0.002],
-		["/vj/fog", 0.35, 0.35, 0.003],
-		["/vj/fog", 0.675, 0.675, 0.0075],
-		["/vj/fog", 7.0, 1.0, 0.012],
+		["/vj/fog_height", 0.42, 0.42, 39.9],
+		["/vj/fog_height", 0.0, 0.0, 0.0],
+		["/vj/fog_height", 1.0, 1.0, 95.0],
+		["/vj/fog_height", 25.0, 1.0, 95.0],
+		["/vj/fog_height", -3.0, 0.0, 0.0],
+		["/vj/fog", 0.0, 0.0, 0.0],
+		["/vj/fog", 0.35, 0.35, 0.00301],
+		["/vj/fog", 1.0, 1.0, 0.0086],
+		["/vj/fog", 7.0, 1.0, 0.0086],
 		["/vj/haze", 0.0, 0.0, 0.0],
 		["/vj/haze", 0.5, 0.5, 0.000125],
 		["/vj/haze", 1.0, 1.0, 0.00025],
 		["/vj/haze", 4.0, 1.0, 0.00025],
-		["/vj/level", 0.0, 0.0, 1.4],
+		["/vj/level", 0.0, 0.0, 1.0],
 		["/vj/level", 0.5, 0.5, 1.8],
-		["/vj/level", 0.75, 0.75, 2.2],
 		["/vj/level", 1.0, 1.0, 2.6],
 		["/vj/bass", 0.0, 0.0, 0.5],
 		["/vj/bass", 0.5, 0.5, 0.75],
 		["/vj/bass", 1.0, 1.0, 1.0],
 		["/vj/intensity", 0.0, 0.0, 0.2],
-		["/vj/intensity", 0.25, 0.25, 0.6],
 		["/vj/intensity", 0.5, 0.5, 1.0],
-		["/vj/intensity", 0.75, 0.75, 1.5],
-		["/vj/intensity", 1.0, 1.0, 2.0],
-		["/vj/intensity", 3.0, 1.0, 2.0],
-		["/vj/cam", 0.0, 0.0, 1.0],
-		["/vj/cam", 2.4, 2.0, 3.0],
-		["/vj/cam", 2.6, 3.0, 4.0],
-		["/vj/cam", 4.0, 4.0, 5.0],
-		["/vj/cam", 7.0, 4.0, 5.0],
-		["/vj/cam", -1.0, 0.0, 1.0],
+		["/vj/intensity", 1.0, 1.0, 1.8],
+		["/vj/intensity", 3.0, 1.0, 1.8],
+		["/vj/cam", 0.0, 0.0, 0.0],
+		["/vj/cam", 2.4, 2.0, 2.0],
+		["/vj/cam", 2.6, 3.0, 3.0],
+		["/vj/cam", 4.0, 4.0, 4.0],
+		["/vj/cam", 10.0, 10.0, 10.0],
+		["/vj/cam", 50.0, 10.0, 10.0],
+		["/vj/cam", -1.0, 0.0, 0.0],
 		["/vj/cam_auto", 1.0, 1.0, 1.0],
 		["/vj/cam_auto", 0.0, 0.0, 0.0],
 		["/vj/cam_auto", 0.4, 0.0, 0.0],
@@ -339,16 +337,50 @@ func _test_vj_map() -> void:
 		["/vj/beat", 0.0, 0.0],
 		["/vj/shock", 0.0, 0.0],
 		["/vj/intensity", 0.5, 1.0],
-		["/vj/fog", 0.35, 0.003],
-		["/vj/fog_height", 0.42, 40.0],
+		["/vj/fog", 0.35, 0.00301],
+		["/vj/fog_height", 0.42, 39.9],
 		["/vj/haze", 1.0, 0.00025],
-		["/vj/cam", 0.0, 1.0],
+		["/vj/cam", 0.0, 0.0],
 		["/vj/cam_auto", 1.0, 1.0],
 	]
 	for r in rests:
 		_check("map wire default %s" % r[0], VjMap.rest(r[0]), r[1])
 		_check("map rest look %s" % r[0], VjMap.scene_value(r[0], VjMap.rest(r[0])), r[2])
 	_check("every address has a table row", VjMap.addresses().size(), rests.size())
+
+
+## osc/contract.json is the one source of the contract; the table must not drift from its Godot
+## column. Per address: wire range and default, the scene range where the contract gives one, an
+## integer kind exactly for a shot or toggle, and no address in one side only.
+func _test_vj_map_matches_contract() -> void:
+	var path := ProjectSettings.globalize_path("res://").path_join("../../osc/contract.json")
+	var text := FileAccess.get_file_as_string(path.simplify_path())
+	var parsed: Variant = JSON.parse_string(text)
+	_check("contract.json is read", parsed is Dictionary, true)
+	if not parsed is Dictionary:
+		return
+	var wanted := []
+	for c: Dictionary in (parsed as Dictionary)["controls"]:
+		if c["godot"] == null:
+			continue
+		var a: String = c["address"]
+		wanted.append(a)
+		var g: Dictionary = c["godot"]
+		var known := VjMap.known(a)
+		_check("contract %s is in the table" % a, known, true)
+		if not known:
+			continue
+		var row: Dictionary = VjMap.ROWS[a]
+		_check("contract %s wire min" % a, float(row["lo"]), float(c["min"]))
+		_check("contract %s wire max" % a, float(row["hi"]), float(c["max"]))
+		_check("contract %s default" % a, float(row["rest"]), float(c["default"]))
+		var whole: bool = row["kind"] == VjMap.Kind.SHOT or row["kind"] == VjMap.Kind.TOGGLE
+		_check("contract %s integer kind" % a, whole, c["kind"] == "int")
+		if g.has("min"):
+			_check("contract %s scene min" % a, float(row["out_lo"]), float(g["min"]))
+			_check("contract %s scene max" % a, float(row["out_hi"]), float(g["max"]))
+	for a: String in VjMap.addresses():
+		_check("table %s is in the contract" % a, wanted.has(a), true)
 
 
 func _signals() -> VjSignals:

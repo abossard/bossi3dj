@@ -1,16 +1,14 @@
 class_name VjMap
 ## The one table from a `/vj/*` wire value to a scene value. Pure: data and arithmetic.
 ##
-## Contract (user decision 2026-11-10): every continuous control is 0..1 on the wire, each scene
-## scales it to its own range, and the wire default gives the scene its tuned rest look.
-## Per address: `lo`..`hi` is the wire range (anything else is clamped), `rest` the wire default
-## (the value before any packet and after "defaults"). The scene value runs in two straight
-## segments through `out_lo` at `lo`, `out_rest` at `rest` and `out_hi` at `hi`, so the default
-## lands exactly on the tuned look and both ends keep their reach.
-## `kind` is how the page draws the address and the check drives it.
-## A new unit or meaning is a change of this data, not of code.
+## The numbers are the Godot column of osc/contract.json (the one source of the contract); a test
+## reads that file and fails when this table drifts. Every continuous control is 0..1 on the wire
+## and runs linearly onto one scene range, as in Blender: `lo`..`hi` is the wire range (anything
+## else is clamped), `rest` the wire default (the value before any packet and after "defaults"),
+## `out_lo`..`out_hi` the scene range. `kind` is how the page draws the address and the check
+## drives it. A new unit or meaning is a change of this data, not of code.
 ##
-## - /vj/cam N picks the Nth director shot, 0-based, clamped to the last (0..4 give shots 1..5).
+## - /vj/cam N picks the Nth director shot, 0-based; any N above the last takes the last.
 ## - /vj/cam_auto 1 hands the cuts to the director, 0 pins the shot /vj/cam names.
 ## - /vj/shock keeps its strength: a trigger edge above 0.5, 1.4 and above marks a drop.
 ## - /vj/haze: the wire default 1 is the tuned look, so the scene's haze can only be lowered.
@@ -26,8 +24,7 @@ const ROWS := {
 		"lo": 0.0,
 		"hi": 1.0,
 		"rest": 0.5,
-		"out_lo": 1.4,
-		"out_rest": 1.8,
+		"out_lo": 1.0,
 		"out_hi": 2.6
 	},
 	"/vj/bass":
@@ -38,7 +35,6 @@ const ROWS := {
 		"hi": 1.0,
 		"rest": 0.0,
 		"out_lo": 0.5,
-		"out_rest": 0.5,
 		"out_hi": 1.0
 	},
 	"/vj/beat":
@@ -49,7 +45,6 @@ const ROWS := {
 		"hi": 1.0,
 		"rest": 0.0,
 		"out_lo": 0.0,
-		"out_rest": 0.0,
 		"out_hi": 1.0
 	},
 	"/vj/shock":
@@ -60,7 +55,6 @@ const ROWS := {
 		"hi": 1.5,
 		"rest": 0.0,
 		"out_lo": 0.0,
-		"out_rest": 0.0,
 		"out_hi": 1.5
 	},
 	"/vj/fog":
@@ -70,20 +64,18 @@ const ROWS := {
 		"lo": 0.0,
 		"hi": 1.0,
 		"rest": 0.35,
-		"out_lo": 0.002,
-		"out_rest": 0.003,
-		"out_hi": 0.012
+		"out_lo": 0.0,
+		"out_hi": 0.0086
 	},
 	"/vj/fog_height":
 	{
-		"drives": "fog height, 10 to 90 m",
+		"drives": "top of the volumetric fog, 0 to 95 m",
 		"kind": Kind.LEVEL,
 		"lo": 0.0,
 		"hi": 1.0,
 		"rest": 0.42,
-		"out_lo": 10.0,
-		"out_rest": 40.0,
-		"out_hi": 90.0
+		"out_lo": 0.0,
+		"out_hi": 95.0
 	},
 	"/vj/haze":
 	{
@@ -93,30 +85,28 @@ const ROWS := {
 		"hi": 1.0,
 		"rest": 1.0,
 		"out_lo": 0.0,
-		"out_rest": 0.00025,
 		"out_hi": 0.00025
 	},
 	"/vj/intensity":
 	{
-		"drives": "overall exposure, 0.2 to 2",
+		"drives": "overall exposure, 0.2 to 1.8",
 		"kind": Kind.LEVEL,
 		"lo": 0.0,
 		"hi": 1.0,
 		"rest": 0.5,
 		"out_lo": 0.2,
-		"out_rest": 1.0,
-		"out_hi": 2.0
+		"out_hi": 1.8
 	},
 	"/vj/cam":
 	{
-		"drives": "the Nth director shot, 0-based (0 to 4), used while cam_auto is 0",
+		"drives":
+		"the Nth director shot, 0-based, the last for any N above; used while cam_auto is 0",
 		"kind": Kind.SHOT,
 		"lo": 0.0,
-		"hi": 4.0,
+		"hi": 10.0,
 		"rest": 0.0,
-		"out_lo": 1.0,
-		"out_rest": 1.0,
-		"out_hi": 5.0
+		"out_lo": 0.0,
+		"out_hi": 10.0
 	},
 	"/vj/cam_auto":
 	{
@@ -126,7 +116,6 @@ const ROWS := {
 		"hi": 1.0,
 		"rest": 1.0,
 		"out_lo": 0.0,
-		"out_rest": 1.0,
 		"out_hi": 1.0
 	},
 }
@@ -156,10 +145,5 @@ static func clamp_value(address: String, v: float) -> float:
 static func scene_value(address: String, v: float) -> float:
 	var row: Dictionary = ROWS[address]
 	var lo := float(row["lo"])
-	var mid := float(row["rest"])
-	var hi := float(row["hi"])
-	var c := clamp_value(address, v)
-	if c <= mid:
-		var below := 1.0 if mid <= lo else (c - lo) / (mid - lo)
-		return lerpf(float(row["out_lo"]), float(row["out_rest"]), below)
-	return lerpf(float(row["out_rest"]), float(row["out_hi"]), (c - mid) / (hi - mid))
+	var u := (clamp_value(address, v) - lo) / (float(row["hi"]) - lo)
+	return lerpf(float(row["out_lo"]), float(row["out_hi"]), u)

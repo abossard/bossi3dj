@@ -185,7 +185,9 @@ func _physics_process(delta: float) -> void:
 		_scene("/vj/intensity")
 	)
 	colossus.weight = _scene("/vj/bass")
-	director.pin(0 if _scene("/vj/cam_auto") >= 0.5 else int(_scene("/vj/cam")))
+	# The Director counts shots from 1 and 0 is "cut by itself"; N above the last takes the last.
+	var held := mini(int(_scene("/vj/cam")) + 1, Shots.Shot.AERIAL)
+	director.pin(0 if _scene("/vj/cam_auto") >= 0.5 else held)
 
 
 ## The scene value of an address's current contract value.

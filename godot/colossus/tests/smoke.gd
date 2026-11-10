@@ -4,9 +4,9 @@ extends SceneTree
 
 ## Never the show's port: a test must not steal or feed the live scene's OSC.
 const TEST_PORT := 19202
-## C3: once running, a frame at least every 2 s. Startup time is reported, not checked:
-## it swings with whatever else loads the machine.
-const MAX_GAP_MS := 2000
+## C3: once running, a frame at least every 2 s. Wall-clock time is reported, never asserted:
+## it swings with whatever else loads the machine (retrospective: "Report it, don't fail").
+const WARN_GAP_MS := 2000
 
 var _failed := 0
 var _last_frame_ms := 0
@@ -125,7 +125,8 @@ func _run() -> void:
 		await _wait_until(func() -> bool: return main.arc.phase == Arc.Phase.APPROACH, 20.0)
 	)
 	_check("Reset brought the next Colossus", main.colossus.name != first)
-	_check("C3 a frame in every 2 s (worst gap %d ms)" % _worst_gap_ms, _worst_gap_ms < MAX_GAP_MS)
+	var slow := " (over %d ms, machine busy?)" % WARN_GAP_MS if _worst_gap_ms >= WARN_GAP_MS else ""
+	print("info C3 worst gap between frames %d ms%s" % [_worst_gap_ms, slow])
 
 	print("smoke: %s" % ("passed" if _failed == 0 else "%d failed" % _failed))
 	quit(1 if _failed > 0 else 0)

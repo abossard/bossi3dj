@@ -91,16 +91,16 @@ Only the performer advances Approach and Climb. Fall ends on its own.
 |---|---|---|
 | `/vj/beat` | 0..1, default 0 | Colossus footfall timing nudge, dust puffs, camera cut points |
 | `/vj/bass` | 0..1, default 0 | footfall weight 0.5..1 (camera shake, dust size) |
-| `/vj/level` | 0..1, default 0.5 | sun glow through the cloud gap, energy 1.4..2.6 |
+| `/vj/level` | 0..1, default 0.5 | sun glow through the cloud gap, energy 1.0..2.6 |
 | `/vj/shock` | trigger, 1.4 and above marks a drop | triggers a Shake while the Wanderer is on the Colossus |
-| `/vj/fog` | 0..1, default 0.35 | volumetric fog density 0.002..0.012 |
-| `/vj/fog_height` | 0..1, default 0.42 | fog height 10..90 m |
+| `/vj/fog` | 0..1, default 0.35 | volumetric fog density 0..0.0086 |
+| `/vj/fog_height` | 0..1, default 0.42 | fog height 0..95 m |
 | `/vj/haze` | 0..1, default 1 | distance haze density, none up to the tuned look |
-| `/vj/cam` | 0..4, default 0 | the Nth director shot (0-based, clamped to the last), held while `/vj/cam_auto` is 0 |
+| `/vj/cam` | 0..10, default 0 | the Nth director shot (0-based, clamped to the last), held while `/vj/cam_auto` is 0 |
 | `/vj/cam_auto` | 0 or 1, default 1 | 1 hands the cuts to the director, 0 pins the shot `/vj/cam` names |
-| `/vj/intensity` | 0..1, default 0.5 | overall exposure 0.2..2 |
+| `/vj/intensity` | 0..1, default 0.5 | overall exposure 0.2..1.8 |
 
-A value stays until the next packet, as in Blender (Magic sends only on change); before the first packet an address has its rest value (the tuned look). Missing `/vj/beat` (no write for 2 s): an internal 90 BPM beat, as the Blender runtime does. The table of ranges, scaling and rest values is `io/vj_map.gd` (contract decision of 2026-11-10: every continuous control 0..1, each scene scales it, the wire default gives the tuned look; the scene value runs in two straight segments through the default).
+A value stays until the next packet, as in Blender (Magic sends only on change); before the first packet an address has its rest value (the tuned look). Missing `/vj/beat` (no write for 2 s): an internal 90 BPM beat, as the Blender runtime does. The table of ranges, scaling and rest values is `io/vj_map.gd`. It follows the Godot column of `osc/contract.json` (contract decision of 2026-11-10: every continuous control 0..1, each scene scales it linearly onto one range, the wire default gives the tuned look); a test reads the JSON and fails when they drift.
 
 The same values can be written from the control page on http 9211 (`/api/*`, see the README). Page values are held against OSC until released.
 
