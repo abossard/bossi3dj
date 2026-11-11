@@ -90,3 +90,5 @@ The wave 2 sessions stopped at half context; fresh sessions continue from their 
 | G6 Godot look round 3 (low hero keeps the Wanderer) | `godot/look-round2` | `docs/handover/godot-look-round2.md` | running, live part after Blender closes |
 
 GPU order: B3 live, G6 live, B2 live, then fps tables.
+
+Worktrees (user, 2026-11-11): fewer. The three wave 1 worktrees are removed. The three running sessions finish in theirs; each is removed after its merge. Later sessions work in the main checkout on `integration/presentable`, one writer per area.
