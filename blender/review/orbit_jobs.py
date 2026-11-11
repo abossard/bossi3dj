@@ -1,5 +1,6 @@
 """S9 proof: the pull-out (ground to 165 km, day and night) and four orbit views at full resolution (1920x1080):
-the day side, the night side, the terminator and a limb close-up. Set DN["orbit_out"] before exec."""
+the day side, the night side, the terminator and a limb close-up. Set DN["orbit_out"] before exec; DN["orbit_only"]
+(optional) is a list of output names without extension to grab only those, e.g. ["S9_orbit_limb"]."""
 import bpy
 from mathutils import Vector
 
@@ -46,5 +47,8 @@ jobs.append({"kind": "grab", "set": dict(FIXED, vj_night=0.0, vj_cam=6), "exec":
              "out": OUT + "S9_CAM_6_day.ppm"})
 jobs.append({"kind": "grab", "set": dict(FIXED, vj_night=1.0), "camera": "CAM_SYS", "exec": FLOWN, "phase": None, "settle": 4.0, "full": True,
              "out": OUT + "S9_CAM_SYS_night.ppm"})
+only = DN.get("orbit_only")
+if only:
+    jobs = [j for j in jobs if j["out"].rsplit("/", 1)[-1][:-4] in only]
 DN["grab_jobs"] = jobs
 exec(open(TOOLS + "grabber.py").read())
