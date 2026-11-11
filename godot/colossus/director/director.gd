@@ -12,8 +12,9 @@ const WIDE_BACK_MAX := 24.0
 const HERO_BACK := 24.0
 ## The close grip keeps this far from the surface the Wanderer hangs on (m).
 const CLOSE_BACK := 3.0
-## Room left around his upper body in the close grip for the Shake's swing (m).
-const CLOSE_SWAY := 0.8
+## Room left around his upper body in the close grip for the Shake's swing and his climbing on
+## while the dolly catches up (m).
+const CLOSE_SWAY := 1.6
 ## Beyond this gap (m) the low hero shot goes telephoto: its own lens shows the giant under 100 px
 ## (about a tenth of the frame). The over-shoulder and close-grip shots stay on the Wanderer.
 const HERO_RANGE := 200.0
