@@ -13,9 +13,9 @@ uniform sampler2D detail_tex : filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D tint_tex : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 // 1 uses the model's normal map, 0 a flat one.
 uniform float model_normal : hint_range(0.0, 1.0) = 1.0;
-uniform float detail_strength : hint_range(0.0, 4.0) = 1.5;
+uniform float detail_strength : hint_range(0.0, 8.0) = 6.0;
 // Tiles per metre of the detail normal map and of the colour variation.
-uniform float detail_scale = 0.18;
+uniform float detail_scale = 0.04;
 uniform float tint_scale = 0.03;
 uniform float tint_strength : hint_range(0.0, 1.0) = 0.6;
 // The rock colour map's mean luma (linear), so the variation brightens and darkens round 1.

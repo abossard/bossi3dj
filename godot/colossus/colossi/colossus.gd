@@ -16,6 +16,10 @@ const TURN_RATE := deg_to_rad(4.0)
 const SHAKE_SECONDS := 1.5
 ## A goal not reached in this time is dropped (it may sit inside the turning circle).
 const GOAL_SECONDS := 60.0
+## The dust the feet keep stirring: a low, wide fog volume that goes with the body, so the giant
+## stands in something and the Wanderer is knee-high to it.
+const DUST_COLOR := Color("c4b9a4")
+const DUST_DENSITY := 0.15
 
 @export var height_m: float = 28.0
 @export var seed_value: int = 1
@@ -34,6 +38,8 @@ var seek: bool = false
 ## The Wanderer holds on: stand still, no step and no turn, while he climbs (SPEC: "stands while
 ## he climbs").
 var carrying: bool = false
+## The dust skirt round the feet (a FogVolume); hidden by the probes that compare without it.
+var dust_skirt: FogVolume
 
 var _rng := RandomNumberGenerator.new()
 var _goal := Vector3.ZERO
@@ -50,6 +56,7 @@ func _ready() -> void:
 	_rng.seed = seed_value
 	_pick_goal()
 	_build()
+	_build_dust_skirt()
 	_points.assign(find_children("*", "GrabPoint", true, false))
 	for p in _points:
 		if p.head:
@@ -156,6 +163,19 @@ func center() -> Vector3:
 ## The Grab Point the climb aims for (the one marked `head`).
 func head_point() -> GrabPoint:
 	return _head_point
+
+
+func _build_dust_skirt() -> void:
+	var mat := FogMaterial.new()
+	mat.density = DUST_DENSITY
+	mat.albedo = DUST_COLOR
+	mat.edge_fade = 0.6
+	dust_skirt = FogVolume.new()
+	dust_skirt.shape = RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID
+	dust_skirt.size = Vector3(height_m * 1.2, height_m * 0.18, height_m * 1.2)
+	dust_skirt.position = Vector3(0.0, dust_skirt.size.y * 0.25, 0.0)
+	dust_skirt.material = mat
+	add_child(dust_skirt)
 
 
 ## Override: create meshes and Grab Points (one marked `head`), scaled to height_m.

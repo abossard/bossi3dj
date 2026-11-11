@@ -18,9 +18,9 @@ const ROCK_TINT := "res://assets/terrain/rocky_terrain_02_albedo_height.png"
 const EYE_COLOR := Color("cfe3ee")
 const EYE_ENERGY := 8.0
 ## Where the eyes are on the face, in the rig's own space (x, y); the glint sits on the face's
-## front surface there. Half a metre across, flattened against the face.
+## front surface there. A metre across, flattened against the face.
 const EYES := [["eye_l", 1.0, 27.2], ["eye_r", -1.0, 27.2]]
-const EYE_RADIUS := 0.4
+const EYE_RADIUS := 0.6
 ## Bones: [thigh_l, shin_l, foot_l, thigh_r, shin_r, foot_r, upper_arm_l, upper_arm_r, spine, head,
 ## hips].
 const GAIT_BONES := [
