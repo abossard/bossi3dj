@@ -141,4 +141,4 @@ GPU order: B2 live, merge, B7 live, then G4 and the fps tables.
 |---|---|---|---|
 | B10 | planet-finish (Opus 5.5 high) | Flight shot, round 13 day look and camera items, missing manual pictures, island check, fps table | running, holds Blender |
 | B11 | handbook-page-magic (Sonnet 5.5 xhigh) | handbook, control page on 9210, Magic project and end-to-end proof | running, live part after B10 yields Blender |
-| B12 | not started | Art-Net input and a QLC+ fixture, generated from the contract | waits for the user's go |
+| B12 | edge-guard (the B9 session, reused) | Art-Net input in the bridge, QLC+ fixture generated from the contract | running, Blender-free part; live test with QLC+ later |
