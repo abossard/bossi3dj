@@ -14,7 +14,7 @@ const GAP := 250.0
 const FOOT_GAP := 28.0
 ## Address, name, wire minimum and maximum, shot (wire value) it shows best in, Wanderer's gap (m).
 const PAIRS := [
-	["/vj/level", "level", 0.0, 1.0, 0, GAP],
+	["/vj/level", "level", 0.0, 1.0, 1, GAP],
 	["/vj/intensity", "intensity", 0.0, 1.0, 0, GAP],
 	["/vj/fog", "fog", 0.0, 1.0, 0, GAP],
 	["/vj/fog_height", "fog_height", 0.0, 1.0, 0, GAP],
@@ -71,6 +71,7 @@ func _defaults(wire: int) -> void:
 
 ## The Approach: the Wanderer `gap` m from the Colossus, both held where they are.
 func _approach(gap: float) -> void:
+	main._next_index = 0
 	main.arc.send(Arc.Event.RESET_NOW)
 	while main.arc.phase != Arc.Phase.APPROACH or main._fade.color.a > 0.0:
 		await _wait(0.25)
@@ -87,6 +88,7 @@ func _approach(gap: float) -> void:
 
 ## He hangs on the Colossus in a Climb, held on his grip.
 func _climb() -> void:
+	main._next_index = 0
 	main.arc.send(Arc.Event.RESET_NOW)
 	while main.arc.phase != Arc.Phase.APPROACH or main._fade.color.a > 0.0:
 		await _wait(0.25)
@@ -178,5 +180,6 @@ func _climb_part() -> void:
 	await _wait(SETTLE + 1.0)
 	await _save("shock-low")
 	main._shake()
-	await _wait(0.5)
+	# The roll peaks a quarter of the way in (it is zero at a third of SHAKE_SECONDS).
+	await _wait(0.25)
 	await _save("shock-high")
