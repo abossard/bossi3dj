@@ -132,6 +132,14 @@ class ProjectTests(unittest.TestCase):
         amount = mp.param(mix, "Amount")
         self.assertEqual(mp.global_names(root)[amount.get("feature")], show.MIX)
 
+    def test_the_mix_is_bypassed_while_the_fader_is_down(self):
+        """A Mix draws black while its second server is missing, even at Amount 0: with Godot parked the program must skip it."""
+        root = sm.ET.fromstring(built("show.magic"))
+        mix = next(n for n in root.iter("Node") if n.get("pluginName") == "Mix")
+        bypass = mp.param(mix, "Bypass")
+        self.assertEqual(mp.global_names(root)[bypass.get("feature")], show.MIX)
+        self.assertIn("if(x < 0.01, 1, 0)", [e for _k, _p, e, _b in mp.modifiers(bypass) if e])
+
     def test_synthwave_project_has_no_mix(self):
         root = sm.ET.fromstring(built("synthwave_pyramids.magic"))
         self.assertEqual([n for n in root.iter("Node") if n.get("pluginName") == "Mix"], [])
