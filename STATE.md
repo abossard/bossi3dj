@@ -41,7 +41,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 
 ## OSC contract
 
-- One source: `osc/contract.json`, 0..1 on the wire, synced into [osc/CONTROLS.md](osc/CONTROLS.md) and the Blender bridge. `magic/projects/show.magic` drives both scenes (38 addresses straight to udp 9201, `/vj/cam` 0..11). The version with the relay target was opened in MagicBeta on 2026-11-11 and its OSC reached the Blender bridge; the retargeted file is not loaded into Magic yet. Not checked: the picture inside Magic (its Syphon output is off in the project) and the mix with Godot. 
+- One source: `osc/contract.json`, 0..1 on the wire, synced into [osc/CONTROLS.md](osc/CONTROLS.md) and the Blender bridge. `magic/projects/show.magic` drives both scenes (38 addresses straight to udp 9201, `/vj/cam` 0..11). Loaded into MagicBeta on 2026-11-11 with no relay running: the Blender bridge received about 470 packets a second straight from Magic, all 37 controls read `osc`, 0 errors. Not checked: the picture inside Magic (its Syphon output is off in the project) and the mix with Godot. 
 
 ## Decided by the user
 
