@@ -63,10 +63,10 @@ class ProjectTests(unittest.TestCase):
                 committed = mp.read(os.path.join(PROJECTS, name))
                 self.assertEqual(mp.diff(committed, sm.ET.fromstring(built(name))), [])
 
-    def test_show_project_drives_both_scenes_through_the_relay(self):
+    def test_show_project_drives_both_scenes_on_one_port(self):
         root = sm.ET.fromstring(built("show.magic"))
         sent = senders(root)
-        self.assertEqual({s["port"] for s in sent.values()}, {"9200"})
+        self.assertEqual({s["port"] for s in sent.values()}, {"9201"})
         self.assertEqual(sorted(sent), sorted(sm.CONTRACT))
         servers = [mp.param(n, "Server").get("value") for n in root.iter("Node") if n.get("pluginName") == "SyphonClient"]
         self.assertEqual(servers, [show.SYPHON_BLENDER, show.SYPHON_GODOT])

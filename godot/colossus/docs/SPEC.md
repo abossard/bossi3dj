@@ -85,7 +85,7 @@ Only the performer advances Approach and Climb. Fall ends on its own.
 
 ### OSC (from Magic through `lab.py`)
 
-`lab.py` relays to Blender (udp 9201) and to Godot on udp 127.0.0.1:9202 (`--godot-port`, settable on the lab page, 0 = off); its generators and sliders reach both. Godot reads the existing `/vj/*` addresses:
+Magic sends to udp 9201, the scene port of both scenes (only one runs at a time). The optional debug relay `lab.py` (udp 9200) forwards to it; a second target for Godot on another port (`--godot-port`, settable on the lab page) is off by default. Godot reads the existing `/vj/*` addresses:
 
 | Address | Wire | Drives |
 |---|---|---|

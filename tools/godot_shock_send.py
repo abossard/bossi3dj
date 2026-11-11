@@ -4,7 +4,7 @@
     python3 tools/godot_shock_send.py --port 19202 0.5:1.0 4.0:1.5
 
 Each `seconds:strength` pair fires a trigger at that time: strength for 0.2 s, then 0. Time counts from
-the start of the script. Port 9202 is the show's: tests use 19202 (tests/shake_osc.gd starts this script).
+the start of the script. Port 9201 is the show's: tests use 19202 (tests/shake_osc.gd starts this script).
 Standard library only; the packet encoder is osc/sweep.py's.
 """
 import argparse

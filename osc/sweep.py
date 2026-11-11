@@ -5,8 +5,8 @@
 
 Floats and indices hold each of the three wire values for a third of --seconds, then go back to the default.
 A trigger fires once (0, then --strength, then 0) and waits --seconds. The script prints what it sends and
-only sends: it listens on nothing, so it never takes a show port. Targets: relay = udp 9200 (lab.py hands the packets
-to both scenes), blender = 9201, godot = 9202. --dry-run prints the whole walk without a socket or a wait.
+only sends: it listens on nothing, so it never takes a show port. Targets: blender = godot = udp 9201 (the scene port of both
+scenes, only one runs at a time), relay = 9200 (the optional lab.py). --dry-run prints the whole walk without a socket or a wait.
 
 Standard library only. The rows come from osc/contract.json, the same table as CONTROLS.md.
 """
@@ -20,7 +20,7 @@ from collections import namedtuple
 
 import contract
 
-TARGETS = {"relay": 9200, "blender": 9201, "godot": 9202}
+TARGETS = {"relay": 9200, "blender": 9201, "godot": 9201}
 Step = namedtuple("Step", "address label value hold trigger")
 
 
@@ -81,7 +81,7 @@ def run(steps, defaults, send, sleep, say, rate=10.0):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--target", default="relay", help="relay (9200), blender (9201), godot (9202) or HOST:PORT")
+    ap.add_argument("--target", default="blender", help="blender or godot (both 9201, the scene), relay (9200, the optional lab.py) or HOST:PORT")
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--seconds", type=float, default=3.0, help="per address (default 3)")
     ap.add_argument("--rate", type=float, default=10.0, help="packets per second while a value is held (default 10)")

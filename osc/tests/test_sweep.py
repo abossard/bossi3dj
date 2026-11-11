@@ -104,7 +104,7 @@ class MainTests(unittest.TestCase):
         self.assertEqual(walked, {a for a in BY if a.startswith("/vj/fog")})
 
     def test_targets(self):
-        cases = [("relay", ("127.0.0.1", 9200)), ("blender", ("127.0.0.1", 9201)), ("godot", ("127.0.0.1", 9202)),
+        cases = [("relay", ("127.0.0.1", 9200)), ("blender", ("127.0.0.1", 9201)), ("godot", ("127.0.0.1", 9201)),
                  ("127.0.0.1:19202", ("127.0.0.1", 19202)), (":19202", ("127.0.0.1", 19202))]
         for text, want in cases:
             with self.subTest(target=text):

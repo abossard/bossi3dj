@@ -300,8 +300,8 @@ class Lab:
         """Relay targets: the Blender bridge, plus the Godot Colossus Scene when its port is set.
         Call with the lock held."""
         out = [(self.config["blender_host"], int(self.config["blender_port"]))]
-        if self.config["godot_port"]:
-            out.append(("127.0.0.1", int(self.config["godot_port"])))
+        if self.config["godot_port"] and not (self.config["blender_host"] in LOCAL_HOSTS and self.config["godot_port"] == self.config["blender_port"]):
+            out.append(("127.0.0.1", int(self.config["godot_port"])))      # the same local port twice would double every packet
         return out
 
     def send(self, address, args, host=None, port=None, everywhere=False):
@@ -540,7 +540,7 @@ def main():
     ap.add_argument("--listen", type=int, default=9200, help="UDP port Magic sends to (default 9200)")
     ap.add_argument("--blender-host", default="127.0.0.1")
     ap.add_argument("--blender-port", type=_port_arg, default=9201, help="port blender_osc_bridge.py listens on (default 9201)")
-    ap.add_argument("--godot-port", type=_port_arg, default=9202, help="second relay target on 127.0.0.1 for the Godot Colossus Scene (default 9202, 0 = off)")
+    ap.add_argument("--godot-port", type=_port_arg, default=0, help="second relay target on 127.0.0.1 for the Godot Colossus Scene (default 0 = off: Blender and Godot share udp 9201 and never run together)")
     ap.add_argument("--no-relay", action="store_true", help="start with relay to Blender and Godot off")
     ap.add_argument("--log", help="append every received message as JSON lines to this file")
     args = ap.parse_args()

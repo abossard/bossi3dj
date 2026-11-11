@@ -3,9 +3,10 @@
 Live VJ scenes under one OSC contract. Magic Music Visuals analyses the music and sends `/vj/*`; a Blender scene and a Godot scene react; each publishes Syphon; Magic mixes them.
 
 ```
-Magic OSCSender ──udp 9200──> osc/lab.py ──9201──> Blender  ──Syphon "CAM_OUT - Blender"──┐
-                                  │      └──9202──> Godot    ──Syphon "COLOSSUS_OUT"───────┼──> Magic SyphonClient
-                                  └ http 8765 (debug page)                                 ┘
+                               ┌──> Blender (bridge)  ──Syphon "CAM_OUT - Blender"──┐
+Magic OSCSender ──udp 9201──>──┤                                                    ├──> Magic SyphonClient
+                               └──> Godot (Colossus)  ──Syphon "COLOSSUS_OUT"───────┘
+                          (one scene runs at a time; osc/lab.py on 9200 is an optional debug relay)
 ```
 
 | Scene | Engine | Folder | Look |
@@ -25,7 +26,7 @@ make status
 
 - Blender: `make blender-open` (planet) or `make blender-open SCENE=island`, then http://127.0.0.1:9210 to drive it without Magic.
 - Godot: open `godot/colossus` in Godot 4.7 and press Play.
-- Both from Magic: `make lab`, point the Magic project's OSCSender at 127.0.0.1:9200.
+- Both from Magic: `magic/projects/show.magic` sends to 127.0.0.1:9201; start Blender or Godot, not both. `make lab` is an optional debug relay and test page.
 - Tests: `make test`.
 
 ## Needs

@@ -9,7 +9,7 @@ signal beat
 signal bar(drop: bool)
 signal shock(strength: float)
 
-const PORT := 9202
+const PORT := 9201
 ## /vj/beat counts as quiet after this long without a write; then the internal beat runs.
 const STALE := 2.0
 ## A fired trigger stays high this long, more than a frame so the edge is seen.

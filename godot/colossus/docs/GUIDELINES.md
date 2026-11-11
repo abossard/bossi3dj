@@ -55,7 +55,7 @@ Read [SPEC.md](SPEC.md) for numbers, [GLOSSARY.md](../../../GLOSSARY.md) for ter
 | Terrain textures blurry or wrong | imported with 2D defaults | `compress/mode=2`, `mipmaps/generate=true` in the `.import` file |
 | Ragdoll launches the body | physical bone bodies not mid-segment, joints not at bone heads | body at the segment centre, joint at the bone head |
 | Collision reads `inf` on Terrain3D | collision mode not set | set the mode before the first query |
-| Test steals the show's OSC or Syphon | test bound 9202 or `COLOSSUS_OUT` | tests use udp 19202 and `COLOSSUS_TEST` |
+| Test steals the show's OSC or Syphon | test bound 9201 or `COLOSSUS_OUT` | tests use udp 19202 and `COLOSSUS_TEST` |
 | Flaky timing assert | wall-clock assert under GPU load | report timings, assert only on logic |
 | fps drops with nothing changed | Blender holds 52 to 65 % of the GPU | `make status`; the show runs Godot alone, hand Blender-free measurements to the user |
 

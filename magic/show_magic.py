@@ -1,11 +1,11 @@
 """Builds projects/show.magic, the one Magic project that drives both scenes.
 
-    python3 magic/show_magic.py [--port 9200] [--out FILE]
+    python3 magic/show_magic.py [--port 9201] [--out FILE]
 
 It is the synthwave project (synthwave_magic.py: audio analysis, every /vj/* control as a Global, the OSC senders,
 Monitor and Readout overlays) with two Syphon sources: Blender's CAM_OUT and Godot's COLOSSUS_OUT. A Mix module
 crossfades them, driven by the Global SceneMix (0 = Blender only, 1 = Godot only), and the effects run on the mix.
-The senders go to the relay (osc/lab.py, udp 9200), which hands every packet to Blender (9201) and Godot (9202).
+The senders go straight to the scene on udp 9201: Blender's bridge and the Godot Colossus Scene both listen there, and only one of them runs at a time.
 """
 import argparse
 import os
@@ -15,7 +15,7 @@ import synthwave_magic as sm
 
 SYPHON_BLENDER = "CAM_OUT - Blender"
 SYPHON_GODOT = "COLOSSUS_OUT - Godot"      # "<server> - <app>"; the app name of Godot_mono.app is a guess until Magic lists it
-RELAY_PORT = 9200
+SCENE_PORT = 9201
 MIX = "SceneMix"
 
 
@@ -27,13 +27,13 @@ def show_globals():
     return out
 
 
-def build(port=RELAY_PORT, ip="127.0.0.1", blender=SYPHON_BLENDER, godot=SYPHON_GODOT):
+def build(port=SCENE_PORT, ip="127.0.0.1", blender=SYPHON_BLENDER, godot=SYPHON_GODOT):
     return sm.build(port, ip, blender, show_globals(), syphon2=godot, mix=MIX)
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--port", type=int, default=RELAY_PORT, help="OSC target: 9200 = the relay (osc/lab.py), which feeds both scenes")
+    ap.add_argument("--port", type=int, default=SCENE_PORT, help="OSC target: 9201 = the scene (Blender bridge or Godot Colossus Scene), 9200 = the optional relay (osc/lab.py)")
     ap.add_argument("--ip", default="127.0.0.1")
     ap.add_argument("--syphon-blender", default=SYPHON_BLENDER)
     ap.add_argument("--syphon-godot", default=SYPHON_GODOT)

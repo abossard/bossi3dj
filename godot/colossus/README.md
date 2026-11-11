@@ -6,7 +6,7 @@ A live VJ scene: a Colossus roams an overcast dusk plain, the Wanderer climbs it
 
 Open `godot/colossus` in Godot 4.7 (Forward+, Metal) and press Play. Frames go to the window and to the Syphon server `COLOSSUS_OUT`.
 
-For music signals, run `make lab`; it relays Magic's OSC to Godot on udp 9202. Without OSC the scene runs on an internal 90 BPM beat.
+Music signals come from Magic (`magic/projects/show.magic`) straight to udp 9201, the scene port Blender's bridge uses too (never run both). `make lab` is an optional debug relay to the same port. Without OSC the scene runs on an internal 90 BPM beat.
 
 Control page: http://127.0.0.1:9211 while the scene runs (see [Control page](#control-page)).
 

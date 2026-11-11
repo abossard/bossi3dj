@@ -20,7 +20,7 @@ Live VJ scenes driven by one OSC contract: Magic Music Visuals sends `/vj/*`, a 
 
 - Every `/vj/*` address is a row in [osc/contract.json](osc/contract.json), shown in [osc/CONTROLS.md](osc/CONTROLS.md) (`make osc-sync` rewrites the table and the bridge's `SCALES`). Change the row first, then the Magic generator, then each scene. Continuous controls are 0..1 on the wire, each scene scales.
 - A scene owns no music logic. Magic decides what the music means; scenes only take controls.
-- Ports: Magic to relay 9200, Blender bridge 9201, Godot 9202, Blender scene page 9210, Godot scene page 9211, relay page 8765. Syphon servers: `CAM_OUT - Blender`, `COLOSSUS_OUT`.
+- Ports: Magic sends straight to the scene on udp 9201, the one scene port: the Blender bridge and the Godot Colossus Scene both listen there, and they never run together. Blender scene page 9210, Godot scene page 9211. The relay (`make lab`, udp 9200, page 8765) is an optional debug tool, not in the show path. Syphon servers: `CAM_OUT - Blender`, `COLOSSUS_OUT`.
 - Tests and probes never bind those ports or publish those Syphon names. Godot tests use 19202, 19211 and `COLOSSUS_TEST`.
 
 ## Shared machine

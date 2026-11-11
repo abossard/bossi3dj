@@ -95,4 +95,4 @@ The user may be performing or editing in Magic:
 
 ## This repository
 
-This repository also holds a Magic → Blender OSC setup (`magic/` generators, `osc/lab.py` relay, a Blender bridge on UDP 9201). Read [repo-lab.md](references/repo-lab.md) only for work on that setup.
+This repository also holds a Magic → Blender OSC setup (`magic/` generators, an optional `osc/lab.py` debug relay, a Blender bridge or Godot scene on UDP 9201). Read [repo-lab.md](references/repo-lab.md) only for work on that setup.

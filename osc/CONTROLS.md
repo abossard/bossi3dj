@@ -1,6 +1,6 @@
 # The `/vj/*` control contract
 
-One row per address. Magic sends them (generator `magic/synthwave_magic.py`, one float32 per datagram, only on change), `osc/lab.py` relays every packet to Blender (udp 9201) and Godot (udp 9202).
+One row per address. Magic sends them (generator `magic/synthwave_magic.py`, one float32 per datagram, only on change), both scenes listen on udp 9201 (Blender bridge, Godot Colossus Scene; only one runs at a time). The optional debug relay `osc/lab.py` (udp 9200) forwards to it.
 
 The source of the rows is [contract.json](contract.json). The table below, the bridge's `SCALES` block and the lab page are made from it (`python3 osc/contract.py sync`); `osc/tests/test_contract.py` fails when a copy drifts. Change the row first, then the Magic generator, then each scene. A scene that ignores an address says "not used".
 
@@ -64,6 +64,6 @@ The source of the rows is [contract.json](contract.json). The table below, the b
 
 ## Driving a scene without Magic
 
-- `make lab`, then http://127.0.0.1:8765: one slider per row in wire units at the wire default, generators (sine, beat pulse, ramp) on any row, all reach both scenes.
-- `make osc-sweep` walks every row through its minimum, default and maximum (triggers fire once), to the relay or to one scene's port.
+- `make lab`, then http://127.0.0.1:8765: one slider per row in wire units at the wire default, generators (sine, beat pulse, ramp) on any row, all reach the running scene (through the relay, optional).
+- `make osc-sweep` walks every row through its minimum, default and maximum (triggers fire once), to the scene's port (default) or the relay.
 - Blender only: http://127.0.0.1:9210, one control per `vj_*` property in scene units, with holds and a beat simulator.
