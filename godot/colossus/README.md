@@ -60,6 +60,6 @@ First version, running end to end at 1080p on Metal:
 - Out: Syphon `COLOSSUS_OUT`.
 
 Still to come:
-- The Sketchfab Colossi and the Nomad Wanderer with Mixamo clips need a login to download. They replace the stand-in parts and keep the skeleton, Grab Path, IK and ragdoll setup. The Wanderer's hand IK waits for his rig.
+- The Wanderer is the Nomad on Mixamo clips (retargeted at runtime, feet and hands by IK) once `make godot-models` has prepared the downloads (`assets/MODELS.md`); without them the stand-in shows. The Sketchfab Colossi replace the stand-in parts next and keep the skeleton, Grab Path, IK and ragdoll setup.
 - Ruins are stand-ins: the Shrine columns and a fallen head.
 - A Colossus more than 450 m away is lost in the sunlit haze, so long Approach shots show the walk, not the giant.

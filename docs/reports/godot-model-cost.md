@@ -60,6 +60,78 @@ Raw rows: [godot-model-cost-stage1.json](godot-model-cost-stage1.json).
 | Wanderer textures at 1k | Not built: the close grip stands 3 m off. | 18 MB of GPU memory, no frame time |
 | Nomad body albedo as BC1 | Not built: its PNG has an alpha channel, so Godot stores BC3. | 2.7 MB of GPU memory |
 
+## Stage 2, 2026-11-11: the Wanderer
+
+The Nomad replaces the stand-in when its model is present (`assets/MODELS.md`); without it the stand-in shows and the start prints one line.
+
+### How he moves
+
+- Clips: Mixamo FBX from `assets/mixamo/` play on a source skeleton whose bones are renamed to Godot's humanoid profile at load (`wanderer/clips.gd`); `RetargetModifier3D` (global pose) carries the pose onto the Nomad, whose bones already carry the profile names (renamed in the prepare, so the import BoneMap would be one to one and is not set). Nothing of Mixamo is saved in the project.
+- AnimationTree: a walk blend (idle at 0, walk at 1.6 m/s, run at 4.5 m/s) under a time scale that plays each clip at the speed whose planted foot does not slide; a climb transition (hang idle, shimmy left and right, climb up and down, hang swing); a mode transition (ground, climb, fall, stand up). Cross-fades 0.35 s (mode) and 0.25 s (climb) on an ease-in-out curve.
+- After the retarget, on the Nomad, in this order: the procedural pose (only without clips), the feet on the land (`wanderer/wanderer_feet.gd`: IK only where the land under a foot differs from the land under the body by more than 1 cm, the hips drop for the lower foot), the leg IK, the chest look-at (35°, influence 0.35), the hand IK on the grips, the head look-at (60°, 0.85, 0.6 s ease). The chest turns before the hand IK: after it, it carried the hands 0.6 m off the grip.
+- Hanging: the body hangs where the hang clip's pose puts the toes on the surface and the shoulders at 92% of an arm's length from the grip, fitted from the clip's pose every frame (smoothed 0.4 s). The turn toward a grip's surface is a damped spring (0.15 s). Moving between grips the leading hand goes first, decided once per move (sideways the hand on that side, up and down they alternate). A grip low on the legs: he stands on the land and reaches up.
+- Fall: he lets go on impact and drops under gravity (the old snap to the ground from more than 6 m up was a jump of metres in one frame), then stands up.
+
+Clip slots, the file each expects and its fallback: `godot/colossus/assets/MODELS.md`. Played now: idle (`Idle.fbx`), walk (`Walking-2.fbx`), run (`Fast Run.fbx`), shimmy left (`Braced Hang Shimmy.fbx`). On a fallback: hang idle (the shimmy's first frame, held), shimmy right, climb up, climb down, hang swing (hang idle), fall idle and stand up (idle).
+
+Mixamo clips still to download (FBX Binary, Without Skin, 30 fps, In Place for walk and run), with the file name `make godot-models` copies:
+
+| Slot | Mixamo clip | File name |
+|---|---|---|
+| hang idle | Braced Hang | `Braced Hang.fbx` |
+| shimmy right | Braced Hang Shimmy, Mirror ticked (or Right Braced Hang Shimmy) | `Right Braced Hang Shimmy.fbx` |
+| climb up | Climbing Up Wall | `Climbing Up Wall.fbx` |
+| climb down | Climbing Down Wall | `Climbing Down Wall.fbx` |
+| hang swing | Hanging Idle | `Hanging Idle.fbx` |
+| fall idle | Falling Idle | `Falling Idle.fbx` |
+| stand up | Standing Up | `Standing Up.fbx` |
+
+`Braced Hang Hop Up.fbx` (downloaded) is a one-shot hop onto a ledge: as the looping climb-up slot it jumped 37 m/s at every loop, so it is not used.
+
+### Numbers (`make godot-wanderer-motion`, headless, the stand-in Colossus)
+
+| What | Result |
+|---|---|
+| Pose at idle | ankles 0.06 m above the origin, head 1.56 m, hands 0.84 m (arms down) |
+| Head toward the Colossus at idle | 10° off the line to its head, which is 37° up |
+| Walk 1.6 m/s, planted foot | slides 0.08 m/s median, 0.37 m/s p90 (231 planted ticks); clip stride 1.60 m/s on the Nomad's legs, played at 1.00 |
+| Run 4.5 m/s, planted foot | slides 0.37 m/s median (30 planted ticks); `Fast Run` strides 5.54 m/s, played at 0.81 (`Slow Run` at 1.58 slid 3.0 m/s) |
+| Hands on the grip while hanging | 0.014 m median, 0.058 m p90 from the target |
+| Largest change of a joint's velocity in one tick (a pop shows as a jump) | steady walk 3.3 m/s, steady run 15.4 m/s (foot strike); idle to walk 2.1; ground to reach (from the run) 5.9; reach to hang 3.9; hang to move 2.9; move to hang 2.9; let go at the Fall 0.0 |
+| Without any clip (procedural pose) | arms down, head turns; the procedural walk slides 1.8 m/s and the hands stop 0.11 m short of a grip |
+
+The probe judges a pop against 4 m/s, and a change of state out of a run against the run's own steady motion. Before the fixes the same probe measured: walk slide 0.56 m/s (stride ratio from hip height, not leg length), hands 0.6 m off the grip, 37 m/s hand jumps (the leading hand flipped each tick on moves straight up), 423 m/s at the let go.
+
+### Readability in the low hero shot on the long walk (`make godot-wanderer-read`, Metal)
+
+The rubric fails of round 3 (`shot-2`, `2-approach-low-hero`) were not a dark figure: at the Shrine start the slope stood between the low camera and the Wanderer (3 of 19 samples of the line of sight under the land; the frame with him hidden was identical). `Director._long_walk` now raises the camera until the line to his knees clears the land by 0.2 m (`Director.clear_height`, tested).
+
+| Gap to the Colossus | Wanderer px | Body luma | Ground beside | Contrast |
+|---|---:|---:|---:|---:|
+| start at the Shrine, before | 321 | 0.083 (hidden: 0.083, not drawn) | 0.081 | 0.03 |
+| start at the Shrine, after | 244 | 0.126 | 0.429 | 0.71 |
+| 1500 m | 183 | 0.179 | 0.242 | 0.26 |
+| 1000 m | 526 | 0.442 | 0.665 | 0.34 |
+| 450 m | 526 | 0.434 | 0.569 | 0.24 |
+
+The stand-in at the same places: 0.13 to 0.36. A rim on the Nomad's materials changed none of these numbers and was taken out; no light was added.
+
+### Cost (`make godot-model-cost`, Metal, load 30, not fps-trustworthy)
+
+"wanderer" is the scene's own Wanderer: the Nomad on its clips through the retarget, feet, hand IK and look-at, posing every frame.
+
+| View | Stand-in | Nomad (one bone moved) | Wanderer (clips, retarget, IK) | Empty view |
+|---|---:|---:|---:|---:|
+| close (3.2 m, 27°) | 8.38 ms | 8.74 ms | 8.80 ms | 8.73 ms |
+| medium (4.5 m, 37.8°) | 8.41 ms | 8.75 ms | 8.70 ms | 8.52 ms |
+| long walk (24 m, 53°) | 8.59 ms | 8.66 ms | 8.73 ms | 8.48 ms |
+
+The animated Wanderer costs 0.14 to 0.42 ms over the stand-in, the same as the bare Nomad: clips, retarget and IK are not measurable on top of the mesh. Raw rows: [godot-model-cost-stage2.json](godot-model-cost-stage2.json).
+
+### Look round 4
+
+`docs/reports/godot-look-verdict.json`, round `godot-look-4`, rubric unchanged, one reviewer call on 27 frames: 26 pass, 1 fail. `shot-2` and `2-approach-low-hero` (the round 3 fails) pass: the Wanderer reads as an upright cloaked figure on the ridge. New fail: `4-shake-close-grip`, `wanderer-visible`: only two limb ends show at the top edge (pass in round 2 with the stand-in). Not fixed in this round; the close grip's aim at the hanging Nomad is the open item. Contact sheet for the user: [docs/images/2026-11-11/godot-models-wanderer.jpg](../images/2026-11-11/godot-models-wanderer.jpg).
+
 ## How the models are prepared
 
 ```bash

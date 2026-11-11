@@ -79,7 +79,7 @@ Only the performer advances Approach and Climb. Fall ends on its own.
 - A **Grab Point** is a node under a `BoneAttachment3D` on the Colossus. Fields: surface normal, grip kind (`ledge` or `fur`), links to neighbouring Grab Points.
 - Links are authored by hand in each Colossus scene. A Grab Path must connect every Grab Point to the head.
 - The Wanderer picks the link whose direction, projected onto the surface at the current Grab Point, best matches the input direction (autonomous: toward the head).
-- The Colossus plants its feet with `TwoBoneIK3D`. The Wanderer's hands will use it once he has a rig. The body hangs from the grip as a pendulum during a Shake, swinging sideways along the surface. The grip never fails.
+- The Colossus plants its feet with `TwoBoneIK3D`. The Wanderer's hands hold the grips with it too. The body hangs from the grip as a pendulum during a Shake, swinging sideways along the surface. The grip never fails.
 
 ## Inputs
 

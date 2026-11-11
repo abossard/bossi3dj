@@ -1,359 +1,539 @@
 {
-  "rounds": [
+ "rounds": [
+  {
+   "round": "godot-look-1",
+   "rubric": "godot/colossus/docs/look-rubric.md",
+   "frames": "480 px tiles of the output frame, made 2026-11-10 by `make godot-look` and `make godot-capture` on Metal (images are not kept in the repo)",
+   "shots": [
     {
-      "round": "godot-look-1",
-      "rubric": "godot/colossus/docs/look-rubric.md",
-      "frames": "480 px tiles of the output frame, made 2026-11-10 by `make godot-look` and `make godot-capture` on Metal (images are not kept in the repo)",
-      "shots": [
-        {
-          "image": "shot-1",
-          "verdict": "fail",
-          "failed": [
-            "exposure"
-          ],
-          "evidence": "Bottom quarter (dune ground) is flat black; Wanderer readable, no Colossus in view, horizon fog plausible."
-        },
-        {
-          "image": "shot-2",
-          "verdict": "fail",
-          "failed": [
-            "exposure"
-          ],
-          "evidence": "Bottom 15-20% (ground wedge) is flat black; Wanderer visible at left edge, fog fine."
-        },
-        {
-          "image": "shot-3",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Wanderer centred, dark ground strip is brown with texture, fog thins upward; no Colossus in view."
-        },
-        {
-          "image": "shot-4",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Wanderer large and readable against haze, ground strip not flat black, sky-to-fog gradient intact; no Colossus in view."
-        },
-        {
-          "image": "shot-5",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Colossus body, head and eye glints readable against dark haze; whole frame is dim but has a lit body and a dark end."
-        },
-        {
-          "image": "fog_height-0",
-          "verdict": "fail",
-          "failed": [
-            "exposure"
-          ],
-          "evidence": "Bottom ~20% (ground) is flat black; Wanderer and fog gradient fine."
-        },
-        {
-          "image": "fog_height-0.41",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Readable, fog thicker near ground. Thin black streak at right mid-ground and white patch at bottom right are odd but not a rubric item."
-        },
-        {
-          "image": "fog_height-1",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Hazier, Wanderer and horizon mound still readable, fog thickest at ground and thinning up."
-        },
-        {
-          "image": "fog-0",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Clear air, sun glow, mound and horizon sharp; ground dark gradient with small Wanderer silhouette at bottom, still readable. No Colossus visible even with no fog."
-        },
-        {
-          "image": "fog-1",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Dense fog, near white-out but graded, Wanderer readable at bottom; no hard band or hole."
-        },
-        {
-          "image": "intensity-0",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Dark by design, sun glow, mound and Wanderer at bottom still readable."
-        },
-        {
-          "image": "intensity-1",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Bright with a hot sun spot only, Wanderer and ground gradient readable, no large flat white area."
-        },
-        {
-          "image": "1-approach-scale-wide",
-          "verdict": "fail",
-          "failed": [
-            "colossus-readable",
-            "exposure"
-          ],
-          "evidence": "No Colossus silhouette anywhere, only a smooth mound at left horizon; bottom ~30% dune ground is flat black."
-        },
-        {
-          "image": "2-approach-low-hero",
-          "verdict": "fail",
-          "failed": [
-            "exposure"
-          ],
-          "evidence": "Bottom 15-20% ground wedge is flat black; Wanderer visible at left, no Colossus in view."
-        },
-        {
-          "image": "3-climb-over-shoulder",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Colossus leg and torso textured and clear against grey sky, Wanderer visible on the knee."
-        },
-        {
-          "image": "4-shake-close-grip",
-          "verdict": "fail",
-          "failed": [
-            "wanderer-visible"
-          ],
-          "evidence": "Only Colossus surface texture fills the frame; no Wanderer figure anywhere."
-        },
-        {
-          "image": "5-climb-aerial",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Colossus body and head glints recognisable in dark haze, centre of frame."
-        },
-        {
-          "image": "6-fall-toppling",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Colossus silhouette with eye glint against lit horizon haze, fog thicker at ground."
-        },
-        {
-          "image": "7-fall-down",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Fallen Colossus silhouette and debris against bright haze, horizon plausible."
-        },
-        {
-          "image": "8-reset-fade",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Deliberate fade, exempt from exposure; frame shows a dark vertical slab, no UI."
-        },
-        {
-          "image": "9-next-colossus",
-          "verdict": "fail",
-          "failed": [
-            "colossus-readable",
-            "exposure"
-          ],
-          "evidence": "No Colossus visible, only a horizon mound; bottom ~30% dune ground is flat black. Frame matches shot-1."
-        }
-      ],
-      "skipped": [],
-      "notes": [
-        "Shots 1-4 and the fog and intensity frames show no Colossus even with fog 0; colossus-readable was judged not applicable there.",
-        "Flat black ground in the low-dune frames (shot-1, shot-2, fog_height-0, 1-approach, 2-approach-low-hero, 9-next-colossus) is the main systematic failure."
-      ]
+     "image": "shot-1",
+     "verdict": "fail",
+     "failed": [
+      "exposure"
+     ],
+     "evidence": "Bottom quarter (dune ground) is flat black; Wanderer readable, no Colossus in view, horizon fog plausible."
     },
     {
-      "round": "godot-look-2",
-      "rubric": "godot/colossus/docs/look-rubric.md",
-      "frames": "480 px tiles of the output frame, made 2026-11-11 by `make godot-look` and `make godot-capture` on Metal (images are not kept in the repo). Frames before the fix pass were graded in one shot-reviewer call; new-colossus-after-hold in a second, after the Reset hold.",
-      "shots": [
-        {
-          "image": "shot-1",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Colossus silhouette readable at centre, ground lit, fog thins upward. Was exposure fail."
-        },
-        {
-          "image": "shot-2",
-          "verdict": "fail",
-          "failed": [
-            "wanderer-visible"
-          ],
-          "evidence": "Colossus readable, ground no longer black, but no Wanderer in the low hero frame."
-        },
-        {
-          "image": "shot-3",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Wanderer large at bottom centre, small dark Colossus at the horizon."
-        },
-        {
-          "image": "shot-4",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Wanderer large and centred, small Colossus in haze."
-        },
-        {
-          "image": "shot-5",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Colossus body, head and eye glint at centre."
-        },
-        {
-          "image": "fog_height-0",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Colossus readable, ground lit. Was exposure fail."
-        },
-        {
-          "image": "fog_height-0.41",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Readable, fog thicker at ground."
-        },
-        {
-          "image": "fog_height-1",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Readable, graded haze."
-        },
-        {
-          "image": "fog-0",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Colossus readable, ground lit."
-        },
-        {
-          "image": "fog-1",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Near white-out, still graded, Colossus readable."
-        },
-        {
-          "image": "intensity-0",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Dark by design, Colossus and horizon readable."
-        },
-        {
-          "image": "intensity-1",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Bright, no flat white area."
-        },
-        {
-          "image": "1-approach-scale-wide",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Colossus visible at centre, ground lit. Was colossus-readable and exposure fail."
-        },
-        {
-          "image": "2-approach-low-hero",
-          "verdict": "fail",
-          "failed": [
-            "wanderer-visible"
-          ],
-          "evidence": "Colossus readable, ground fine, no Wanderer in the low hero frame."
-        },
-        {
-          "image": "3-climb-over-shoulder",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Colossus leg and torso, Wanderer on the knee."
-        },
-        {
-          "image": "4-shake-close-grip",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Wanderer visible against the Colossus surface. Was wanderer-visible fail."
-        },
-        {
-          "image": "5-climb-aerial",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Colossus body and head recognisable."
-        },
-        {
-          "image": "6-fall-toppling",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Toppling silhouette against lit haze."
-        },
-        {
-          "image": "7-fall-down",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Fallen Colossus and debris against haze."
-        },
-        {
-          "image": "8-reset-fade",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Deliberate fade, exempt from exposure."
-        },
-        {
-          "image": "9-next-colossus",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "Colossus readable, lit ground. Was colossus-readable and exposure fail."
-        },
-        {
-          "image": "start-f120",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "New. First frame Syphon publishes. Small dark wedge about 10% at bottom left, not large."
-        },
-        {
-          "image": "new-colossus-f1",
-          "verdict": "fail",
-          "failed": [
-            "exposure",
-            "horizon-fog"
-          ],
-          "evidence": "New. First frame after a Colossus build: near-black slope over the bottom 30%. Superseded by the 2 s black hold after the build."
-        },
-        {
-          "image": "new-colossus-f20",
-          "verdict": "fail",
-          "failed": [
-            "exposure",
-            "horizon-fog"
-          ],
-          "evidence": "New. Same as f1. Superseded by the hold."
-        },
-        {
-          "image": "new-colossus-after-hold",
-          "verdict": "pass",
-          "failed": [],
-          "evidence": "New, re-grabbed after the fix pass. Dark slope about 12% with texture, not flat black."
-        }
-      ],
-      "skipped": [],
-      "notes": [
-        "Of the 21 round 1 frames: 19 pass, 2 fail (shot-2, 2-approach-low-hero). The 7 round 1 failures: 5 now pass, 2 changed their reason (round 1 exposure, now wanderer-visible: the 8 degree lens that holds the giant 120 px tall leaves the Wanderer out where the ground climbs behind him).",
-        "Reviewer: shot-2 and 2-approach-low-hero are a bar question for the next round, the rubric counts the low hero as a close shot.",
-        "new-colossus-f1 and f20 are not published frames after the fix pass (the Reset holds black 2 s after the build); kept as the evidence of what the hold hides."
-      ]
+     "image": "shot-2",
+     "verdict": "fail",
+     "failed": [
+      "exposure"
+     ],
+     "evidence": "Bottom 15-20% (ground wedge) is flat black; Wanderer visible at left edge, fog fine."
     },
     {
-      "round": "godot-look-3",
-      "rubric": "godot/colossus/docs/look-rubric.md",
-      "frames": "480 px tiles of the output frame, made 2026-11-11 by `make godot-look` (shot-2) and `make godot-capture` (2-approach-low-hero) on Metal after the low hero change (Director._long_walk spans the Wanderer and the Colossus). One shot-reviewer call. No fix pass.",
-      "shots": [
-        {
-          "image": "shot-2",
-          "verdict": "fail",
-          "failed": [
-            "wanderer-visible"
-          ],
-          "evidence": "The only figure is the small dark humanoid silhouette in the haze at upper centre, which reads as the distant Colossus. No Wanderer is visible on the dark ground slope or against the haze. colossus-readable, exposure, no-ui and horizon-fog pass."
-        },
-        {
-          "image": "2-approach-low-hero",
-          "verdict": "fail",
-          "failed": [
-            "wanderer-visible"
-          ],
-          "evidence": "Reviewer returned needs_full_size: the Colossus silhouette is clear at upper centre, a small pale round blob on the ground edge may be the Wanderer but does not read as a figure at 480 px. Recorded as fail, the bar is the 480 px tile. colossus-readable, exposure, no-ui and horizon-fog pass."
-        }
-      ],
-      "skipped": [],
-      "notes": [
-        "Framing probe (numbers) has the Wanderer whole in frame in the low hero shot at every distance and on two walks; the reviewer still cannot find him at 480 px. Both frames are the Shrine slope start, where the lens is wide (up to 53 degrees) and the Wanderer is a dark figure of about 19 px on dark ground in the tile.",
-        "Rounds 1 and 2 unchanged."
-      ]
+     "image": "shot-3",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Wanderer centred, dark ground strip is brown with texture, fog thins upward; no Colossus in view."
+    },
+    {
+     "image": "shot-4",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Wanderer large and readable against haze, ground strip not flat black, sky-to-fog gradient intact; no Colossus in view."
+    },
+    {
+     "image": "shot-5",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus body, head and eye glints readable against dark haze; whole frame is dim but has a lit body and a dark end."
+    },
+    {
+     "image": "fog_height-0",
+     "verdict": "fail",
+     "failed": [
+      "exposure"
+     ],
+     "evidence": "Bottom ~20% (ground) is flat black; Wanderer and fog gradient fine."
+    },
+    {
+     "image": "fog_height-0.41",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Readable, fog thicker near ground. Thin black streak at right mid-ground and white patch at bottom right are odd but not a rubric item."
+    },
+    {
+     "image": "fog_height-1",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Hazier, Wanderer and horizon mound still readable, fog thickest at ground and thinning up."
+    },
+    {
+     "image": "fog-0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Clear air, sun glow, mound and horizon sharp; ground dark gradient with small Wanderer silhouette at bottom, still readable. No Colossus visible even with no fog."
+    },
+    {
+     "image": "fog-1",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Dense fog, near white-out but graded, Wanderer readable at bottom; no hard band or hole."
+    },
+    {
+     "image": "intensity-0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Dark by design, sun glow, mound and Wanderer at bottom still readable."
+    },
+    {
+     "image": "intensity-1",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Bright with a hot sun spot only, Wanderer and ground gradient readable, no large flat white area."
+    },
+    {
+     "image": "1-approach-scale-wide",
+     "verdict": "fail",
+     "failed": [
+      "colossus-readable",
+      "exposure"
+     ],
+     "evidence": "No Colossus silhouette anywhere, only a smooth mound at left horizon; bottom ~30% dune ground is flat black."
+    },
+    {
+     "image": "2-approach-low-hero",
+     "verdict": "fail",
+     "failed": [
+      "exposure"
+     ],
+     "evidence": "Bottom 15-20% ground wedge is flat black; Wanderer visible at left, no Colossus in view."
+    },
+    {
+     "image": "3-climb-over-shoulder",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus leg and torso textured and clear against grey sky, Wanderer visible on the knee."
+    },
+    {
+     "image": "4-shake-close-grip",
+     "verdict": "fail",
+     "failed": [
+      "wanderer-visible"
+     ],
+     "evidence": "Only Colossus surface texture fills the frame; no Wanderer figure anywhere."
+    },
+    {
+     "image": "5-climb-aerial",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus body and head glints recognisable in dark haze, centre of frame."
+    },
+    {
+     "image": "6-fall-toppling",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus silhouette with eye glint against lit horizon haze, fog thicker at ground."
+    },
+    {
+     "image": "7-fall-down",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Fallen Colossus silhouette and debris against bright haze, horizon plausible."
+    },
+    {
+     "image": "8-reset-fade",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Deliberate fade, exempt from exposure; frame shows a dark vertical slab, no UI."
+    },
+    {
+     "image": "9-next-colossus",
+     "verdict": "fail",
+     "failed": [
+      "colossus-readable",
+      "exposure"
+     ],
+     "evidence": "No Colossus visible, only a horizon mound; bottom ~30% dune ground is flat black. Frame matches shot-1."
     }
-  ]
+   ],
+   "skipped": [],
+   "notes": [
+    "Shots 1-4 and the fog and intensity frames show no Colossus even with fog 0; colossus-readable was judged not applicable there.",
+    "Flat black ground in the low-dune frames (shot-1, shot-2, fog_height-0, 1-approach, 2-approach-low-hero, 9-next-colossus) is the main systematic failure."
+   ]
+  },
+  {
+   "round": "godot-look-2",
+   "rubric": "godot/colossus/docs/look-rubric.md",
+   "frames": "480 px tiles of the output frame, made 2026-11-11 by `make godot-look` and `make godot-capture` on Metal (images are not kept in the repo). Frames before the fix pass were graded in one shot-reviewer call; new-colossus-after-hold in a second, after the Reset hold.",
+   "shots": [
+    {
+     "image": "shot-1",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus silhouette readable at centre, ground lit, fog thins upward. Was exposure fail."
+    },
+    {
+     "image": "shot-2",
+     "verdict": "fail",
+     "failed": [
+      "wanderer-visible"
+     ],
+     "evidence": "Colossus readable, ground no longer black, but no Wanderer in the low hero frame."
+    },
+    {
+     "image": "shot-3",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Wanderer large at bottom centre, small dark Colossus at the horizon."
+    },
+    {
+     "image": "shot-4",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Wanderer large and centred, small Colossus in haze."
+    },
+    {
+     "image": "shot-5",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus body, head and eye glint at centre."
+    },
+    {
+     "image": "fog_height-0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus readable, ground lit. Was exposure fail."
+    },
+    {
+     "image": "fog_height-0.41",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Readable, fog thicker at ground."
+    },
+    {
+     "image": "fog_height-1",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Readable, graded haze."
+    },
+    {
+     "image": "fog-0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus readable, ground lit."
+    },
+    {
+     "image": "fog-1",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Near white-out, still graded, Colossus readable."
+    },
+    {
+     "image": "intensity-0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Dark by design, Colossus and horizon readable."
+    },
+    {
+     "image": "intensity-1",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Bright, no flat white area."
+    },
+    {
+     "image": "1-approach-scale-wide",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus visible at centre, ground lit. Was colossus-readable and exposure fail."
+    },
+    {
+     "image": "2-approach-low-hero",
+     "verdict": "fail",
+     "failed": [
+      "wanderer-visible"
+     ],
+     "evidence": "Colossus readable, ground fine, no Wanderer in the low hero frame."
+    },
+    {
+     "image": "3-climb-over-shoulder",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus leg and torso, Wanderer on the knee."
+    },
+    {
+     "image": "4-shake-close-grip",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Wanderer visible against the Colossus surface. Was wanderer-visible fail."
+    },
+    {
+     "image": "5-climb-aerial",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus body and head recognisable."
+    },
+    {
+     "image": "6-fall-toppling",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Toppling silhouette against lit haze."
+    },
+    {
+     "image": "7-fall-down",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Fallen Colossus and debris against haze."
+    },
+    {
+     "image": "8-reset-fade",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Deliberate fade, exempt from exposure."
+    },
+    {
+     "image": "9-next-colossus",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus readable, lit ground. Was colossus-readable and exposure fail."
+    },
+    {
+     "image": "start-f120",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "New. First frame Syphon publishes. Small dark wedge about 10% at bottom left, not large."
+    },
+    {
+     "image": "new-colossus-f1",
+     "verdict": "fail",
+     "failed": [
+      "exposure",
+      "horizon-fog"
+     ],
+     "evidence": "New. First frame after a Colossus build: near-black slope over the bottom 30%. Superseded by the 2 s black hold after the build."
+    },
+    {
+     "image": "new-colossus-f20",
+     "verdict": "fail",
+     "failed": [
+      "exposure",
+      "horizon-fog"
+     ],
+     "evidence": "New. Same as f1. Superseded by the hold."
+    },
+    {
+     "image": "new-colossus-after-hold",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "New, re-grabbed after the fix pass. Dark slope about 12% with texture, not flat black."
+    }
+   ],
+   "skipped": [],
+   "notes": [
+    "Of the 21 round 1 frames: 19 pass, 2 fail (shot-2, 2-approach-low-hero). The 7 round 1 failures: 5 now pass, 2 changed their reason (round 1 exposure, now wanderer-visible: the 8 degree lens that holds the giant 120 px tall leaves the Wanderer out where the ground climbs behind him).",
+    "Reviewer: shot-2 and 2-approach-low-hero are a bar question for the next round, the rubric counts the low hero as a close shot.",
+    "new-colossus-f1 and f20 are not published frames after the fix pass (the Reset holds black 2 s after the build); kept as the evidence of what the hold hides."
+   ]
+  },
+  {
+   "round": "godot-look-3",
+   "rubric": "godot/colossus/docs/look-rubric.md",
+   "frames": "480 px tiles of the output frame, made 2026-11-11 by `make godot-look` (shot-2) and `make godot-capture` (2-approach-low-hero) on Metal after the low hero change (Director._long_walk spans the Wanderer and the Colossus). One shot-reviewer call. No fix pass.",
+   "shots": [
+    {
+     "image": "shot-2",
+     "verdict": "fail",
+     "failed": [
+      "wanderer-visible"
+     ],
+     "evidence": "The only figure is the small dark humanoid silhouette in the haze at upper centre, which reads as the distant Colossus. No Wanderer is visible on the dark ground slope or against the haze. colossus-readable, exposure, no-ui and horizon-fog pass."
+    },
+    {
+     "image": "2-approach-low-hero",
+     "verdict": "fail",
+     "failed": [
+      "wanderer-visible"
+     ],
+     "evidence": "Reviewer returned needs_full_size: the Colossus silhouette is clear at upper centre, a small pale round blob on the ground edge may be the Wanderer but does not read as a figure at 480 px. Recorded as fail, the bar is the 480 px tile. colossus-readable, exposure, no-ui and horizon-fog pass."
+    }
+   ],
+   "skipped": [],
+   "notes": [
+    "Framing probe (numbers) has the Wanderer whole in frame in the low hero shot at every distance and on two walks; the reviewer still cannot find him at 480 px. Both frames are the Shrine slope start, where the lens is wide (up to 53 degrees) and the Wanderer is a dark figure of about 19 px on dark ground in the tile.",
+    "Rounds 1 and 2 unchanged."
+   ]
+  },
+  {
+   "round": "godot-look-4",
+   "rubric": "godot/colossus/docs/look-rubric.md",
+   "frames": "480 px tiles of the output frame, made 2026-11-11 on Metal by `make godot-look`, `make godot-capture` and `make godot-wanderer-read` (low hero on the long walk at the start, 1500, 1000, 450 m), after the Nomad replaced the Wanderer stand-in and the long-walk camera began to clear the Shrine slope. Colossus still the stand-in. One shot-reviewer call. No fix pass.",
+   "shots": [
+    {
+     "image": "shot-1",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus stand-in dark and clear at centre against haze, ground graded, fog thins upward."
+    },
+    {
+     "image": "shot-2",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Wanderer (cloaked figure) clear at bottom centre on the ridge, small Colossus at top centre; was wanderer-visible fail.",
+     "changed": true
+    },
+    {
+     "image": "shot-3",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Wanderer large at bottom left, small Colossus at horizon, sun glow, fog graded."
+    },
+    {
+     "image": "shot-4",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Wanderer large and centred against haze, small Colossus top right."
+    },
+    {
+     "image": "shot-5",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus lit from above on dark textured ground at centre."
+    },
+    {
+     "image": "fog_height-0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus dark at centre, horizon faint but plausible, no hard band."
+    },
+    {
+     "image": "fog_height-0.41",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus readable, fog thicker near ground."
+    },
+    {
+     "image": "fog_height-1",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus readable, horizon mound under graded haze."
+    },
+    {
+     "image": "fog-0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Clearer air, horizon sharp, Colossus readable at centre."
+    },
+    {
+     "image": "fog-1",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Dense but graded haze, Colossus readable, no hard band or hole."
+    },
+    {
+     "image": "intensity-0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Dark by design, Colossus silhouette and horizon still readable."
+    },
+    {
+     "image": "intensity-1",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Bright, Colossus readable, no flat white area."
+    },
+    {
+     "image": "start-f120",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus at centre, dark slope wedge bottom left about 12 percent, textured not flat black."
+    },
+    {
+     "image": "new-colossus-after-hold",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus at centre, small dark slope wedge, not flat black."
+    },
+    {
+     "image": "1-approach-scale-wide",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus dark at centre in haze, ground lit."
+    },
+    {
+     "image": "2-approach-low-hero",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Wanderer visible as a figure at bottom centre on the ridge, Colossus small at top; was wanderer-visible fail.",
+     "changed": true
+    },
+    {
+     "image": "3-climb-over-shoulder",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus leg and torso against grey sky, Wanderer small on the knee."
+    },
+    {
+     "image": "4-shake-close-grip",
+     "verdict": "fail",
+     "failed": [
+      "wanderer-visible"
+     ],
+     "evidence": "Only two small grey limb ends at the top edge over the Colossus surface; no figure reads. Was pass in round 2.",
+     "changed": true
+    },
+    {
+     "image": "5-climb-aerial",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus body, head and arms recognisable on dark ground."
+    },
+    {
+     "image": "6-fall-toppling",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus mass with eye glints against lit horizon haze."
+    },
+    {
+     "image": "7-fall-down",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Fallen Colossus and debris at horizon, haze plausible."
+    },
+    {
+     "image": "8-reset-fade",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Deliberate fade, exempt from exposure; no UI."
+    },
+    {
+     "image": "9-next-colossus",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Colossus readable at centre, ground lit."
+    },
+    {
+     "image": "low-hero-start",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Wanderer at bottom centre on the Shrine slope, Colossus tiny but distinct at top centre."
+    },
+    {
+     "image": "low-hero-1500m",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Wanderer visible mid-frame, Colossus small at top centre."
+    },
+    {
+     "image": "low-hero-1000m",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Wanderer large at left in haze, Colossus at right centre."
+    },
+    {
+     "image": "low-hero-450m",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Wanderer at left in haze, Colossus larger at right."
+    }
+   ],
+   "skipped": [],
+   "notes": [
+    "Wanderer reads as a human figure (upright, cloaked, arms down) in shot-2, shot-3, shot-4, 2-approach-low-hero and all four low-hero frames; on the knee in 3-climb-over-shoulder he is small and grey-blue.",
+    "4-shake-close-grip: only two grey limb ends at the top edge; the arms on the grip are not recognisable at 480 px (reviewer). Cause not measured yet.",
+    "low-hero-1000m and low-hero-450m: the figure is pale in the haze."
+   ]
+  }
+ ]
 }
