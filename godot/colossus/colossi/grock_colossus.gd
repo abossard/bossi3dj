@@ -68,6 +68,8 @@ var _anim: AnimationPlayer
 var _bodies: Array[PhysicalBone3D] = []
 var _chest: PhysicalBone3D
 var _legs := PackedFloat32Array([0.0, 0.0, 0.0, 0.0])
+## Half the planted leg's sweep (radians): the angle over which hip to ankle covers half a step.
+var _sweep := 0.35
 var _fall_t := 0.0
 var _still_t := 0.0
 var _hit := false
@@ -150,6 +152,10 @@ func _build_gait() -> void:
 	_gait.height_at = height_at
 	var foot := _skeleton.find_bone("Foot.L")
 	_gait.ankle = _skeleton.get_bone_global_rest(foot).origin.y
+	var hip := _skeleton.get_bone_global_rest(_skeleton.find_bone("UpperLeg.L")).origin
+	var leg := hip.distance_to(_skeleton.get_bone_global_rest(foot).origin)
+	# A step covers what the body walks in STEP_SECONDS (Colossus._roam's speed).
+	_sweep = asin(clampf(height_m * 0.45 / (2.0 * leg), 0.0, 0.9))
 	_skeleton.add_child(_gait)
 	for side in 2:
 		var s := "L" if side == 0 else "R"
@@ -227,11 +233,13 @@ func _pose(stride: float, roll: float, yaw: float) -> void:
 	if state != State.ROAM:
 		return
 	var step := fmod(stride, 1.0)
-	var swing := cos(step * PI) * 0.35
 	var lift := sin(step * PI) * 0.7
 	var want := [0.0, 0.0, 0.0, 0.0]
 	if not is_standing():
-		var left := swing if stride < 1.0 else -swing
+		# The planted leg sweeps from front to back at an even pace over one step, as far as the
+		# body travels in it: its foot stays put on the land while the body passes over.
+		var sweep := _sweep * (1.0 - 2.0 * step)
+		var left := sweep if stride < 1.0 else -sweep
 		var left_forward := stride >= 1.0
 		want = [left, -lift if left_forward else 0.0, -left, 0.0 if left_forward else -lift]
 	for i in 4:
