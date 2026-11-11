@@ -111,3 +111,10 @@ GPU order: G6, B6, B2 live, then fps tables.
 - G4 is active by the user's word: real models now, for early cost numbers. Waits for the downloads (pages in `godot/colossus/docs/SPEC.md`).
 
 GPU order: B2 live, merge, B7 live, then G4 and the fps tables.
+
+## Status 2026-11-11, after the Flight merge
+
+- B2 merged: Flight works live, fixed shots show the planet as built, `/vj/cam` 0..11. No worktree is left; all sessions work in the main checkout.
+- B7 done: relief on the plains (round 11), 14 of 19 shots pass; the lattice look of the night edges stays on smooth ground.
+- B8 (running, holds Blender): round 12, irregular terrain mesh; also restores the CAM_0 flamingo flock.
+- Open after B8: Hover arrival live (24.7 s), fps tables and cut stalls on an idle machine, G4 real models (waits for downloads), final check of both pages.
