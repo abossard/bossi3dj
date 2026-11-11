@@ -46,6 +46,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 ## Decided by the user
 
 - Contract: every continuous `/vj/*` control is 0..1 on the wire, each scene scales it to its own range; the wire default gives each scene its tuned look. Indices (`/vj/cam`) stay integers, triggers keep their strength.
+- 2026-11-11: no relay in the show path, since the two scenes never run together. Magic sends straight to one scene port, udp 9201, where both the Blender bridge and Godot listen; `make lab` stays as an optional debug tool. Change in progress.
 - Blender planet, 2026-11-11: the night edges stay as they are after round 12, as a plain OSC control: `/vj/grid`, default 1. No further mesh rounds. The fresh-open bug (no edges until a node is re-evaluated) gets fixed.
 - Blender planet, 2026-11-11: the terrain mesh becomes irregular so the real night edges form an uneven net (round 12).
 - Blender planet, 2026-11-11: `/vj/grid` at night is the only wireframe control; no day control (`/vj/grid_day` was proposed and withdrawn the same day).
