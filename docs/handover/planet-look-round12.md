@@ -55,7 +55,8 @@ Built with hashed diagonals (b1154c6), the night edges almost vanished. Live exp
 3. Numbers: `net_regularity.py` on CAM_0, CAM_1, CAM_3 night pairs against `out/round12/before/`; `grid_numbers.py` mode "night"; `ground_check.py`; `cut_jobs.py`; `ab_round11.py` with `DN["ab_out"]`.
 4. One `shot-reviewer` call with `rubric-round12.md` and the counterexample `blender/scenes/planet_proto/visual_check/user/2026-11-11-dummy-wireframe.webp`; verdicts to `docs/reports/planet-look-round12-verdict.json`. Ask it also whether CAM_11's streamed terrain shows edges and whether they are regular.
 5. Sheets for the user `docs/images/2026-11-11/planet-round12-night.jpg` and `-day.jpg` (640 px tiles, labelled), commit the rebuilt `.blend` and the sheets, `make blender-kill`.
-6. If R12-NET fails with one diagonal family: the hashed diagonal is not available with the Wireframe node. Remaining levers are the jitter (0.35 is the fold limit) or option C (no night edges on the planet).
+6. After the review is committed: flamingos. Since the round 11 relief `Flock.CAM_0.0` and `Flock.CAM_6.0` have 0 points (`CAM_1` 225), so `/vj/flamingos` shows no effect (Flight session's full check). Count the flock points per camera after the rebuild; if `CAM_0` is empty, find which flock-spot test in `build_planet.py` the relief now fails (probably flatness or wetness) and restore a flock in `CAM_0`'s view without flattening the ground. Proof: `make blender-check ARGS="--only vj_flamingos --no-fallback"` shows an effect on `CAM_0`.
+7. If R12-NET fails with one diagonal family: the hashed diagonal is not available with the Wireframe node. Remaining levers are the jitter (0.35 is the fold limit) or option C (no night edges on the planet).
 
 ## Commands
 
