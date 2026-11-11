@@ -1713,14 +1713,16 @@ def terrain_build(T):
     # the only lines on the planet: the real edges of the drawn ground mesh (Wireframe node, pixel size), from sunset to
     # night (vj_night 0.25 to 0.5), strength vj_grid, pulsed by bass and beat. No lattice of any kind (user, 2026-11-11:
     # "I NVER want to see ANY dummy wireframe"); the 24 m terrain lattice and its scroll were one. Only on dry land and
-    # not on the mirror copy, and faded where a cell is under about 5 px on screen or seen edge-on, where the edges
+    # not on the mirror copy, and faded where a cell's smaller side is under about 10 px on screen, where the edges
     # crowd into a solid fill. The globe draws no edges: its sphere is a proxy under shaded relief
     cam = T.node("ShaderNodeCameraData")
     wf = T.node("ShaderNodeWireframe", use_pixel_size=True)
     wf.inputs["Size"].default_value = 1.0
     cell_px = T.math("DIVIDE", T.math("DIVIDE", PATCH_M, T.math("POWER", 2.0, T.gattr("pl_l"))),
                      T.mul(cam.outputs["View Distance"], 0.0011))
-    dense = T.mul(T.mrange(cell_px, 2.0, 5.0, 0.0, 1.0), T.mrange(ndv, 0.05, 0.2, 0.0, 1.0))
+    # the smaller side of a cell on screen: its size in pixels, foreshortened by the view's slant (ndv). Faded by
+    # distance alone, the far ground's edges crowded into a cyan web over 29% of CAM_0 at night (round 10)
+    dense = T.mrange(T.mul(cell_px, ndv), 4.0, 10.0, 0.0, 1.0)
     edge = T.mul(T.mul(wf.outputs["Fac"], dense), T.mul(T.smooth(zw, 0.3, 2.0), T.sub(1.0, mir)))
     pulse = T.addf(1.0, T.addf(T.mul(T.attr("rt_beat"), 1.6), T.mul(T.attr("vj_bass"), 1.2)))
     edge = T.mul(T.mul(edge, pulse), T.mul(T.smooth(T.attr("vj_night"), 0.25, 0.5), T.attr("vj_grid")))
