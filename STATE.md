@@ -7,7 +7,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 - 2026-11-11: the Blender side is wrapped up and pushed (`integration/presentable`). Focus is the Godot Colossus Scene.
 - Blender, where it stands: one command (`make blender-open`) to a checked start state; planet 36 of 37 controls with an effect from the page's "Check all" (the one without is island only by design); no dummy wireframe, real mesh edges at night by `/vj/grid`; Flight shot `CAM_11`; Magic drives it straight on udp 9201.
 - Blender, left open on purpose: fps table and cut stalls on an idle machine, the island's self-check rerun (30 of 37 on 2026-11-10), the Flight shot's streamed terrain at full size, the cause of the two builds without night edges (a guard catches them), CAM_4 and CAM_5 look items of round 9, the picture inside Magic.
-- Godot next: real Colossus and Wanderer models with clips (waits for the downloads, pages in `godot/colossus/docs/SPEC.md`), then the low hero shot's Wanderer, then an fps table.
+- Godot now (session G4, running): real models, cost first. Downloads are in `~/Downloads` since 2026-11-11: Wanderer Nomad (50k triangles, 89 joints, no clips), Colossus Grock (49k, 22 joints, 8 clips, no walk), Titan Vol2 (56k, 302 joints, 248 MB), Golem (84k, 90 joints, 668 MB), each also as a source `.blend` archive; Mixamo so far only Idle, Idle-2, Kneeling Idle. Stages: cost table per model, Wanderer swap with clip blending and IK, Grock as Colossus 1. Missing: the Mixamo walk, run, hang, shimmy, climb, swing, fall and stand-up clips.
 - Run history: graph, nodes and rules in [docs/handover/presentable-plan.md](docs/handover/presentable-plan.md).
 
 ## Origin
@@ -65,7 +65,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 - Eclipse in space: the moon's shadow on the Planet, or lining up per space camera.
 - Bend the straight show valley, or keep it.
 - Keep godot-mcp, or remove the addon and autoload.
-- Sketchfab and Mixamo downloads (links sent 2026-11-11); Scenario OAuth.
+- The remaining Mixamo clips (walk, run, braced hang idle, shimmy left and right, climb up and down, hanging swing, fall idle, stand up); Scenario OAuth.
 
 ## Checked after the import (2026-11-10)
 
