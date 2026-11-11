@@ -39,7 +39,7 @@ help:
 	@echo "  godot-ablate      Metal: flat-black share per renderer feature switched off (ARGS=name prefix of one variant)"
 	@echo "  godot-cost        Metal: median frame time with the fill light on and off, alternating in one run"
 	@echo "  godot-model-cost  Metal: what the real Wanderer and Colossus cost against their stand-ins at three shot distances (MODEL_COST_OUT=<json>)"
-	@echo "  godot-models      unpack the Nomad and Grock archives from DOWNLOADS (default ~/Downloads) and prepare them in headless Blender"
+	@echo "  godot-models      unpack the Nomad and Grock archives from DOWNLOADS (default ~/Downloads), prepare them in headless Blender, copy the Mixamo clips"
 	@echo "  godot-shake-osc   Metal: real /vj/shock packets over udp into a Climb, the Shake and the drop mark (pass/fail)"
 	@echo "  godot-import      re-import the Godot project after adding assets or addons"
 	@echo "  godot-lint        gdlint + gdformat --check on the project's own scripts"
@@ -138,6 +138,7 @@ godot-models:
 	unzip -q -n $(DOWNLOADS)/grock-endboss.zip -d $(INCOMING)/grock_source
 	$(BLENDER) -b --factory-startup --disable-autoexec --python tools/godot_prepare_models.py -- nomad $(INCOMING)/nomad_source/source/Hunter106.blend $(COLOSSUS)/assets/models/nomad/nomad.gltf
 	$(BLENDER) -b --factory-startup --disable-autoexec --python tools/godot_prepare_models.py -- grock $(INCOMING)/grock_source/source/master.blend $(COLOSSUS)/assets/models/grock/grock.gltf
+	python3 -I tools/godot_mixamo_copy.py $(DOWNLOADS) $(COLOSSUS)/assets/mixamo
 	$(GODOT) --headless --path $(COLOSSUS) --import
 	python3 -I tools/godot_model_import.py $(COLOSSUS)/assets/models
 	$(MAKE) godot-import
