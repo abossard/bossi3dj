@@ -69,7 +69,7 @@ SCALES = {
     '/vj/intensity': ('float', 0, 1, 0, 2),
     '/vj/strobe': ('float', 0, 1, 0, 1),
     '/vj/grid_speed': ('float', 0, 1, 0, 4),
-    '/vj/cam': ('int', 0, 10, None, None),
+    '/vj/cam': ('int', 0, 11, None, None),
     '/vj/cam_speed': ('float', 0, 1, 0, 4),
     '/vj/sun': ('float', 0, 1, 0, 1),
     '/vj/moon': ('float', 0, 1, 0, 1),

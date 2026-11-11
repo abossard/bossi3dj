@@ -18,7 +18,7 @@ class ScaleWireTests(unittest.TestCase):
             ("/vj/grid_speed", 0.15, 0.6), ("/vj/cam_speed", 0.25, 1.0), ("/vj/blend", 0.5, 1.0),
             ("/vj/fog_height", 0.41, 25.19), ("/vj/fog_scale", 0.25, 257.5), ("/vj/fog_speed", 0.25, 10.0),
             ("/vj/fog_glow", 0.3, 0.6), ("/vj/star_speed", 1.0, 10.0),
-            ("/vj/cam", 3.0, 3.0), ("/vj/cam", 3.4, 3.0), ("/vj/cam", 3.6, 4.0), ("/vj/cam", 42, 10.0), ("/vj/cam", -1, 0.0),
+            ("/vj/cam", 3.0, 3.0), ("/vj/cam", 3.4, 3.0), ("/vj/cam", 3.6, 4.0), ("/vj/cam", 42, 11.0), ("/vj/cam", -1, 0.0),
             ("/vj/shock", 0.0, 0.0), ("/vj/shock", 0.6, 0.6), ("/vj/shock", 1.4, 1.4), ("/vj/meteor", 1.0, 1.0), ("/vj/hit", 1.0, 1.0),
         ]
         for address, wire, want in cases:
