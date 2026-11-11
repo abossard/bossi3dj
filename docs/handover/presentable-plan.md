@@ -126,3 +126,11 @@ GPU order: B2 live, merge, B7 live, then G4 and the fps tables.
 - The relay left the show path: Magic sends to udp 9201, both scenes listen there.
 - Sessions are reused now; the last one (B9) carried the guard, the flamingo row, line motion, Hover arrival and the port change.
 - Not done: B5 and G3 fps tables (the machine was never idle), G4 real models (downloads), the island's check rerun.
+
+## Status 2026-11-11, Godot parked
+
+- G4 done: real Wanderer and Colossus, cost under 0.5 ms over the stand-ins, look round 5 27 of 27.
+- G5: look round 6 done, the frame-time table (G3) was stopped when the user parked the scene.
+- README done and on `main`: screenshots, camera names, the manual of all OSC channels.
+- Parked: everything Godot. To pick up: `docs/handover/godot-look-models.md`, `docs/handover/godot-models.md`.
+- Still open for Blender: B5 fps table (idle machine), the island's check rerun.
