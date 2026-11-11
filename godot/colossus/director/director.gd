@@ -20,6 +20,10 @@ const WIDE_NARROWEST := 6.0
 const HERO_NARROWEST := 8.0
 ## The low hero lens spans the Wanderer and the giant by this factor, so both sit inside the frame.
 const HERO_SPAN_MARGIN := 1.5
+## The low camera's line of sight to the Wanderer clears the land by this much (m), sampled
+## SIGHT_SAMPLES times.
+const SIGHT_MARGIN := 0.2
+const SIGHT_SAMPLES := 16
 
 var wanderer: Wanderer
 var colossus: Colossus
@@ -42,6 +46,8 @@ var _time := 0.0
 var _want_pos := Vector3.ZERO
 var _want_aim := Vector3.ZERO
 var _want_fov := 53.0
+## Land samples along the line of sight on the long walk, reused every frame.
+var _sight := PackedVector2Array()
 
 
 func set_phase(p: Arc.Phase) -> void:
@@ -236,6 +242,16 @@ func _long_walk(w: Vector3, back: float, aside: float, rise: float, narrowest: f
 	dir = dir.normalized() if gap > 0.1 else Vector3.FORWARD
 	var pos := w - dir * back + dir.cross(Vector3.UP).normalized() * aside + Vector3.UP * rise
 	pos.y = maxf(pos.y, float(height_at.call(pos.x, pos.z)) + 0.3)
+	# On the Shrine's slope a crest can stand between the low camera and him: rise until the line
+	# to his knees clears the land.
+	var knees := w + Vector3.DOWN * 0.7
+	if _sight.size() != SIGHT_SAMPLES:
+		_sight.resize(SIGHT_SAMPLES)
+	for k in _sight.size():
+		var f := (k + 1.0) / (_sight.size() + 1.0)
+		var p := pos.lerp(knees, f)
+		_sight[k] = Vector2(f, float(height_at.call(p.x, p.z)))
+	pos.y = clear_height(pos, knees, _sight, SIGHT_MARGIN)
 	var feet := w.y - 1.2
 	var lo := minf(elevation_deg(feet - pos.y, back), elevation_deg(c.y - pos.y, gap + back))
 	var hi := maxf(
@@ -246,6 +262,19 @@ func _long_walk(w: Vector3, back: float, aside: float, rise: float, narrowest: f
 	_want_pos = pos
 	_want_aim = pos + dir * reach + Vector3.UP * tan(deg_to_rad(lens.y)) * reach
 	_want_fov = minf(_want_fov, lens.x)
+
+
+## The lowest camera height from which the line to `target` passes `margin` m above the land:
+## `ground` holds (share of the way from the camera, land height there) samples. Never below the
+## camera's own height.
+static func clear_height(
+	cam: Vector3, target: Vector3, ground: PackedVector2Array, margin: float
+) -> float:
+	var y := cam.y
+	for s in ground:
+		if s.x < 1.0:
+			y = maxf(y, (s.y + margin - target.y * s.x) / (1.0 - s.x))
+	return y
 
 
 ## Angle (degrees) above the horizon of a point `rise` m up and `run` m away.

@@ -19,6 +19,7 @@ func _init() -> void:
 	_test_fov()
 	_test_fit_fov()
 	_test_hero_lens()
+	_test_clear_height()
 	_test_stone_bumps()
 	_test_brain()
 	_test_vj_map()
@@ -755,3 +756,22 @@ func _test_stride_speed() -> void:
 			z.append(0.3 - c[1] * dt * i if planted else 0.0)
 			y.append(0.0 if planted else 0.2)
 		_check("stride speed %s" % c[0], snappedf(WandererClips.stride_speed(z, y, dt), 0.01), c[1])
+
+
+func _test_clear_height() -> void:
+	# camera, target, land samples (share of the way, height), margin, camera height wanted
+	var cam := Vector3(0, 10, 0)
+	var target := Vector3(0, 10, 20)
+	var cases := [
+		["flat land, clear", PackedVector2Array([Vector2(0.5, 0.0)]), 10.0],
+		["crest halfway, 2 m too high", PackedVector2Array([Vector2(0.5, 11.8)]), 14.0],
+		["crest near the target", PackedVector2Array([Vector2(0.9, 10.0)]), 12.0],
+		["no samples", PackedVector2Array(), 10.0],
+		["worst of two", PackedVector2Array([Vector2(0.25, 10.0), Vector2(0.5, 11.8)]), 14.0],
+	]
+	for c in cases:
+		_check(
+			"clear height %s" % c[0],
+			snappedf(Director.clear_height(cam, target, c[1], 0.2), 0.001),
+			c[2]
+		)

@@ -238,6 +238,22 @@ func _walk_table() -> void:
 			px_min = minf(px_min, _colossus()["px"])
 			if _wanderer_whole():
 				seen += 1
+			else:
+				var cam := main.output.get_camera_3d()
+				var w := main.wanderer.global_position
+				var land: float = main.world.height_at(cam.global_position.x, cam.global_position.z)
+				print(
+					(
+						"  not whole at %d m: feet %s head %s, fov %.1f, camera %.1f m above the land"
+						% [
+							w.distance_to(main.colossus.global_position),
+							cam.unproject_position(w).round(),
+							cam.unproject_position(w + Vector3.UP * 1.7).round(),
+							cam.fov,
+							cam.global_position.y - land,
+						]
+					)
+				)
 		Engine.time_scale = 1.0
 		var left := main.wanderer.global_position.distance_to(main.colossus.global_position)
 		print(
