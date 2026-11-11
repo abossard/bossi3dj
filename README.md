@@ -70,6 +70,8 @@ These are 960x540 grabs of the current build with the clocks frozen, one frame p
 
 ## The Godot scene: Colossus
 
+> Status: parked since 2026-11-11. The scene runs and passes its checks, but its look is not where it should be. State and open tasks: [docs/handover/godot-parked.md](docs/handover/godot-parked.md).
+
 A giant (the Colossus) walks across an overcast plain at dusk. A small figure, the Wanderer, walks up to it and climbs it. The Colossus tries to shake it off, then falls, and a new Colossus appears. One round of this is called an Arc: Approach, Climb, Fall, Reset. The terms are in [GLOSSARY.md](GLOSSARY.md).
 
 The music drives the weight of the scene: `/vj/bass` sets how heavy each footfall is (camera shake, size of the dust), `/vj/beat` times the footfalls, dust puffs and cut points, `/vj/level` is the sun glow through the clouds, `/vj/intensity` the exposure. `/vj/shock` makes the Colossus shake while the Wanderer is on it. Without any OSC the scene runs on its own 90 BPM beat.

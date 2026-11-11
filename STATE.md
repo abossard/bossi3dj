@@ -4,8 +4,8 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 
 ## Now
 
-- 2026-11-11: the Godot Colossus Scene is parked by the user ("too ugly to be honest"). Nothing more is built there until the user says so. Its state is committed and described below; the README still shows it.
-- The Blender side is wrapped up. `main` and `integration/presentable` are pushed at af2dd63; work goes on on `integration/presentable`.
+- 2026-11-11: the Godot Colossus Scene is parked by the user ("too ugly to be honest"). Nothing more is built there until the user says so. State, reasons and open tasks: [docs/handover/godot-parked.md](docs/handover/godot-parked.md); the README marks it as parked.
+- Focus is Blender again (user, 2026-11-11). `main` and `integration/presentable` are pushed in step; work goes on on `integration/presentable`.
 - Blender, where it stands: one command (`make blender-open`) to a checked start state; planet 36 of 37 controls with an effect from the page's "Check all" (the one without is island only by design); no dummy wireframe, real mesh edges at night by `/vj/grid`; Flight shot `CAM_11`; Magic drives it straight on udp 9201.
 - Blender, left open on purpose: fps table and cut stalls on an idle machine, the island's self-check rerun (30 of 37 on 2026-11-10), the Flight shot's streamed terrain at full size, the cause of the two builds without night edges (a guard catches them), CAM_4 and CAM_5 look items of round 9, the picture inside Magic.
 - README: explanation, screenshots, named cameras and the manual of all OSC channels are on `main`.
