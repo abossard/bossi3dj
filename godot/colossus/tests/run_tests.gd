@@ -246,7 +246,8 @@ func _test_shot_look() -> void:
 		[sh.CLOSE_GRIP, true, climb],
 		[sh.OVER_SHOULDER, false, dusk],
 		[sh.CLOSE_GRIP, false, dusk],
-		[sh.SCALE_WIDE, true, dusk],
+		[sh.SCALE_WIDE, true, Vector3(Shots.WIDE_LAMP, 1.0, 1.0)],
+		[sh.SCALE_WIDE, false, Vector3(Shots.WIDE_LAMP, 1.0, 1.0)],
 		[sh.LOW_HERO, true, dusk],
 		[sh.AERIAL, true, dusk],
 	]

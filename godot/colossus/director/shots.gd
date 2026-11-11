@@ -11,6 +11,9 @@ const MAX_AERIAL_BARS := 16
 const CLIMB_LAMP := 3.0
 const CLIMB_EXPOSURE := 1.5
 const CLIMB_CONTRAST := 0.85 / 1.2
+## The scale wide shot sees the giant as a black silhouette against the haze: a lower lamp lights
+## its front so the plates and the eyes read (the frame keeps its dusk).
+const WIDE_LAMP := 1.5
 
 
 ## Shot to cut to at a bar line. `bars_in_phase` counts bars since the Phase began.
@@ -63,9 +66,11 @@ static func fov(shot: Shot) -> float:
 
 
 ## The look that belongs to a shot: x the energy of the lamp on the camera, y the exposure factor,
-## z the share of the scene's contrast. Only the over-shoulder and close grip shots on the Colossus
-## change it.
+## z the share of the scene's contrast. The scale wide shot lights the giant; the over-shoulder and
+## close grip shots on the Colossus lift the exposure and ease the contrast.
 static func look(shot: Shot, climbing: bool) -> Vector3:
 	if climbing and (shot == Shot.OVER_SHOULDER or shot == Shot.CLOSE_GRIP):
 		return Vector3(CLIMB_LAMP, CLIMB_EXPOSURE, CLIMB_CONTRAST)
+	if shot == Shot.SCALE_WIDE:
+		return Vector3(WIDE_LAMP, 1.0, 1.0)
 	return Vector3(0.0, 1.0, 1.0)
