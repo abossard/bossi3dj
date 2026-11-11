@@ -387,6 +387,30 @@ func drive(
 	_tree.set(P_SCALE, _loco_scale(_speed))
 
 
+## Head, hands (where they hold, while they hold) and hips in the world: what a close shot frames.
+func upper_body() -> PackedVector3Array:
+	var xf := skeleton.global_transform
+	var hands := (_hand_l.global_position + _hand_r.global_position) * 0.5
+	if _hand_w < 0.5:
+		hands = (
+			xf
+			* (
+				(
+					skeleton.get_bone_global_pose(skeleton.find_bone("LeftHand")).origin
+					+ skeleton.get_bone_global_pose(skeleton.find_bone("RightHand")).origin
+				)
+				* 0.5
+			)
+		)
+	return PackedVector3Array(
+		[
+			xf * skeleton.get_bone_global_pose(skeleton.find_bone("Head")).origin,
+			hands,
+			xf * skeleton.get_bone_global_pose(skeleton.find_bone("Hips")).origin,
+		]
+	)
+
+
 ## He let go of the Colossus: stand up once he is on the ground.
 func landed() -> void:
 	_landing = true

@@ -89,6 +89,16 @@ static func model_present() -> bool:
 	return ResourceLoader.exists(MODEL)
 
 
+## Head, hands and hips in the world (the stand-in's: head 1.6 m up, hands at the grip or 1.0 m,
+## hips 0.9 m).
+func upper_body() -> PackedVector3Array:
+	if body:
+		return body.upper_body()
+	var up := global_transform.basis.y
+	var hands := grip.global_position if grip else global_position + up * 1.0
+	return PackedVector3Array([global_position + up * 1.6, hands, global_position + up * 0.9])
+
+
 func on_colossus() -> bool:
 	return state != State.GROUND
 

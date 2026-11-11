@@ -12,6 +12,8 @@ const WIDE_BACK_MAX := 24.0
 const HERO_BACK := 24.0
 ## The close grip keeps this far from the surface the Wanderer hangs on (m).
 const CLOSE_BACK := 3.0
+## Room left around his upper body in the close grip for the Shake's swing (m).
+const CLOSE_SWAY := 0.8
 ## Beyond this gap (m) the low hero shot goes telephoto: its own lens shows the giant under 100 px
 ## (about a tenth of the frame). The over-shoulder and close-grip shots stay on the Wanderer.
 const HERO_RANGE := 200.0
@@ -203,12 +205,17 @@ func _place(delta: float) -> void:
 				_want_pos = w - dir * 4.0 + side + Vector3.UP * 0.3
 				_want_aim = chest
 		Shots.Shot.CLOSE_GRIP:
-			var g := grip.global_position if grip else w + Vector3.UP * 0.6
 			var n := grip.normal() if grip else -dir
-			# He hangs 1.7 m below the grip and swings 0.6 m sideways in a Shake: far enough back and
-			# aimed at his body, he stays in the frame.
-			_want_pos = g + n * CLOSE_BACK + side * 0.8
-			_want_aim = w
+			# Aimed at the middle of his head, hands and hips, from far enough off the surface that
+			# the lens holds them all: the Nomad hangs 2.4 m below the grip (the stand-in 1.7 m),
+			# and a Shake swings him 0.6 m sideways.
+			var body := wanderer.upper_body()
+			var mid := (body[0] + body[1] + body[2]) / 3.0
+			var span := maxf(body[0].distance_to(body[1]), body[1].distance_to(body[2]))
+			span = maxf(span, body[0].distance_to(body[2])) + CLOSE_SWAY
+			var back := maxf(CLOSE_BACK, span * 0.5 / tan(deg_to_rad(_want_fov) * 0.5))
+			_want_pos = mid + n * back + side * 0.8
+			_want_aim = mid
 		Shots.Shot.AERIAL:
 			_orbit += deg_to_rad(6.0) * delta
 			_want_pos = c + Vector3(cos(_orbit) * 70.0, 60.0, sin(_orbit) * 70.0)

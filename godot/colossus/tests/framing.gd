@@ -289,10 +289,19 @@ func _shake_table() -> void:
 	for i in 30:
 		await _wait(0.1)
 		samples += 1
-		if _wanderer_in_frame():
+		var cam := main.output.get_camera_3d()
+		var whole := true
+		for p in main.wanderer.upper_body():
+			whole = whole and _on_screen(cam, p)["inside"]
+		if whole:
 			seen += 1
-	print("close grip through a Shake: wanderer in frame on %d of %d samples" % [seen, samples])
-	_check(seen == samples, "close grip through a Shake keeps the Wanderer in frame")
+	print(
+		(
+			"close grip through a Shake: head, hands and hips in frame on %d of %d samples"
+			% [seen, samples]
+		)
+	)
+	_check(seen == samples, "close grip through a Shake keeps his upper body in frame")
 
 
 func _run() -> void:
