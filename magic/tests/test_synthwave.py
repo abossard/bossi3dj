@@ -5,6 +5,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
+import magic_manual as manual  # noqa: E402
 import magicproj as mp  # noqa: E402
 import show_magic as show  # noqa: E402
 import synthwave_magic as sm  # noqa: E402
@@ -50,7 +51,57 @@ class ContractTests(unittest.TestCase):
                     self.assertFalse(any(u in expr for u in scene_units), expr)
 
 
+class ControlTests(unittest.TestCase):
+    """Every address has a control Global named like it, holding the contract's default, so a person finds it by the address."""
+
+    def setUp(self):
+        self.root = sm.ET.fromstring(built("show.magic"))
+        self.controls = {g.get("name"): g for g in mp.global_ivs(self.root)}
+
+    def test_every_address_has_an_unlinked_control_with_the_contract_default(self):
+        for address, row in sm.CONTRACT.items():
+            name = manual.control_name(address)
+            with self.subTest(address=address, control=name):
+                self.assertIn(name, self.controls)
+                self.assertEqual(self.controls[name].get("linked"), "0")
+                self.assertAlmostEqual(float(self.controls[name].get("value")), row["default"], places=6)
+
+    def test_control_names_follow_the_addresses(self):
+        for address, expected in (("/vj/fog_height", "FogHeight"), ("/vj/cam_auto", "CamAuto"), ("/vj/moon_phase", "MoonPhase"), ("/vj/level", "Level")):
+            with self.subTest(address=address):
+                self.assertEqual(manual.control_name(address), expected)
+
+    def test_the_music_follows_exactly_the_addresses_named_in_MUSIC(self):
+        self.assertEqual({r[0] for r in manual.rows(self.root) if r[3]}, set(sm.MUSIC))
+
+    def test_no_music_means_the_controls(self):
+        """The music enters every address through Follow = Live x React, and Live is 0 without sound."""
+        follow = self.controls["Follow"]
+        self.assertEqual([e for _k, _p, e, _b in mp.modifiers(follow)], ["Live*React"])
+        live = " ".join(e for _k, _p, e, _b in mp.modifiers(self.controls["Live"]) if e)
+        self.assertIn("EnergyNow >", live)
+
+    def test_the_cutter_needs_the_music_and_CamAuto(self):
+        expr = [e for _k, _p, e, _b in mp.modifiers(self.controls["OutCam"]) if e][0]
+        self.assertTrue(expr.startswith("if(CamAuto > 0.5 and Follow > 0.5,"))
+        self.assertIn("floor(Cam*11.999)", expr)
+
+
 class ProjectTests(unittest.TestCase):
+    def test_show_project_publishes_its_own_syphon_output(self):
+        root = sm.ET.fromstring(built("show.magic"))
+        info = mp.summary(root)["syphon"]
+        self.assertEqual((info["on"], info["name"], info["size"]), (True, show.SYPHON_OUT, "1920x1080"))
+        self.assertNotIn(show.SYPHON_OUT, (show.SYPHON_BLENDER, show.SYPHON_GODOT))
+
+    def test_synthwave_project_keeps_magics_output_off(self):
+        self.assertFalse(mp.summary(sm.ET.fromstring(built("synthwave_pyramids.magic")))["syphon"]["on"])
+
+    def test_synthetic_show_build_is_clean_and_keeps_every_sender(self):
+        root = sm.ET.fromstring(show.build(globals_=show.show_synthetic()))
+        self.assertEqual([m for level, m in mp.check(root) if level == "error"], [])
+        self.assertEqual(sorted(senders(root)), sorted(sm.CONTRACT))
+
     def test_projects_have_no_errors(self):
         for name in ("synthwave_pyramids.magic", "show.magic"):
             with self.subTest(project=name):

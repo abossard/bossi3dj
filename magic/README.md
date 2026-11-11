@@ -8,7 +8,7 @@ Generators and tooling for `.magic` files. The skill `.claude/skills/magic-proje
 
 ## Show project
 
-`projects/show.magic` (`show_magic.py`, `python3 magic/show_magic.py`) is the synthwave project with two Syphon sources, `CAM_OUT - Blender` and `COLOSSUS_OUT - Godot`, in the Program scene. A `Mix` module crossfades them with the Global `SceneMix` (0 Blender only, 1 Godot only) and the effects run on the mix. Its senders go straight to the scene on udp 9201, which Blender's bridge and the Godot Colossus Scene both listen on (one runs at a time). `--syphon-godot` sets another server name. `CamAuto` 1 lets Magic cut Blender and Godot's own director cut Godot (`/vj/cam_auto` 1); 0 sends `CamSel` as `/vj/cam` to both and holds Godot on that shot.
+`projects/show.magic` (`show_magic.py`, `python3 magic/show_magic.py`) is the synthwave project with two Syphon sources, `CAM_OUT - Blender` and `COLOSSUS_OUT - Godot`, in the Program scene. A `Mix` module crossfades them with the Global `SceneMix` (0 Blender only, 1 Godot only) and the effects run on the mix. Its senders go straight to the scene on udp 9201, which Blender's bridge and the Godot Colossus Scene both listen on (one runs at a time). `--syphon-godot` sets another server name. `CamAuto` 1 lets Magic cut Blender and Godot's own director cut Godot (`/vj/cam_auto` 1); 0 sends `Cam` as `/vj/cam` to both and holds Godot on that shot. Magic publishes its own mixed picture as Syphon `MAGIC_OUT - Magic` (1920x1080, `--syphon-out` renames it), which `magicproj.py grab --server MAGIC_OUT` reads and another app can take. The handbook's table of what Magic sends and why is made from this project: `python3 magic/magic_manual.py sync`.
 
 Scenes:
 - **Master**: Program behind Blackout, the Monitor overlay, and OSC Out.
@@ -17,22 +17,23 @@ Scenes:
 - **Monitor**: a bar per analysis Global, for tuning.
 - **Readout**: every `/vj/*` address with the value being sent, yellow while it differs from the scene default. Text cannot print numbers, so each row lists every displayable value and `Line #` picks one.
 
-Controls are unlinked Globals in 0..1, ready for MIDI or OSC learn:
+Controls are unlinked Globals in 0..1, ready for MIDI or OSC learn. Every `/vj/*` address has one named like it (`/vj/fog_height` is `FogHeight`), holding the contract's default. Where the music drives an address, the control is its value while no music plays and the base the music moves. `Live` is 1 while the input carries sound (it fades over 3 s after it stops), `Follow` is `Live` x `React`: with no sound, or `React` 0, every address holds its control and the cutter stands still.
 
 | Global | Does |
 |---|---|
 | `Gain` | input sensitivity (0.5 = ×2) |
-| `Master`, `Blackout` | overall intensity; black |
-| `React` | 0 = static scene, 1 = fully audio driven |
+| `Master`, `Blackout` | overall brightness (scales `Intensity` and `Strobe`); black |
+| `React` | the music mapping on or off: 0 = the controls alone, 1 = music drives the addresses it can |
+| `Level` `Bass` `Beat` `Intensity` | `/vj/level` `/vj/bass` `/vj/beat` `/vj/intensity` |
 | `Auto` | automatic build, drop and breakdown direction |
-| `Strobe` | strobe on every beat |
+| `Strobe` | flash on every beat; the music adds flashes in drops and builds |
 | `Buildup` | manual build fader, added to the detector |
 | `Drop` | momentary pad, fires a drop |
 | `Shock`, `ShockKick` | momentary pad, fires a shockwave; shockwaves on heavy kicks |
 | `Meteor` | momentary pad, fires a shooting star |
-| `HueBase`, `HueDrift` | hue offset; hue walk per bar and per drop |
-| `CamAuto`, `CamSel`, `CamSpeed` | auto cuts through the 7 cameras every 8 bars and on drops; manual camera; drift speed |
-| `GridSpeed` | grid scroll speed |
+| `Hue`, `HueDrift` | hue offset; hue walk per bar and per drop |
+| `CamAuto`, `Cam`, `CamCount`, `CamSpeed` | auto cuts through the first `CamCount` cameras every 8 bars and on drops (only while music plays); manual camera 0..1 over shots 0..11; drift speed |
+| `GridSpeed` | grid scroll speed (`/vj/grid_speed`) |
 | `Sun` `Moon` `Pyramids` `Grid` `Stars` `Water` | scene elements, faded |
 | `MoonPhase`, `Eclipse`, `StarSpeed` | moon on its orbit (0 new, next to the sun; 1 full, opposite); eclipse alignment (lunar at full, solar at new moon); star drift against the sun (×10, 1° per second at 0.1) |
 | `Night`, `Nebula` | sun height (0 +20°, 0.5 half set, 1 -18° night; lowering it runs time backwards); nebula strength at night |
@@ -47,6 +48,7 @@ Analysis, all in Globals:
 - `Kick`, `Snare`, `Hat` are onsets: a ~10 ms follower above 1.25–1.4× a ~0.3 s follower plus a floor scaled to the track's recent peak, with a refractory time (0.22, 0.12, 0.06 s) and an exponential decay in seconds. The kick reads sub plus half the 80–320 Hz band; once the beat clock is locked only onsets within ±0.15 beat of it count, so off-beat bass notes neither flash nor pull the clock.
 - A beat clock follows the kicks: `Period` comes from the kick intervals (folded into 100–200 BPM, shown as `BPM`), `Phase` runs 0..1 per beat and each kick pulls it toward 0, and `Lock` says how well kicks land on it (it fades over ~6 s without kicks). `Pulse` is the clock's own beat envelope, so `Beat` (`Kick`, `Lock`×`Pulse` or Synesthesia's `/audio/beat/onbeat` on OSC in) stays on the grid through a missed kick. `Beats` and `Bars` count clock beats, so camera cuts land on bar lines.
 - `OutLevel` and `OutBass` are relative to the track's own averages, so any input level works.
+- `Live` (sound on the input) times `React` is `Follow`; an Out Global is its control plus `Follow` times what the music adds to it.
 - Structure is keyed on the kick: `NoKick` ramps up over 1.5–4 s without one. `Build` is that while the highs rise (riser, snare roll), `Breakdown` is that with quiet highs, and `DropEvt` is the first kick after 6 s or more without one.
 - The slow trackers run in seconds (`Dt` from an Increase clock), so they hold at any evaluation rate.
 
@@ -56,13 +58,13 @@ OSC out (latest value of each Global; ranges and meaning per scene are in [osc/C
 |---|---|
 | `/vj/level` `/vj/bass` `/vj/beat` | `OutLevel` `OutBass` `OutBeat` |
 | `/vj/hue` `/vj/intensity` `/vj/strobe` | `OutHue` `OutIntensity` `OutStrobe` |
-| `/vj/grid_speed` `/vj/cam` `/vj/cam_auto` `/vj/cam_speed` | `OutGridSpeed` `OutCam` `OutCamAuto` `OutCamSpeed`; `OutCam` is a whole number, shot 0..10 (`CamCount` shots while `CamAuto` cuts, `CamSel` otherwise) |
+| `/vj/grid_speed` `/vj/cam` `/vj/cam_auto` `/vj/cam_speed` | `OutGridSpeed` `OutCam` `OutCamAuto` `OutCamSpeed`; `OutCam` is a whole number, shot 0..11 (`CamCount` shots while `CamAuto` cuts and music plays, `Cam` otherwise) |
 | `/vj/sun` `/vj/moon` `/vj/pyramids` `/vj/grid` `/vj/stars` `/vj/water` | `OutSun` … `OutWater` |
 | `/vj/night` `/vj/nebula` `/vj/shock` | `OutNight` `OutNebula` `OutShock`: a 50 ms pulse at the wave's strength on heavy kicks (at most every 0.9 s, every 0.35 s while a drop is fresh; 0.6 rising to 1.5), on each drop (1.5) and on the pad |
 | `/vj/fog` … `/vj/fog_beat` | `OutFog` … `OutFogBeat`; fog thickens in breakdowns and glows on drops while `Auto` is on |
 | `/vj/meteor` `/vj/flamingos` `/vj/haze` `/vj/moon_phase` | `OutMeteor` (1 while the pad is held) `OutFlamingos` `OutHaze` `OutMoonPhase` |
 | `/vj/eclipse` `/vj/star_speed` | `OutEclipse` `OutStarSpeed` |
-| `/vj/flight` `/vj/boost` `/vj/blend` `/vj/energy` `/vj/hit` | `OutFlight` `OutBoost` `OutBlend` `OutEnergy` (faders `Flight` `Boost` `Blend` `CamEnergy`, passed on as they are) and `OutHit` (1 while the `Hit` pad is held) |
+| `/vj/flight` `/vj/boost` `/vj/blend` `/vj/energy` `/vj/hit` | `OutFlight` `OutBoost` `OutBlend` `OutEnergy` (faders `Flight` `Boost` `Blend` `Energy`, passed on as they are) and `OutHit` (1 while the `Hit` pad is held) |
 
 
 ## Magic projects (`magicproj.py`)

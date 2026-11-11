@@ -52,24 +52,31 @@ def ctl(name, value):
 
 GLOBALS = [
     # Controls, 0..1 so a MIDI CC maps straight on.
+    # Every /vj/* address has a control Global named like it (/vj/fog_height: FogHeight), set here by hand. It holds the
+    # contract's default. Where the music drives the address (Follow below), the control is the value while no music plays
+    # and the base the music moves; Cam is the camera shot while CamAuto is 0.
     ctl("Gain", 0.5),        # input sensitivity, 0.5 = x2
-    ctl("Master", 1.0),      # overall intensity
-    ctl("React", 1.0),       # 0 = static scene, 1 = fully audio driven
+    ctl("Master", 1.0),      # overall brightness, scales Intensity and Strobe
+    ctl("React", 1.0),       # the music mapping on/off: 0 = the controls alone, 1 = music drives the addresses it can
+    ctl("Level", 0.5),       # /vj/level
+    ctl("Bass", 0.0),        # /vj/bass
+    ctl("Beat", 0.0),        # /vj/beat
+    ctl("Intensity", 0.5),   # /vj/intensity
     ctl("Auto", 1.0),        # automatic build/drop/breakdown direction
     ctl("Blackout", 0.0),
-    ctl("Strobe", 0.0),      # strobe on every beat
+    ctl("Strobe", 0.0),      # /vj/strobe: flash on every beat, 0..1
     ctl("Buildup", 0.0),     # manual build fader, adds to the detector
     ctl("Drop", 0.0),        # momentary pad: fire a drop now
     ctl("Shock", 0.0),       # momentary pad: shockwave from the next pyramid
     ctl("ShockKick", 1.0),   # shockwave on heavy kicks
     ctl("Meteor", 0.0),      # momentary pad: shooting star
-    ctl("HueBase", 0.0),
+    ctl("Hue", 0.0),         # /vj/hue base, the music walks it by HueDrift
     ctl("HueDrift", 0.05),   # hue walk per bar and per drop
-    ctl("CamAuto", 1.0),     # 1 = Magic cuts every 8 bars and on drops, and Godot's director cuts by itself; 0 = CamSel
-    ctl("CamSel", 0.0),      # manual camera, 0..1 -> shot 0..11 (11: the planet's Flight; a scene without that many takes its last)
+    ctl("CamAuto", 1.0),     # 1 = Magic cuts every 8 bars and on drops, and Godot's director cuts by itself; 0 = Cam
+    ctl("Cam", 0.0),         # /vj/cam: manual camera while CamAuto is 0, 0..1 -> shot 0..11 (11: the planet's Flight; a scene without that many takes its last)
     ctl("CamCount", 1.0),    # shots the auto-cutter cycles through, 0..1 -> 1..12
-    ctl("CamSpeed", 0.33),   # 0.33 -> scene default 1.0
-    ctl("GridSpeed", 0.3),
+    ctl("CamSpeed", 0.25),   # /vj/cam_speed
+    ctl("GridSpeed", 0.15),  # /vj/grid_speed
     ctl("Sun", 1.0), ctl("Moon", 1.0), ctl("Pyramids", 1.0),
     ctl("Grid", 1.0), ctl("Stars", 1.0), ctl("Water", 1.0),
     ctl("MoonPhase", 1.0),   # moon on its orbit: 0 new (next to the sun), 1 full (opposite)
@@ -88,7 +95,7 @@ GLOBALS = [
     ctl("Flight", 0.0),      # planet scene: 0 orbit, 0.33 approach, 0.66 skim, 1 hover
     ctl("Boost", 0.0),       # planet scene: accelerator while skimming or hovering
     ctl("Blend", 0.5),       # planet scene: shot change duration, 0 cuts, x2
-    ctl("CamEnergy", 0.3),   # planet scene: how hard the cameras move
+    ctl("Energy", 0.3),      # /vj/energy, planet scene: how hard the cameras move
     ctl("Hit", 0.0),         # momentary pad: speed surge with a wide-angle kick
     ctl("FogBeat", 0.5),     # how much fog pulses on the beat
     ctl("Haze", 1.0),        # distance haze; 0 with Fog 0 is a fog-free view
@@ -157,13 +164,17 @@ GLOBALS = [
     ("Pulse", "calc", 0, [ex("exp(-Phase*Period*8)")]),
     ("BPM", "calc", 128, [ex("60/Period")]),
     ("ExtBeat", ("osc", "/audio/beat/onbeat"), 0, [ex("max(x, y*exp(-Dt*9))")]),
-    ("Beat", "calc", 0, [ex("max(Kick, ExtBeat, Lock*Pulse)")]),
+    ("BeatNow", "calc", 0, [ex("max(Kick, ExtBeat, Lock*Pulse)")]),
     ("Beats", ("global", "Tick"), 0, [("Trigger", 0.5, "x")]),  # running count on the beat clock
     ("Bars", ("global", "Beats"), 0, [ex("floor(x/4)")]),
 
     # Energy now and over the last seconds.
-    ("Energy", "calc", 0, [ex("min(1, 0.4*Sub + 0.25*Low + 0.15*Mid + 0.12*HiMid + 0.08*Air)"), ("Smooth", 0.6, "x")]),
-    ("EnergyAvg", ("global", "Energy"), 0, [("Average", 1, "x"), ("Smooth", 0.97, "x")]),
+    ("EnergyNow", "calc", 0, [ex("min(1, 0.4*Sub + 0.25*Low + 0.15*Mid + 0.12*HiMid + 0.08*Air)"), ("Smooth", 0.6, "x")]),
+    ("EnergyAvg", ("global", "EnergyNow"), 0, [("Average", 1, "x"), ("Smooth", 0.97, "x")]),
+    # Is there music? Live is 1 while the input carries sound and fades over 3 s after it stops. Follow is how much the music
+    # drives the addresses it can: Live x React. With no sound or React 0 every address holds its control (the contract default).
+    ("Live", "calc", 0, [ex("if(EnergyNow > 0.004, 1, max(0, y - Dt/3))")]),
+    ("Follow", "calc", 0, [ex("Live*React")]),
 
     # EDM structure, keyed on the kick: 1.5-4 s without one is a breakdown, or
     # a build while the highs rise (riser, snare roll); the first kick after
@@ -182,26 +193,26 @@ GLOBALS = [
     # Shockwave on heavy kicks (near the track's recent peak): about every
     # second kick, every kick while a drop is fresh, strength 0.6 rising to
     # 1.5 on the drop itself. Blender runs up to four waves at once.
-    ("ShockOn", "calc", 0, [ex("if(ShockKick > 0.5 and React > 0.05 and KOn > 0.5 and KFast > KRef*0.6 and "
+    ("ShockOn", "calc", 0, [ex("if(ShockKick > 0.5 and Follow > 0.05 and KOn > 0.5 and KFast > KRef*0.6 and "
                                "Clock - ShockT > if(DropEnv > 0.3, 0.35, 0.9), 1, 0)")]),
     ("ShockAmp", "calc", 0.6, [ex("if(DropEvt > 0.5 or Shock > 0.5, 1.5, if(ShockOn > 0.5, min(1.5, 0.6 + 0.8*DropEnv), y))")]),
     ("ShockT", "calc", -1, [ex("if(ShockOn > 0.5 or DropEvt > 0.5 or Shock > 0.5, Clock, y)")]),
 
     # Values sent to the scenes (/vj/*), in wire units: 0..1 for every continuous control (osc/CONTROLS.md).
     # Level and bass relative to the track's own average, so any input level works.
-    ("OutLevel", "calc", 0.5, [ex("(1 - React)*0.5 + React*min(1, 0.4*Energy/max(EnergyAvg, 0.02) + 0.3*Beat)")]),
-    ("OutBass", "calc", 0, [ex("React*min(1, 0.35*Sub/max(SubLong, 0.03) + 0.5*Kick)")]),
-    ("OutBeat", "calc", 0, [ex("React*Beat")]),
-    ("OutHue", "calc", 0, [ex("frac(HueBase + HueDrift*(Bars/8 + Drops*0.25))")]),
-    ("OutIntensity", "calc", 0.5, [ex("0.5*Master*(1 - Blackout)*(0.85 + Auto*(0.35*DropEnv + 0.15*Build - 0.25*Breakdown))")]),
-    ("OutStrobe", "calc", 0, [ex("Master*(1 - Blackout)*min(1, max(Strobe, Auto*DropEnv*0.5)*Beat^4 + Auto*Build*Build*Snare^4*0.6)")]),
+    ("OutLevel", "calc", 0.5, [ex("Level + Follow*(min(1, 0.4*EnergyNow/max(EnergyAvg, 0.02) + 0.3*BeatNow) - Level)")]),
+    ("OutBass", "calc", 0, [ex("Bass + Follow*(min(1, 0.35*Sub/max(SubLong, 0.03) + 0.5*Kick) - Bass)")]),
+    ("OutBeat", "calc", 0, [ex("Beat + Follow*(BeatNow - Beat)")]),
+    ("OutHue", "calc", 0, [ex("frac(Hue + Follow*HueDrift*(Bars/8 + Drops*0.25))")]),
+    ("OutIntensity", "calc", 0.5, [ex("Master*(1 - Blackout)*Intensity*(1 + Follow*(Auto*(0.35*DropEnv + 0.15*Build - 0.25*Breakdown) - 0.15))")]),
+    ("OutStrobe", "calc", 0, [ex("Master*(1 - Blackout)*min(1, max(Strobe, Follow*Auto*DropEnv*0.5)*BeatNow^4 + Follow*Auto*Build*Build*Snare^4*0.6)")]),
     # 0..4 cells/s on the wire as 0..1
-    ("OutGridSpeed", "calc", 0.15, [ex("min(1, max(0.0125, 0.0375 + GridSpeed*0.5*(0.6 + React*(0.5*EnergyAvg + 0.8*DropEnv + 0.4*Build) - 0.4*Breakdown)))")]),
+    ("OutGridSpeed", "calc", 0.15, [ex("min(1, max(0, GridSpeed*(1 + Follow*(0.5*EnergyAvg + 0.8*DropEnv + 0.4*Build - 0.4*Breakdown))))")]),
     # An index: shot N of the scene, 0-based. A scene with fewer shots takes its last.
-    ("OutCam", "calc", 0, [ex("if(CamAuto > 0.5, (floor(Beats/32) + Drops) % (floor(CamCount*11 + 0.001) + 1), floor(CamSel*11.999))")]),
+    ("OutCam", "calc", 0, [ex("if(CamAuto > 0.5 and Follow > 0.5, (floor(Beats/32) + Drops) % (floor(CamCount*11 + 0.001) + 1), floor(Cam*11.999))")]),
     ("OutCamAuto", "calc", 1, [ex("if(CamAuto > 0.5, 1, 0)")]),
     # 0..4 on the wire as 0..1
-    ("OutCamSpeed", "calc", 0.25, [ex("min(1, max(0.0125, CamSpeed*0.75*(0.6 + Auto*(0.5*Build + 0.8*DropEnv - 0.3*Breakdown))))")]),
+    ("OutCamSpeed", "calc", 0.25, [ex("min(1, max(0, CamSpeed*(1 + Follow*Auto*(0.5*Build + 0.8*DropEnv - 0.3*Breakdown))))")]),
     ("OutSun", ("global", "Sun"), 1, [("Smooth", 0.95, "x")]),
     ("OutMoon", ("global", "Moon"), 1, [("Smooth", 0.95, "x")]),
     ("OutMoonPhase", ("global", "MoonPhase"), 1, [("Smooth", 0.95, "x")]),
@@ -215,9 +226,9 @@ GLOBALS = [
     ("OutNebula", ("global", "Nebula"), 1, [("Smooth", 0.95, "x")]),
     ("OutFlamingos", ("global", "Flamingos"), 1, [("Smooth", 0.95, "x")]),
     ("OutHaze", ("global", "Haze"), 1, [("Smooth", 0.95, "x")]),
-    ("OutFog", "calc", 0.35, [ex("max(Fog, min(0.6, Fog + Auto*Breakdown*0.3))"), ("Smooth", 0.95, "x")]),
+    ("OutFog", "calc", 0.35, [ex("max(Fog, min(0.6, Fog + Follow*Auto*Breakdown*0.3))"), ("Smooth", 0.95, "x")]),
     ("OutFogHeight", ("global", "FogHeight"), 0.41, [("Smooth", 0.95, "x")]),
-    ("OutFogGlow", "calc", 0.3, [ex("min(1, FogGlow*(1 + Auto*0.5*DropEnv))")]),
+    ("OutFogGlow", "calc", 0.3, [ex("min(1, FogGlow*(1 + Follow*Auto*0.5*DropEnv))")]),
     ("OutFogHue", ("global", "FogHue"), 0, [("Smooth", 0.95, "x")]),
     ("OutFogNoise", ("global", "FogNoise"), 0.6, [("Smooth", 0.95, "x")]),
     ("OutFogScale", ("global", "FogScale"), 0.25, [("Smooth", 0.95, "x")]),
@@ -231,7 +242,7 @@ GLOBALS = [
     ("OutFlight", ("global", "Flight"), 0, []),
     ("OutBoost", ("global", "Boost"), 0, []),
     ("OutBlend", ("global", "Blend"), 0.5, []),
-    ("OutEnergy", ("global", "CamEnergy"), 0.3, []),
+    ("OutEnergy", ("global", "Energy"), 0.3, []),
 
     # Magic-side effect amounts: manual faders only, so Magic adds nothing over Blender's frame by default.
     ("GlowAmt", "calc", 0, [ex("FxGlow")]),
@@ -257,6 +268,23 @@ OSC_OUT = [
     ("/vj/hit", "OutHit"),
 ]
 
+# What the music does to an address, in plain words. An address in this dict follows the music while Follow is above 0 (its Out Global
+# names Follow); every other address is its control Global alone. The handbook table (magic_manual.py) is built from this and the project.
+MUSIC = {
+    "/vj/level": "Loudness against the track's own average, plus the beat.",
+    "/vj/bass": "Sub-bass against its recent average, plus the kick.",
+    "/vj/beat": "The beat clock: kick, or Synesthesia's onbeat on OSC in.",
+    "/vj/hue": "Walks on by HueDrift every bar and every drop.",
+    "/vj/intensity": "Lifts on drops and builds, dips in breakdowns (Auto 1).",
+    "/vj/strobe": "Flashes on the beat during a drop and on snare rolls in a build (Auto 1); Strobe adds a flash on every beat.",
+    "/vj/grid_speed": "Faster with energy, drops and builds, slower in breakdowns.",
+    "/vj/cam": "The auto cutter: a new shot every 8 bars and on every drop, through the first CamCount shots (CamAuto 1). CamAuto 0 sends Cam.",
+    "/vj/cam_speed": "Faster on builds and drops, slower in breakdowns (Auto 1).",
+    "/vj/fog": "Thickens in a breakdown, up to 0.6 (Auto 1).",
+    "/vj/fog_glow": "Glows brighter on a drop (Auto 1).",
+    "/vj/shock": "A wave on heavy kicks and on every drop (ShockKick 1); the Shock pad fires one now.",
+}
+
 # Readout rows: (top value, display step, wire default), all from the contract.
 READOUT = {a: (r["max"], 1 if r["kind"] == "int" else 0.01, r["default"]) for a, r in CONTRACT.items()}
 
@@ -278,10 +306,10 @@ SYNTHETIC = {
 }
 SYNTHETIC_CONTROLS = {
     "Strobe": "if(frac(Clock/50) > 0.85, 0.8, 0)",
-    "HueBase": "0.5 - 0.5*cos(Clock*0.05)",
+    "Hue": "0.5 - 0.5*cos(Clock*0.05)",
     "HueDrift": "0.3",
     "CamAuto": "if(frac(Clock/60) < 0.5, 1, 0)",
-    "CamSel": "(floor(frac(Clock/20)*7) + 0.5)/7",
+    "Cam": "(floor(frac(Clock/20)*7) + 0.5)/7",
     "Sun": "if(frac(Clock/23) < 0.8, 1, 0)",
     "Moon": "if(frac(Clock/29 + 0.3) < 0.8, 1, 0)",
     "Pyramids": "if(frac(Clock/31 + 0.5) < 0.8, 1, 0)",
@@ -319,8 +347,8 @@ def synthetic_globals():
             out.append((name, src, value, ops))
     return out
 
-METERS = ["Sub", "Low", "Mid", "HiMid", "Air", "Kick", "Snare", "Hat", "Pulse", "Lock", "Beat",
-          "Energy", "EnergyAvg", "Build", "Breakdown", "NoKick", "DropEnv"]
+METERS = ["Sub", "Low", "Mid", "HiMid", "Air", "Kick", "Snare", "Hat", "Pulse", "Lock", "BeatNow",
+          "EnergyNow", "EnergyAvg", "Build", "Breakdown", "NoKick", "DropEnv", "Follow"]
 
 
 # ---------------------------------------------------------------- XML
@@ -408,11 +436,12 @@ def chain(*nodes):
     return nodes[-1]
 
 
-def build(port, ip, syphon, globals_=GLOBALS, captions=None, audio=None, trails_fx=False, syphon2=None, mix="SceneMix"):
+def build(port, ip, syphon, globals_=GLOBALS, captions=None, audio=None, trails_fx=False, syphon2=None, mix="SceneMix", output=None):
     """captions: (lines, global) for a timed text line in the Readout scene;
     audio: an audio file Magic plays in a loop and analyses instead of BlackHole;
     syphon2: a second SyphonClient server; the Program scene then crossfades the two with a Mix module
-    whose Amount is the Global `mix` (0 = syphon only, 1 = syphon2 only), which globals_ must hold."""
+    whose Amount is the Global `mix` (0 = syphon only, 1 = syphon2 only), which globals_ must hold;
+    output: Magic's own Syphon server name (1920x1080), None leaves Magic's output off."""
     p = Project()
     globals_el = ET.Element("Globals")
     for name, *_ in globals_:
@@ -439,7 +468,7 @@ def build(port, ip, syphon, globals_=GLOBALS, captions=None, audio=None, trails_
     chroma = p.node("Chroma Zoom", [p.iv("Master_zoom", 1), p.link("Red_zoom", 1, "ChromaAmt", "1 - x*(0.02 + 0.06*Kick)"),
                                     p.iv("Green_zoom", 1), p.link("Blue_zoom", 1, "ChromaAmt", "1 + x*(0.02 + 0.06*Kick)"),
                                     p.iv("Center X", 0), p.iv("Center Y", 0)], bypass=("ChromaAmt", off))
-    radial = p.node("RadialBlur", [p.link("Distance", 0.25, "BlurAmt", "x*(0.1 + 0.3*Beat)"), p.iv("Density", 0.5)],
+    radial = p.node("RadialBlur", [p.link("Distance", 0.25, "BlurAmt", "x*(0.1 + 0.3*BeatNow)"), p.iv("Density", 0.5)],
                     bypass=("BlurAmt", off))
     # Magic's Trails draws behind its input through alpha, which an opaque
     # Syphon frame hides, and the usual feedback shaders key dark pixels to
@@ -522,7 +551,7 @@ def build(port, ip, syphon, globals_=GLOBALS, captions=None, audio=None, trails_
     p.fill_scene(master, [mon_mod, rd_mod, blackout, osc_mod], m_nodes,
                  {mon_mod.get("id"): (215, 15), rd_mod.get("id"): (415, 15), prog_mod.get("id"): (15, 160),
                   blackout.get("id"): (215, 160), osc_mod.get("id"): (215, 305)})
-    return project_xml(p, globals_el, audio)
+    return project_xml(p, globals_el, audio, output)
 
 
 def caption_text(p, text, size, x, y, line, highlight=None):
@@ -540,10 +569,15 @@ def caption_text(p, text, size, x, y, line, highlight=None):
     return nodes, roots
 
 
-def project_xml(p, globals_el, audio=None):
+def project_xml(p, globals_el, audio=None, output=None):
     root = ET.Element("Project", looping="1" if audio else "0", playlistChangesTabs="0", videoSharing="0", videoSharingWidth="1280",
                       videoSharingHeight="720", fixedMagicSize="1", fontSize="13", audioFilePanelHeight="0",
                       version="1.5", actualVersion="3")
+    if output:
+        root.set("videoSharing", "1")
+        root.set("videoSharingName", output)
+        root.set("videoSharingWidth", "1920")
+        root.set("videoSharingHeight", "1080")
     ET.SubElement(root, "RenderSettings", width="1920", height="1080", fps="60", duration="600", usePlaylist="0",
                   format="1001", quality="7", outputFolder="", outputFile="")
     ET.SubElement(root, "PlaylistMidiConfig", layerID="-1", featureString="", feature="-1", subFeature="-1",

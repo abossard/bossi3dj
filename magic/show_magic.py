@@ -15,6 +15,7 @@ import synthwave_magic as sm
 
 SYPHON_BLENDER = "CAM_OUT - Blender"
 SYPHON_GODOT = "COLOSSUS_OUT - Godot"      # "<server> - <app>"; the app name of Godot_mono.app is a guess until Magic lists it
+SYPHON_OUT = "MAGIC_OUT"                   # Magic's own output ("MAGIC_OUT - Magic"): the mixed picture, 1920x1080, for read-back and for another app
 SCENE_PORT = 9201
 MIX = "SceneMix"
 
@@ -27,8 +28,14 @@ def show_globals():
     return out
 
 
-def build(port=SCENE_PORT, ip="127.0.0.1", blender=SYPHON_BLENDER, godot=SYPHON_GODOT):
-    return sm.build(port, ip, blender, show_globals(), syphon2=godot, mix=MIX)
+def show_synthetic():
+    """The show's Globals on the synthetic signal of synthwave_magic: music the analysis can follow without any audio input."""
+    base = {g[0] for g in sm.synthetic_globals()}
+    return [g for g in sm.synthetic_globals()] + [g for g in show_globals() if g[0] not in base]
+
+
+def build(port=SCENE_PORT, ip="127.0.0.1", blender=SYPHON_BLENDER, godot=SYPHON_GODOT, output=SYPHON_OUT, globals_=None):
+    return sm.build(port, ip, blender, globals_ or show_globals(), syphon2=godot, mix=MIX, output=output)
 
 
 def main():
@@ -37,13 +44,15 @@ def main():
     ap.add_argument("--ip", default="127.0.0.1")
     ap.add_argument("--syphon-blender", default=SYPHON_BLENDER)
     ap.add_argument("--syphon-godot", default=SYPHON_GODOT)
+    ap.add_argument("--syphon-out", default=SYPHON_OUT, help="Magic's own Syphon server name")
+    ap.add_argument("--synthetic", action="store_true", help="test build: synthetic EDM signal and timed controls, no audio")
     ap.add_argument("--out", default=os.path.join(sm.HERE, "projects", "show.magic"))
     a = ap.parse_args()
-    xml = build(a.port, a.ip, a.syphon_blender, a.syphon_godot)
+    xml = build(a.port, a.ip, a.syphon_blender, a.syphon_godot, a.syphon_out, show_synthetic() if a.synthetic else None)
     with open(a.out, "wb") as f:
         f.write(sm.HEADER + zlib.compress(xml, 9))
-    print("wrote %s (%d globals, %d OSC addresses -> %s:%d, Syphon %s + %s)" % (
-        a.out, len(show_globals()), len(sm.OSC_OUT), a.ip, a.port, a.syphon_blender, a.syphon_godot))
+    print("wrote %s (%d globals, %d OSC addresses -> %s:%d, Syphon %s + %s, out %s)" % (
+        a.out, len(show_globals()), len(sm.OSC_OUT), a.ip, a.port, a.syphon_blender, a.syphon_godot, a.syphon_out))
 
 
 if __name__ == "__main__":
