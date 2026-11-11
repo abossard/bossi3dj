@@ -78,6 +78,7 @@ def health():
         "off_default": off_default(),
         "long_drivers": long_drivers(),
         "stale_texts": stale_texts(),
+        "edge_guard": DN.get("edge_guard"),
     }
     p = []
     if not any(v["perspective"] == "CAMERA" for v in h["views"]):
@@ -98,6 +99,8 @@ def health():
         p.append("driver expressions at the 256-character limit")
     if h["stale_texts"]:
         p.append("embedded text differs from its file (Blender runs the embedded copy): %s" % ", ".join(h["stale_texts"]))
+    if (h["edge_guard"] or {}).get("status") in ("missing", "error"):
+        p.append("no night edges on the terrain (edge_guard %s)" % h["edge_guard"])
     if h["off_default"]:
         p.append("vj_* values differ from defaults: reset before saving the .blend")
     h["problems"] = p
