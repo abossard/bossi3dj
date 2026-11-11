@@ -180,6 +180,10 @@ The Colossus standing, the Wanderer 6 m behind it, both stand-ins against both r
 
 The real models cost 0.08 to 0.48 ms over the stand-ins and draw 6 to 13 calls where the stand-ins draw 12 to 85. Raw rows: [godot-model-cost-stage3.json](godot-model-cost-stage3.json).
 
+### Look round 5
+
+`docs/reports/godot-look-verdict.json`, round `godot-look-5`, rubric unchanged, one reviewer call on 27 frames: 27 pass. `4-shake-close-grip` (the round 4 fail) passes: "Wanderer clearly visible with head, arms and cloak on the Colossus knee band". On Grock the reviewer wrote: it reads as a hunched creature with thick arms in silhouette in the wide frames, without surface detail at that size and not obviously 28 m without a reference; the strongest giant read is the over-shoulder climb ("bark-like brown legs and wrap bands with strong surface detail, Wanderer tiny against it"), then the close grip and the aerial. Pixel numbers of the climb frames on Grock: over-shoulder luma 38 of 255 with 30% near black, close grip 25 with 35% near black and 23% flat black in the lower third (stand-in round 4: 67 and 49); the rubric's `exposure` passed both. In the telephoto low hero at 1000 and 450 m the Wanderer (526 px, 25 m from the camera) shows larger than the Colossus behind him and pale in the haze; the reviewer could not tell which figure is which. Contact sheet for the user: [docs/images/2026-11-11/godot-models-colossus.jpg](../images/2026-11-11/godot-models-colossus.jpg).
+
 ## How the models are prepared
 
 ```bash

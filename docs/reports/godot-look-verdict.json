@@ -534,6 +534,183 @@
         "4-shake-close-grip: only two grey limb ends at the top edge; the arms on the grip are not recognisable at 480 px (reviewer). Cause not measured yet.",
         "low-hero-1000m and low-hero-450m: the figure is pale in the haze."
       ]
+    },
+    {
+      "round": "godot-look-5",
+      "rubric": "godot/colossus/docs/look-rubric.md",
+      "frames": "480 px tiles of the output frame, made 2026-11-11 on Metal by `make godot-look`, `make godot-capture` and `make godot-wanderer-read`, after Grock replaced the first Colossus stand-in (Titan and Golem still stand-ins) and the close grip began to aim at the Wanderer's head, hands and hips. One shot-reviewer call. No fix pass.",
+      "shots": [
+        {
+          "image": "shot-1",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Dark Grock silhouette at centre against haze, haze graded, no UI."
+        },
+        {
+          "image": "shot-2",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Wanderer clear at bottom centre on the ridge, small Colossus top centre."
+        },
+        {
+          "image": "shot-3",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Wanderer large at lower left, small Colossus at horizon, sun glow, fog graded."
+        },
+        {
+          "image": "shot-4",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Wanderer large and centred over lit ground, small Colossus top right."
+        },
+        {
+          "image": "shot-5",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Grock seen from above at centre, brown-grey surface lit, ground textured, dim but has dark and lit ends."
+        },
+        {
+          "image": "fog_height-0",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Colossus silhouette at centre, faint horizon, no hard band."
+        },
+        {
+          "image": "fog_height-0.41",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Colossus silhouette readable, fog thicker near ground."
+        },
+        {
+          "image": "fog_height-1",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Colossus readable, horizon mound under graded haze."
+        },
+        {
+          "image": "fog-0",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Colossus silhouette readable, horizon visible, graded."
+        },
+        {
+          "image": "fog-1",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Dense but graded haze, Colossus still readable."
+        },
+        {
+          "image": "intensity-0",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Dark by design, Colossus and horizon still readable."
+        },
+        {
+          "image": "intensity-1",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Bright, Colossus readable, no flat white area."
+        },
+        {
+          "image": "start-f120",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Grock silhouette at centre, dark slope wedge bottom left, textured not flat black."
+        },
+        {
+          "image": "new-colossus-after-hold",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Next roster Colossus (stand-in) readable at centre, no flat black."
+        },
+        {
+          "image": "1-approach-scale-wide",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Grock silhouette at centre in haze, ground lit."
+        },
+        {
+          "image": "2-approach-low-hero",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Wanderer at bottom centre on the ridge, small Colossus at top."
+        },
+        {
+          "image": "3-climb-over-shoulder",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Grock leg and wrap textured against grey sky, Wanderer climbing on the knee."
+        },
+        {
+          "image": "4-shake-close-grip",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Wanderer clearly visible with head, arms and cloak on the Colossus knee band; was wanderer-visible fail in round 4.",
+          "changed": true
+        },
+        {
+          "image": "5-climb-aerial",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Top-down Grock, brown body on dark textured ground."
+        },
+        {
+          "image": "6-fall-toppling",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Horizontal Colossus silhouette against lit horizon, fog thicker at ground."
+        },
+        {
+          "image": "7-fall-down",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Fallen Colossus at the horizon, haze plausible."
+        },
+        {
+          "image": "8-reset-fade",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Deliberate fade, exempt from exposure; no UI."
+        },
+        {
+          "image": "9-next-colossus",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Next Colossus (stand-in) readable at centre."
+        },
+        {
+          "image": "low-hero-start",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Wanderer on the Shrine slope, Colossus small but distinct at top centre."
+        },
+        {
+          "image": "low-hero-1500m",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Wanderer visible mid-frame, Colossus small at top centre."
+        },
+        {
+          "image": "low-hero-1000m",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Wanderer large at left in haze, Colossus at right centre."
+        },
+        {
+          "image": "low-hero-450m",
+          "verdict": "pass",
+          "failed": [],
+          "evidence": "Wanderer at left in haze, Colossus larger at right."
+        }
+      ],
+      "skipped": [],
+      "notes": [
+        "Grock reads as a creature in silhouette (hunched, thick arms) in the wide and control frames, no surface detail at that size, not obviously 28 m without a reference.",
+        "Strongest giant read in 3-climb-over-shoulder: bark-like brown legs and wrap bands with surface detail, the Wanderer tiny against it; also 4-shake-close-grip and 5-climb-aerial (textured shoulders, long cast shadow).",
+        "low-hero-1000m and low-hero-450m: the telephoto shows the Wanderer (526 px, 25 m from the camera) as a large pale figure in the haze beside a smaller dark Colossus; the reviewer could not tell which is which, a possible scale read problem of that composition.",
+        "The next roster Colossus is still the stand-in (round robot), not judged as the model."
+      ]
     }
   ]
 }

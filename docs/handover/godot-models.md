@@ -4,44 +4,51 @@ Branch `integration/presentable`, main checkout. Brief: bring the Nomad (Wandere
 
 ## State
 
-- Stage 1 (cost) done: 7c6633c (prepare, probe, table), c1ab047 (models out of git).
-- Stage 2 (Wanderer) done: 80c8994, d295f39, 1063b3f, 0129a27, 9f9aabb, and the commit that carries this note (report, look round 4, contact sheet). Stage 3 (Grock) not started.
-- Models are not in git (user decision of 2026-11-11). `godot/colossus/assets/models/`, `assets/incoming/` and `assets/mixamo/` are git-ignored; [godot/colossus/assets/MODELS.md](../../godot/colossus/assets/MODELS.md) lists pages, downloads, Mixamo slots and the command. `make godot-models` rebuilds all three from `~/Downloads`, including the import settings (`tools/godot_model_import.py`) and the Mixamo copies (`tools/godot_mixamo_copy.py`).
-- The scene: the Nomad is the Wanderer when `assets/models/nomad/` exists (`Wanderer.MODEL`), else the stand-in; the start prints one line naming what is missing. The Colossus is still the stand-in (`Roster` names Grock's model path but does not load it yet).
-- Wanderer code: `wanderer/wanderer_body.gd` (model, clips, AnimationTree, retarget, IK, look-at, hang fit), `wanderer/clips.gd` (slots, fallbacks, Mixamo bone names, in place, stride: pure, tested), `wanderer/wanderer_feet.gd` (feet on the land, hang fit from the clip pose), `wanderer/wanderer_pose.gd` (pose without clips). `wanderer/wanderer.gd` keeps the movement; new there: the hang offsets come from the body, the turn to a grip is a damped spring, a low grip keeps him on the land, let go drops under gravity, `use_model` (probes build the stand-in).
-- Director: `_long_walk` raises the low camera until it sees his knees over the Shrine slope (`Director.clear_height`).
+- Stage 1 (cost): 7c6633c, c1ab047 (models out of git).
+- Stage 2 (Wanderer): 80c8994 to 87b3d78.
+- Stage 3 (Grock): ead637e (close grip), 90d1579 (Grock), 47ac35d and f0ff3be (stride, rig probe), b893340 (close grip room), be21465 (hitch option), e8f8154 (whole-scene cost), 4c36609 (report, sheet, README), and the commit that carries this note (round 5).
+- Models are not in git (user decision of 2026-11-11). `godot/colossus/assets/models/`, `assets/incoming/` and `assets/mixamo/` are git-ignored; [godot/colossus/assets/MODELS.md](../../godot/colossus/assets/MODELS.md) lists pages, downloads, Mixamo slots and the command. `make godot-models` rebuilds them from `~/Downloads`.
+- The scene: the Nomad is the Wanderer when `assets/models/nomad/` exists, Grock the first Colossus when `assets/models/grock/` exists; else their stand-ins, and the start prints one line naming what is missing. Titan and Golem are stand-ins.
+- Wanderer code: `wanderer/wanderer_body.gd`, `wanderer/clips.gd`, `wanderer/wanderer_feet.gd`, `wanderer/wanderer_pose.gd`; movement in `wanderer/wanderer.gd`. `Wanderer.upper_body()` gives head, hands and hips for the close grip.
+- Colossus code: `colossi/grock_colossus.gd` (rig, idle clip, Grab Points found on the mesh, foot IK, 17-body ragdoll), `colossi/rig_gait.gd` (stride, hips bob, Shake roll, head turn, foot targets on an imported rig), `Colossus.carrying` (stands while he holds on), `Roster` (`rig` per entry, `warm` prepares Grock once).
+- Director: `_long_walk` raises the low camera over the Shrine slope (`clear_height`); the close grip aims at his head, hands and hips with `CLOSE_SWAY` 1.6 m of room.
 
-## Numbers (stage 2)
+## Numbers (stage 3)
 
-- Walk slide 0.08 m/s median at 1.6 m/s; run slide 0.37 m/s at 4.5 m/s; hands 1.4 cm from the grip; joint velocity jumps at state changes 2.9 to 5.9 m/s against 3.3 (walk) and 15.4 (run) in steady motion; head 10° off the Colossus.
-- Low hero at the Shrine start: he was hidden by the slope (contrast 0.03); now 244 px, contrast 0.71. No rim or light added.
-- Cost: the animated Wanderer +0.14 to 0.42 ms over the stand-in, the same as the bare mesh.
-- `make godot-framing`: exit 0 on the last run; the row "low hero walking from 300 m" failed twice after the camera change (33 and 45 of 50) and passed once (50 of 50). It depends on where the roaming giant has gone; with the giant held still, 320 of 320 samples from eight directions keep him whole, with and without the rise. The probe now prints why a sample misses.
+- Grock: 17 ragdoll bodies; Grab Path complete (19 points); planted foot slides 0.10 m/s at 5 m/s; stands 0.00 m while carrying; ragdoll down in 4.5 s on flat land, 10.3 s on a 14° slope; haze contrast 0.99 at 1.6 km (stand-in 0.82).
+- Hitch with the Reset rebuilding Grock: worst 35 ms (limit 50).
+- `make godot-framing` five runs: exit 0 five times, 64 of 64 each; close grip 30 of 30; the 300 m walk 50 of 50 (it no longer crosses the 200 m shot switch, see Open).
+- Whole scene, both real models against both stand-ins: +0.08 to 0.48 ms, 6 to 13 draws instead of 12 to 85.
+- Look round 5: 27 of 27 pass.
+- Green with and without the models folder: `make godot-test` (397), `make godot-lint`, `make godot-check` (22 effect), `make godot-smoke`.
 
 ## Decisions
 
-- Source `.blend` over Sketchfab glTF for both (one Grock mesh, real bone list). Nomad's rifle dropped.
-- Nomad bones renamed in Blender to the humanoid profile: no import BoneMap needed; Mixamo bones are renamed at load. Mixamo `Spine2` drives the Nomad's `Chest` (the Nomad has no upper chest).
-- Stride and reach scale by leg length, not hip height (the Nomad's hips bone sits 0.2 m lower).
-- Run clip `Fast Run` (fits 4.5 m/s), walk `Walking-2` (same as `Walking`, without skin), shimmy left `Braced Hang Shimmy` (in place; leads with the left hand, checked against the root-motion `-2`). `Braced Hang Hop Up` not used: it pops when looped.
-- Grock's normal map made from its height map at a median tilt of 12°. To be judged in the stage 3 round.
-- Probe timing: vsync off and `Engine.max_fps = 0` give uncapped frame times on Metal; Metal has no GPU timer.
-- Poses are read on `Skeleton3D.skeleton_updated`: outside it Godot holds the pose without the modifiers.
+- Source `.blend` over Sketchfab glTF for both. Nomad's rifle dropped. Nomad bones renamed to the humanoid profile in the prepare; Mixamo bones renamed at load.
+- Stride and reach scale by leg length. Run clip `Fast Run`, walk `Walking-2`, shimmy `Braced Hang Shimmy`; `Braced Hang Hop Up` not used (pops when looped).
+- Grock: the imported tree stays whole (clips address `Armature/Skeleton3D`); legs procedural over the idle clip; stride sweep from leg length and step length; Grab Points from the mesh, each on the bone that skins it; Attack and Defend clips not used (not tried for a shake-off).
+- Probe timing: vsync off and `Engine.max_fps = 0`; poses read on `Skeleton3D.skeleton_updated`.
 
 ## Open
 
-- Look round 4: 26 of 27 pass; `4-shake-close-grip` fails `wanderer-visible` (only his hands show at the top edge). The close grip aims at `wanderer + 1.2 m` from 3 m off the grip; the Nomad hangs lower than the stand-in did (origin 2.36 m below the grip, was 1.7 m). Measure where his body lands in that frame before changing the aim.
-- Stage 3: Grock swap, Grab Points on its bones, foot IK, ragdoll (at most 24 bodies), Idle on the upper body, Shake clips, hitch check, look round 5. Grock's imported material has no `disable_fog`: the haze would swallow it on the long walk as it did the stand-in. Once Grock stands still while he climbs (SPEC: "stands while he climbs"; today the stand-in roams once he holds on), the framing walk row may settle.
+- The framing row "low hero walking from 300 m" now closes only 25 m (the giant stands while he walks toward it and roams away) and no longer crosses the 200 m switch to the near low hero camera; that switch was checked with the giant held still (320 of 320, stage 2), not in the probe.
+- Telephoto low hero at 1000 and 450 m: the Wanderer (526 px at 25 m) shows larger than the Colossus behind him and pale in the haze; the reviewer could not tell which figure is which.
+- Climb frames on Grock are dark: over-shoulder luma 38, close grip 25 (near black 30 and 35%); the rubric passed them.
+- Grock without surface detail in the wide frames and not obviously 28 m without a reference (reviewer). Its derived normal map (median tilt 12°) was not judged separately.
+- Grock has no hand bones and no eyes; the stand-in's eye glints are gone.
 - Mixamo clips still to download: list in the report and in `MODELS.md`.
-- `tests/*.gd.uid` of other sessions' probes (ablate, cost, framing, hitch, shake_osc, warmup) appeared on import and are left untracked.
+- Titan (302 joints, 15 textures) and Golem (59 textures, licence unconfirmed): what their archives need is in the report.
+- `tests/*.gd.uid` of other sessions' probes (ablate, cost, framing, hitch, shake_osc, warmup) are left untracked.
 
 ## Commands
 
 ```bash
 make godot-models            # unpack from ~/Downloads, prepare in headless Blender, copy Mixamo clips, import
-make godot-model-cost        # Metal: each model and the animated Wanderer against the stand-ins
+make godot-model-cost        # Metal: each model, the animated Wanderer and the whole scene against the stand-ins
 make godot-wanderer-motion   # headless: pose, foot sliding, pops, hands on the grips
+make godot-colossus-rig      # headless: Grab Path, feet, carrying, ragdoll on flat and sloped land
 make godot-wanderer-read OUT=/tmp/read   # Metal: Wanderer px and contrast in the low hero shot
+make godot-hitch ARGS=again  # Metal: the Reset rebuilds the first Colossus
 make godot-test
 make godot-lint
 make godot-check
