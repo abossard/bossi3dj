@@ -115,8 +115,8 @@ PATCHES = 32                   # patches per cube face side; a power of two keep
 LMAX = 7                       # finest patch: 2^7 cells per side (about 6 m, within about 200 m of the camera)
 PATCH_M = R * math.pi / 2 / PATCHES    # m, patch side on the sphere
 JITTER = 0.30                  # cells: each interior patch vertex moves up to this far sideways in a hashed direction,
-#                                and each cell's diagonal is chosen by a hash, so the real edges at night form an uneven net
-#                                instead of a lattice (round 12; under 0.35 no triangle can fold over)
+#                                so the real edges at night form an uneven net instead of a lattice (round 12; under 0.35
+#                                no triangle can fold over)
 H_MAX = 650.0                  # m, highest terrain (horizon culling, reflection backdrop)
 HYDRO_SUBDIV = 7               # hydrology icosphere: 40962 vertices, about 260 m apart
 OCEAN_REACH = 3                # rings past the last sea vertex that still carry sea level (the coast comes from the fine terrain)
@@ -1507,7 +1507,7 @@ def patch_mesh(G, points, levels):
 
 def lattice_hash(G, x, y, salt):
     """Three values in 0..1 from a lattice position (x, y), the patch's level and the patch itself: no time, no
-    camera, so nothing moves while the LOD stands still. salt keeps the vertex and the cell hashes apart."""
+    camera, so nothing moves while the LOD stands still. salt keeps separate hashes apart."""
     seed = G.addf(G.mul(G.read("pl_f"), PATCHES * PATCHES), G.addf(G.mul(G.read("pl_j"), PATCHES), G.read("pl_i")))
     wn = G.node("ShaderNodeTexWhiteNoise", noise_dimensions="4D")
     G.feed(wn.inputs["Vector"], G.comb(x, y, G.read("pl_l")))
@@ -1534,19 +1534,13 @@ def patch_dir(G):
 
 
 def cell_triangles(G, mesh):
-    """Split each cell along the diagonal a hash of its lattice cell picks: with the jitter of patch_dir() the edges
-    run in no regular direction. The border edges are the same for either diagonal, so stitching is unchanged.
-    At the face domain pl_x and pl_y read as their corners' mean, the cell's lower corner plus 0.5."""
-    cx, cy = G.math("FLOOR", G.read("pl_x")), G.math("FLOOR", G.read("pl_y"))
-    flip = G.math("GREATER_THAN", G.sep(lattice_hash(G, cx, cy, 0.5))[0], 0.5)
-    alt = G.node("GeometryNodeTriangulate")
-    G.feed(alt.inputs["Mesh"], mesh)
-    G.feed(alt.inputs["Selection"], flip)
-    alt.inputs["Quad Method"].default_value = "Fixed Alternate"
-    fix = G.node("GeometryNodeTriangulate")
-    G.feed(fix.inputs["Mesh"], alt.outputs[0])
-    fix.inputs["Quad Method"].default_value = "Fixed"
-    return fix.outputs[0]
+    """Split every cell along the same diagonal, explicitly: the jittered quads are not planar, and left to the draw
+    tessellation the night edges flooded the far field (CAM_0 line share 17 % against 9.5 %). The diagonal is not
+    hashed: with randomly flipped diagonals EEVEE's Wireframe node drew almost no edge (share 1.3 %, round 12)."""
+    tri = G.node("GeometryNodeTriangulate")
+    G.feed(tri.inputs["Mesh"], mesh)
+    tri.inputs["Quad Method"].default_value = "Fixed"
+    return tri.outputs[0]
 
 
 def stitch(G, geo, attrs=()):
@@ -2321,7 +2315,7 @@ mesh = G.setpos(mesh, G.vmath("ADD", G.vmath("SCALE", dvec, scale=G.addf(R, sf["
 mesh = stitch(G, mesh, ("pl_depth",))
 wetf = G.math("MINIMUM", G.math("MAXIMUM", G.addf(G.read("pl_depth"), 1.0), 0.0), 1.0)   # face average > 0: some corner is wet
 mesh = G.delete(mesh, G.math("LESS_THAN", wetf, 0.001), "FACE")
-mesh = cell_triangles(G, mesh)     # the land's triangles, so water and shore meet as before; wet test per cell as before
+mesh = cell_triangles(G, mesh)     # the land's triangles, so water and shore meet on the same faces; wet test per cell as before
 G.feed(go["Geometry"], shade(G, mesh, m_water))
 
 # --- reflection backdrop and atmosphere shell
