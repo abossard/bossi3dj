@@ -2,7 +2,9 @@ extends SceneTree
 ## Frame times of one Arc on the real renderer: every frame above THRESHOLD_MS with the Phase, the
 ## seconds in it and the fade, then the median and the worst frame per Phase. Walks Approach,
 ## Climb, Fall and lets Fall hand over to Reset by itself. No Syphon, no page, own OSC port.
-## Godot --path godot/colossus --script res://tests/hitch.gd
+## `-- again` makes the Reset bring the first Colossus back (the roster's real model) instead of
+## the next one.
+## Godot --path godot/colossus --script res://tests/hitch.gd [-- again]
 
 const TEST_PORT := 19202
 const THRESHOLD_MS := 30.0
@@ -26,6 +28,12 @@ func _initialize() -> void:
 	main.page_port = 0
 	root.add_child(main)
 	main.set_process_unhandled_input(false)
+	if OS.get_cmdline_user_args().has("again"):
+		main.arc.phase_changed.connect(
+			func(p: Arc.Phase) -> void:
+				if p == Arc.Phase.FALL:
+					main._next_index = 0
+		)
 
 
 func _process(_delta: float) -> bool:

@@ -111,7 +111,7 @@ godot-framing:
 
 godot-hitch:
 	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
-	$(GODOT) --path $(COLOSSUS) --script res://tests/hitch.gd
+	$(GODOT) --path $(COLOSSUS) --script res://tests/hitch.gd -- $(ARGS)
 
 godot-warmup:
 	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
