@@ -132,6 +132,54 @@ The animated Wanderer costs 0.14 to 0.42 ms over the stand-in, the same as the b
 
 `docs/reports/godot-look-verdict.json`, round `godot-look-4`, rubric unchanged, one reviewer call on 27 frames: 26 pass, 1 fail. `shot-2` and `2-approach-low-hero` (the round 3 fails) pass: the Wanderer reads as an upright cloaked figure on the ridge. New fail: `4-shake-close-grip`, `wanderer-visible`: only two limb ends show at the top edge (pass in round 2 with the stand-in). Not fixed in this round; the close grip's aim at the hanging Nomad is the open item. Contact sheet for the user: [docs/images/2026-11-11/godot-models-wanderer.jpg](../images/2026-11-11/godot-models-wanderer.jpg).
 
+## Stage 3, 2026-11-11: Grock as Colossus 1
+
+Grock replaces the stand-in at the first roster entry (28 m) when its model is present; without it the stand-in shows. Code: `colossi/grock_colossus.gd`, `colossi/rig_gait.gd`.
+
+### What Grock keeps and what it cannot do
+
+- Rig: its own 17 bones. The imported tree stays whole (its clips address `Armature/Skeleton3D`), turned 180° so it walks toward -Z like the stand-in.
+- Idle: `idle2` loops on the whole body; `RigGait` then replaces the legs with the procedural stride, bobs the hips, rolls the spine in a Shake and turns the head toward the Wanderer. Grock has no walk clip: the stride is procedural, its sweep fitted to the leg (hip to ankle 11.9 m) so the planted foot covers the 12.6 m of a step.
+- Feet: `TwoBoneIK3D` on thigh, shin and foot, targets at the posed ankles, never below the land.
+- Grab Points: 19 (calves, thighs, low back, a 4 by 3 grid on the back, the top of the hump, the top of the head as the climb's goal), found once on the mesh's back and top surface at rest; each rides the bone that skins that spot most (`root`, `Spine2`, `neck`, legs, shoulders). Links as on the stand-in.
+- Fall: a ragdoll of 17 bodies (one per bone, capsules between joints, a third of their length thick), pinned joints built at the topple, the stand-in's push.
+- Stands while he climbs: the Colossus no longer walks or turns while the Wanderer holds on (`Colossus.carrying`, SPEC: "stands while he climbs"). Before, the stand-in roamed on with him.
+- Haze: its material gets `disable_fog`, as the stand-in's stone.
+- Prepared once at start (`Roster.warm`: the model loaded and the Grab Points found); a Reset instantiates it.
+- Not used: the Attack and Defend clips. The Shake stays the procedural spine roll; whether a clip reads as a shake-off was not tried or judged.
+- Cannot: walk with its own legs' clip (none exists), bend a hand (no hand bones; the forearm is the last bone), show eyes (the stand-in's glowing eyes are gone).
+
+### Numbers
+
+`make godot-colossus-rig` (headless):
+
+| What | Result |
+|---|---|
+| Ragdoll bodies | 17 (at most 24) |
+| Grab Path | reaches the head from all 19 Grab Points |
+| Walking at 5 m/s | ankles 0.78 m above the land at least (their rest height), planted foot slides 0.10 m/s median, 0.27 m/s p90 (it slid 1.7 m/s with the stand-in's stride angles) |
+| Carrying | moved 0.00 m and turned 0.00° in 3 s with the Wanderer on it |
+| Fall on flat land | down after 4.5 s, chest 1.8 m above the land, no body flung (farthest 17.7 m from the chest) |
+| Fall on a 14° slope | down after 10.3 s, chest 1.6 m above the land, farthest body 21.0 m |
+
+`make godot-wanderer-motion` on Grock: hands on the grip 0.0 cm median, 9.4 cm p90; joint velocity jumps at climb transitions 2.9 to 3.3 m/s; the topple of the Fall jumps 18.4 m/s (the ragdoll's push carries his grip).
+
+`make godot-framing` (Metal), five runs: exit 0 five times, 64 of 64 checks each. The low hero walk from 300 m keeps him whole on 50 of 50 every time; with the giant standing, that walk now closes the gap only from 300 to 275 m and no longer crosses the 200 m switch between the long-walk and the near low hero camera (held still, 320 of 320 samples across that switch from eight directions, stage 2). Close grip through a Shake: head, hands and hips in frame on 30 of 30 in each run, after the close grip aims at them with 1.6 m of room (with 0.8 m, 17 of 30 on Grock: he climbs on during the pinned Shake and the dolly lags). Grock against the haze at the start, 1.6 km: contrast 0.99 (the stand-in 0.82), 172 px tall.
+
+`make godot-hitch ARGS=again` (the Reset rebuilds Grock): worst frame 35 ms in the Reset (limit 50), medians 16.7 ms in every Phase. The plain run (the Reset builds the next stand-in): worst 47 ms.
+
+### Cost of the whole scene (`make godot-model-cost`, Metal, load 11, not fps-trustworthy)
+
+The Colossus standing, the Wanderer 6 m behind it, both stand-ins against both real models, alternating in one run:
+
+| View | Stand-ins: tris (shadow) | draws (shadow) | frame | Models: tris (shadow) | draws (shadow) | frame | Empty view |
+|---|---|---|---:|---|---|---:|---:|
+| close (8 m, 27°) | 16,128 (16,128) | 8 (4) | 8.54 ms | 48,675 (48,675) | 2 (1) | 8.62 ms | 8.66 ms |
+| medium (168 m, 14.3°) | 64,136 (177,808) | 36 (49) | 9.40 ms | 56,483 (161,641) | 6 (7) | 9.88 ms | 9.30 ms |
+| long walk (1.6 km, 6°) | 64,136 (0) | 36 (0) | 12.53 ms | 27,793 (0) | 6 (0) | 12.71 ms | 12.45 ms |
+
+The real models cost 0.08 to 0.48 ms over the stand-ins and draw 6 to 13 calls where the stand-ins draw 12 to 85. Raw rows: [godot-model-cost-stage3.json](godot-model-cost-stage3.json).
+
 ## How the models are prepared
 
 ```bash

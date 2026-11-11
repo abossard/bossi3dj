@@ -53,13 +53,14 @@ make godot-page-test
 
 First version, running end to end at 1080p on Metal:
 - Land: Mælifellssandur from Copernicus GLO-30 in Terrain3D, with CC0 sand and rock textures, full collision, and a flat plain beyond the 8 km edge.
-- Colossi: rigged stand-ins (Skeleton3D, Grab Points on bone attachments, feet planted by TwoBoneIK3D, physical-bone ragdoll for the Fall). They walk to meet the Wanderer in Climb.
+- Colossi: Grock (Colossus 1) on its own rig once `make godot-models` has prepared it (`assets/MODELS.md`): idle clip with a procedural stride, Grab Points on its bones, feet planted by TwoBoneIK3D, a 17-body ragdoll for the Fall. Titan and Golem, and Grock without its model, are rigged stand-ins (Skeleton3D, Grab Points on bone attachments, foot IK, ragdoll). They walk to meet the Wanderer in Climb and stand while he climbs.
+- Wanderer: the Nomad on Mixamo clips (retargeted at runtime, feet and hands by IK, head toward the Colossus), or the stand-in without the model.
 - The Arc, Grab Path climbing with a sideways Shake swing, Takeover, and the auto director: telephoto wide shots, a Fall framing that follows the body, and `/vj/cam` pinning.
 - Music: OSC in; a value stays until the next packet, and an internal beat runs while `/vj/beat` is quiet. Footfall dust sized by `/vj/bass`, and an impact dust cloud.
 - Look: overcast dusk, volumetric fog, film grain and vignette in the output.
 - Out: Syphon `COLOSSUS_OUT`.
 
 Still to come:
-- The Wanderer is the Nomad on Mixamo clips (retargeted at runtime, feet and hands by IK) once `make godot-models` has prepared the downloads (`assets/MODELS.md`); without them the stand-in shows. The Sketchfab Colossi replace the stand-in parts next and keep the skeleton, Grab Path, IK and ragdoll setup.
+- Titan and Golem on their own rigs (`docs/reports/godot-model-cost.md` says what their archives need); the Mixamo clips for hanging, climbing, falling and standing up (`assets/MODELS.md`).
 - Ruins are stand-ins: the Shrine columns and a fallen head.
 - A Colossus more than 450 m away is lost in the sunlit haze, so long Approach shots show the walk, not the giant.
