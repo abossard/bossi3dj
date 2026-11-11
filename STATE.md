@@ -31,7 +31,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 
 ## Godot: Colossus Scene
 
-- Works: full Arc (Approach, Climb, Fall, Reset), 345 logic tests, OSC in on 9202, control page on 9211 with a self-check (22 of 22 headless and on Metal), values persist without packets, Syphon `COLOSSUS_OUT` (app `Godot`) at 1080p with pixel content, nothing of the page in the frame. Report: [docs/reports/godot-feature-check.md](docs/reports/godot-feature-check.md).
+- Works: full Arc (Approach, Climb, Fall, Reset), 345 logic tests, OSC in on 9201 (the one scene port), control page on 9211 with a self-check (22 of 22 headless and on Metal), values persist without packets, Syphon `COLOSSUS_OUT` (app `Godot`) at 1080p with pixel content, nothing of the page in the frame. Report: [docs/reports/godot-feature-check.md](docs/reports/godot-feature-check.md).
 - Look rounds 2 and 3 (2026-11-11, same rubric, 357 logic tests): 19 of the 21 round 1 frames pass. Ground no longer flat black, the Colossus reads at 1.6 km, the Wanderer is in the close grip on 30 of 30 samples, `/vj/shock` works from real packets. Notes: [docs/handover/godot-look-round2.md](docs/handover/godot-look-round2.md).
 - Still failing: `shot-2` and `2-approach-low-hero`. The low hero shot now holds the Wanderer whole in frame (probe), but the reviewer cannot see him: a dark stand-in of about 19 px on dark ground. Left for the real model.
 - Syphon publishes from frame 120 (2 s after the window opens) and the Reset holds black 2 s, because the lighting needs that long to converge.
@@ -41,12 +41,12 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 
 ## OSC contract
 
-- One source: `osc/contract.json`, 0..1 on the wire, synced into [osc/CONTROLS.md](osc/CONTROLS.md) and the Blender bridge. `magic/projects/show.magic` drives both scenes (38 addresses to the relay on 9200, `/vj/cam` 0..11). Opened in MagicBeta on 2026-11-11: its OSC reaches the Blender bridge through the relay (every control's source reads `osc`). Not checked: the picture inside Magic (its Syphon output is off in the project) and the mix with Godot. 
+- One source: `osc/contract.json`, 0..1 on the wire, synced into [osc/CONTROLS.md](osc/CONTROLS.md) and the Blender bridge. `magic/projects/show.magic` drives both scenes (38 addresses straight to udp 9201, `/vj/cam` 0..11). The version with the relay target was opened in MagicBeta on 2026-11-11 and its OSC reached the Blender bridge; the retargeted file is not loaded into Magic yet. Not checked: the picture inside Magic (its Syphon output is off in the project) and the mix with Godot. 
 
 ## Decided by the user
 
 - Contract: every continuous `/vj/*` control is 0..1 on the wire, each scene scales it to its own range; the wire default gives each scene its tuned look. Indices (`/vj/cam`) stay integers, triggers keep their strength.
-- 2026-11-11: no relay in the show path, since the two scenes never run together. Magic sends straight to one scene port, udp 9201, where both the Blender bridge and Godot listen; `make lab` stays as an optional debug tool. Change in progress.
+- 2026-11-11: no relay in the show path, since the two scenes never run together. Magic sends straight to one scene port, udp 9201, where both the Blender bridge and Godot listen; `make lab` stays as an optional debug tool. Committed (9c8793c); the Godot side is proven by its tests only, not live.
 - Blender planet, 2026-11-11: the night edges stay as they are after round 12, as a plain OSC control: `/vj/grid`, default 1. No further mesh rounds. The fresh-open bug (no edges until a node is re-evaluated) gets fixed.
 - Blender planet, 2026-11-11: the terrain mesh becomes irregular so the real night edges form an uneven net (round 12).
 - Blender planet, 2026-11-11: `/vj/grid` at night is the only wireframe control; no day control (`/vj/grid_day` was proposed and withdrawn the same day).
