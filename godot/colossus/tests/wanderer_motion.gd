@@ -296,7 +296,10 @@ func _run() -> void:
 		var b: Dictionary = climb[i]
 		print(
 			(
-				"  tick %d %s state %d t %.2f jump %.1f: target moved %.3f m, body %.3f m, yaw %.3f, same grip %s, hand w %.2f"
+				(
+					"  tick %d %s state %d t %.2f jump %.1f: target moved %.3f m, body %.3f m,"
+					+ " yaw %.3f, same grip %s, hand w %.2f"
+				)
 				% [
 					i,
 					b["bone"],
