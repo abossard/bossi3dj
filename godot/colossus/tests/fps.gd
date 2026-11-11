@@ -5,6 +5,8 @@ extends SceneTree
 ##   arc      one whole Arc (Approach, Climb, Fall, Reset, back to Approach) with vsync off: per
 ##            Phase, and the worst frame of the Arc;
 ##   vsync    the same Arc with vsync on: the frames over 16.7 ms and over 33.3 ms;
+##   sweep    the internal resolution from the show's setting up to 2x, to see where the GPU
+##            stops being hidden by the display link;
 ##   features each renderer feature switched off once, alternating with the scene as it is, in two
 ##            views, to name what the frame spends most on.
 ## Per row: median, 95th percentile and worst frame time (ms, from frame to frame), draw calls and
@@ -12,7 +14,7 @@ extends SceneTree
 ## reports one. Vsync is off and `Engine.max_fps` 0 except in `vsync`. A verdict on fps needs `make
 ## status` to say fps_trustworthy; the differences inside one run do not. No Syphon, no page, own
 ## OSC port, no change to the scene.
-## Godot --path godot/colossus --script res://tests/fps.gd -- <json out> [shots|arc|vsync|features]
+## Godot --path godot/colossus --script res://tests/fps.gd -- <out.json> [shots|arc|vsync|...]
 
 const TEST_PORT := 19202
 const ROW_SECONDS := 20.0
@@ -20,6 +22,13 @@ const SETTLE_SECONDS := 3.0
 const FEATURE_FRAMES := 150
 const FEATURE_ROUNDS := 3
 const FRAME_60 := 1000.0 / 60.0
+## Metal keeps the display link with vsync off, and has no GPU timer: a frame that fits in about
+## 8.3 ms reads 8.3 ms whatever it costs. So the table also reads each row with the internal
+## resolution at STRESS_SCALE times the output (bilinear, no MetalFX), where the GPU is the limit
+## and the frame time grows with the work, and `sweep` walks the scale to find where the floor ends.
+const STRESS_SCALE := 1.5
+const STRESS_SECONDS := 5.0
+const SWEEP_SCALES := [1.0, 1.25, 1.5, 1.75, 2.0]
 const ARC_LIMIT_SECONDS := 90.0
 ## Label and /vj/cam wire value (0 is shot 1).
 const SHOTS := [
@@ -197,6 +206,39 @@ func _unlimited() -> void:
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 
 
+## 0 is the show's setting (MetalFX temporal at 0.75); any other value renders that many times the
+## output's size, bilinear.
+func _scale(factor: float) -> void:
+	# The scale goes first when it stays inside the mode's limits, the mode first when it leaves them
+	# (MetalFX takes 0.33 to 1, bilinear any), or the engine falls back to another upscaler.
+	if factor <= 0.0:
+		main.output.scaling_3d_scale = 0.75
+		main.output.scaling_3d_mode = Viewport.SCALING_3D_MODE_METALFX_TEMPORAL
+	else:
+		main.output.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
+		main.output.scaling_3d_scale = factor
+
+
+func _sweep() -> void:
+	_report["sweep"] = {}
+	for view: Array in VIEWS:
+		if view[2] == "far":
+			await _far()
+		else:
+			await _near()
+		_pin(view[1])
+		await create_timer(SETTLE_SECONDS).timeout
+		var row := {}
+		for factor: float in [0.0] + SWEEP_SCALES:
+			_scale(factor)
+			await create_timer(1.0).timeout
+			var m := await _frame_median(view[2] == "near")
+			row["production" if factor == 0.0 else "%.2fx" % factor] = snappedf(m, 0.01)
+			print("%s  scale %s: %.2f ms" % [view[0], "production" if factor == 0.0 else factor, m])
+		_scale(0.0)
+		_report["sweep"][view[0]] = row
+
+
 func _shots() -> void:
 	_report["shots"] = {}
 	for situation: String in ["far", "near"]:
@@ -208,8 +250,15 @@ func _shots() -> void:
 			_pin(s[1])
 			await create_timer(SETTLE_SECONDS).timeout
 			var r := await _sample(ROW_SECONDS, situation == "near")
+			_scale(STRESS_SCALE)
+			await create_timer(1.0).timeout
+			var stress := await _sample(STRESS_SECONDS, situation == "near")
+			_scale(0.0)
+			r["stress_median_ms"] = stress["median_ms"]
+			r["stress_p95_ms"] = stress["p95_ms"]
 			_report["shots"]["%s, %s" % [situation, s[0]]] = r
 			_line("%s, %s" % [situation, s[0]], r)
+			print("    at %.1fx the pixels: median %.2f ms" % [STRESS_SCALE, stress["median_ms"]])
 
 
 ## One Arc: Approach (the Wanderer 60 m from the Colossus), Climb, Fall, Reset and the Approach
@@ -275,8 +324,10 @@ func _write(path: String, value: Variant) -> Variant:
 	return before
 
 
-func _features() -> void:
-	_report["features"] = {}
+func _features(factor: float) -> void:
+	var tag := "production" if factor == 0.0 else "%.1fx pixels" % factor
+	_scale(factor)
+	_report["features"][tag] = {}
 	for view: Array in VIEWS:
 		if view[2] == "far":
 			await _far()
@@ -301,11 +352,11 @@ func _features() -> void:
 				if path != "":
 					_write(path, was)
 		var base := _percentile(_sorted(rounds["as is"]), 0.5)
-		_report["features"][view[0]] = {"as is": snappedf(base, 0.01)}
-		print("%s: as is %.2f ms (GPU ms where the device reports it)" % [view[0], base])
+		_report["features"][tag][view[0]] = {"as is": snappedf(base, 0.01)}
+		print("%s, %s: as is %.2f ms" % [tag, view[0], base])
 		for f: Array in FEATURES:
 			var m := _percentile(_sorted(rounds[f[0]]), 0.5)
-			_report["features"][view[0]][f[0]] = snappedf(m, 0.01)
+			_report["features"][tag][view[0]][f[0]] = snappedf(m, 0.01)
 			print("  %-16s off: %.2f ms  (%+.2f)" % [f[0], m, m - base])
 
 
@@ -338,6 +389,16 @@ func _run() -> void:
 	await create_timer(6.0).timeout
 	_vp = main.output.get_viewport_rid()
 	RenderingServer.viewport_set_measure_render_time(_vp, true)
+	for i in 60:
+		await RenderingServer.frame_post_draw
+	_report["gpu_timer_ms"] = RenderingServer.viewport_get_measured_render_time_gpu(_vp)
+	_report["cpu_render_ms"] = RenderingServer.viewport_get_measured_render_time_cpu(_vp)
+	print(
+		(
+			"render time the engine reports: gpu %.2f ms, cpu %.2f ms (0 gpu: no GPU timer)"
+			% [_report["gpu_timer_ms"], _report["cpu_render_ms"]]
+		)
+	)
 	var args := OS.get_cmdline_user_args()
 	var part := args[1] if args.size() > 1 else "all"
 	_report["driver"] = RenderingServer.get_video_adapter_name()
@@ -351,9 +412,15 @@ func _run() -> void:
 		Engine.max_fps = 60
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED)
 		_report["vsync"] = await _arc("vsync on")
+	if part in ["all", "sweep"]:
+		_unlimited()
+		await _sweep()
 	if part in ["all", "features"]:
 		_unlimited()
-		await _features()
+		_report["features"] = {}
+		await _features(0.0)
+		await _features(STRESS_SCALE)
+		_scale(0.0)
 	var f := FileAccess.open(_out, FileAccess.WRITE)
 	f.store_string(JSON.stringify(_report, "  "))
 	f.close()

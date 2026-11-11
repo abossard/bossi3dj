@@ -51,3 +51,18 @@ blender/review/named_sheet.sh OUT.png 3 <png>...   # 480 px tiles for the shot-r
 - Kept: `level`, `intensity`, `fog`, `fog_height`, `haze`, `shock` as `<name>-godot.jpg` (480 px halves), `cam-godot.jpg` strip and `cam-godot-0..4.jpg`. Differences: level 35.8 / 91 %, intensity 109.9 / 95 %, fog 53.4 / 88 %, fog_height 21.5 / 28 %, haze 5.8 / 11 % (shot 0 at 1550 m), shock 28.1 / 67 %. Reviewer: intensity, fog, fog_height clearly visible; level (sun glow, wire 0 to 1 is only 1.0 to 2.6 light energy), haze and shock (a still of a Shake) weak by eye.
 - Left out: `bass` and `beat`: the footfall dust at weight 0.5 against 1.0 (and none against a puff) differs by 3.4 luma on 0.2 % of the pixels, the film grain's floor, in the low hero shot 28 m from the foot.
 - Single frames at 1280 px in `docs/images/readme/colossus-*.jpg`, the reviewer's top eight of the final look.
+
+## Parked (2026-11-11)
+
+The user parked the Godot scene ("too ugly to be honest"). Nothing runs; Godot is closed.
+
+- Done: round 6 look (climb light, hero back-off, Grock rock detail, glints, dust skirt), shot names on the control page, README pictures, probes, one frame-time run. `make godot-test` 422, `make godot-lint`, `make godot-check` 22 effect pass with and without `assets/models/`.
+- Was running: the second `make godot-fps` (stress 1.5x, sweep to 2x, MetalFX order fixed); killed. The table in [docs/reports/godot-fps.md](../reports/godot-fps.md) is from the first run, load 55 to 20, `fps_trustworthy` false: context only. Its three costs at 4x pixels: SSIL, SDFGI, glow.
+- Open: the far wide shot has no scale cue (`giant-scale`, 9 frames); climb frames sit on lifted blacks (contrast 0.85); the hand IK misses the grip by about 15 cm through a Shake; seven Mixamo clips are not downloaded (list in `assets/MODELS.md`); the fps table is not from an idle machine; `bass` and `beat` have no README picture.
+- Pick up:
+
+```bash
+make godot-fps FPS_OUT=docs/reports/godot-fps.json   # on an idle machine, then replace the table in docs/reports/godot-fps.md
+make godot-framing && make godot-hitch               # Metal
+make godot-test && make godot-lint && make godot-check
+```
