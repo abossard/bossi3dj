@@ -84,6 +84,106 @@ The music drives the weight of the scene: `/vj/bass` sets how heavy each footfal
 
 Screenshots of the running scene will follow. The character models are not in the repository (they come from downloads with their own licences); without them the scene runs with stand-ins. See [godot/colossus/assets/MODELS.md](godot/colossus/assets/MODELS.md) for what is needed and how to rebuild them.
 
+## All OSC channels
+
+Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:9201, for example `/vj/fog 0.8`. A value is 0 to 1 unless the row says otherwise; each scene scales it to its own range. Without Magic you can try every channel by hand on the scene's control page: http://127.0.0.1:9210 for Blender, http://127.0.0.1:9211 for Godot. The table below is made from [osc/contract.json](osc/contract.json) (`make osc-sync`); the exact numbers per scene are in [osc/CONTROLS.md](osc/CONTROLS.md). A picture shows a channel at a low and a high value where one has been taken; an empty cell means none yet.
+
+<!-- osc-manual:begin -->
+<details open>
+<summary><b>Light and colour</b> (6)</summary>
+
+| Address | What you see | Wire | Scene | Picture |
+|---|---|---|---|---|
+| `/vj/level` | The sun and its glow get stronger the louder the music is. | 0..1, default 0.5 | both |  |
+| `/vj/bass` | Bass makes things hit harder: the glowing ground net and waterline in Blender, the shake and dust of each footfall in Godot. | 0..1, default 0 | both |  |
+| `/vj/beat` | Pulses on every beat: pyramid edges, stars and water glints in Blender, footfalls and dust puffs in Godot. | 0..1, default 0 | both |  |
+| `/vj/hue` | Turns all colours around the colour wheel. | 0..1, default 0 | Blender |  |
+| `/vj/intensity` | Makes the whole picture brighter or darker. | 0..1, default 0.5 | both |  |
+| `/vj/strobe` | Flashes the picture to white; higher means a stronger flash. | 0..1, default 0 | Blender |  |
+
+</details>
+
+<details>
+<summary><b>Sky, sun and moon</b> (8)</summary>
+
+| Address | What you see | Wire | Scene | Picture |
+|---|---|---|---|---|
+| `/vj/sun` | Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon. | 0..1, default 1 | Blender |  |
+| `/vj/moon` | Makes the moon bigger or smaller. | 0..1, default 1 | Blender |  |
+| `/vj/moon_phase` | Changes the shape of the moon from new through half to full. | 0..1, default 1 | Blender |  |
+| `/vj/stars` | Fades the stars in or out. | 0..1, default 1 | Blender |  |
+| `/vj/night` | Turns day into night: 0 is day, a quarter is sunset, half is twilight, 1 is night. | 0..1, default 0 | Blender |  |
+| `/vj/nebula` | Fades in the coloured cloud in the night sky. | 0..1, default 1 | Blender |  |
+| `/vj/eclipse` | Lines the moon up with the sun and the planet for an eclipse. | 0..1, default 0 | Blender |  |
+| `/vj/star_speed` | Makes the stars drift across the sky. | 0..1, default 0 | Blender |  |
+
+</details>
+
+<details>
+<summary><b>Ground, water and things on it</b> (5)</summary>
+
+| Address | What you see | Wire | Scene | Picture |
+|---|---|---|---|---|
+| `/vj/grid_speed` | Makes the glowing grid on the ground scroll faster. | 0..1, default 0.15 | Blender |  |
+| `/vj/pyramids` | Makes the pyramids rise out of the ground. | 0..1, default 1 | Blender |  |
+| `/vj/grid` | Shows the real triangle edges of the ground as a glowing net at night; by day there is none. | 0..1, default 1 | Blender |  |
+| `/vj/water` | Turns the reflections on the water up or down. | 0..1, default 1 | Blender |  |
+| `/vj/flamingos` | Makes the flock of flamingos bigger; 0 hides it. | 0..1, default 1 | Blender |  |
+
+</details>
+
+<details>
+<summary><b>Fog</b> (9)</summary>
+
+| Address | What you see | Wire | Scene | Picture |
+|---|---|---|---|---|
+| `/vj/fog` | More fog near the ground; at 1 it is dense autumn fog. | 0..1, default 0.35 | both |  |
+| `/vj/fog_height` | Makes the fog bank taller or lower. | 0..1, default 0.41 | both |  |
+| `/vj/fog_glow` | Makes the fog glow by itself. | 0..1, default 0.3 | Blender |  |
+| `/vj/fog_hue` | Tints the fog pink, violet or cyan. | 0..1, default 0 | Blender |  |
+| `/vj/fog_noise` | Makes the fog patchier. | 0..1, default 0.6 | Blender |  |
+| `/vj/fog_scale` | Makes the fog clouds bigger or smaller. | 0..1, default 0.25 | Blender |  |
+| `/vj/fog_speed` | Makes the wind push the fog along faster. | 0..1, default 0.25 | Blender |  |
+| `/vj/fog_beat` | Makes the fog pump with the beat. | 0..1, default 0.5 | Blender |  |
+| `/vj/haze` | Adds or removes the soft haze toward the horizon. | 0..1, default 1 | both |  |
+
+</details>
+
+<details>
+<summary><b>Camera and Flight</b> (6)</summary>
+
+| Address | What you see | Wire | Scene | Picture |
+|---|---|---|---|---|
+| `/vj/cam` | Cuts to camera number N; 0 is the first shot. | integer 0..11, default 0 | both |  |
+| `/vj/cam_speed` | Makes the camera drift and fly faster or slower. | 0..1, default 0.25 | Blender |  |
+| `/vj/flight` | Steers the flying camera: 0 high orbit, then a landing approach, a skim over the mountains, and at 1 a hover over the water. | 0..1, default 0 | Blender |  |
+| `/vj/boost` | Gives the flying camera a burst of speed with a wider view. | 0..1, default 0 | Blender |  |
+| `/vj/blend` | Makes a camera change fly smoothly to the new shot; 0 cuts at once. | 0..1, default 0.5 | Blender |  |
+| `/vj/energy` | Makes the camera move harder, from a slow wide glide to faster, tighter moves. | 0..1, default 0.3 | Blender |  |
+
+</details>
+
+<details>
+<summary><b>Triggers</b> (3)</summary>
+
+| Address | What you see | Wire | Scene | Picture |
+|---|---|---|---|---|
+| `/vj/shock` | A shock wave runs over the land once; in Godot the giant shakes while the Wanderer is on it. | trigger 0..1.5, default 0 | both |  |
+| `/vj/meteor` | A shooting star crosses the sky. | trigger 0..1, default 0 | Blender |  |
+| `/vj/hit` | A quick surge of speed with a wide-angle kick on the camera. | trigger 0..1, default 0 | Blender |  |
+
+</details>
+
+<details>
+<summary><b>Godot only</b> (1)</summary>
+
+| Address | What you see | Wire | Scene | Picture |
+|---|---|---|---|---|
+| `/vj/cam_auto` | 1 lets the scene's director cut between shots by itself, 0 holds the shot that `/vj/cam` picks. | integer 0..1, default 1 | Godot |  |
+
+</details>
+<!-- osc-manual:end -->
+
 ## Try it
 
 ```bash

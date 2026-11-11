@@ -1,6 +1,7 @@
 """osc/contract.json and its copies. Run: python3 -m unittest discover osc/tests"""
 import ast
 import os
+import re
 import sys
 import unittest
 
@@ -60,6 +61,31 @@ class TableTests(unittest.TestCase):
     def test_controls_md_table_is_the_rendering_of_the_json(self):
         with open(contract.CONTROLS_MD) as f:
             self.assertEqual(contract.current_table(f.read()), contract.render_table(ROWS))
+
+    def test_readme_manual_is_the_rendering_of_the_json(self):
+        with open(contract.README_MD) as f:
+            self.assertEqual(contract.current_manual(f.read()), contract.render_manual(ROWS))
+
+    def test_every_address_is_in_the_readme_manual_once(self):
+        with open(contract.README_MD) as f:
+            block = contract.current_manual(f.read())
+        for r in ROWS:
+            with self.subTest(address=r["address"]):
+                self.assertEqual(block.count("| `%s` |" % r["address"]), 1)
+
+    def test_rows_have_a_group_and_a_plain_sentence(self):
+        for r in ROWS:
+            with self.subTest(address=r["address"]):
+                self.assertIn(r["group"], contract.GROUPS)
+                self.assertTrue(r["plain"].strip() and r["plain"].endswith("."))
+                self.assertNotIn("|", r["plain"])
+
+    def test_manual_pictures_exist(self):
+        with open(contract.README_MD) as f:
+            block = contract.current_manual(f.read())
+        for path in re.findall(r'src="([^"]+)"', block):
+            with self.subTest(path=path):
+                self.assertTrue(os.path.exists(os.path.join(contract.ROOT, path)))
 
     def test_bridge_scales_block_is_the_rendering_of_the_json(self):
         with open(contract.BRIDGE_PY) as f:

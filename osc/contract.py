@@ -1,9 +1,15 @@
 """The /vj/* contract as data. contract.json is the one source; this module reads it and
-writes its two copies that cannot import it:
+writes its three copies that cannot import it:
 
-    python3 osc/contract.py sync     rewrite the table in CONTROLS.md and the SCALES block in blender/blender_osc_bridge.py
-    python3 osc/contract.py check    exit 1 when either copy is out of step (tests/test_contract.py does the same)
+    python3 osc/contract.py sync     rewrite the table in CONTROLS.md, the SCALES block in blender/blender_osc_bridge.py and
+                                     the manual for viewers in README.md (between the osc-manual markers)
+    python3 osc/contract.py check    exit 1 when a copy is out of step (tests/test_contract.py does the same)
     python3 osc/contract.py table    print the table
+    python3 osc/contract.py manual   print the README manual
+
+The manual is made from each row's `group` and `plain` fields (one everyday sentence on what a viewer sees change) and
+from the pictures that exist in docs/images/readme/osc/: <name>-blender.jpg and <name>-godot.jpg, name = the address
+without /vj/. A cell without a file stays empty.
 
 Standard library only. Wire units: a continuous control is 0..1, an index is an integer, a trigger keeps its strength.
 """
@@ -16,8 +22,12 @@ ROOT = os.path.dirname(HERE)
 CONTRACT_JSON = os.path.join(HERE, "contract.json")
 CONTROLS_MD = os.path.join(HERE, "CONTROLS.md")
 BRIDGE_PY = os.path.join(ROOT, "blender", "blender_osc_bridge.py")
+README_MD = os.path.join(ROOT, "README.md")
+MANUAL_IMAGES = os.path.join("docs", "images", "readme", "osc")      # relative to ROOT, as the README links it
 
 TABLE_BEGIN, TABLE_END = "<!-- contract-table:begin -->", "<!-- contract-table:end -->"
+MANUAL_BEGIN, MANUAL_END = "<!-- osc-manual:begin -->", "<!-- osc-manual:end -->"
+GROUPS = ["Light and colour", "Sky, sun and moon", "Ground, water and things on it", "Fog", "Camera and Flight", "Triggers", "Godot only"]
 SCALES_BEGIN = "# --- contract:begin (generated from osc/contract.json by `python3 osc/contract.py sync`, do not edit) ---"
 SCALES_END = "# --- contract:end ---"
 
@@ -95,6 +105,36 @@ def render_scales(rows=None):
     return "\n".join(out)
 
 
+def _scenes(row):
+    return {(True, True): "both", (True, False): "Blender", (False, True): "Godot"}[(bool(row["blender"]), bool(row["godot"]))]
+
+
+def _pictures(row, root=ROOT):
+    """The picture cell: one image per scene that has a file, a pair low | high (before | during for a trigger, the shots for /vj/cam)."""
+    name = row["address"][len("/vj/"):]
+    what = "before | during" if row["kind"] == "trigger" else "the shots" if row["address"] == "/vj/cam" else "low | high"
+    out = []
+    for who, label in (("blender", "Blender"), ("godot", "Godot")):
+        rel = os.path.join(MANUAL_IMAGES, "%s-%s.jpg" % (name, who)).replace(os.sep, "/")
+        if row[who] and os.path.exists(os.path.join(root, rel)):
+            out.append('<img src="%s" width="300" alt="%s, %s: %s"><br><sub>%s, %s</sub>' % (rel, row["address"], label, what, label, what))
+    return "<br>".join(out)
+
+
+def render_manual(rows=None, root=ROOT):
+    """The README manual: one small table per group, the first group open, the others folded."""
+    rows = rows or load()
+    out = []
+    for i, group in enumerate(GROUPS):
+        members = [r for r in rows if r["group"] == group]
+        out += ["<details%s>" % (" open" if i == 0 else ""), "<summary><b>%s</b> (%d)</summary>" % (group, len(members)), "",
+                "| Address | What you see | Wire | Scene | Picture |", "|---|---|---|---|---|"]
+        for r in members:
+            out.append("| `%s` | %s | %s | %s | %s |" % (r["address"], r["plain"], _wire(r), _scenes(r), _pictures(r, root)))
+        out += ["", "</details>", ""]
+    return "\n".join(out).rstrip("\n")
+
+
 def _between(text, begin, end):
     i, j = text.index(begin), text.index(end)
     return i + len(begin), j
@@ -112,6 +152,11 @@ def current_table(text):
     return text[i:j].strip("\n")
 
 
+def current_manual(text):
+    i, j = _between(text, MANUAL_BEGIN, MANUAL_END)
+    return text[i:j].strip("\n")
+
+
 def current_scales(text):
     return text[text.index(SCALES_BEGIN):text.index(SCALES_END) + len(SCALES_END)]
 
@@ -119,7 +164,8 @@ def current_scales(text):
 def sync():
     rows = load()
     for path, begin, end, body, keep in ((CONTROLS_MD, TABLE_BEGIN, TABLE_END, render_table(rows), True),
-                                         (BRIDGE_PY, SCALES_BEGIN, SCALES_END, render_scales(rows), False)):
+                                         (BRIDGE_PY, SCALES_BEGIN, SCALES_END, render_scales(rows), False),
+                                         (README_MD, MANUAL_BEGIN, MANUAL_END, render_manual(rows), True)):
         with open(path) as f:
             text = f.read()
         new = spliced(text, begin, end, body, keep)
@@ -138,6 +184,9 @@ def stale():
     with open(BRIDGE_PY) as f:
         if current_scales(f.read()) != render_scales(rows):
             out.append("blender/blender_osc_bridge.py SCALES")
+    with open(README_MD) as f:
+        if current_manual(f.read()) != render_manual(rows):
+            out.append("README.md manual")
     return out
 
 
@@ -147,6 +196,8 @@ def main(argv):
         sync()
     elif cmd == "table":
         print(render_table())
+    elif cmd == "manual":
+        print(render_manual())
     elif cmd == "check":
         s = stale()
         for name in s:
