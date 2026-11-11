@@ -135,8 +135,9 @@ HILLS_M, KNOLLS_M = 70.0, 12.0  # m: rolling hills (1 km across) and little hill
 LAKE_MAX_H = 40.0              # m: no lakes above this: water stays in the low valleys and on the coast (lakes in
 #                                the rolling hills stood as flat slabs on the slopes)
 VALLEY_KNOLLS = (1.5, 9.0)     # m: little hills on the valley floor, near its axis and at its edge: only ever up from the floor, so no pits
-PLAIN_SWELL = (12.0, 320.0)    # m, m across: swells on all land, (noise - 0.5) x 2 x this (about 2 m std), so the drawn
-PLAIN_KNOLL = (4.0, 90.0)      # mesh's real edges bend at night; knolls on them, a few cells of the near LOD (round 11)
+PLAIN_SWELL = (24.0, 320.0)    # m, m across: swells on all land, (noise - 0.5) x 2 x this (about 4 m std), so the drawn
+PLAIN_KNOLL = (8.0, 90.0)      # mesh's real edges bend at night; knolls on them, a few cells of the near LOD (round 11:
+#                                at half these the plain in front of CAM_0 still read as a lattice)
 VALLEY_Y = (-3000.0,)          # m: the valley head; it runs north from there
 VALLEY_E, VALLEY_FALL = 4.5, 0.0015    # floor elevation at the pole, fall per metre north: the river runs near sea level and meets the bay about 1.7 km north, as on the island
 
@@ -1380,9 +1381,9 @@ seed_p = G.vmath("SCALE", SEED_AXIS, scale=seed_s)
 relief = G.addf(G.mul(G.sub(G.noise(G.add(G.vmath("SCALE", p, scale=1.0 / PLAIN_SWELL[1]), (37.0, 11.0, 3.0), seed_p), 2), 0.5), 2.0 * PLAIN_SWELL[0]),
                 G.mul(G.sub(G.noise(G.add(G.vmath("SCALE", p, scale=1.0 / PLAIN_KNOLL[1]), (13.0, 31.0, 7.0), seed_p), 1), 0.5), 2.0 * PLAIN_KNOLL[0]))
 for o_ in (o_ for o_ in S.objects if GRAFT and o_.type == "MESH" and o_.name[:8] == "Pyramid_" and len(o_.name) == 9):
-    r_ = max(o_.dimensions.x, o_.dimensions.y) * 0.71 + 20.0      # half-diagonal and a margin
-    c_ = Vector((o_.location.x, o_.location.y, R)).normalized() * R
-    relief = G.mul(relief, G.smooth(G.vmath("DISTANCE", p, tuple(c_)), r_, r_ + 150.0))
+    r_ = max(o_.dimensions.x, o_.dimensions.y) * 0.71 + 10.0      # half-diagonal and a margin (fading over 150 m left a
+    c_ = Vector((o_.location.x, o_.location.y, R)).normalized() * R      # level lattice at their foot in CAM_3)
+    relief = G.mul(relief, G.smooth(G.vmath("DISTANCE", p, tuple(c_)), r_, r_ + 60.0))
 snl = G.node("GeometryNodeSampleNearestSurface", data_type="FLOAT")
 G.feed(snl.inputs["Mesh"], gi["Hydro"])
 G.feed(snl.inputs["Value"], G.read("lake_near"))
