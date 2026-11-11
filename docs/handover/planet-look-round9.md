@@ -59,7 +59,7 @@ Load stayed 50 to 220 (dotnet, OneDrive, fileproviderd): `fps_trustworthy` false
 | `S9_pull_2_10k_*` | pass (limb, rivers) |
 | `S9_orbit_limb` | S6 fail: stars right of the limb are smeared squares |
 
-Per rubric line (pass/fail): R9-WIRE 14/1, R9-NEB1 10/0, R9-NEB0 1/1, R9-CAM1 1/1 on tiles (re-check pass), R9-CAM4W 4/2, R9-CAM4F 1/1, R9-CAM5 0/2, R9-CAM9 2/0, R9-MOON 3/0, R9-CAM6 3/0, R9-CAM7 3/0, R9-CAM8 3/0, R9-LIMB 6/0, R9-RIVER 3/0, S6 5/1, T-night 11/1, G2 28/1, every other line all pass.
+Per rubric line (pass/fail): R9-WIRE withdrawn by the user (2026-11-11), not scored; R9-NEB1 10/0, R9-NEB0 1/1, R9-CAM1 1/1 on tiles (re-check pass), R9-CAM4W 4/2, R9-CAM4F 1/1, R9-CAM5 0/2, R9-CAM9 2/0, R9-MOON 3/0, R9-CAM6 3/0, R9-CAM7 3/0, R9-CAM8 3/0, R9-LIMB 6/0, R9-RIVER 3/0, S6 5/1, T-night 11/1, G2 28/1, every other line all pass.
 
 ### Frame-time A/B (interleaved, three rounds, clocks frozen, inputs held; `fps_trustworthy` false)
 
@@ -77,12 +77,14 @@ Per rubric line (pass/fail): R9-WIRE 14/1, R9-NEB1 10/0, R9-NEB0 1/1, R9-CAM1 1/
 
 ## Open
 
+The wireframe moves to round 10 ([planet-look-round10.md](planet-look-round10.md)): the user forbids any dummy wireframe and any lines by day.
+
+
 | Item | Evidence | Next step |
 |---|---|---|
 | R9-NEB0 CAM_10 core glow at nebula 0 | numbers above | a cut between point stars and the core glow: map the texel luminance of stars against the core (`star_map_stats.py` per region), or a high-pass with one blurred lookup; measure the extra lookup |
 | R9-CAM5 top band in fog | rows 0 to 5 of 540 brighten with fog only (row 0: 133 at f0, 183 at f05, 219 at f1; row 8 unchanged); bottom rows and side columns flat; CAM_4 f1 flat | screen-edge froxel effect on CAM_5 only; try a camera overscan of a few px or a region height that is a multiple of the tile size, measure frame time |
 | R9-CAM4F night haze at fog 1 | night fog albedo (0.06, 0.05, 0.08) lit by the blue `Fog_Moon` and a thicker night tail (`fog_layer`) | a neutral night albedo or a lower night tail; changes every night fog shot, so a round of its own |
-| R9-WIRE CAM_4 p25 far sunlit hillside | reviewer: almost no lines on the left hillside | check the day lattice width at the hillside's distance (500 m+) |
 | S6 limb stars at 200 mm | 8k map texel about 8 px at that lens: Linear interpolation draws squares | procedural point stars for long lenses, or accept for the proof shot |
 | R9-CAM4W step and crease | accepted for round 9 (round 8 table) | its own round |
 | M1 cut timing | 11 of 84 over 70 ms at load ~86 | re-measure when `fps_trustworthy` |

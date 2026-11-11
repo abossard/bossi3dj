@@ -611,5 +611,8 @@
         35.8
       ]
     }
+  },
+  "withdrawn": {
+    "R9-WIRE": "withdrawn by the user on 2026-11-11 (no wireframe by day, no dummy wireframe ever): not scored; its 14 pass and 1 fail are void"
   }
 }
