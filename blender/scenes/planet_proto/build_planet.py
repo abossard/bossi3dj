@@ -135,6 +135,8 @@ HILLS_M, KNOLLS_M = 70.0, 12.0  # m: rolling hills (1 km across) and little hill
 LAKE_MAX_H = 40.0              # m: no lakes above this: water stays in the low valleys and on the coast (lakes in
 #                                the rolling hills stood as flat slabs on the slopes)
 VALLEY_KNOLLS = (1.5, 9.0)     # m: little hills on the valley floor, near its axis and at its edge: only ever up from the floor, so no pits
+PLAIN_SWELL = (12.0, 320.0)    # m, m across: swells on all land, (noise - 0.5) x 2 x this (about 2 m std), so the drawn
+PLAIN_KNOLL = (4.0, 90.0)      # mesh's real edges bend at night; knolls on them, a few cells of the near LOD (round 11)
 VALLEY_Y = (-3000.0,)          # m: the valley head; it runs north from there
 VALLEY_E, VALLEY_FALL = 4.5, 0.0015    # floor elevation at the pole, fall per metre north: the river runs near sea level and meets the bay about 1.7 km north, as on the island
 
@@ -1262,6 +1264,10 @@ bl = G.node("GeometryNodeBlurAttribute", data_type="FLOAT")
 G.feed(bl.inputs["Value"], G.mul(G.read("wet"), G.read("m")))
 bl.inputs["Iterations"].default_value = 1
 near = G.math("GREATER_THAN", bw.outputs[0], 1e-4)
+bk = G.node("GeometryNodeBlurAttribute", data_type="FLOAT")      # lakes and their first ring: no relief there (PL_Surface)
+G.feed(bk.inputs["Value"], lake)
+bk.inputs["Iterations"].default_value = 1
+geo = G.store(geo, "lake_near", G.math("GREATER_THAN", bk.outputs[0], 1e-4))
 ring = G.math("DIVIDE", bl.outputs[0], G.math("MAXIMUM", bw.outputs[0], 1e-6))   # first ring around a lake carries its level, so shores come from the fine terrain
 dry_wl = G.addf(G.mul(near, ring), G.mul(G.sub(1.0, near), SENTINEL))
 # sea level reaches OCEAN_REACH rings inland: the fine terrain dips under 0 between dry hydrology vertices near a coast,
@@ -1337,8 +1343,9 @@ g_surf, G, gi, go = gn_group("PL_Surface", [("Dir", "NodeSocketVector", None), (
                              [("Height", "NodeSocketFloat"), ("Water", "NodeSocketFloat"), ("Channel", "NodeSocketFloat"),
                               ("Flow", "NodeSocketVector"), ("Mountain", "NodeSocketFloat")])
 p = G.vmath("SCALE", gi["Dir"], scale=R)
-el = G.group(g_elev, Dir=gi["Dir"], Seed=G.sample(gi["Hydro"], G.read("seed"), 0, "FLOAT"))
-h = G.sub(el["Elevation"], G.sample(gi["Hydro"], G.read("sea"), 0, "FLOAT"))
+seed_s = G.sample(gi["Hydro"], G.read("seed"), 0, "FLOAT")
+el = G.group(g_elev, Dir=gi["Dir"], Seed=seed_s)
+h0 = G.sub(el["Elevation"], G.sample(gi["Hydro"], G.read("sea"), 0, "FLOAT"))
 sns = G.node("GeometryNodeSampleNearestSurface", data_type="FLOAT")
 G.feed(sns.inputs["Mesh"], gi["Hydro"])
 G.feed(sns.inputs["Value"], G.read("wl_face"))     # flat per hydrology triangle
@@ -1362,6 +1369,28 @@ def along_river(name, dtype="FLOAT"):
 
 rwl = along_river("rwl")
 rhw = G.math("MAXIMUM", along_river("rhw"), 4.0)
+# relief of the plains (round 11): the patch mesh is a regular grid of cells, so on flat ground its real edges drew a
+# lattice at night. Swells and knolls bend them. Only here, after the hydrology (which reads PL_Elevation), so lakes and
+# rivers stay where they were. Nothing at or under the sea or a river within its shore: no new islands, the shores stay;
+# rises fade in over the first 3 m above it, dips go at most half way down to it, so no pit holds water. The reference
+# level is continuous (sea 0, the river's level falling 1 m per m past its shore): the lakes' level is flat per hydrology
+# triangle and stepped the relief along its edges, so lakes and their first ring get none (lake_near, interpolated).
+# Level under the island's pyramids (each stands at one height).
+seed_p = G.vmath("SCALE", SEED_AXIS, scale=seed_s)
+relief = G.addf(G.mul(G.sub(G.noise(G.add(G.vmath("SCALE", p, scale=1.0 / PLAIN_SWELL[1]), (37.0, 11.0, 3.0), seed_p), 2), 0.5), 2.0 * PLAIN_SWELL[0]),
+                G.mul(G.sub(G.noise(G.add(G.vmath("SCALE", p, scale=1.0 / PLAIN_KNOLL[1]), (13.0, 31.0, 7.0), seed_p), 1), 0.5), 2.0 * PLAIN_KNOLL[0]))
+for o_ in (o_ for o_ in S.objects if GRAFT and o_.type == "MESH" and o_.name[:8] == "Pyramid_" and len(o_.name) == 9):
+    r_ = max(o_.dimensions.x, o_.dimensions.y) * 0.71 + 20.0      # half-diagonal and a margin
+    c_ = Vector((o_.location.x, o_.location.y, R)).normalized() * R
+    relief = G.mul(relief, G.smooth(G.vmath("DISTANCE", p, tuple(c_)), r_, r_ + 150.0))
+snl = G.node("GeometryNodeSampleNearestSurface", data_type="FLOAT")
+G.feed(snl.inputs["Mesh"], gi["Hydro"])
+G.feed(snl.inputs["Value"], G.read("lake_near"))
+G.feed(snl.inputs["Sample Position"], p)
+relief = G.mul(relief, G.sub(1.0, G.smooth(snl.outputs["Value"], 0.0, 0.5)))
+above = G.sub(h0, G.math("MAXIMUM", G.sub(rwl, G.math("MAXIMUM", G.sub(dr, G.addf(rhw, RIVER_SHORE + 15.0)), 0.0)), 0.0))
+relief = G.math("MAXIMUM", G.mul(relief, G.smooth(above, 0.0, 3.0)), G.mul(G.math("MAXIMUM", above, 0.0), -0.5))
+h = G.addf(h0, relief)
 x = G.math("DIVIDE", dr, rhw)
 depth = G.addf(1.2, G.mul(rhw, 0.06))
 bed = G.sub(rwl, G.mul(depth, G.sub(1.0, G.math("MINIMUM", G.mul(x, x), 1.0))))
@@ -1369,7 +1398,7 @@ bank = G.addf(rwl, G.mul(G.sub(dr, rhw), VALLEY_SLOPE))     # the river cuts a V
 # inside the channel, so the bed wins there (a bank clamped at the water level left the bed 0 m deep)
 hc = G.math("MINIMUM", h, G.math("MAXIMUM", bed, bank))
 in_r = G.mul(G.sub(1.0, G.smooth(G.sub(dr, rhw), RIVER_SHORE, RIVER_SHORE + 15.0)),   # flat past the bank, under the rising
-             G.math("GREATER_THAN", h, G.sub(G.sub(rwl, depth), 1.0)))                 # ground: the terrain draws the waterline;
+             G.math("GREATER_THAN", h0, G.sub(G.sub(rwl, depth), 1.0)))                # ground: the terrain draws the waterline;
 # river water only where it cuts a channel, not over lower ground
 # The water level is continuous everywhere, so nothing interpolated across a triangle (the water surface, the land's
 # water cut) can zigzag: the highest of lake level, sea level (0) and "15 m under the ground", with the river level
