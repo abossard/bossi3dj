@@ -452,6 +452,7 @@ MW_N = tuple(Vector((0.45, -0.30, 0.84)).normalized())
 STAR_RES = ARGS[ARGS.index("--stars") + 1] if "--stars" in ARGS else "8k"
 STAR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "starmaps", "starmap_2020_%s.exr" % STAR_RES)
 STAR_BLACK, STAR_K = 0.002, 3.0
+NEB_LO, NEB_HI, NEB_K = 0.006, 0.03, 0.35     # the Milky Way band (space_sky): texel luminance where it fades in, its gain
 STAR_INTERP = "Linear"
 STAR_IMG = bpy.data.images.load(STAR_PATH, check_existing=True)     # referenced, not packed (124 or 423 MB)
 STAR_IMG.use_half_precision = True       # a half-float GPU texture: the map itself is half float
@@ -739,7 +740,7 @@ def coast_w(T):
     the difference as dark specks along the coasts (10 km, round 6)."""
     ea = eye_alt(T)
     band = T.mul(T.smooth(ea, GLOBE_BAND[0] - 1500.0, GLOBE_BAND[0]), T.sub(1.0, T.smooth(ea, GLOBE_BAND[1], GLOBE_BAND[1] + 3000.0)))
-    return T.addf(1.5, T.mul(band, 4.5))
+    return T.addf(1.5, T.mul(band, 13.5))     # 15 m (round 9): at 6 m the 10 km coasts still speckled
 
 
 def orbit_look(T, pos, inc, up, n_, h, depth, land, sun, city=0.0):
@@ -768,7 +769,7 @@ def orbit_look(T, pos, inc, up, n_, h, depth, land, sun, city=0.0):
     # different resolution, and their per-pixel dissolve showed that difference as salt-and-pepper speckle (10 km)
     ea = eye_alt(T)
     band = T.mul(T.smooth(ea, GLOBE_BAND[0] - 1500.0, GLOBE_BAND[0]), T.sub(1.0, T.smooth(ea, GLOBE_BAND[1], GLOBE_BAND[1] + 3000.0)))
-    lam = T.fmix(T.mul(band, 0.8), lam, 0.6)
+    lam = T.fmix(band, lam, 0.6)     # fully flat (round 9; at 0.8 the speckle stayed on the 10 km limb)
     lit_land = T.scale(land_c, T.mul(day, T.addf(0.3, T.mul(lam, 0.7))))
     # a warm pink-orange band along the terminator, where the ground sees the sun set (S9: it showed only where the
     # terminator met the limb)
@@ -1052,7 +1053,7 @@ if GRAFT:   # the planet's materials call the island's shared groups, so later i
             n.inputs[4].default_value = 1.0 - (1.0 - n.inputs[4].default_value) * 0.27
 
 
-def star_map(T, d):
+def star_texels(T, d):
     """The star map's colour toward the world direction d: the map's north celestial pole on the spin axis +x, so the
     sky turns about it with rt_star_ang the way the real one turns about the pole (the camera area sits on the
     equator, both celestial poles on its horizon). Right ascension runs to the left in the map, 0h in its middle."""
@@ -1083,9 +1084,15 @@ def star_map(T, d):
     capk = T.smooth(T.math("ABSOLUTE", cx), math.cos(STAR_CAP - math.radians(2.0)), math.cos(STAR_CAP - math.radians(6.0)))
     col = T.mix(capk, col, sample(STAR_CAPS, T.comb(uc, vc, 0.0), "EXTEND"))
     v_ = T.vmath("MAXIMUM", T.vmath("SUBTRACT", col, (STAR_BLACK,) * 3), (0.0, 0.0, 0.0))
-    lum = T.dot(v_, (0.2126, 0.7152, 0.0722))
-    gain = T.mul(T.mul(lum, STAR_K), T.addf(1.0, T.mul(T.math("MINIMUM", T.attr("rt_space"), 1.0), 0.5)))   # a little more in space
-    return T.scale(v_, gain)
+    return v_, T.dot(v_, (0.2126, 0.7152, 0.0722))
+
+
+def star_gain(T, v_, lum):
+    return T.scale(v_, T.mul(T.mul(lum, STAR_K), T.addf(1.0, T.mul(T.math("MINIMUM", T.attr("rt_space"), 1.0), 0.5))))   # a little more in space
+
+
+def star_map(T, d):
+    return star_gain(T, *star_texels(T, d))
 
 
 def space_sky(g):
@@ -1111,13 +1118,20 @@ def space_sky(g):
     lz = T.sep(to_local(T, d))[2]
     hz = T.fmix(spc, T.mrange(T.addf(lz, horizon_dip(T)[2]), 0.0, 0.1, 0.0, 1.0), 1.0)     # ground: none at the horizon
     w = T.mul(T.mul(T.math("MAXIMUM", T.group(g_skyph)["Night"], spc), T.attr("vj_stars")), hz)
-    stars = star_map(T, d)
+    v_, lum = star_texels(T, d)
+    stars = star_gain(T, v_, lum)
+    # /vj/nebula (round 9): the map's diffuse light, the Milky Way and its dust lanes, in its own colours. The lum^2
+    # gain keeps the points crisp and crushes it (texels under 0.05 give 9 % of the drawn light,
+    # review/star_map_stats.py); the band adds those texels linearly from the same lookups, the empty field (median 0,
+    # 90th percentile 0.008) stays black. The island's purple nebula volume and sky layer stay off (S6 smear)
+    band = T.scale(v_, T.mul(T.smooth(lum, NEB_LO, NEB_HI), NEB_K))
+    wb = T.mul(T.mul(T.math("MAXIMUM", T.group(g_skyph)["Night"], spc), T.attr("vj_nebula")), hz)
     s_ = T.vmath("NORMALIZE", T.comb(T.attr("rt_sun_x"), T.attr("rt_sun_y"), T.attr("rt_sun_z")))
     ang = T.math("ARCCOSINE", T.math("MINIMUM", T.dot(d, s_), 1.0))
     glow = T.addf(T.mul(T.math("EXPONENT", T.math("DIVIDE", ang, -0.03)), 0.8), T.mul(T.math("EXPONENT", T.math("DIVIDE", ang, -0.12)), 0.04))
     sunw = T.mul(T.smooth(spc, 0.2, 0.6), T.attr("vj_sun"))
     disc = T.scale((1.0, 0.95, 0.86), T.mul(T.addf(T.mul(T.smooth(ang, 0.014, 0.011), 12.0), glow), sunw))
-    T.feed(gout.inputs["Color"], T.add(prev, T.scale(stars, w), disc))
+    T.feed(gout.inputs["Color"], T.add(prev, T.scale(stars, w), T.scale(band, wb), disc))
 
 
 fill_sky_base(g_base)           # both modes: the island's sunset-all-day sky becomes a real one
@@ -1743,13 +1757,15 @@ def terrain_build(T):
         dd = T.math("SUBTRACT", 0.5, T.math("ABSOLUTE", T.math("SUBTRACT", T.math("FRACT", coord), 0.5)))
         return T.mrange(dd, 0.0, w_, 1.0, 0.0)
     thin_w = T.math("MINIMUM", T.math("DIVIDE", 0.012, ww), 1.0)
-    lat_ = T.mul(T.math("MAXIMUM", T.math("MAXIMUM", wline(la, wwidth(g_la)), wline(lo, wwidth(g_lo))), wline(T.addf(la, lo), wwidth(g_di))),
-                 T.mul(thin_w, thin_w))
+    lat0 = T.math("MAXIMUM", T.math("MAXIMUM", wline(la, wwidth(g_la)), wline(lo, wwidth(g_lo))), wline(T.addf(la, lo), wwidth(g_di)))
+    lat_ = T.mul(lat0, T.mul(thin_w, thin_w))
     # lines while a cell is over about 3 px on screen, then their mean (at 10 px the wires were gone from CAM_4's height)
     # by distance alone: by the ground's slant as well, the fade followed each facet's normal, so on far slopes the wires
     # dropped out in patches that changed at the LOD rings (G2; PROOF lod rings, round 7)
     wres = T.mrange(wpw, 0.05, 0.4, 1.0, 0.0)
-    lattice = T.addf(T.mul(lat_, wres), T.mul(T.sub(1.0, wres), T.mul(thin_w, 0.036)))
+    # by day the lines without thin_w^2: their width is already about a pixel (wwidth), and dimmed again they faded into
+    # the sunlit slopes from about 300 m (0.19 at 500 m; round 8 "washed out on sunlit slopes", round 9)
+    lattice = T.addf(T.mul(lat0, wres), T.mul(T.sub(1.0, wres), T.mul(thin_w, 0.036)))
     graze = T.mrange(ndv, 0.03, 0.2, 0.25, 1.0)      # wires crowd where the ground is seen edge-on: fade toward their average
     # at every distance, dimming a little toward the far ground (they ended at 3.5 km)
     dwire = T.mul(T.mul(lattice, T.mul(T.mrange(cam.outputs["View Distance"], 500.0, 9000.0, 1.0, 0.45), graze)), T.smooth(zw, 0.3, 2.0))
@@ -1757,7 +1773,7 @@ def terrain_build(T):
     wc = (0.05, 0.75, 1.0)       # one cyan on every height: magenta and violet wires read as the removed grid
     # by day drawn over the ground in their cyan, not added to it: added, they washed out to pale pink on sunlit hills
     # and vanished on the bright far mountains (CAM_3, round 7)
-    col = T.mix(T.math("MINIMUM", T.mul(T.mul(dwire, gk), 1.2), 0.85), col, (0.08, 0.80, 1.0))     # (at 0.5 the lines on
+    col = T.mix(T.math("MINIMUM", T.mul(T.mul(dwire, gk), 1.2), 1.0), col, (0.08, 0.80, 1.0))     # (at 0.5 the lines on
     # far slopes, under a pixel, tinted them too little to show)
     land_lit = col               # the ground lit as if dry: what a bank's mirror image in the water shows
     bank = T.smooth(zw, 0.0, 7.0)
@@ -1790,7 +1806,9 @@ def terrain_build(T):
     # object, the rim light and the dusk glow hidden, it stayed). Flat shallows keep the sky (sandbanks in a river)
     bank_k = T.mul(T.smooth(zw, -2.0, -0.2), T.sub(1.0, T.smooth(anu, 0.9, 0.98)))
     under_ = T.mix(T.smooth(zw, -0.6, -0.1), refl_s, T.scale(col, 0.3))
-    under_ = T.mix(bank_k, under_, T.scale(land_lit, T.mul(0.6, T.sub(1.0, T.mul(ph["Night"], 0.95)))))
+    # at 0.2 (round 9): at 0.6 the bank under the water was about 1.8 x the dry bank above it (col x 0.33), a bright
+    # strip along the waterline (CAM_1 bank lines, round 8)
+    under_ = T.mix(bank_k, under_, T.scale(land_lit, T.mul(0.2, T.sub(1.0, T.mul(ph["Night"], 0.95)))))
     # The flats over it at 0.3 of their colour (0.45 left sandbanks in the river as bright pink blotches, CAM_1 by day)
     wet_col = T.mix(T.smooth(zw, -0.02, 0.05), under_, T.add(T.scale(col, 0.3), T.scale(refl_s, T.mul(refl_w, 0.08))))
     col = T.mix(bed_k, col, wet_col)
@@ -1955,7 +1973,9 @@ def water_shader(m):
     lsky = T.group(g_base, Direction=to_local(T, Rv))["Color"]
     rzl = T.sep(to_local(T, Rv))[2]
     ph_l = T.phase()
-    hillc = T.mix(ph_l["Night"], T.mix(ph_l["Twilight"], (0.55, 0.12, 0.38), (0.22, 0.05, 0.25)), (0.07, 0.025, 0.12))
+    # the night hills at (0.02, 0.007, 0.035) (round 9): the ripple-tilted rzl threw (0.07, 0.025, 0.12) across the river in
+    # noise-shaped violet patches (CAM_1 night blotches, round 8)
+    hillc = T.mix(ph_l["Night"], T.mix(ph_l["Twilight"], (0.55, 0.12, 0.38), (0.22, 0.05, 0.25)), (0.02, 0.007, 0.035))
     lsky = T.mix(T.smooth(rzl, 0.3, 0.03), T.vmath("MULTIPLY", lsky, (0.92, 0.78, 1.0)), hillc)
     lrefl = T.mul(T.mul(T.mrange(fres, 0.0, 1.0, 0.12, 0.94), bands), T.attr("vj_water"))
     col = T.add(col, T.scale(lsky, T.mul(T.mul(lrefl, 0.7), lake)))
@@ -2907,6 +2927,8 @@ if GRAFT:
 # an 8 km range veiled the day sky and stretched the depth slices (the night nebula looks the same at 4.5 km)
 S.eevee.volumetric_tile_size = "4"
 S.eevee.volumetric_end = FOG_HALF
+S.eevee.volumetric_start = 30.0   # (round 9) from 1 m the 32 slices were 90 to 140 m deep at 300 m, against a fog layer about
+# 30 m thick: terraces along the bottom of CAM_4 at fog 1. The fog's density is 0 inside its clear zone (37 m and more)
 S.eevee.gi_cubemap_resolution = "128"     # the world probe only lights the fog (every material is emission): it is
 # re-rendered on every world swap (day world <-> full world, on cuts into space by day)
 
@@ -3828,18 +3850,18 @@ def star_system():
     T = NT(bpy.data.materials["Moon"].node_tree)
     for n in [n for n in T.n if n.type == "TEX_IMAGE" and n.image is not None]:
         src = n.image
-        key = src.name + "_filtered"
+        key = src.name + "_filtered_r9"     # (round 9) a new name: the old files stay valid for older checkouts
         img = bpy.data.images.get(key)
         if img is None:
             w_, h_ = src.size
             a_ = np.empty(w_ * h_ * 4, dtype=np.float32)
             src.pixels.foreach_get(a_)
             a_ = a_.reshape(h_, w_, 4)
-            if w_ > 2048:      # colour: box-filtered down to 2048 wide
-                f_ = w_ // 2048
+            if w_ > 4096:      # colour: box-filtered down to 4096 wide (2048 smeared the moon once it passed about 650 px
+                f_ = w_ // 4096    # across, CAM_6 and S9, round 8)
                 a_ = a_[: h_ // f_ * f_, : w_ // f_ * f_].reshape(h_ // f_, f_, w_ // f_, f_, 4).mean(axis=(1, 3))
             else:              # height: a 3-tap blur six times, wrapping in longitude (twice left aliased black craters)
-                for _ in range(6):
+                for _ in range(4):     # (six smeared the craters, round 8; self-shadow is at 5 now, not 61.5)
                     a_ = (np.roll(a_, 1, 1) + 2 * a_ + np.roll(a_, -1, 1)) / 4.0
                     a_ = (np.vstack([a_[:1], a_[:-1]]) + 2 * a_ + np.vstack([a_[1:], a_[-1:]])) / 4.0
             moon_caps(a_, os.path.join(os.path.dirname(STAR_PATH), key + "_caps.exr"))
