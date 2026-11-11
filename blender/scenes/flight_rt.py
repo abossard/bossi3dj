@@ -32,6 +32,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 for _p in (HERE, os.path.join(HERE, "planet_proto")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
+_old = sys.modules.get("lod_scene")     # loaded again (the runtime run again, a file load): the old terrain stream
+if _old is not None:                    # stops, and every module below comes fresh from its file
+    try:
+        _old.stop(bpy.context.scene)
+    except Exception as e:              # after a file load its objects are gone; its timer is off by then
+        print("flight_rt: old LOD stream not stopped cleanly: %s" % e)
+for _m in ("director", "energy", "flight", "lod_scene", "lod_stream"):
+    sys.modules.pop(_m, None)
 import director as dr  # noqa: E402
 import energy as en  # noqa: E402
 import flight as fl  # noqa: E402
@@ -46,6 +54,7 @@ PYR_PAD = 25.0                      # m around a pyramid's footprint
 CACHE = os.path.expanduser("~/Library/Caches/swiftvj-flight")
 MOON_R = 11500.0
 SUBJECT = 300.0                     # m down the view: the aim point of a shot that tracks nothing
+CHECK_SEED = 1                      # the Flight's seed after a reset (quiesce), so every check cell flies alike
 _state = {"last": None, "director": None, "flight": None, "shot": None, "map": None, "fix": 0, "lod": False, "lod_ms": [],
           "every": 1, "n": 0, "drive": None}
 
@@ -313,12 +322,18 @@ def moved_pose(ob, dg, drive):
 
 
 def flight_pose(scene, dt, fc):
+    if dt <= 0.0 and _state.get("flight_pose") is not None:     # clocks stopped (the self-check): it holds
+        return _state["flight_pose"]
+    dt = max(dt, 1e-3)
     s = scene.get
     sun = (s("rt_sun_x", 0.0), s("rt_sun_y", 1.0), s("rt_sun_z", 0.0))
     moon = ((s("rt_moon_x", 0.0), s("rt_moon_y", 0.0), s("rt_moon_z", 0.0)), MOON_R * s("vj_moon", 1.0))
     F = _state["flight"]
     if F is None:
-        F = _state["flight"] = fl.Flight(_state["map"], seed=int(time.time()) % 100000, sun=sun)
+        reset = _state.pop("reset", False)
+        F = _state["flight"] = fl.Flight(_state["map"], seed=CHECK_SEED if reset else int(time.time()) % 100000, sun=sun)
+        if reset:       # settled at the stage asked for: the self-check shows the stage, verify_flight the damping
+            F.f = fl.clamp(s("vj_flight", 0.0), 0.0, 1.0)
     drive = _state["drive"]
     p, fwd, up, lens, info = F.step(dt, s("vj_flight", 0.0), s("vj_boost", 0.0), en.level(drive.e), drive.kick, sun,
                                    moon if moon[1] > 0.0 else None)
@@ -328,6 +343,7 @@ def flight_pose(scene, dt, fc):
     pose = (p, fwd, up, lens, props)
     place(fc, pose)
     scene["rt_flight_stage"] = float(max(range(4), key=lambda k: w[k]))
+    _state["flight_pose"] = pose
     return pose
 
 
@@ -335,6 +351,9 @@ def frame(scene, depsgraph=None):
     now = time.perf_counter()
     dt = 0.0 if _state["last"] is None else min(max(now - _state["last"], 0.0), 0.1)
     _state["last"] = now
+    rt = bpy.app.driver_namespace.get("vj_runtime")     # the runtime's clock: a check that stops it stops this too
+    if rt is not None:
+        dt = rt.peek_dt(now, dt)
     if _state["map"] is None:
         return
     rig, fc = ensure_cameras(scene)
@@ -353,7 +372,7 @@ def frame(scene, depsgraph=None):
     scene["rt_energy"], scene["rt_kick"] = drive.e, drive.kick
     # the camera clock (synthwave_runtime adds dt * vj_cam_speed after this handler): paths run at the Drive's rate
     scene["rt_cam_phase"] = scene.get("rt_cam_phase", 0.0) + dt * scene.get("vj_cam_speed", 1.0) * (drive.speed - 1.0)
-    target = flight_pose(scene, max(dt, 1e-3), fc) if shot == fc else moved_pose(shot, dg, drive)
+    target = flight_pose(scene, dt, fc) if shot == fc else moved_pose(shot, dg, drive)
     had = D.tr
     pose = D.step(dt, shot.name, target, scene.get("vj_blend", 1.0), _state["map"], drive)
     if _state["lod"] and D.tr is not None and D.tr is not had:      # a blend began: build the target's blocks ahead
@@ -377,7 +396,7 @@ def frame(scene, depsgraph=None):
         _state["on_air"] = shot
     elif _state.get("on_air") not in (None, shot):     # meanwhile the old shot keeps moving (EN1)
         old = _state["on_air"]
-        place(rig, flight_pose(scene, max(dt, 1e-3), fc) if old == fc else moved_pose(old, dg, drive))
+        place(rig, flight_pose(scene, dt, fc) if old == fc else moved_pose(old, dg, drive))
 
 
 def on_cut(scene, depsgraph=None):
@@ -386,6 +405,12 @@ def on_cut(scene, depsgraph=None):
     if rig is not None and scene.camera is not None and scene.camera != rig:
         _state["shot"] = scene.camera
         scene.camera = rig
+
+
+def quiesce():
+    """The self-check's reset, per cell (synthwave_runtime.quiesce): the next frame starts the Drive, the Director
+    and the Flight afresh, so a moving shot shows the same frames for the same controls."""
+    _state.update(drive=None, director=None, flight=None, flight_pose=None, reset=True)
 
 
 def start():

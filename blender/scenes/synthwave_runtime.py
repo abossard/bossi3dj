@@ -18,6 +18,9 @@ file load when Blender allows Auto Run Python Scripts. It then:
   the zero-copy Syphon sender syphon_out.py (server CAM_OUT) and the web
   control page synthwave_web.py (http://127.0.0.1:9210). The page builds
   its controls from RANGES and TRIGGERS, stored on the props as UI data.
+- starts flight_rt.py (planet scenes only, it checks): the On-Air Camera, the
+  Director's cuts and blends (/vj/blend), the Flight (/vj/flight, /vj/boost) and
+  the energy on every shot (/vj/energy, /vj/hit). It runs on these clocks too.
 
 The feature check (synthwave_check.py, started from the page) drives the clocks through
 driver_namespace["vj_runtime"]: freeze() stops them, advance(s) steps them a fixed
@@ -57,6 +60,7 @@ TRIGGERS = ("vj_shock", "vj_meteor", "vj_hit")   # rising edge above 0.5 fires; 
 WEB_FILE = "//synthwave_web.py"
 STAR_SYSTEM_FILE = "//star_system.py"   # one sun, moon and star sky for every camera (planet scenes only)
 DAY_WORLD_FILE = "//day_world.py"   # swaps in a world without the night layers while they have no weight
+FLIGHT_FILE = "//flight_rt.py"   # the Flight, the Director's cuts and blends, the energy on every shot (planet scenes only)
 PYRAMIDS = "Pyramids"   # collection whose objects ride the shockwaves
 METEORS = 3
 METEOR_FIELDS = ("ax", "ay", "az", "bx", "by", "bz", "s", "l", "a")
@@ -113,7 +117,17 @@ def quiesce():
                   meteors=[None] * METEORS)
     if _state.get("star_system"):
         _state["star_system"]._state["beta"] = 0.0
+    if _state.get("flight_rt"):
+        _state["flight_rt"].quiesce()
     random.seed(1)     # the same shooting star every time
+
+
+def peek_dt(now, dt):
+    """The dt the clocks take this frame, without using up a step (flight_rt runs before synthwave_tick)."""
+    c = _clock
+    if not c["frozen"] or now > c["deadline"]:
+        return dt
+    return STEP if c["steps"] > 0 else 0.0
 
 
 def clock_dt(now, dt):
@@ -333,13 +347,14 @@ def load_sibling(path, what):
 
 
 def start_sibling(path, what):
-    """Loads a module file next to the .blend and calls its start()."""
+    """Loads a module file next to the .blend, calls its start() and returns it (None if it did not load)."""
     module = load_sibling(path, what)
     try:
         if module is not None:
             module.start()
     except Exception as e:
         print("synthwave_runtime: %s not started: %s" % (what, e))
+    return module
 
 
 def _play():
@@ -362,11 +377,12 @@ def _play():
 def main():
     ensure_props(bpy.context.scene)
     bpy.app.driver_namespace[RUNTIME_KEY] = types.SimpleNamespace(
-        freeze=freeze, advance=advance, steps_left=steps_left, quiesce=quiesce, CLOCKS=CLOCKS, STEP=STEP)
+        freeze=freeze, advance=advance, steps_left=steps_left, quiesce=quiesce, peek_dt=peek_dt, CLOCKS=CLOCKS, STEP=STEP)
     install_handler()
     start_bridge()
     _state["star_system"] = load_sibling(STAR_SYSTEM_FILE, "star system")
     _state["day_world"] = load_sibling(DAY_WORLD_FILE, "day world")
+    _state["flight_rt"] = start_sibling(FLIGHT_FILE, "Flight")
     if not bpy.app.background:
         start_sibling(WEB_FILE, "web control page")
         bpy.app.timers.register(_play, first_interval=0.5)
