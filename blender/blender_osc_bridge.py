@@ -25,15 +25,26 @@ Run it inside Blender (Text Editor > Run Script, or
   at least one frame change: a pulse that rises and falls within one tick or
   one frame (a 50 ms pulse at 15 fps) is otherwise never seen by the runtime.
 
+- also listens for Art-Net (ArtDmx on udp 6454, blender/artnet_input.py) from a DMX desk or QLC+: one DMX channel per
+  address of SCALES in contract order, only channels that changed are applied (source "artnet"), the first frame is a
+  baseline, triggers fire on a rise through 128. Settings through `configure_artnet()` (universe 0, DMX start address 1, on);
+  a failed bind is reported in artnet_state(), never fatal. docs/artnet-qlc.md.
+
 Re-running the script replaces the previous instance. The scaling functions
 (scale_wire, wire_to_scene, camera_index) need no bpy and are unit tested in
 blender/tests/test_bridge_scaling.py.
 """
+import os
 import socket
 import struct
 import sys
 import time
 from collections import deque
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)            # artnet_input.py sits next to this file
+import artnet_input  # noqa: E402
 
 try:
     import bpy
@@ -210,8 +221,14 @@ def high(args):
     return v >= 0.5
 
 
+def scene_shots():
+    """How many shots /vj/cam has in the running scene: its CAM_N cameras, plus the planet's Flight (CAM_11, made at run time)."""
+    n = len([o for o in bpy.data.objects if o.type == "CAMERA" and o.name.startswith(CAMERA_PREFIX) and o.name[len(CAMERA_PREFIX):].isdigit()])
+    return n + (1 if bpy.data.objects.get("Planet_Centre") is not None else 0)
+
+
 class Bridge:
-    def __init__(self, host=HOST, port=PORT):
+    def __init__(self, host=HOST, port=PORT, artnet_port=artnet_input.ARTNET_PORT, artnet_host="", artnet_enabled=True):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setblocking(False)
         self.sock.bind((host, port))
@@ -234,6 +251,10 @@ class Bridge:
         self.raised = {}          # trigger property -> (frame, time) it went high
         self.pending = {}         # trigger address -> (args, source): the fall, applied after a frame change
         self.triggers = {}        # property name -> is it a trigger
+        self.latest_art = {}      # address -> args from Art-Net, latest wins within a tick
+        rows = artnet_input.channel_map((a, v[0], v[1], v[2]) for a, v in SCALES.items())
+        shots = scene_shots() if bpy is not None else 12
+        self.artnet = artnet_input.ArtNetInput(artnet_input.DmxDecoder(rows, shots=shots), artnet_host, artnet_port, artnet_enabled)
 
     # One timer callback. Returns the next delay (keeps the timer alive).
     def tick(self):
@@ -276,13 +297,48 @@ class Bridge:
                     self.latest[addr] = args
                 else:
                     self.latest[addr] = args
+        self.drain_artnet(now)
         self.release()
         if self.latest:
             self.apply(self.latest)
             self.latest = {}
+        if self.latest_art:
+            self.apply(self.latest_art, "artnet")
+            self.latest_art = {}
         for src, args in pings:
             self.pong(src, args)
         return TICK
+
+    def drain_artnet(self, now):
+        """Changed Art-Net channels take the same way as an OSC message: scaled, fitted, skipped when held."""
+        for src, changes in self.artnet.poll():
+            for addr, wire in changes:
+                self.received += 1
+                self.record(now, src, addr, [wire])
+                args = wire_to_scene(addr, [wire])
+                if args is None:
+                    self.ignored += 1
+                    continue
+                args = self.fit(addr, args)
+                if prop_name(addr) in self.hold:
+                    self.held += 1
+                elif addr in self.latest_art and self.is_trigger(prop_name(addr)) and high(self.latest_art[addr]) and not high(args):
+                    self.pending[addr] = (args, "artnet")      # a whole pulse within one tick: the fall waits for a frame
+                else:
+                    if addr in self.latest_art:
+                        self.dropped += 1
+                    self.latest_art[addr] = args
+
+    def artnet_state(self):
+        return self.artnet.state()
+
+    def configure_artnet(self, enabled=None, universe=None, address=None):
+        """The settings the scene page can show: Art-Net on or off, the universe and the DMX start address."""
+        if universe is not None or address is not None:
+            self.artnet.decoder.configure(universe=universe, address=address)
+        if enabled is not None:
+            self.artnet.set_enabled(enabled)
+        return self.artnet_state()
 
     def fit(self, addr, args):
         """Keeps a scaled float or index inside the property's own min and max, which can be narrower than the contract's range."""
@@ -396,6 +452,7 @@ class Bridge:
         except Exception:
             pass
         self.sock.close()
+        self.artnet.close()
 
 
 def start(host=HOST, port=PORT, register_timer=True):
