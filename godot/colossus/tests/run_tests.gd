@@ -31,6 +31,10 @@ func _init() -> void:
 	_test_http()
 	_test_osc_encode()
 	_test_check_verdicts()
+	_test_clip_slots()
+	_test_clip_bone_names()
+	_test_clip_in_place()
+	_test_stride_speed()
 	print("%d passed, %d failed" % [_passed, _failed])
 	quit(1 if _failed > 0 else 0)
 
@@ -652,3 +656,102 @@ func _test_check_verdicts() -> void:
 				FeatureCheck.NEEDS.has(row["needs"]),
 				true
 			)
+
+
+func _test_clip_slots() -> void:
+	var none := PackedStringArray()
+	var cases := [
+		["nothing present", none, "walk", ["", false]],
+		["idle only: walk falls back to it", PackedStringArray(["idle"]), "walk", ["idle", false]],
+		["idle only: run falls back twice", PackedStringArray(["idle"]), "run", ["idle", false]],
+		["walk present", PackedStringArray(["idle", "walk"]), "walk", ["walk", false]],
+		["run present", PackedStringArray(["idle", "walk", "run"]), "run", ["run", false]],
+		[
+			"hang idle holds the shimmy",
+			PackedStringArray(["shimmy_left"]),
+			"hang_idle",
+			["shimmy_left", true]
+		],
+		[
+			"shimmy right holds the shimmy",
+			PackedStringArray(["shimmy_left"]),
+			"shimmy_right",
+			["shimmy_left", true]
+		],
+		[
+			"hang idle present",
+			PackedStringArray(["hang_idle", "shimmy_left"]),
+			"hang_idle",
+			["hang_idle", false]
+		],
+		["climb up present", PackedStringArray(["climb_up"]), "climb_up", ["climb_up", false]],
+		["climb down without hang clips", PackedStringArray(["idle"]), "climb_down", ["", false]],
+		["stand up falls back to idle", PackedStringArray(["idle"]), "stand_up", ["idle", false]],
+	]
+	for c in cases:
+		_check("clip slot %s" % c[0], WandererClips.resolve(c[1])[c[2]], c[3])
+	var all := WandererClips.resolve(none)
+	_check("every slot resolves", all.size(), WandererClips.SLOTS.size())
+
+
+func _test_clip_bone_names() -> void:
+	var cases := [
+		["mixamorig_Hips", "Hips"],
+		["mixamorig_Spine", "Spine"],
+		["mixamorig_Spine1", "Spine1"],
+		["mixamorig_Spine2", "Chest"],
+		["mixamorig_Head", "Head"],
+		["mixamorig_LeftArm", "LeftUpperArm"],
+		["mixamorig_RightForeArm", "RightLowerArm"],
+		["mixamorig_LeftHandThumb1", "LeftThumbMetacarpal"],
+		["mixamorig_RightHandPinky3", "RightLittleDistal"],
+		["mixamorig_LeftUpLeg", "LeftUpperLeg"],
+		["mixamorig_RightLeg", "RightLowerLeg"],
+		["mixamorig_LeftToe_End", "LeftToe_End"],
+		["mixamorig:LeftFoot", "LeftFoot"],
+		["mixamorig_HeadTop_End", "HeadTop_End"],
+	]
+	for c in cases:
+		_check("bone name %s" % c[0], WandererClips.bone_name(c[0]), c[1])
+
+
+func _test_clip_in_place() -> void:
+	var cases := [
+		[
+			"walks forward",
+			[Vector3(0, 1, 0), Vector3(0, 1.1, 1), Vector3(0, 1, 2)],
+			Vector3(0, 1.1, 0)
+		],
+		[
+			"shimmies sideways",
+			[Vector3(0, 1, 0), Vector3(0.3, 1, 0), Vector3(0.6, 1, 0)],
+			Vector3.UP
+		],
+		[
+			"already in place",
+			[Vector3(0, 1, 0), Vector3(0, 1.05, 0), Vector3(0, 1, 0)],
+			Vector3(0, 1.05, 0)
+		],
+	]
+	for c in cases:
+		var a := Animation.new()
+		var t := a.add_track(Animation.TYPE_POSITION_3D)
+		for k in 3:
+			a.track_insert_key(t, k * 0.5, c[1][k])
+		WandererClips.in_place(a, t)
+		_check("in place %s: middle" % c[0], a.track_get_key_value(t, 1), c[2])
+		_check("in place %s: ends meet" % c[0], a.track_get_key_value(t, 2), c[1][0])
+
+
+func _test_stride_speed() -> void:
+	# A foot planted for half the cycle, moving back at `speed` relative to the hips.
+	var cases := [["walk", 1.4], ["run", 3.6], ["still", 0.0]]
+	for c in cases:
+		var z := PackedFloat32Array()
+		var y := PackedFloat32Array()
+		var dt := 1.0 / 30.0
+		for i in 30:
+			var planted := i < 15
+			z.append(0.3 - c[1] * dt * i if planted else 0.0)
+			y.append(0.0 if planted else 0.2)
+		_check("stride speed %s" % c[0], snappedf(WandererClips.stride_speed(z, y, dt), 0.01), c[1])

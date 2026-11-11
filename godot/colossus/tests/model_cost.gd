@@ -87,6 +87,7 @@ func _subjects() -> Dictionary:
 	anim.get_animation("idle2").loop_mode = Animation.LOOP_LINEAR
 	anim.play("idle2")
 	var standin_wanderer := Wanderer.new()
+	standin_wanderer.use_model = false
 	main.output.add_child(standin_wanderer)
 	standin_wanderer.global_position = at
 	standin_wanderer.process_mode = Node.PROCESS_MODE_DISABLED
