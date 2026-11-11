@@ -21,12 +21,12 @@ Nodes B1 and B4. Planet (`synthwave_planet.blend`, rebuilt on this branch) and i
 
 ## Planet table
 
-With the Flight runtime and its terrain gate (branch `blender/flight`, round 11 ground, 2026-11-11, load 95): 35 of 37 effect. `vj_grid_speed` has no reader (lattice removed, round 10). `vj_flamingos`: no effect on any camera; `CAM_0`'s baked flock `Flock.CAM_0.0` has 0 points in the round 11 build (the runtime copies `CAM_1`'s 225 after a cut, 49 in view), so it is a build finding, not the Flight's. From `docs/reports/blender-feature-check-planet-flight.json`; counts: {'effect': 35, 'no effect': 2}; noise floor {'mad': 14.9684, 'frac': 0.15464, 'bias': 2.2395}; defaults restored: True; state equals defaults: True; holds released: True
+With the Flight runtime and its terrain gate (branch `blender/flight`, round 11 ground, 2026-11-11, load 95): 35 of 37 effect. `vj_grid_speed` has no reader (lattice removed, round 10). `vj_flamingos`: no effect on any camera; `CAM_0`'s baked flock `Flock.CAM_0.0` has 0 points in the round 11 build (the runtime copies `CAM_1`'s 225 after a cut, 49 in view), so it is a build finding, not the Flight's. From `docs/reports/blender-feature-check-planet-flight.json`; counts: {'effect': 35, 'no effect': 2}; noise floor {'mad': 14.9684, 'frac': 0.15464, 'bias': 2.2395}; defaults restored: True; state equals defaults: True; holds released: True Rerun 2026-11-11 on a fresh open (`--only vj_grid,vj_bass,vj_flamingos --no-fallback`, noise floor mad 0.384, bias 0.166 for the whole run): all three effect; the three rows below carry those numbers (floors are the run's, not per row). `vj_flamingos` now tests on `CAM_7`; `CAM_1`'s 225 flock points give 0.01 % changed pixels at preview size, below the floor.
 udp 9201: sent 37, received 37, applied 37, errors 0, not seen []
 
 | control | range | default | verdict | cam | mad (floor) | bias (floor) | x floor | readers | note |
 |---|---|---|---|---|---|---|---|---|---|
-| `/vj/bass` | 0..1 | 0 | effect | 0 | 1.513 (0.414) | 1.918 (0.065) | 29.5 | 2n 0d |  |
+| `/vj/bass` | 0..1 | 0 | effect | 0 | 1.538 (0.384) | 1.980 (0.166) | 38.2 | 2n 0d | rerun 2026-11-11 (edge guard), fresh open, load 160+ |
 | `/vj/beat` | 0..1 | 0 | effect | 0 | 3.598 (0.129) | 4.789 (0.067) | 262.8 | 0n 0d |  |
 | `/vj/blend` | 0..2 | 1 | effect | 1 | 32.830 (0.133) | 35.511 (0.013) | 5276.6 | 0n 0d py |  |
 | `/vj/boost` | 0..1 | 0 | effect | 11 | 14.692 (0.237) | 6.179 (0.104) | 103.5 | 0n 0d py |  |
@@ -34,7 +34,7 @@ udp 9201: sent 37, received 37, applied 37, errors 0, not seen []
 | `/vj/cam_speed` | 0..4 | 1 | effect | 4 | 8.331 (0.077) | 1.643 (0.030) | 3629.2 | 0n 27d |  |
 | `/vj/eclipse` | 0..1 | 0 | effect | 3 | 12.004 (0.288) | 9.587 (0.026) | 371.9 | 6n 4d py |  |
 | `/vj/energy` | 0..1 | 0.3 | effect | 0 | 13.319 (0.072) | 4.527 (0.030) | 6207.5 | 0n 0d py |  |
-| `/vj/flamingos` | 0..1 | 1 | no effect | 9 | 0.028 (0.024) | 0.016 (0.007) | 2.3 | 1n 2d |  |
+| `/vj/flamingos` | 0..1 | 1 | effect | 7 | 4.816 (0.384) | 4.731 (0.166) | 28.5 | 1n 2d | rerun 2026-11-11: row moved to `CAM_7` (`CAM_1`'s flock is 0.01 % of the preview, no effect; `CAM_0` has no flock) |
 | `/vj/flight` | 0..1 | 0 | effect | 11 | 155.914 (0.046) | 191.191 (0.003) | 65356.7 | 0n 0d py |  |
 | `/vj/fog` | 0..1 | 0.35 | effect | 0 | 12.733 (0.144) | 16.484 (0.114) | 424.8 | 4n 2d |  |
 | `/vj/fog_beat` | 0..1 | 0.5 | effect | 0 | 2.646 (0.141) | 3.356 (0.068) | 97.6 | 2n 0d |  |
@@ -44,7 +44,7 @@ udp 9201: sent 37, received 37, applied 37, errors 0, not seen []
 | `/vj/fog_noise` | 0..1 | 0.6 | effect | 0 | 1.000 (0.179) | 1.013 (0.050) | 20.3 | 2n 0d |  |
 | `/vj/fog_scale` | 10..1000 | 260 | effect | 0 | 2.687 (0.181) | 2.479 (0.044) | 55.7 | 2n 0d |  |
 | `/vj/fog_speed` | 0..40 | 10 | effect | 0 | 1.196 (0.126) | 0.582 (0.054) | 33.8 | 2n 0d |  |
-| `/vj/grid` | 0..1 | 1 | effect | 0 | 3.147 (0.495) | 4.533 (0.398) | 11.4 | 2n 0d |  |
+| `/vj/grid` | 0..1 | 1 | effect | 0 | 3.336 (0.384) | 4.820 (0.166) | 37.6 | 2n 0d | rerun 2026-11-11 (edge guard), fresh open |
 | `/vj/grid_speed` | 0..4 | 0.6 | no effect | 5 | 0.352 (0.307) | 0.025 (0.016) | 1.6 | 0n 0d | no shader or driver reads it |
 | `/vj/haze` | 0..1 | 1 | effect | 0 | 2.943 (0.137) | 4.341 (0.069) | 193.7 | 3n 0d |  |
 | `/vj/hit` | 0..1 | 0 | effect | 0 | 17.308 (0.058) | 5.281 (0.030) | 5383.9 | 0n 0d py |  |
