@@ -22,7 +22,7 @@ help:
 	@echo "  magic-test        Magic project tooling and generator unit tests"
 	@echo "  osc-test          contract table, CONTROLS.md and sweep tests"
 	@echo "  blender-test      the bridge's wire-to-scene scaling, without Blender"
-	@echo "  magic-build       regenerate magic/projects/*.magic from the generators (synthwave_pyramids for Blender, show for both scenes)"
+	@echo "  magic-build       regenerate magic/projects/*.magic from the generators (synthwave_pyramids for Blender, show for both scenes), then the generated tables of docs/handbook.md"
 	@echo "  osc-sync          rewrite the CONTROLS.md table and the bridge's SCALES block from osc/contract.json"
 	@echo "  qlc-fixture       write qlc/bossi3dj-Synthwave-Planet.qxf (the QLC+ fixture for Art-Net) and the channel table in docs/artnet-qlc.md from the contract"
 	@echo "  osc-sweep         walk every /vj/* address through min, default, max (ARGS=\"--target godot --seconds 2\", ARGS=--dry-run)"
@@ -91,6 +91,7 @@ magic-build:
 	python3 magic/synthwave_magic.py
 	python3 magic/show_magic.py
 	python3 magic/edm_analysis_magic.py
+	python3 magic/magic_manual.py sync
 
 godot-test:
 	$(GODOT) --headless --path $(COLOSSUS) --script res://tests/run_tests.gd

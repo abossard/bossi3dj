@@ -1,8 +1,9 @@
-"""The handbook's table of what Magic sends and why, made from the built show project and synthwave_magic.MUSIC.
+"""The handbook's generated parts: the table of what Magic sends and why (made from the built show project and
+synthwave_magic.MUSIC) and the list of the planet's cameras (made from osc/contract.json).
 
-    python3 magic/magic_manual.py sync     rewrite the table in docs/handbook.md (between the magic-table markers)
-    python3 magic/magic_manual.py check    exit 1 when the table is out of step (tests/test_manual.py does the same)
-    python3 magic/magic_manual.py table    print the table
+    python3 magic/magic_manual.py sync     rewrite both blocks in docs/handbook.md (between their begin and end markers)
+    python3 magic/magic_manual.py check    exit 1 when a block is out of step (tests/test_manual.py does the same)
+    python3 magic/magic_manual.py table    print the Magic table
 
 One row per /vj/* address: the control Global you set by hand (named like the address), its value, and whether the music drives the
 address and how. Whether an address follows the music is read from the project: its Out Global's expression names `Follow`.
@@ -18,7 +19,6 @@ import synthwave_magic as sm
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HANDBOOK = os.path.join(ROOT, "docs", "handbook.md")
-BEGIN, END = "<!-- magic-table:begin -->", "<!-- magic-table:end -->"
 
 
 def control_name(address):
@@ -70,19 +70,38 @@ PAD_TEXT = {"/vj/meteor": "Nothing: the Meteor pad fires one.", "/vj/hit": "Noth
             "/vj/cam_auto": "Nothing: CamAuto 1 lets the cutter cut (Godot: its own director), 0 holds the shot Cam picks."}
 
 
-def current(text):
-    return text[text.index(BEGIN) + len(BEGIN):text.index(END)].strip("\n")
+def render_cameras():
+    shots = sm.CONTRACT["/vj/cam"]["shots"]["planet"]
+    lines = ["| Number | Name | What it shows |", "|---|---|---|"]
+    lines += ["| %d | %s | %s |" % (s["index"], s["name"], s["shows"]) for s in shots]
+    return "\n".join(lines)
+
+
+BLOCKS = {"magic-table": render, "cameras": render_cameras}
+
+
+def markers(name):
+    return "<!-- %s:begin -->" % name, "<!-- %s:end -->" % name
+
+
+def current(text, name):
+    begin, end = markers(name)
+    return text[text.index(begin) + len(begin):text.index(end)].strip("\n")
 
 
 def stale():
     with open(HANDBOOK) as f:
-        return current(f.read()) != render()
+        text = f.read()
+    return [name for name, make in BLOCKS.items() if current(text, name) != make()]
 
 
 def sync():
     with open(HANDBOOK) as f:
         text = f.read()
-    new = text[:text.index(BEGIN) + len(BEGIN)] + "\n" + render() + "\n" + text[text.index(END):]
+    new = text
+    for name, make in BLOCKS.items():
+        begin, end = markers(name)
+        new = new[:new.index(begin) + len(begin)] + "\n" + make() + "\n" + new[new.index(end):]
     if new != text:
         with open(HANDBOOK, "w") as f:
             f.write(new)
@@ -96,9 +115,10 @@ def main(argv):
     elif cmd == "table":
         print(render())
     elif cmd == "check":
-        if stale():
-            print("out of step with the show project: docs/handbook.md magic table")
-            return 1
+        out = stale()
+        for name in out:
+            print("out of step with the project or the contract: docs/handbook.md block %s" % name)
+        return 1 if out else 0
     else:
         print(__doc__)
         return 2

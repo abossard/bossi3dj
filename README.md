@@ -1,6 +1,6 @@
 # bossi3dj
 
-Live visuals for music. A 3D scene reacts to the sound, and you mix its picture on a projector or screen.
+Live visuals for music. A 3D scene reacts to the sound, and you mix its picture on a projector or screen. To run a show, read the [handbook](docs/handbook.md).
 
 How it works, in four steps:
 
@@ -274,6 +274,7 @@ For music, open [magic/projects/show.magic](magic/projects/show.magic) in Magic 
 
 ## Read next
 
+- Running a show: [docs/handbook.md](docs/handbook.md).
 - Agents and contributors: [AGENTS.md](AGENTS.md), then [STATE.md](STATE.md).
 - The addresses: [osc/CONTROLS.md](osc/CONTROLS.md).
 - Terms: [GLOSSARY.md](GLOSSARY.md).
