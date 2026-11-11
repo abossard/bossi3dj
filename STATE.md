@@ -15,7 +15,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 ## Blender: Synthwave Planet Scene
 
 - Works: planet build, star system with eclipses, 11 cameras, per-camera LOD, volumetric fog box, streaming LOD, Syphon and OSC. Both scenes run the runtime and bridge from the files on disk (`vj_loader.py`); `make blender-open` waits for a checked start state.
-- Self-check (`make blender-check`): planet 35 of 37 controls with an effect (2026-11-11), island 30 of 37 (2026-11-10); contract cross-check 0 mismatches, bridge scaling 6 of 6 live. Report: [docs/reports/blender-feature-check.md](docs/reports/blender-feature-check.md).
+- Self-check: planet 36 of 37 controls with an effect, run from the page's "Check all" in a browser on a fresh open (2026-11-11, [rows](docs/reports/blender-page-check-planet-2026-11-11.json)); the one without is `/vj/grid_speed`, island only by design. Island 30 of 37 (2026-11-10, not rerun); contract cross-check 0 mismatches, bridge scaling 6 of 6 live. Report: [docs/reports/blender-feature-check.md](docs/reports/blender-feature-check.md).
 - `/vj/nebula` works on the planet since round 9 (Milky Way band from the star map, 247 x noise floor on CAM_10).
 - Look round 9 (2026-11-11, 35 shots, [notes](docs/handover/planet-look-round9.md), [verdicts](docs/reports/planet-look-round9-verdict.json)): 26 pass. CAM_0 to CAM_3 and CAM_6 to CAM_9 pass. Open: CAM_5 pale top band in fog, CAM_4 water step, crease and night haze at fog 1, CAM_10 core glow at nebula 0, square stars at 200 mm. Moon maps at 4096 and the nebula band show no frame-time cost (context only).
 - Round 10 (2026-11-11, [notes](docs/handover/planet-look-round10.md), [verdicts](docs/reports/planet-look-round10-verdict.json)): every dummy line source is out of the build (terrain lattice, orbit lattice, scroll, lattice light on the fog). No lines by day: `/vj/grid` 0 against 1 is within the noise floor on three cameras, all 12 day shots pass. The orbit night shot passes. Frame time, context only: day 35.4 to 33.9 ms, orbit night 23.9 to 20.3 ms.
@@ -41,7 +41,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 
 ## OSC contract
 
-- One source: `osc/contract.json`, 0..1 on the wire, synced into [osc/CONTROLS.md](osc/CONTROLS.md) and the Blender bridge. `magic/projects/show.magic` drives both scenes, not yet loaded in Magic. 
+- One source: `osc/contract.json`, 0..1 on the wire, synced into [osc/CONTROLS.md](osc/CONTROLS.md) and the Blender bridge. `magic/projects/show.magic` drives both scenes (38 addresses to the relay on 9200, `/vj/cam` 0..11). Opened in MagicBeta on 2026-11-11: its OSC reaches the Blender bridge through the relay (every control's source reads `osc`). Not checked: the picture inside Magic (its Syphon output is off in the project) and the mix with Godot. 
 
 ## Decided by the user
 
