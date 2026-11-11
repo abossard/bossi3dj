@@ -37,9 +37,10 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 
 - One source: `osc/contract.json`, 0..1 on the wire, synced into [osc/CONTROLS.md](osc/CONTROLS.md) and the Blender bridge. `magic/projects/show.magic` drives both scenes, not yet loaded in Magic. 
 
-## Decided by the user (2026-11-10)
+## Decided by the user
 
 - Contract: every continuous `/vj/*` control is 0..1 on the wire, each scene scales it to its own range; the wire default gives each scene its tuned look. Indices (`/vj/cam`) stay integers, triggers keep their strength.
+- Blender, 2026-11-11: no wireframe by day (0 up to sunset, fading in toward night), and lines never move over the terrain on the planet: no grid scroll, `/vj/grid_speed` is island only.
 - Godot low hero shot on the long walk keeps the Wanderer in frame, the giant may shrink below 60 px (2026-11-11).
 - `/vj/cam` N picks each scene's Nth shot (0-based, clamped to what the scene has). New `/vj/cam_auto` (0 or 1, default 1) hands the cuts to the scene's own director: Godot follows it, Blender ignores it.
 
