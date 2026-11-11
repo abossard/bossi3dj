@@ -5,10 +5,20 @@ previous instance. Open http://127.0.0.1:9210 to drive the scene without Magic.
 
 - The controls come from the scene: every vj_* custom property with its
   min, max, step and default (set by synthwave_runtime.ensure_props), so a
-  new property shows up on the page without touching it.
+  new property shows up on the page without touching it. page_model.py (no bpy,
+  unit tested) adds each control's address, group and plain sentence from
+  osc/contract.json, orders them like the README manual and reports the
+  addresses Blender reads that have no control ("coverage" in /api/state).
 - Writes go through the OSC bridge's apply() (blender_osc_bridge.py), the
   same path as an OSC message, so /vj/cam cuts and redraws behave the same.
   Held properties are owned by the page: the bridge skips their OSC.
+- Presets (named sets of values) live in blender/local/presets.json, shared by every
+  device that opens the page: GET /api/presets, POST /api/presets {"name"} saves the current
+  values, POST /api/presets/delete {"name"}. Recalling is the page's two calls, /api/set and /api/hold.
+- The page listens on 127.0.0.1. For a phone on the same network, blender/local/page.json
+  {"host": "lan"} (tools/blender_page_lan.py on) makes it listen on every interface, which lets any
+  device on that network drive the scene. A POST needs a JSON content type, and on loopback the
+  Host header must name loopback.
 - A beat simulator stands in for Magic: vj_beat, vj_bass and vj_level at a
   BPM, and a shockwave every few beats.
 - The preview is the Syphon frame, read back small by syphon_out.py only
@@ -22,6 +32,7 @@ previous instance. Open http://127.0.0.1:9210 to drive the scene without Magic.
   bpy.app.timers callback applies the queued writes on the main thread and
   publishes a snapshot (values, OSC stats and log, fps) for the page to poll.
 """
+import importlib.util
 import json
 import math
 import os
@@ -33,7 +44,18 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import bpy
 
-HOST, PORT = "127.0.0.1", 9210
+
+def _load(path, name):
+    """A module next to this file or in osc/, read from its file every start (a rebuilt scene never runs a stale copy)."""
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
+page_model = _load(os.path.join(_HERE, "page_model.py"), "page_model")
+HOST, PORT = page_model.bind_host(), 9210
 PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "synthwave_control.html")
 TICK = 0.02           # s between write drains and simulator steps
 PUBLISH_EVERY = 0.1   # s between snapshots, built only while a page polls
@@ -50,14 +72,27 @@ SENDER_KEY = "syphon_out"
 PREVIEW_KEY, PREVIEW_WANTED = "syphon_preview", "syphon_preview_wanted"   # shared with syphon_out.py
 
 
+_contract = {"mtime": None, "rows": [], "groups": []}
+
+
+def contract():
+    """(rows, group order) of osc/contract.json, read again when the file changes."""
+    try:
+        mtime = os.stat(CONTRACT_FILE).st_mtime
+        if mtime != _contract["mtime"]:
+            with open(CONTRACT_FILE) as f:
+                rows = json.load(f)["controls"]
+            groups = _load(os.path.join(os.path.dirname(CONTRACT_FILE), "contract.py"), "vj_contract").GROUPS
+            _contract.update(mtime=mtime, rows=rows, groups=list(groups))
+    except (OSError, ValueError, AttributeError):
+        pass
+    return _contract["rows"], _contract["groups"]
+
+
 def shots(scene):
     """The names and sentences of this scene's cameras, from the /vj/cam row of osc/contract.json: the planet scene has a Planet_Centre object."""
-    try:
-        with open(CONTRACT_FILE) as f:
-            row = next(r for r in json.load(f)["controls"] if r["address"] == "/vj/cam")
-    except (OSError, ValueError, StopIteration):
-        return []
-    return row.get("shots", {}).get("planet" if scene.objects.get("Planet_Centre") else "island", [])
+    row = next((r for r in contract()[0] if r["address"] == "/vj/cam"), None)
+    return [] if row is None else row.get("shots", {}).get("planet" if scene.objects.get("Planet_Centre") else "island", [])
 
 
 def controls(scene):
@@ -128,6 +163,8 @@ class Web:
         self.polled = 0.0         # last /api/state request, set by the HTTP thread
         self.published = 0.0
         self.sim = Sim()
+        self.presets = page_model.Presets()
+        self.lan = HOST != "127.0.0.1"
         self.check = None
         self.health = '{"error": "not run"}'
         self.server = ThreadingHTTPServer((HOST, PORT), self.handler())
@@ -151,8 +188,16 @@ class Web:
                 self.end_headers()
                 self.wfile.write(body)
 
+            def _host_ok(self):
+                if page_model.host_allowed(self.headers.get("Host"), web.lan, PORT):
+                    return True
+                self._send(b'{"error": "host not allowed"}', "application/json", 403)
+                return False
+
             def do_GET(self):
                 path = self.path.split("?")[0]
+                if not self._host_ok():
+                    return
                 if path in ("/", "/index.html"):
                     with open(PAGE, "rb") as f:
                         self._send(f.read(), "text/html; charset=utf-8")
@@ -161,6 +206,8 @@ class Web:
                     self._send(json.dumps(web.snapshot).encode(), "application/json")
                 elif path == "/api/check":
                     self._send((web.check.public if web.check else '{"state": "idle"}').encode(), "application/json")
+                elif path == "/api/presets":
+                    self._send(json.dumps({"presets": web.presets.all()}).encode(), "application/json")
                 elif path == "/api/health":     # blender/review/health.py, run on the main thread
                     done = threading.Event()
                     web.writes.put((path, done))
@@ -175,6 +222,10 @@ class Web:
 
             def do_POST(self):
                 path = self.path.split("?")[0]
+                if not self._host_ok():
+                    return
+                if not (self.headers.get("Content-Type") or "").startswith("application/json"):
+                    return self._send(b'{"error": "POST needs Content-Type: application/json"}', "application/json", 415)
                 try:
                     body = json.loads(self.rfile.read(int(self.headers.get("Content-Length") or 0)) or b"{}")
                     if path in ("/api/set", "/api/defaults", "/api/hold", "/api/check"):
@@ -183,6 +234,10 @@ class Web:
                         web.check and web.check.abort()
                     elif path == "/api/sim":
                         web.sim.config(body)
+                    elif path == "/api/presets":
+                        web.save_preset(body)
+                    elif path == "/api/presets/delete":
+                        web.presets.delete(str(body.get("name", "")))
                     else:
                         return self._send(b'{"error": "not found"}', "application/json", 404)
                     self._send(b'{"ok": true}', "application/json")
@@ -221,6 +276,15 @@ class Web:
             self.published = now
             self.publish(scene, bridge, now)
         return TICK
+
+    def save_preset(self, body):
+        """The current values of every control that is not a trigger, from the last snapshot (the page polls while it is open)."""
+        controls_ = self.snapshot.get("controls") or []
+        known = {c["key"] for c in controls_ if not c["trigger"]}
+        values = {k: v for k, v in (self.snapshot.get("values") or {}).items() if k in known}
+        if not values:
+            raise page_model.PresetError("no values yet: open the page and try again")
+        self.presets.save(body.get("name"), values, known)
 
     def start_check(self, opts):
         if self.check is not None and self.check.result["state"] == "running":
@@ -262,7 +326,8 @@ class Web:
             "scene": scene.name, "camera": shot_name(scene),
             "fps": rate(d0, d1), "scene_fps": rate(f0, f1),   # drawn frames (what Syphon gets) vs frame counter, which skips
             "playing": bool(bpy.context.screen and bpy.context.screen.is_animation_playing),
-            "controls": controls(scene), "sim": self.sim.state(),
+            "sim": self.sim.state(), "edge_guard": bpy.app.driver_namespace.get("edge_guard"), "lan": self.lan,
+            **page_model.page_state(controls(scene), *contract()),
             "values": {k: float(scene[k]) for k in scene.keys() if k.startswith(PREFIX)
                        and isinstance(scene[k], (int, float))},
         }

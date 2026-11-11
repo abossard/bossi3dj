@@ -1,0 +1,136 @@
+"""The control page's data without Blender: grouping, coverage, the preset file, the page settings. Run: python3 -m unittest discover blender/tests"""
+import json
+import os
+import sys
+import tempfile
+import unittest
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(HERE, "..", "scenes"))
+sys.path.insert(0, os.path.join(HERE, "..", "..", "osc"))
+sys.path.insert(0, os.path.join(HERE, "..", "..", "tools"))
+import blender_page_mock as mock  # noqa: E402  (the scene's controls as synthwave_web.controls() reads them)
+import contract  # noqa: E402
+import page_model as pm  # noqa: E402
+
+ROWS = contract.load()
+CONTROLS = mock.scene_controls(ROWS)
+
+
+class DescribeTests(unittest.TestCase):
+    def setUp(self):
+        self.page = pm.page_state(CONTROLS, ROWS, contract.GROUPS)
+
+    def test_every_blender_address_has_a_control(self):
+        self.assertEqual(self.page["coverage"], {"missing": [], "extra": []})
+        self.assertEqual(len(self.page["controls"]), len(pm.blender_rows(ROWS)))
+
+    def test_sections_follow_the_manual_groups(self):
+        titles = [s["title"] for s in self.page["sections"]]
+        self.assertEqual(titles, [g for g in contract.GROUPS if g != "Godot only"])
+
+    def test_each_control_carries_its_sentence_and_address_from_the_contract(self):
+        by_key = {c["key"]: c for c in self.page["controls"]}
+        for row in pm.blender_rows(ROWS):
+            with self.subTest(address=row["address"]):
+                c = by_key[pm.key_of(row["address"])]
+                self.assertEqual((c["address"], c["group"], c["plain"]), (row["address"], row["group"], row["plain"]))
+                self.assertTrue(c["plain"])
+
+    def test_order_inside_a_group_is_the_contract_order(self):
+        for sec in self.page["sections"]:
+            with self.subTest(group=sec["title"]):
+                want = [pm.key_of(r["address"]) for r in ROWS if r["group"] == sec["title"] and r.get("blender")]
+                self.assertEqual(sec["keys"], want)
+
+    def test_camera_buttons_carry_number_and_name(self):
+        cam = next(c for c in self.page["controls"] if c["key"] == "vj_cam")
+        self.assertEqual([(s["index"], s["name"]) for s in cam["shots"]][:3], [(0, "Plaza View"), (1, "River Skim"), (2, "Pyramid Hero")])
+        self.assertEqual(len(cam["shots"]), cam["max"] + 1)
+
+    def test_triggers_are_their_own_section_of_buttons(self):
+        trig = next(s for s in self.page["sections"] if s["title"] == "Triggers")
+        self.assertEqual(trig["keys"], ["vj_shock", "vj_meteor", "vj_hit"])
+        self.assertTrue(all(c["trigger"] for c in self.page["controls"] if c["key"] in trig["keys"]))
+
+    def test_a_property_the_contract_lacks_is_shown_last_and_reported(self):
+        page = pm.page_state(CONTROLS + [{"key": "vj_new_thing", "min": 0, "max": 1, "step": 0.01, "default": 0, "trigger": False}], ROWS, contract.GROUPS)
+        self.assertEqual(page["sections"][-1], {"title": pm.OTHER, "keys": ["vj_new_thing"]})
+        self.assertEqual(page["coverage"]["extra"], ["vj_new_thing"])
+
+    def test_a_missing_control_is_reported_by_address(self):
+        page = pm.page_state([c for c in CONTROLS if c["key"] != "vj_fog"], ROWS, contract.GROUPS)
+        self.assertEqual(page["coverage"]["missing"], ["/vj/fog"])
+
+    def test_the_godot_only_address_is_not_expected(self):
+        self.assertNotIn("/vj/cam_auto", [r["address"] for r in pm.blender_rows(ROWS)])
+
+
+class SourceTests(unittest.TestCase):
+    def test_counts_by_source_and_held(self):
+        got = pm.source_counts({"vj_fog": "osc", "vj_cam": "web", "vj_hue": "osc"}, {"vj_cam"}, ["vj_fog", "vj_cam", "vj_hue", "vj_sun"])
+        self.assertEqual(got, {"osc": 2, "web": 1, "held": 1})
+
+
+class PresetTests(unittest.TestCase):
+    def setUp(self):
+        self.path = os.path.join(tempfile.mkdtemp(), "local", "presets.json")
+        self.presets = pm.Presets(self.path)
+        self.known = {"vj_fog", "vj_night"}
+
+    def test_save_recall_delete(self):
+        self.presets.save("dusk", {"vj_fog": 0.8, "vj_night": 0.3}, self.known)
+        self.assertEqual(self.presets.all()["dusk"]["values"], {"vj_fog": 0.8, "vj_night": 0.3})
+        self.presets.save("dusk", {"vj_fog": 0.1}, self.known)
+        self.assertEqual(self.presets.all()["dusk"]["values"], {"vj_fog": 0.1})
+        self.presets.delete("dusk")
+        self.assertEqual(self.presets.all(), {})
+
+    def test_the_file_is_json_a_person_can_read(self):
+        self.presets.save("a", {"vj_fog": 0.5}, self.known)
+        with open(self.path) as f:
+            self.assertEqual(json.load(f), {"a": {"values": {"vj_fog": 0.5}}})
+
+    def test_bad_input_is_refused_and_nothing_is_written(self):
+        cases = [("", {"vj_fog": 1}), ("x" * 41, {"vj_fog": 1}), ("a", {"vj_nope": 1}), ("a", {"vj_fog": "high"}), ("a", {"vj_fog": True})]
+        for name, values in cases:
+            with self.subTest(name=name[:6], values=values):
+                with self.assertRaises(pm.PresetError):
+                    self.presets.save(name, values, self.known)
+        self.assertEqual(self.presets.all(), {})
+
+    def test_delete_of_an_unknown_name_is_refused(self):
+        with self.assertRaises(pm.PresetError):
+            self.presets.delete("nothing")
+
+    def test_a_broken_file_reads_as_empty(self):
+        os.makedirs(os.path.dirname(self.path))
+        with open(self.path, "w") as f:
+            f.write("{not json")
+        self.assertEqual(self.presets.all(), {})
+
+
+class SettingsTests(unittest.TestCase):
+    def test_host_follows_the_settings_file(self):
+        d = tempfile.mkdtemp()
+        for content, want in ((None, "127.0.0.1"), ('{"host": "local"}', "127.0.0.1"), ('{"host": "lan"}', "0.0.0.0"), ('{"host": "evil"}', "127.0.0.1"), ("{bad", "127.0.0.1")):
+            with self.subTest(content=content):
+                path = os.path.join(d, "page.json")
+                if content is None:
+                    if os.path.exists(path):
+                        os.remove(path)
+                else:
+                    with open(path, "w") as f:
+                        f.write(content)
+                self.assertEqual(pm.bind_host(path), want)
+
+    def test_host_header(self):
+        cases = [("127.0.0.1:9210", False, True), ("localhost:9210", False, True), ("[::1]:9210", False, True), ("evil.example", False, False),
+                 ("evil.example:9210", False, False), ("192.168.1.5:9210", False, False), (None, False, False), ("192.168.1.5:9210", True, True)]
+        for header, lan, want in cases:
+            with self.subTest(header=header, lan=lan):
+                self.assertEqual(pm.host_allowed(header, lan, 9210), want)
+
+
+if __name__ == "__main__":
+    unittest.main()

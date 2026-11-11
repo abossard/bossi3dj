@@ -17,3 +17,6 @@ blender/scenes/planet_proto/visual_check/
 blender/review/*.ppm
 # feature check output (JSON and frames of the failing controls)
 blender/review/out/
+
+# presets and page settings of this machine (blender/scenes/page_model.py)
+blender/local/
