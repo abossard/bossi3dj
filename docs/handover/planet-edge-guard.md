@@ -24,7 +24,7 @@ Result: the blank night-edge build was not reproduced (three rebuilds, two suspe
 | same, saved with `vj_night` 1 | present | 0.084 |
 | rebuild 2 | present | 0.105 |
 | rebuild 3 | present | 0.101 |
-- Rebuilds take 5.5 to 13 min (load). The blank state came only with the two builds of 9a8d405 and b1154c6; cause still unknown.
+- Rebuilds take 5.5 to 10 min (load). The blank state came only with the two builds of 9a8d405 and b1154c6; cause still unknown.
 - Repair path proven by forcing the probe's blank answer once (`force_blank=1`): shares [0.0 (forced), 0.103], status repaired, controls restored (hold empty, no off-default values), total 16.7 s under load 50 (the land re-evaluation is the slow part). With a real blank build the smallest action was never measured; the mute/unmute is the one known to work.
 
 ## Check rows
