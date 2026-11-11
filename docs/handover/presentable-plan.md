@@ -78,3 +78,15 @@ Merged since: B4 and G2 (both on the wave 1 branches). Blender planet 33 of 37 c
 | B3 planet look round 9 | `.claude/worktrees/blender-look-round9`, `blender/look-round9` | session started 2026-11-11, Blender-free part first |
 
 GPU order: G5, B2 live part, B3 live part, then the fps tables on an idle machine. B2 and B3 each begin with a Blender-free part.
+
+## Status 2026-11-11, wave 3
+
+The wave 2 sessions stopped at half context; fresh sessions continue from their notes on the same branches.
+
+| Node | Branch | Note | State |
+|---|---|---|---|
+| B3 planet look round 9, live part | `blender/look-round9` | `docs/handover/planet-look-round9.md` | running, holds Blender |
+| B2 Flight, Blender-free rest (`make verify` 3d and 7h, wiring, `PRECONDITIONS`) | `blender/flight` | `docs/handover/flight-presentable.md` | running, live part after the go |
+| G6 Godot look round 3 (low hero keeps the Wanderer) | `godot/look-round2` | `docs/handover/godot-look-round2.md` | running, live part after Blender closes |
+
+GPU order: B3 live, G6 live, B2 live, then fps tables.
