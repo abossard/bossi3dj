@@ -45,6 +45,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 ## Decided by the user
 
 - Contract: every continuous `/vj/*` control is 0..1 on the wire, each scene scales it to its own range; the wire default gives each scene its tuned look. Indices (`/vj/cam`) stay integers, triggers keep their strength.
+- Blender planet, 2026-11-11: the wireframe is an OSC control. Night: `/vj/grid` (exists). Day: new `/vj/grid_day`, default 0, real edges only (orchestrator's reading of "and maybe day"; queued for the round 11 session).
 - Blender planet, 2026-11-11: the real mesh edges stay at night; the flat ground gets gentle relief so they read as terrain ("make it a little bit less flat"). The drop decided earlier that day is withdrawn.
 - Blender planet, 2026-11-11, hard rule: never a dummy wireframe, on the ground or from orbit, at any time of day. Dummy is every line pattern that is not the edge set of the drawn mesh (today: the 24 m `WIRE_CELL` lattice and the 600 m `ORBIT_LATTICE` in `build_planet.py`). The real mesh edges may show from sunset to night, no lines by day. `/vj/grid_speed` is island only.
 - Godot, 2026-11-11: bring in the real Colossus and Wanderer models now, to learn their cost early. Target: looks great at very high frame rate, tricks allowed. Model pages are in `godot/colossus/docs/SPEC.md`.
