@@ -18,9 +18,11 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 - Self-check (`make blender-check`, 2026-11-10): planet 33 of 37 controls with an effect, island 30 of 37; contract cross-check 0 mismatches, bridge scaling 6 of 6 live. Report: [docs/reports/blender-feature-check.md](docs/reports/blender-feature-check.md).
 - `/vj/nebula` works on the planet since round 9 (Milky Way band from the star map, 247 x noise floor on CAM_10).
 - Look round 9 (2026-11-11, 35 shots, [notes](docs/handover/planet-look-round9.md), [verdicts](docs/reports/planet-look-round9-verdict.json)): 26 pass. CAM_0 to CAM_3 and CAM_6 to CAM_9 pass. Open: CAM_5 pale top band in fog, CAM_4 water step, crease and night haze at fog 1, CAM_10 core glow at nebula 0, square stars at 200 mm. Moon maps at 4096 and the nebula band show no frame-time cost (context only).
-- Next, round 10: remove every dummy wireframe (plan in [docs/handover/planet-look-round10.md](docs/handover/planet-look-round10.md)). Not started. The merged build still draws the lattices, the day one stronger than before.
-- Flight (branch `blender/flight`, not merged, never run live): the runtime starts `flight_rt` on the planet, self-check rows exist, Hover arrival in the model 12 s worst. `make verify` fails two checks by 2 and 5 % (3f, 7h sweep). Notes: [flight-presentable.md](.claude/worktrees/blender-flight/docs/handover/flight-presentable.md) in the worktree.
-- `/vj/energy` and `/vj/hit` showed an effect without a reader because one strong cell counts in the self-check; a repeat of a single strong cell is not built yet.
+- Round 10 (2026-11-11, [notes](docs/handover/planet-look-round10.md), [verdicts](docs/reports/planet-look-round10-verdict.json)): every dummy line source is out of the build (terrain lattice, orbit lattice, scroll, lattice light on the fog). No lines by day: `/vj/grid` 0 against 1 is within the noise floor on three cameras, all 12 day shots pass. The orbit night shot passes. Frame time, context only: day 35.4 to 33.9 ms, orbit night 23.9 to 20.3 ms.
+- Real mesh edges show at night (Wireframe node on the terrain). Both night shots with `/vj/grid` 1 fail: the flat plain's real mesh is itself a regular grid. Keep or drop is the user's choice.
+- Reviewer on the day land without lines: CAM_0 "a little empty", CAM_3 foreground "a flat uniform purple band".
+- Flight (branch `blender/flight`, not merged, never run live): the runtime starts `flight_rt` on the planet, self-check rows exist, Hover arrival in the model 12 s worst. `make verify` passes (348 checks). Notes: [flight-presentable.md](.claude/worktrees/blender-flight/docs/handover/flight-presentable.md) in the worktree.
+- `/vj/energy` and `/vj/hit` showed an effect without a reader because one strong cell counted in the self-check; on `blender/flight` a lone strong cell is repeated before it counts.
 - Blender is 5.3.0 since 2026-11-11, settings copied from 5.2 (a fresh 5.3 folder had no MCP add-on and opened out of camera view).
 - M1 cut timing: 11 of 84 cuts over 70 ms at load 86, not judged. No fps table yet.
 - The island scene (`synthwave_pyramids.blend`) has no build script (lost with a scratchpad).
@@ -50,6 +52,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 
 ## Waiting for the user
 
+- Planet at night: keep the real mesh edges or no lines at all (sheets in `docs/images/2026-11-11/`).
 - Eclipse in space: the moon's shadow on the Planet, or lining up per space camera.
 - Bend the straight show valley, or keep it.
 - Keep godot-mcp, or remove the addon and autoload.
