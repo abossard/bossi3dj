@@ -1,6 +1,6 @@
 # Planet look, round 12: irregular patch mesh (fix built in the live scene only; rebuild and review open)
 
-Branch `integration/presentable`. Rubric: `blender/review/rubric-round12.md` (frozen, commit 3d8cc1e). No verdicts yet: the session stopped at half context.
+Branch `integration/presentable`. Rubric: `blender/review/rubric-round12.md` (frozen, commit 3d8cc1e). Live review done, see "Review (live, round 12)" below; verdicts in `docs/reports/planet-look-round12-verdict.json`.
 
 ## Why
 
@@ -48,15 +48,39 @@ Built with hashed diagonals (b1154c6), the night edges almost vanished. Live exp
 - The committed `synthwave_planet.blend` (from the Flight merge, 5da0cef) points its star and moon maps at `.claude/worktrees/blender-flight/...` (absolute). With that worktree gone the night sky draws magenta. The next `make blender-rebuild` writes the file from the main checkout and fixes it; commit the rebuilt file.
 - `lod_build_ms.py` must run headless: in the live UI its loop blocked Blender's main thread for over 10 minutes (Blender was killed).
 
-## Open items (next session, in order)
+## Review (live, round 12)
 
-1. `make blender-rebuild`, `make blender-open`, `health.py`.
-2. Grabs: `round12_jobs.py` with `DN["check_out"]` = `out/round12/grabs` (rename the b1154c6 grabs first), flyover pair (`grid_numbers.py` mode "fly"), orbit hand-over frame (`orbit_jobs.py`, `DN["orbit_only"] = ["S9_pull_2_10k_day"]`).
-3. Numbers: `net_regularity.py` on CAM_0, CAM_1, CAM_3 night pairs against `out/round12/before/`; `grid_numbers.py` mode "night"; `ground_check.py`; `cut_jobs.py`; `ab_round11.py` with `DN["ab_out"]`.
-4. One `shot-reviewer` call with `rubric-round12.md` and the counterexample `blender/scenes/planet_proto/visual_check/user/2026-11-11-dummy-wireframe.webp`; verdicts to `docs/reports/planet-look-round12-verdict.json`. Ask it also whether CAM_11's streamed terrain shows edges and whether they are regular.
-5. Sheets for the user `docs/images/2026-11-11/planet-round12-night.jpg` and `-day.jpg` (640 px tiles, labelled), commit the rebuilt `.blend` and the sheets, `make blender-kill`.
-6. After the review is committed: flamingos. Since the round 11 relief `Flock.CAM_0.0` and `Flock.CAM_6.0` have 0 points (`CAM_1` 225), so `/vj/flamingos` shows no effect (Flight session's full check). Count the flock points per camera after the rebuild; if `CAM_0` is empty, find which flock-spot test in `build_planet.py` the relief now fails (probably flatness or wetness) and restore a flock in `CAM_0`'s view without flattening the ground. Proof: `make blender-check ARGS="--only vj_flamingos --no-fallback"` shows an effect on `CAM_0`.
-7. If R12-NET fails with one diagonal family: the hashed diagonal is not available with the Wireframe node. Remaining levers are the jitter (0.35 is the fold limit) or option C (no night edges on the planet).
+Committed scene (9a8d405) opened with `make blender-open`, health clean, all image paths exist (star and moon maps absolute under the main checkout, so no magenta sky; `Fog_Floor` has no file, generated).
+
+**Finding: the night edges depend on state, not on the diagonal.** Opened fresh, the committed build draws almost no night edge (state A). After only muting and unmuting `PL_Land`'s Triangulate node in the open scene, the edges are there (state B). Evaluated meshes are all triangles in B (CAM_0 land 215895 vertices, 379306 triangles, water 9392); state A's mesh was not read before the toggle. So the round 12 conclusion "hashed diagonals blank EEVEE's Wireframe node" is doubtful: the b1154c6 vanish and the committed vanish look like the same fresh-load state, and every live experiment that touched a node flipped to B.
+
+`net_regularity.py`, night `/vj/grid` 1 over 0 (grabs in `out/round12/`, git-ignored):
+
+| | line share | longest run (px) | direction share median | spectrum peak median |
+|---|---|---|---|---|
+| CAM_0 before (round 11) | 0.095 | 196 | 0.305 | 73 |
+| CAM_0 A (fresh open) | 0.008, no window with lines | | | |
+| CAM_0 B | 0.115 | 315 | 0.705 | 74 |
+| CAM_1 before | 0.126 | 275 | 0.310 | 114 |
+| CAM_1 A | 0.011, none | | | |
+| CAM_1 B | 0.131 | 293 | 0.591 | 138 |
+| CAM_3 before | 0.013 | 33 | 0.381 | 13 |
+| CAM_3 A | 0.012, none | | | |
+| CAM_3 B | 0.124 | 308 | 0.280 | 34 |
+
+- In B the longest straight run is longer than before on all three cameras and the direction share is up (one diagonal family): the numbers say the net is not more irregular. A first B grab of CAM_0 gave share 0.26, run 350 (the state was still settling).
+- Verdicts (`shot-reviewer`, 31 shots): 29 pass, 1 fail, 1 not judged. A is blank at night (R12-NET passes vacuously). B: CAM_0 fails R12-NET (lower plain: stacked rows of short horizontal dashes; left hill: dense family of diagonal dashes up to the right; "reads as a lattice"), CAM_1 and CAM_3 and the CAM_4 flyover pass ("irregular triangle net", CAM_1 borderline on the foreground plain). CAM_11 (Flight, streamed terrain): no edges visible, same as grid 0, but the planet disc is 140 px wide, edges sub-pixel, not judged. R12-R10, R12-DAY, R12-WATER pass (day judged without round 11 images).
+- `grid_numbers.py` night (state B, load 80): `/vj/grid` 0 pair mad 20.1 (round 11: 0.07), `/vj/grid` 1 pair mad 4.7, line overlap 0.19 (round 11: 0.78). The grid 0 pair already differs by 20: something else moved in the frame during the run, so the pair is not clean and says nothing about lines moving. Repeat in a quiet moment.
+- `ground_check.py`: no misses; 9 floats (round 11: 10), largest 12.1 m at 5.3 km (CAM_4 @0.25, 1.6 px; round 11: 11.1 m, 1.47 px); the biggest in pixels is CAM_3 @0 with 2.7 m at 5.2 px (round 11 largest 1.47 px). `ground_check.py` now picks the `on_cut` handler of the planet runtime: the Flight runtime has one too and the script failed with `KeyError: 'nearest_set'`.
+- Skipped: frame times (`fps_trustworthy` false, load 83), `ab_round11.py`, `cut_jobs.py` (load). LOD build times unchanged from above.
+- Sheets for the user: `docs/images/2026-11-11/planet-round12-night.jpg` (state B, CAM_0, 1, 3, 4, grid 0 left, 1 right; made with `blender/review/user_night_sheet.sh`) and `planet-round12-day.jpg`.
+
+## Open items
+
+1. Decide what state the show opens in: fresh open draws no night edge on the planet. Find out why a fresh load differs from a re-evaluated Triangulate (check: touch only `update_tag`, no node change, on a fresh open) before judging any more mesh lever.
+2. R12-NET fails on CAM_0 in B. Remaining levers, the user's call: jitter up to 0.35 (fold limit), option C (no night edges on the planet).
+3. Flamingos and map paths: part 2 of this session, see below if done.
+4. Streamed Flight terrain (`FLT_Lod`) is not jittered: needs a full-size CAM_11 frame to judge.
 
 ## Commands
 

@@ -15,7 +15,8 @@ S = bpy.context.scene
 R = 16000.0
 C = Vector((0.0, 0.0, -R))
 MAX_D = 6000.0
-rt = next(h for h in bpy.app.handlers.depsgraph_update_pre if h.__name__ == "on_cut").__globals__
+rt = next(h for h in bpy.app.handlers.depsgraph_update_pre
+          if h.__name__ == "on_cut" and "nearest_set" in h.__globals__).__globals__    # the Flight runtime has an on_cut too
 
 
 def bases(dg):
