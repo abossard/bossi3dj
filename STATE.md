@@ -4,7 +4,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 
 ## Now
 
-- 2026-11-11: the Blender side is wrapped up and pushed (`integration/presentable`). Focus is the Godot Colossus Scene.
+- 2026-11-11: the Blender side is wrapped up. `main` was fast-forwarded to `integration/presentable` at 62e687a and pushed (user's word); work goes on on `integration/presentable`. Focus is the Godot Colossus Scene.
 - Blender, where it stands: one command (`make blender-open`) to a checked start state; planet 36 of 37 controls with an effect from the page's "Check all" (the one without is island only by design); no dummy wireframe, real mesh edges at night by `/vj/grid`; Flight shot `CAM_11`; Magic drives it straight on udp 9201.
 - Blender, left open on purpose: fps table and cut stalls on an idle machine, the island's self-check rerun (30 of 37 on 2026-11-10), the Flight shot's streamed terrain at full size, the cause of the two builds without night edges (a guard catches them), CAM_4 and CAM_5 look items of round 9, the picture inside Magic.
 - Godot next (session G5, running since 2026-11-11; the G4 session stopped at 623k tokens): look round 6 with a new rubric for the models (climb frames bright enough, Grock reads as a giant, low hero composition, eye glints, Grock's clips as a shake-off), then a frame-time table (`make godot-fps`).
