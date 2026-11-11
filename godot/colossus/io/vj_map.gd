@@ -103,10 +103,10 @@ const ROWS := {
 		"the Nth director shot, 0-based, the last for any N above; used while cam_auto is 0",
 		"kind": Kind.SHOT,
 		"lo": 0.0,
-		"hi": 10.0,
+		"hi": 11.0,
 		"rest": 0.0,
 		"out_lo": 0.0,
-		"out_hi": 10.0
+		"out_hi": 11.0
 	},
 	"/vj/cam_auto":
 	{

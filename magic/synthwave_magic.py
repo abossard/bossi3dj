@@ -66,8 +66,8 @@ GLOBALS = [
     ctl("HueBase", 0.0),
     ctl("HueDrift", 0.05),   # hue walk per bar and per drop
     ctl("CamAuto", 1.0),     # 1 = Magic cuts every 8 bars and on drops, and Godot's director cuts by itself; 0 = CamSel
-    ctl("CamSel", 0.0),      # manual camera, 0..1 -> shot 0..10 (a scene without that many takes its last)
-    ctl("CamCount", 1.0),    # shots the auto-cutter cycles through, 0..1 -> 1..11
+    ctl("CamSel", 0.0),      # manual camera, 0..1 -> shot 0..11 (11: the planet's Flight; a scene without that many takes its last)
+    ctl("CamCount", 1.0),    # shots the auto-cutter cycles through, 0..1 -> 1..12
     ctl("CamSpeed", 0.33),   # 0.33 -> scene default 1.0
     ctl("GridSpeed", 0.3),
     ctl("Sun", 1.0), ctl("Moon", 1.0), ctl("Pyramids", 1.0),
@@ -198,7 +198,7 @@ GLOBALS = [
     # 0..4 cells/s on the wire as 0..1
     ("OutGridSpeed", "calc", 0.15, [ex("min(1, max(0.0125, 0.0375 + GridSpeed*0.5*(0.6 + React*(0.5*EnergyAvg + 0.8*DropEnv + 0.4*Build) - 0.4*Breakdown)))")]),
     # An index: shot N of the scene, 0-based. A scene with fewer shots takes its last.
-    ("OutCam", "calc", 0, [ex("if(CamAuto > 0.5, (floor(Beats/32) + Drops) % (floor(CamCount*10 + 0.001) + 1), floor(CamSel*10.999))")]),
+    ("OutCam", "calc", 0, [ex("if(CamAuto > 0.5, (floor(Beats/32) + Drops) % (floor(CamCount*11 + 0.001) + 1), floor(CamSel*11.999))")]),
     ("OutCamAuto", "calc", 1, [ex("if(CamAuto > 0.5, 1, 0)")]),
     # 0..4 on the wire as 0..1
     ("OutCamSpeed", "calc", 0.25, [ex("min(1, max(0.0125, CamSpeed*0.75*(0.6 + Auto*(0.5*Build + 0.8*DropEnv - 0.3*Breakdown))))")]),

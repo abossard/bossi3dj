@@ -69,10 +69,15 @@ HOVER_ARRIVE = 400.0                      # m: the Skim-to-Hover blend completes
                                           # height, lens, pitch) while the camera flies for the water at the Skim's
                                           # speed; it eases into the Hover over this last stretch. (At the 6 m/s drift
                                           # a loop 1.5 km away took 4 minutes, 4 m over dry hillsides.)
+HOVER_ARRIVE_TIME = 4.0                   # s: the blend rises no faster (a boost returning to the loop crossed
+                                          # HOVER_ARRIVE in 2 s, the stage height dived 30 m/s2)
 HOVER_RELEASE = 300.0                     # m: once on its loop the Hover holds until this much further off it
                                           # (a boost's surge leaves the loop: the 0.4 g turn can't follow it)
-HOVER_DECEL = 8.0                         # m/s2: the braking onto the water loop (85 m/s to the drift in 10 s, 450 m)
-HOVER_STEER = 1.0 / 12.0                  # of f past the Skim's key over which the steering turns to the water
+HOVER_DECEL = 11.0                         # m/s2: the braking onto the water loop (85 m/s to the drift in 7 s, 330 m)
+HOVER_TRANSIT = 125.0                     # m/s: the transit's top speed to far water (the Skim's 85 and most of a boost)
+HOVER_TURN = 30.0                         # m/s: the transit's speed with the water abeam or behind (a U-turn of
+                                          # 120 m at the Skim's 1.5 g instead of 1 km at 85 m/s); full speed head-on
+HOVER_STEER = 1.0 / 48.0                  # of f past the Skim's key over which the steering turns to the water
 HOVER_LAND = (45.0, 600.0)                # m: the Hover's height over land: without a water loop, and off its loop
                                           # (a boost) rising to it over HOVER_LAND[1] m past HOVER_SHORE
 MOON_CLEAR = 5000.0                       # m off the moon's surface
@@ -441,6 +446,7 @@ class Flight:
         self.u = norm(cross(self.n, (0.0, 0.0, 1.0)), fallback=norm(cross(self.n, (1.0, 0.0, 0.0))))
         self.h = norm(cross(self.n, self.u))
         self.rate = 0.0
+        self.want = 0.0               # rad/s, the pursuit's turn rate, followed (the Hover's first stage)
         self.alt = ALT[ORBIT]
         self.goal = self.env = None
         self.ev = 0.0
@@ -451,7 +457,11 @@ class Flight:
         self.gap = math.inf           # m from the Hover's water loop (inf without one)
         self.fe = 0.0                 # the stage in effect: f, held at the Skim until the camera is over the water
         self.held = False             # the Hover has taken effect over the water (HOVER_RELEASE)
+        self.arrive = 0.0             # the Skim-to-Hover blend in effect, rising at most at 1 / HOVER_ARRIVE_TIME
         self.go = 0.0                 # the speed floor that flies to and brakes onto the water loop
+        self.cap = None               # m/s, the transit's speed cap: slower while the water is not ahead
+        self.vb = None                # m/s, the stage in effect's speed past the Skim's key, followed (None: not past it)
+        self.alpha = 0.0              # rad, the target's bearing off the heading (last substep)
         self.a_st, self.a_v = None, 0.0  # the stage height, followed: holding the Skim stops its descent, so C1
 
     def orbit_normal(self, sun):
@@ -516,28 +526,44 @@ class Flight:
                 tracks[HOVER] = min(self.hovers, key=lambda lp: angle(self.u, lp.pts[lp.nearest(self.u)]))
                 self.hints.pop(HOVER, None)
         self.fe = self.f
-        base = mix_log(wf, SPEED)
         if self.f > KEYS[SKIM] and tracks[HOVER] is not None:
             self.held = self.held and self.gap < HOVER_RELEASE + HOVER_ARRIVE
             arrive = 1.0 - smootherstep((self.gap - 0.5 * HOVER_SHORE - (HOVER_RELEASE if self.held else 0.0)) / HOVER_ARRIVE)
             self.held = self.held or self.gap <= 0.5 * HOVER_SHORE
-            self.fe = KEYS[SKIM] + (self.f - KEYS[SKIM]) * arrive
+            self.arrive = min(arrive, self.arrive + dt / HOVER_ARRIVE_TIME)
+            self.fe = KEYS[SKIM] + (self.f - KEYS[SKIM]) * self.arrive
             # at least the speed that brakes onto the loop at HOVER_DECEL (and back onto it after a boost), at most
-            # the Skim's; on the loop the drift
-            go = min(math.sqrt(SPEED[HOVER] ** 2 + 2.0 * HOVER_DECEL * max(self.gap - 0.5 * HOVER_SHORE, 0.0)), SPEED[SKIM])
+            # the transit's; on the loop the drift
+            go = min(math.sqrt(SPEED[HOVER] ** 2 + 2.0 * HOVER_DECEL * max(self.gap - 0.5 * HOVER_SHORE, 0.0)), HOVER_TRANSIT)
+            cap = HOVER_TURN + (HOVER_TRANSIT - HOVER_TURN) * max(math.cos(self.alpha), 0.0) ** 2
         else:
-            go = 0.0
+            go, cap, self.arrive = 0.0, None, 0.0
         # rate-limited, and not rising during a surge: a boost carrying the camera off its loop must not feed back
-        # into its own speed
-        rise = 0.0 if max(self.b, self.hk) > 0.05 else 1.2 * HOVER_DECEL * dt
-        self.go += clamp(go - self.go, -1.2 * HOVER_DECEL * dt, rise)
-        base = max(base, self.go)
-        w = self.w = weights(self.fe)
-        low = w[SKIM] + w[HOVER]
+        # into its own speed. Not falling while a surge builds: it adds to the speed it started from, braking or not
         ek = 1.0 + self.en * (ENERGY_SPEED[1] if self.en > 0.0 else ENERGY_SPEED[0])
+        acc = 1.2 * HOVER_DECEL * dt / max(ek, 1.0)     # the cap is followed, and released at that rate after the
+                                                        # transit (in the speed seen: the energy scales the base)
+        surge = max(self.b, self.hk) > 0.05
+        fall = 0.0 if self.b1 > self.b + 1e-3 or self.hk1 > self.hk + 1e-3 else -acc
+        self.go += clamp(go - self.go, fall, 0.0 if surge else acc)
+        w = self.w = weights(self.fe)
+        sp = mix_log(w, SPEED)      # the stage in effect's: the Skim's all the way to the water
+        # the energy's Hover term grows with fe: in the base, so it is followed and capped with it (in the speed seen)
+        sp += ENERGY_HOVER * BOOST_SPEED * max(self.en, 0.0) * w[HOVER] / ek
+        if cap is not None:         # followed like the floor: a boost carrying the camera off its loop lowers fe,
+            self.vb = sp if self.vb is None else self.vb + clamp(sp - self.vb, fall, 0.0 if surge else acc)
+        elif self.vb is not None:   # which must not raise its own speed
+            self.vb = None if abs(sp - self.vb) <= acc else self.vb + math.copysign(acc, sp - self.vb)
+        base = max(sp if self.vb is None else self.vb, self.go)
+        if cap is not None:     # not falling during a surge, as the floor does not rise (a boost or hit leaves the loop)
+            self.cap = base if self.cap is None else self.cap + clamp(cap - self.cap, 0.0 if max(self.b, self.hk) > 0.05 else -acc, acc)
+        elif self.cap is not None:
+            self.cap = None if self.cap + acc >= base else self.cap + acc
+        if self.cap is not None:
+            base = min(base, self.cap)
+        low = w[SKIM] + w[HOVER]
         swoop = HIT_SWOOP * self.hk * (w[ORBIT] + w[APPROACH])
-        v = (base * (ek + swoop) + max(self.b, self.hk) * BOOST_SPEED * low
-             + ENERGY_HOVER * BOOST_SPEED * max(self.en, 0.0) * w[HOVER])
+        v = base * (ek + swoop) + max(self.b, self.hk) * BOOST_SPEED * low
         self.v = v
 
         # the orbit plane turns slowly toward its seeded plane
@@ -567,11 +593,18 @@ class Flight:
             self.gap = math.inf
         target = norm(target)
         t_dir = tangent(self.u, target)
-        alpha = math.atan2(dot(self.u, cross(self.h, t_dir)), dot(self.h, t_dir))
-        dist = max(R * angle(self.u, target), 1.0)
+        alpha = self.alpha = math.atan2(dot(self.u, cross(self.h, t_dir)), dot(self.h, t_dir))
+        # a target further than the look-ahead (a track joined from afar, the water loop) is turned to first, then
+        # flown at: pure pursuit's arc through it is dist / (2 sin alpha) wide, a 3 km half circle for a loop abeam
+        dist = clamp(R * angle(self.u, target), 1.0, look)
         rmax = mix(w, LAT_ACC) / max(v, 1.0)
         want = math.copysign(rmax, alpha) if abs(alpha) > math.pi / 2.0 else clamp(2.0 * v * math.sin(alpha) / dist, -rmax, rmax)
-        self.rate += (want - self.rate) * (1.0 - math.exp(-dt / TURN_LAG))
+        # the water loop's nearest point can hop (a camera off the loop, a concave shore), flipping want: steering
+        # for it, want is followed in two stages, so the view (rate * LOOK_AHEAD) turns without a step in its speed
+        kt = 1.0 - math.exp(-dt / TURN_LAG)
+        self.want += (want - self.want) * kt
+        want += (self.want - want) * wp[HOVER]
+        self.rate += (want - self.rate) * kt
         self.h = norm(rot(self.u, self.rate * dt, self.h))
         self.u, self.h = move(self.u, self.h, v * dt)
 

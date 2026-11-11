@@ -51,7 +51,7 @@ FALLBACK = True         # look through the other cameras when the listed ones sh
 
 # key -> what the control needs before it shows. Keys of a row:
 #   set      values held while the control varies
-#   cams     cameras to look through first (default: 0)
+#   cams     cameras to look through first (default: 0); "flight" is the Flight's shot
 #   advance  s of clock time stepped after the change (speeds, triggers, anything that moves)
 #   then     values set after the first settle (a cut for /vj/blend), before the advance
 #   why      one line for the report
@@ -85,10 +85,12 @@ PRECONDITIONS = {
     "vj_fog_beat": {"set": {"vj_fog": 0.7, "vj_beat": 1.0}, "why": "the fog pumps with the beat"},
     "vj_blend": {"set": {"vj_cam": 1.0}, "cams": [1], "then": {"vj_cam": 4.0}, "advance": 0.3, "reads": ["py:flight_rt.frame"],
                  "why": "shows on a cut, a moment after it"},
-    "vj_boost": {"set": {"vj_flight": 0.66}, "advance": 1.0, "reads": ["py:flight_rt.frame"], "why": "the accelerator works while Flight skims"},
-    "vj_flight": {"advance": 2.0, "reads": ["py:flight_rt.frame"], "why": "damped: a jump flies"},
-    "vj_energy": {"advance": 2.0, "reads": ["py:flight_rt.frame"], "why": "eased over seconds"},
-    "vj_hit": {"advance": 0.5, "reads": ["py:flight_rt.frame"], "why": "a surge of speed"},
+    "vj_boost": {"set": {"vj_flight": 0.66}, "cams": ["flight"], "advance": 2.0, "reads": ["py:flight_rt.frame"],
+                 "why": "the accelerator works while the Flight skims or hovers"},
+    "vj_flight": {"cams": ["flight"], "advance": 2.0, "reads": ["py:flight_rt.frame"],
+                  "why": "a cell starts the Flight settled at the stage (flight_rt.quiesce); verify_flight checks the damping"},
+    "vj_energy": {"advance": 2.0, "reads": ["py:flight_rt.frame"], "why": "every shot moves harder, eased over seconds"},
+    "vj_hit": {"advance": 0.5, "reads": ["py:flight_rt.frame"], "why": "a wide-angle kick on the On-Air Camera"},
 }
 
 
@@ -347,7 +349,8 @@ class Check:
         else:
             yield from self.wait_frames(1)
             if key == "vj_cam":
-                readback = scene.camera is not None and scene.camera.name == "CAM_%d" % int(round(value))
+                shot = self.ns["vj_shot"]() if "vj_shot" in self.ns else scene.camera and scene.camera.name     # flight_rt
+                readback = shot == "CAM_%d" % int(round(value))
             elif key is not None:
                 readback = abs(float(scene[key]) - value) <= 1e-6 * max(1.0, abs(value))
         if pre.get("then"):
@@ -435,9 +438,9 @@ class Check:
                     notes.append("value %s not read back" % bad)
             if row["verdict"] == "effect" and confirmed is False:
                 row["verdict"] = "no effect"
-                notes.append("a weak first effect did not repeat")
+                notes.append("a weak or single-cell first effect did not repeat")
             elif confirmed:
-                notes.append("weak, repeated")
+                notes.append("weak or single-cell, repeated")
             probes = [x["probe"] for a in attempts for x in a["cells"] if x["probe"] is not None]
             if probes and row["verdict"] == "no effect":
                 notes.append("the runtime took the trigger (%s) but no camera tried shows it" % ", ".join(pre["probe"][:1] + ["..."]) if any(probes)
@@ -461,9 +464,16 @@ class Check:
                 row["note"] += "; frames not saved: %s" % e
         return row
 
+    def cam_number(self, x):
+        """A camera number, or "flight": the Flight's shot, which flight_rt adds as the last CAM_n (0 without one)."""
+        if x != "flight":
+            return int(x)
+        fc = next((o for o in self.scene.objects if o.type == "CAMERA" and o.get("vj_flight_cam")), None)
+        return int(fc.name[4:]) if fc is not None else 0
+
     def test(self, c, rd):
         pre = PRECONDITIONS.get(c["key"], {})
-        cams = [int(x) for x in pre.get("cams", [0])]
+        cams = [self.cam_number(x) for x in pre.get("cams", [0])]
         if c["key"] == "vj_cam":
             cams = [0]
         attempts, frames, error, confirmed = [], {}, None, None
@@ -480,7 +490,9 @@ class Check:
                         a, _ = yield from self.attempt(c, pre, cam, primary=False)
                         attempts.append(a)
             best = self.best(c, attempts)
-            if self.effective(c, [best]) and self.strength(c, [best]) < STRONG:     # a weak effect has to repeat on fresh baselines
+            # a weak effect, or one strong cell with the other cells of its camera at the floor, has to repeat on fresh
+            # baselines: a picture change off the stopped clocks between a cached baseline and one cell looks the same
+            if self.effective(c, [best]) and (self.strength(c, [best]) < STRONG or self.lone(c, best)):
                 self.baselines.pop(self.signature(pre, best["cam"]), None)
                 again, _ = yield from self.attempt(c, pre, best["cam"], primary=True)
                 attempts.append(again)
@@ -502,6 +514,10 @@ class Check:
         """One cell far above the floor, or two cells above it: a single marginal cell is noise."""
         return any(len(self.shown(c, a)) >= (1 if c["key"] == "vj_cam" else 2) or any(x["ratio"] >= STRONG for x in self.shown(c, a))
                    for a in attempts)
+
+    def lone(self, c, attempt):
+        """One cell shows, the other judged cells stay at the floor (vj_cam judges every cell on its own)."""
+        return c["key"] != "vj_cam" and len(self.shown(c, attempt)) == 1 and len(self.judged(c, attempt)) > 1
 
     def strength(self, c, attempts):
         return max((x["ratio"] for a in attempts if self.effective(c, [a]) for x in self.shown(c, a)), default=0.0)

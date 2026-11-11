@@ -29,7 +29,7 @@ The source of the rows is [contract.json](contract.json). The table below, the b
 | `/vj/intensity` | 0..1, default 0.5 | 0..2, default 1. overall brightness | 0.2..1.8 exposure, default 1. overall exposure |
 | `/vj/strobe` | 0..1, default 0 | flash to white | not used |
 | `/vj/grid_speed` | 0..1, default 0.15 | 0..4 cells/s, default 0.6. island scene only: grid scroll; the planet has no scrolling lines and does not read it | not used |
-| `/vj/cam` | integer 0..10, default 0 | cut to `CAM_N`; N above the last camera of the scene takes the last | pin the director's Nth shot (0-based); N above the last shot takes the last; held only while `/vj/cam_auto` is 0 |
+| `/vj/cam` | integer 0..11, default 0 | cut to `CAM_N`; in the planet scene `CAM_11` is the Flight shot; N above the last camera of the scene takes the last | pin the director's Nth shot (0-based); N above the last shot takes the last; held only while `/vj/cam_auto` is 0 |
 | `/vj/cam_auto` | integer 0..1, default 1 | not used | 1: the director cuts by itself; 0: it holds the shot `/vj/cam` picks |
 | `/vj/cam_speed` | 0..1, default 0.25 | 0..4, default 1. camera drift and flyover speed | not used |
 | `/vj/sun` | 0..1, default 1 | sun elevation, and size (largest at peak day): 0 sets it below the horizon (night lighting) | not used |

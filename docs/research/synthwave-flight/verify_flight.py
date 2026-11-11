@@ -160,7 +160,8 @@ for seed in ([] if LOD_ONLY or BLEND_ONLY or ENERGY_ONLY else SEEDS):
             worst["moon"] = min(worst["moon"], fl.length(fl.sub(p, MOON[0])) - MOON[1])
             if prev_f is not None:
                 om = fl.angle(prev_f, fwd) / DT
-                worst["turn"] = max(worst["turn"], math.degrees(om))
+                if math.degrees(om) > worst["turn"]:
+                    worst["turn"], where["turn"] = math.degrees(om), (seed, name, round(i * DT, 1), round(info["f"], 3), round(info["alt"]), round(info["speed"]))
                 if prev_w is not None:
                     worst["turn_acc"] = max(worst["turn_acc"], math.degrees(abs(om - prev_w)) / DT)
                 prev_w = om
@@ -210,6 +211,44 @@ check("3f FL1: acceleration under 2 km, per 150 m of height over 150 m (m/s2)", 
 check("3g FL1: never stalls (ground speed, m/s)", worst["slow"], 5.0, ">=")
 check("3h FL2/FL4: the Hover in effect, s after f reaches 1 at the region (the blend reaches the water)", worst["arrive"], 15.0)
 check("3i FL2/FL4: once on its water loop the Hover stays on it, programs without a boost (m off the loop)", worst["hover_gap"], fl.HOVER_SHORE)
+
+
+# 3j. the Hover from the Skim: start states over seeds, time on the Skim track and two regions
+def hover_jump(region, seed, hold):
+    """A jump of /vj/flight from the Skim (2/3, held hold s on the region's Skim track) to the Hover (1): seconds from
+    f reaching 1 until the Hover is in effect (fe 1), and the water's distance at the jump (m)."""
+    T.candidates = lambda: [region]
+    F = fl.Flight(T, seed=seed, sun=SUN)
+    t, on = 0.0, None
+    while on is None or t < on + hold:
+        F.step(DT, KEYS_SKIM, 0, sun=SUN, moon=MOON)
+        t += DT
+        if on is None and F.f > KEYS_SKIM - 1e-3 and fl.R * fl.angle(F.u, F.region[1]) < 1.15 * fl.SKIM_RING + 500.0:
+            on = t
+    at_one = gap = None
+    for _ in range(int(150.0 * FPS)):
+        F.step(DT, 1.0, 0, sun=SUN, moon=MOON)
+        t += DT
+        if gap is None and F.f > KEYS_SKIM + 1e-3:
+            gap = F.gap
+        if at_one is None and F.f >= 0.999:
+            at_one = t
+        if F.fe >= 0.999:
+            return t - at_one, gap
+    return math.inf, gap
+
+
+KEYS_SKIM = fl.KEYS[fl.SKIM]
+if not (LOD_ONLY or BLEND_ONLY or ENERGY_ONLY):
+    regions_ = (("the sea", T.far), ("water on one side", T.mtn))
+    for label, region in regions_:
+        runs = [(seed, hold) + hover_jump(region, seed, hold) for seed in SEEDS for hold in (0.0, 15.0, 30.0, 45.0)]
+        worst_ = max(runs, key=lambda r: r[2])
+        check("3j FL2: a jump from the Skim to the Hover, %s: in effect s after f reaches 1, %d start states" % (label, len(runs)), worst_[2], 15.0)
+        print("   worst (seed, s on the Skim before the jump, s, water m off at the jump):", tuple(round(x) for x in worst_))
+    del T.candidates
+
+
 check("4a FL4: orbit frames planet and moon (deg past the frame edge)", worst["orbit_fit"], 0.0)
 check("4b FL4: horizon inside the frame below orbit (deg past 0.9 of the edge)", worst["horizon"], 0.0)
 if not (LOD_ONLY or BLEND_ONLY or ENERGY_ONLY):
@@ -587,7 +626,7 @@ def run_lod(kind, seconds, p, lag):
     path = lod_path(kind, seconds)
     hr = make_hr(p)
     hist, prev, sel_cam = [], None, None
-    st = {"balance": 0, "crack": 0.0, "pop": 0.0, "multi": 0, "coarse": 0, "blocks_s": 0.0, "verts_s": 0.0,
+    st = {"balance": 0, "crack": 0.0, "pop": 0.0, "multi": 0, "multi_hidden": 0, "coarse": 0, "blocks_s": 0.0, "verts_s": 0.0,
           "leaves": 0, "verts": 0, "live_blocks": 0}
     changed_blocks = verts_eval = 0
     for i, (cam, v) in enumerate(path):
@@ -610,7 +649,10 @@ def run_lod(kind, seconds, p, lag):
                 par = (k[0], k[1] - 1, k[2] // 2, k[3] // 2)
                 top = par if par in removed else k if ls.children(k)[0] in removed else None
                 if top is None:
-                    st["multi"] += 1
+                    # the cull lets a face jump depths where it crosses the horizon (the look-ahead camera bobs with
+                    # the terrain); a node past the horizon for both cameras is not seen
+                    hidden = ls.past_horizon(k, sel_cam) and ls.past_horizon(k, prev_cam)
+                    st["multi_hidden" if hidden else "multi"] += 1
                 elif not (ls.past_horizon(top, sel_cam) or ls.past_horizon(top, prev_cam)):   # a cull change is past the horizon
                     gap = change_gap(top, ls.children(top), cam, p)
                     if gap > st["pop"]:
@@ -657,7 +699,8 @@ for kind, secs, speed in () if BLEND_ONLY else (("skim", 6.0 if QUICK else 15.0,
     print("   worst crack (depth, distance m, neighbour distance m):", st.get("crack_at"))
     check("5c %s: pop at a split or merge in view (m)" % kind, st["pop"], 0.01)
     print("   worst pop (depth, distance m, kind):", st.get("pop_at"))
-    check("5d %s: changes of more than one depth in a frame" % kind, float(st["multi"]), 0.0)
+    check("5d %s: changes of more than one depth in a frame, in front of the horizon" % kind, float(st["multi"]), 0.0)
+    print("   past the horizon for both cameras (not seen):", st["multi_hidden"])
     check("5e %s: nodes coarser than the camera asks, within 2.5 km" % kind, float(st["coarse"]), 0.0)
 
 print("FAILED: " + ", ".join(fails) if fails else "all checks passed")

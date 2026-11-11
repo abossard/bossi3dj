@@ -105,7 +105,7 @@ class ScaleTests(unittest.TestCase):
         cases = [
             ("/vj/level", "blender", 0.5, 0.5), ("/vj/intensity", "blender", 0.5, 1.0), ("/vj/intensity", "blender", 2.0, 2.0),
             ("/vj/intensity", "blender", -1, 0.0), ("/vj/fog_height", "blender", 0.41, 25.19), ("/vj/fog_height", "godot", 1, 95.0),
-            ("/vj/cam", "blender", 3.4, 3), ("/vj/cam", "godot", 99, 10), ("/vj/cam_auto", "godot", 0.2, 0),
+            ("/vj/cam", "blender", 3.4, 3), ("/vj/cam", "godot", 99, 11), ("/vj/cam_auto", "godot", 0.2, 0),
             ("/vj/shock", "blender", 1.4, 1.4), ("/vj/shock", "godot", 1.5, 1.5), ("/vj/hue", "godot", 0.5, None),
             ("/vj/cam_auto", "blender", 1, None),
         ]
