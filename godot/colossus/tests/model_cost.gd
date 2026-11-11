@@ -110,7 +110,19 @@ func _subjects() -> Dictionary:
 		"wanderer stand-in": standin_wanderer,
 		"nomad": nomad,
 		"nomad still": _model("nomad"),
+		"wanderer": _animated_wanderer(),
 	}
+
+
+## The scene's own Wanderer as the show builds it: the Nomad on its clips through the retarget,
+## feet, hand IK and look-at, standing (idle) and posing every frame.
+func _animated_wanderer() -> Wanderer:
+	var w := Wanderer.new()
+	w.height_at = main.world.height_at
+	main.output.add_child(w)
+	w.place_at(at)
+	w.rotation.y = PI
+	return w
 
 
 func _show(subjects: Dictionary, which: String) -> void:
@@ -234,7 +246,7 @@ func _run() -> void:
 		print("%-18s %s" % [k, report["subjects"][k]])
 	var groups := [
 		[["colossus stand-in", "grock", "grock no shadow"], COLOSSUS_VIEWS, COLOSSUS_HEIGHT],
-		[["wanderer stand-in", "nomad", "nomad still"], WANDERER_VIEWS, 1.75],
+		[["wanderer stand-in", "nomad", "nomad still", "wanderer"], WANDERER_VIEWS, 1.75],
 	]
 	for group: Array in groups:
 		var who_all: Array = group[0]
