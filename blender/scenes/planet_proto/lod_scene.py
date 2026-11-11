@@ -15,6 +15,9 @@
 - Shown blocks are written into slots: objects that always stay in the depsgraph and are drawn, one block each.
   A changed block rewrites its slot's mesh in place, which re-evaluates only that object; showing or hiding objects
   instead rebuilt the scene's depsgraph relations, 15-20 ms on every change.
+- The stream runs only while flight_rt wants it (the Flight shot on air or one side of a blend): resume() starts the
+  timer, pause() stops it and empties the slots (an empty slot draws nothing); the caches stay. live() says when a
+  resumed stream shows a whole view; until then planet_runtime keeps the planet's own sets on.
 """
 import math
 import time
@@ -53,7 +56,7 @@ STEP_SHARE = 0.25                   # moving fast, the selection step is this sh
 SEL_STEP = 8.0                     # m the camera moves before the next selection (covered by the margin)
 NODE_ATTRS = ("nf", "ni", "nj", "nd", "r0", "r1")
 _state = {"cache": {}, "blocks": {}, "near_missing": set(), "shown": {}, "slots": [], "free": [], "nodes": {},
-          "params": None, "groups": None, "mats": None, "coll": None, "prev": None, "hr": None, "sets_hidden": False,
+          "params": None, "groups": None, "mats": None, "coll": None, "prev": None, "hr": None, "live": False,
           "want": None, "builders": [], "queue": [], "sel_queue": []}
 
 
@@ -598,10 +601,16 @@ def swap(limit=None):
         write_mesh(ob.data, block(b, nodes))
         shown[b] = (ob, nodes)
     _state["nodes"] = dict(new)
+    _state["live"] = True
     done = len(new) == len(want)
     if done:
         _state["want"] = None
     return done
+
+
+def live():
+    """The stream shows a view with all its near blocks (since the last resume)."""
+    return _state["live"]
 
 
 def holding():
@@ -647,6 +656,7 @@ def stage_tick(force=False):
     _state["retire"] = _state.get("retire", []) + old
     _state["retire_frame"] = _state["frame"]
     _state["nodes"] = dict(sg["new"])
+    _state["live"] = _state["live"] or not _state["near_missing"]
     if len(sg["new"]) == len(_state["want"]):
         _state["want"] = None
     _state["stage"] = None
@@ -743,17 +753,32 @@ def start(scene, cmap, p=None):
     _state["hr"] = make_hr(cmap)
     _state["nodes"], _state["prev"], _state["sel_cam"], _state["want"] = {}, None, None, None
     _state["queue"], _state["sel_queue"] = [], []
+    _state["live"] = False
     slots(SLOTS)
+
+
+def resume():
+    """The stream on: the build timer runs; the next update() selects afresh."""
     if not bpy.app.timers.is_registered(build_tick):
         bpy.app.timers.register(build_tick, first_interval=TICK, persistent=True)
 
 
-def hide_sets(scene, hidden=True):
-    for ob in scene.objects:
-        if ob.get("lod_set") is not None and ob.name.startswith(("Planet.", "Water.")):
-            ob.visible_camera = not hidden
-            ob.hide_set(hidden)
-    _state["sets_hidden"] = hidden
+def pause():
+    """The stream off: no timer, no builds, every slot emptied (shown, staged or waiting to be retired); the node and
+    block caches stay, so a later resume near the same place writes its blocks without baking."""
+    if bpy.app.timers.is_registered(build_tick):
+        bpy.app.timers.unregister(build_tick)
+    sg = _state.get("stage")
+    hidden = list(sg["ready"].values()) if sg else []
+    for ob in [ob for ob, _ in _state["shown"].values()] + [ob for ob, _ in hidden] + _state.get("retire", []):
+        write_mesh(ob.data, None)
+        if ob.matrix_world != SHOWN:
+            ob.matrix_world = SHOWN
+        _state["free"].append(ob)
+    _state["shown"].clear()
+    _state["nodes"], _state["want"], _state["far"], _state["near_missing"] = {}, None, set(), set()
+    _state["sel_queue"], _state["stage"], _state["retire"], _state["sel_cam"] = [], None, [], None
+    _state["hist"], _state["travel"], _state["v_hold"], _state["live"] = [], 0.0, 0.0, False
 
 
 def travel(cam, speed, dt):
@@ -829,8 +854,6 @@ def update(scene, cam, speed, fps=60.0):
         else:
             swap()
     _state["spent"] = (time.perf_counter() - t0) * 1000.0
-    if not _state["sets_hidden"]:
-        hide_sets(scene, True)
     return len(missing)
 
 
@@ -855,5 +878,4 @@ def stop(scene):
     _state["blocks"].clear()
     _state["shown"].clear()
     _state["nodes"], _state["want"], _state["builders"], _state["queue"], _state["sel_queue"] = {}, None, [], [], []
-    _state["slots"], _state["free"], _state["stage"], _state["retire"] = [], [], None, []
-    hide_sets(scene, False)
+    _state["slots"], _state["free"], _state["stage"], _state["retire"], _state["live"] = [], [], None, [], False

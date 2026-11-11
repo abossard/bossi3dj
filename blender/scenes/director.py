@@ -19,6 +19,8 @@ evaluated matrix, the Flight from flight.Flight) and gives the target's pose to 
   the horizon stays level.
 - The hit's wide-angle kick and the pulse's accent (energy.accent) go on the rig's pose last, on every shot and
   through blends. The next blend starts from the pose without them, so an accent never carries into a path.
+- streamed(): which terrain is on. The Flight's streamed terrain only while the Flight shot is asked for or a running
+  blend has it as one side; a fixed shot shows the planet as built.
 """
 import math
 
@@ -77,6 +79,12 @@ def duration(a, b, scale, terrain=None):
     rise = 1.875 * climb / (RISE * FLOW)
     turn = 1.875 * fl.angle(a[1], b[1]) / TURN
     return scale * fl.clamp(max(over, rise, turn), DUR_MIN, DUR_MAX)
+
+
+def streamed(flight, shot, sides, blending):
+    """True while the Flight's streamed terrain is wanted: flight is the Flight shot's id, shot the one asked for,
+    sides the shots of the running blend (Director.sides) and blending whether one runs."""
+    return shot == flight or (blending and flight in sides)
 
 
 def ease(s):
@@ -168,6 +176,7 @@ class Director:
         self.pose = None                # without the accents
         self.vel = self.acc = (0.0, 0.0, 0.0)
         self.tr = None
+        self.sides = frozenset()        # the shots a running blend goes between (a change of mind adds one)
 
     def step(self, dt, shot, target, scale=1.0, terrain=None, drive=None):
         """shot: the selected shot's id; target: its live pose; drive: an energy.Drive (stepped by the caller) whose
@@ -176,6 +185,7 @@ class Director:
             self.shot, self.pose = shot, target
             return en.accent(target, drive) if drive is not None else target
         if shot != self.shot:
+            self.sides = (self.sides if self.tr is not None else frozenset((self.shot,))) | {shot}
             self.shot = shot
             v0 = fl.add(self.vel, self.acc, 0.5 * dt)     # the backward difference is half a frame old
             self.tr = Transition(self.pose, v0, target, scale, terrain, self.acc) if scale > 0.0 else None

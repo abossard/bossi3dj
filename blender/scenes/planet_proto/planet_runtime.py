@@ -15,6 +15,9 @@
   centre: one even level, no culling) or "follow" (anchor on the camera every frame).
   Scene property pl_lod_step > 0 also moves a surface anchor once the camera has
   travelled that many metres from it.
+- with the Flight runtime (flight_rt.py) scene.camera is its On-Air rig: the sets, the anchor,
+  the flock and a path shot's sky follow the shot behind the rig (driver_namespace vj_terrain),
+  and while the Flight's streamed terrain is shown the sets' land and water stay hidden.
 """
 import math
 import time
@@ -33,7 +36,19 @@ MODES = {   # mode: (anchor at centre, Cull: patches past the horizon at the low
     "orbit": (True, False, 1, 1),
 }
 FLOCK_ATTRS = ("heading", "fdir", "delay", "phase")
-_state = {"last": None, "camera": None, "set": None}
+TERRAIN_KEY = "vj_terrain"      # flight_rt: () -> (the shot whose sets are shown, the streamed terrain replaces them)
+STREAMED = ("Planet.", "Water.")    # the sets' objects the streamed terrain replaces
+_state = {"last": None, "camera": None, "set": None, "streamed": False}
+
+
+def on_air(scene):
+    """The shot camera the sets follow, and whether the Flight's streamed terrain is shown instead of their land and
+    water: scene.camera and False without flight_rt."""
+    f = bpy.app.driver_namespace.get(TERRAIN_KEY)
+    if f is None:
+        return scene.camera, False
+    name, streamed = f()
+    return (scene.objects.get(name) if name else None) or scene.camera, streamed
 
 
 def set_input(ob, name, value):
@@ -97,7 +112,7 @@ def show_lod_set(scene, key):
     for ob in scene.objects:
         k = ob.get("lod_set")
         if k is not None:
-            on = k == key
+            on = k == key and not (_state["streamed"] and ob.name.startswith(STREAMED))
             if ob.visible_camera != on:
                 ob.visible_camera = on
             if ob.hide_get() == on:
@@ -133,7 +148,11 @@ def place_anchor(scene, cam):
 
 
 def update_lod(scene):
-    cam = scene.camera
+    cam, streamed = on_air(scene)
+    if streamed != _state["streamed"]:
+        _state["streamed"] = streamed
+        if _state["set"] is not None:
+            show_lod_set(scene, _state["set"])
     if cam is None:
         return
     mode = cam.get("lod", "surface")
@@ -241,7 +260,7 @@ def planet_tick(scene):
     moon_far(scene)
     sun_rel(scene)
     update_lod(scene)
-    cam = scene.camera
+    cam = None if _state["streamed"] else on_air(scene)[0]
     if free:
         place_sky(scene, [a - b for a, b in zip(c, CENTER)])        # the free view's own horizon
     elif cam is not None and "path_period" in cam and cam.get("lod", "surface") != "orbit":
@@ -252,7 +271,8 @@ def on_cut(scene, depsgraph=None):
     """A cut (OSC or the web page sets scene.camera from a timer) is drawn before the next frame change, which
     showed the new camera with the old camera's land, sky frame, sun and aim for one frame. The frame-change
     work runs here instead, before that first frame is evaluated."""
-    if scene.camera is None or scene.camera == _state["camera"]:
+    cam = on_air(scene)[0]
+    if cam is None or cam == _state["camera"]:
         return
     planet_tick(scene)
     for h in list(bpy.app.handlers.frame_change_pre):

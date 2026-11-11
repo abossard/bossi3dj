@@ -15,6 +15,11 @@ others, so the planet runtime, the star system and the fog all read this frame's
   camera clock rt_cam_phase gains the Drive's rate (and a hit's swoop) on top of /vj/cam_speed. The Flight takes the
   energy and the hit as speed. The Director puts the kick and the pulse on the rig. rt_energy and rt_kick are written
   for the recorder.
+- The terrain (director.streamed): the Flight's streamed terrain (lod_scene) only while the Flight shot is asked for or
+  is one side of a running blend; otherwise the stream is paused (no timer, empty slots) and the planet shows its own
+  precomputed sets for the shot on air, as built (planet_runtime reads vj_terrain). A cut into the Flight holds the old
+  shot until the stream's view is staged (lod_scene.holding); the sets stay on until the stream shows a whole view
+  (lod_scene.live), so there is never a frame without ground.
 - The clearance map: ground (conservative: a 3x3 max, pyramids stamped in) and water level over the whole Planet on
   a cube map, probed once from the planet's own PL_Surface group and cached under ~/Library/Caches. The Flight, the
   blends and their clearance floors read it.
@@ -49,6 +54,7 @@ import lod_stream as ls  # noqa: E402
 RIG = "CAM_RIG"
 FLIGHT_KEY = "vj_flight_cam"
 SHOT_KEY = "vj_shot"                # driver_namespace: the shot asked for (scene.camera is the rig), for the page and check
+TERRAIN_KEY = "vj_terrain"          # driver_namespace: (the shot whose sets the planet shows, the stream is shown instead)
 SHOT_PROPS = {"fog_k": 1.0, "fog_clear": 180.0, "fog_dip": 0.005}
 MAP_RES = 512                       # texels per cube face side: about 49 m
 PYR_PAD = 25.0                      # m around a pyramid's footprint
@@ -58,7 +64,7 @@ SUBJECT = 300.0                     # m down the view: the aim point of a shot t
 CHECK_SEED = 1                      # the Flight's seed after a reset (quiesce), so every check cell flies alike
 CHECK_SUN = (0.0, 0.9038, 0.4280)   # and its sun: the scene's (star_system) follows the camera, so after a reset it is
                                     # the previous cell's, and the orbit plane and region with it
-_state = {"last": None, "director": None, "flight": None, "shot": None, "map": None, "fix": 0, "lod": False, "lod_ms": [],
+_state = {"last": None, "director": None, "flight": None, "shot": None, "map": None, "fix": 0, "lod": False, "stream": False, "lod_ms": [],
           "every": 1, "n": 0, "drive": None}
 
 
@@ -379,7 +385,12 @@ def frame(scene, depsgraph=None):
     target = flight_pose(scene, dt, fc) if shot == fc else moved_pose(shot, dg, drive)
     had = D.tr
     pose = D.step(dt, shot.name, target, scene.get("vj_blend", 1.0), _state["map"], drive)
-    if _state["lod"] and D.tr is not None and D.tr is not had:      # a blend began: build the target's blocks ahead
+    stream = _state["lod"] and dr.streamed(fc.name, shot.name, D.sides, D.tr is not None)
+    if stream != _state["stream"]:
+        _state["stream"] = stream
+        (lod_scene.resume if stream else lod_scene.pause)()
+        _state["lod_shot"] = None                       # the first selection after a resume is staged
+    if stream and D.tr is not None and D.tr is not had:     # a blend began: build the target's blocks ahead
         lod_scene.prewarm(target[0])
     up_r = fl.norm(fl.sub(pose[0], fl.CENTRE))         # the clearance floor under the rig during blends
     u, h = dr.spherical(pose[0])
@@ -389,18 +400,38 @@ def frame(scene, depsgraph=None):
         _state["fix"] += 1
     scene["rt_blending"] = 1.0 if D.tr is not None else 0.0
     _state["n"] += 1
-    if _state["lod"] and _state["n"] % _state["every"] == 0:   # the terrain follows the rig (lod_scene)
+    if stream and _state["n"] % _state["every"] == 0:   # the terrain follows the rig (lod_scene)
         t = time.perf_counter()
-        cut = shot.name != _state.get("lod_shot") and D.tr is None      # a hard cut: the jump is no speed
+        # a hard cut (the jump is no speed) or the first selection after a resume: staged (lod_scene.stage_tick)
+        cut = _state.get("lod_shot") is None or (shot.name != _state["lod_shot"] and D.tr is None)
         _state["lod_shot"] = shot.name
         blocks = lod_scene.update(scene, pose[0], 0.0 if cut else fl.length(D.vel), 1.0 / max(dt, 1e-3) / _state["every"])
         _state["lod_ms"] = (_state["lod_ms"] + [(round((time.perf_counter() - t) * 1000.0, 2), blocks)])[-600:]
-    if not (_state["lod"] and lod_scene.holding()):    # a cut shows when its terrain is ready (lod_scene.stage)
+    if not (stream and lod_scene.holding() and D.tr is None):   # a cut shows when its terrain is ready (lod_scene.stage);
+        # a blend flies on: until the staged view flips the planet's sets cover it (vj_terrain)
         place(rig, pose)
         _state["on_air"] = shot
     elif _state.get("on_air") not in (None, shot):     # meanwhile the old shot keeps moving (EN1)
         old = _state["on_air"]
         place(rig, flight_pose(scene, dt, fc) if old == fc else moved_pose(old, dg, drive))
+    planet_shot(_state["on_air"], pose[0], D.tr is not None)
+
+
+def planet_shot(on_air, p, blending):
+    """The fixed shot whose sets the planet shows: the one on air; in a blend between two fixed shots the new one once
+    the rig is nearer to it than to the old one; the Flight keeps the last fixed shot (its sets are hidden then)."""
+    old = _state.get("planet_shot")
+    if on_air is None or on_air.get(FLIGHT_KEY) or on_air == old:
+        return
+    if not blending or old is None or (Vector(p) - on_air.matrix_world.translation).length <= (Vector(p) - old.matrix_world.translation).length:
+        _state["planet_shot"] = on_air
+
+
+def terrain():
+    """What the planet shows (vj_terrain): the shot whose precomputed sets, and whether the Flight's stream replaces
+    their land and water."""
+    ps = _state.get("planet_shot")
+    return (ps.name if ps is not None else None), bool(_state["stream"] and lod_scene.live())
 
 
 def on_cut(scene, depsgraph=None):
@@ -432,10 +463,13 @@ def start():
         handlers.insert(0, fn)
     scene.camera = rig
     bpy.app.driver_namespace[SHOT_KEY] = lambda: _state["shot"].name if _state["shot"] is not None else None
+    _state["planet_shot"] = _state["shot"] if not _state["shot"].get(FLIGHT_KEY) else None
+    bpy.app.driver_namespace[TERRAIN_KEY] = terrain
     lod_scene.start(scene, _state["map"])
+    _state["stream"] = False
     _state["lod"] = True
     dg = bpy.context.evaluated_depsgraph_get()
-    for ob in scene.objects:                 # every fixed shot's blocks, built in the background
+    for ob in scene.objects:                 # every fixed shot's blocks, queued: built while the stream runs
         if ob.type == "CAMERA" and ob.name[4:].isdigit() and not ob.get(FLIGHT_KEY) and "path_period" not in ob:
             lod_scene.prewarm(tuple(ob.evaluated_get(dg).matrix_world.translation))
     print("flight_rt: started, %d flight regions, Flight shot %s" % (len(_state["map"].cands), fc.name))
@@ -443,9 +477,10 @@ def start():
 
 def stop():
     bpy.app.driver_namespace.pop(SHOT_KEY, None)
+    bpy.app.driver_namespace.pop(TERRAIN_KEY, None)
     if _state["lod"]:
         lod_scene.stop(bpy.context.scene)
-        _state["lod"] = False
+        _state["lod"] = _state["stream"] = False
     for handlers in (bpy.app.handlers.frame_change_pre, bpy.app.handlers.depsgraph_update_pre):
         for h in list(handlers):
             if getattr(h, "__module__", "") == __name__:
