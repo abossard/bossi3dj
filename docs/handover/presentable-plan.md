@@ -118,3 +118,11 @@ GPU order: B2 live, merge, B7 live, then G4 and the fps tables.
 - B7 done: relief on the plains (round 11), 14 of 19 shots pass; the lattice look of the night edges stays on smooth ground.
 - B8 (running, holds Blender): round 12, irregular terrain mesh; also restores the CAM_0 flamingo flock.
 - Open after B8: Hover arrival live (24.7 s), fps tables and cut stalls on an idle machine, G4 real models (waits for downloads), final check of both pages.
+
+## Status 2026-11-11, Blender wrapped up
+
+- V for Blender: planet page check 36 of 37 in a browser on a fresh open; start check green with the night-edge guard.
+- V for Godot: page check 22 of 22 in a browser on Metal, OSC on the one scene port 9201, Syphon frame with content.
+- The relay left the show path: Magic sends to udp 9201, both scenes listen there.
+- Sessions are reused now; the last one (B9) carried the guard, the flamingo row, line motion, Hover arrival and the port change.
+- Not done: B5 and G3 fps tables (the machine was never idle), G4 real models (downloads), the island's check rerun.

@@ -1,0 +1,297 @@
+{
+  "date": "2026-11-11",
+  "source": "page Check all in a browser, Godot on Metal, osc port 9201",
+  "check": {
+    "current": "",
+    "results": [
+      {
+        "address": "/vj/level",
+        "detail": "sun_energy at min, default, max",
+        "expected": [
+          1.0,
+          1.8,
+          2.6
+        ],
+        "id": "level",
+        "kind": "sweep",
+        "ms": 199,
+        "observed": [
+          1.0,
+          1.8,
+          2.6
+        ],
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/bass",
+        "detail": "weight at min, default, max",
+        "expected": [
+          0.5,
+          0.5,
+          1.0
+        ],
+        "id": "bass",
+        "kind": "sweep",
+        "ms": 208,
+        "observed": [
+          0.5,
+          0.5,
+          1.0
+        ],
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/fog",
+        "detail": "fog_density at min, default, max",
+        "expected": [
+          0.0,
+          0.00301,
+          0.0086
+        ],
+        "id": "fog",
+        "kind": "sweep",
+        "ms": 200,
+        "observed": [
+          0.0,
+          0.00301,
+          0.0086
+        ],
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/fog_height",
+        "detail": "fog_height at min, default, max",
+        "expected": [
+          0.0,
+          38.95,
+          95.0
+        ],
+        "id": "fog_height",
+        "kind": "sweep",
+        "ms": 202,
+        "observed": [
+          0.0,
+          38.950001,
+          95.0
+        ],
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/haze",
+        "detail": "haze_density at min, default, max",
+        "expected": [
+          0.0,
+          0.00025,
+          0.00025
+        ],
+        "id": "haze",
+        "kind": "sweep",
+        "ms": 198,
+        "observed": [
+          0.0,
+          0.00025,
+          0.00025
+        ],
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/intensity",
+        "detail": "exposure at min, default, max",
+        "expected": [
+          0.2,
+          1.0,
+          1.8
+        ],
+        "id": "intensity",
+        "kind": "sweep",
+        "ms": 200,
+        "observed": [
+          0.2,
+          1.0,
+          1.8
+        ],
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/cam",
+        "detail": "director shot after pinning 1",
+        "expected": 1,
+        "id": "shot_1",
+        "kind": "shot",
+        "ms": 150,
+        "observed": 1,
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/cam",
+        "detail": "director shot after pinning 2",
+        "expected": 2,
+        "id": "shot_2",
+        "kind": "shot",
+        "ms": 150,
+        "observed": 2,
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/cam",
+        "detail": "director shot after pinning 3",
+        "expected": 3,
+        "id": "shot_3",
+        "kind": "shot",
+        "ms": 158,
+        "observed": 3,
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/cam",
+        "detail": "director shot after pinning 4",
+        "expected": 4,
+        "id": "shot_4",
+        "kind": "shot",
+        "ms": 154,
+        "observed": 4,
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/cam",
+        "detail": "director shot after pinning 5",
+        "expected": 5,
+        "id": "shot_5",
+        "kind": "shot",
+        "ms": 144,
+        "observed": 5,
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/cam_auto",
+        "detail": "pinned shot after auto",
+        "expected": 0,
+        "id": "shot_auto",
+        "kind": "auto",
+        "ms": 122,
+        "observed": 0,
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/beat",
+        "detail": "beats counted for 4 pulses",
+        "expected": null,
+        "id": "beat",
+        "kind": "beat",
+        "ms": 330,
+        "observed": 4,
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/beat",
+        "detail": "beats counted from the simulator",
+        "expected": null,
+        "id": "beat_simulator",
+        "kind": "simulator",
+        "ms": 774,
+        "observed": 4,
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/fog",
+        "detail": "value after one udp packet",
+        "expected": 0.7,
+        "id": "osc_packet",
+        "kind": "osc",
+        "ms": 159,
+        "observed": [
+          0.7
+        ],
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/fog",
+        "detail": "value after an OSC packet against a hold",
+        "expected": 0.9,
+        "id": "hold",
+        "kind": "hold",
+        "ms": 87,
+        "observed": 0.9,
+        "verdict": "effect"
+      },
+      {
+        "address": "",
+        "detail": "largest distance from a rest value",
+        "expected": 0.0,
+        "id": "defaults",
+        "kind": "defaults",
+        "ms": 80,
+        "observed": 0.0,
+        "verdict": "effect"
+      },
+      {
+        "address": "",
+        "detail": "Phase after the jump",
+        "expected": "Climb",
+        "id": "phase_climb",
+        "kind": "phase",
+        "ms": 0,
+        "observed": "Climb",
+        "verdict": "effect"
+      },
+      {
+        "address": "/vj/shock",
+        "detail": "largest Shake roll in radians",
+        "expected": 0.01,
+        "id": "shake",
+        "kind": "shake",
+        "ms": 1616,
+        "observed": 0.176,
+        "verdict": "effect"
+      },
+      {
+        "address": "",
+        "detail": "Phase after the jump",
+        "expected": "Fall",
+        "id": "phase_fall",
+        "kind": "phase",
+        "ms": 1,
+        "observed": "Fall",
+        "verdict": "effect"
+      },
+      {
+        "address": "",
+        "detail": "Phase after the jump",
+        "expected": "Reset",
+        "id": "phase_reset",
+        "kind": "phase",
+        "ms": 0,
+        "observed": "Reset",
+        "verdict": "effect"
+      },
+      {
+        "address": "",
+        "detail": "Phase after the jump",
+        "expected": "Approach",
+        "id": "phase_approach",
+        "kind": "phase",
+        "ms": 4191,
+        "observed": "Approach",
+        "verdict": "effect"
+      }
+    ],
+    "running": false,
+    "summary": {
+      "effect": 22,
+      "error": 0,
+      "no effect": 0
+    }
+  },
+  "fps": 55.0,
+  "frame_ms": 50.31,
+  "syphon": {
+    "active": true,
+    "frames": 2813,
+    "server": "COLOSSUS_OUT"
+  },
+  "profile": {
+    "draw_calls": 70,
+    "physics_ms": 1.22,
+    "process_ms": 50.31
+  }
+}

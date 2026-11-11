@@ -4,7 +4,11 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 
 ## Now
 
-- Run to presentable: graph, nodes and rules in [docs/handover/presentable-plan.md](docs/handover/presentable-plan.md). Integration branch `integration/presentable`.
+- 2026-11-11: the Blender side is wrapped up and pushed (`integration/presentable`). Focus is the Godot Colossus Scene.
+- Blender, where it stands: one command (`make blender-open`) to a checked start state; planet 36 of 37 controls with an effect from the page's "Check all" (the one without is island only by design); no dummy wireframe, real mesh edges at night by `/vj/grid`; Flight shot `CAM_11`; Magic drives it straight on udp 9201.
+- Blender, left open on purpose: fps table and cut stalls on an idle machine, the island's self-check rerun (30 of 37 on 2026-11-10), the Flight shot's streamed terrain at full size, the cause of the two builds without night edges (a guard catches them), CAM_4 and CAM_5 look items of round 9, the picture inside Magic.
+- Godot next: real Colossus and Wanderer models with clips (waits for the downloads, pages in `godot/colossus/docs/SPEC.md`), then the low hero shot's Wanderer, then an fps table.
+- Run history: graph, nodes and rules in [docs/handover/presentable-plan.md](docs/handover/presentable-plan.md).
 
 ## Origin
 
@@ -31,7 +35,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 
 ## Godot: Colossus Scene
 
-- Works: full Arc (Approach, Climb, Fall, Reset), 345 logic tests, OSC in on 9201 (the one scene port), control page on 9211 with a self-check (22 of 22 headless and on Metal), values persist without packets, Syphon `COLOSSUS_OUT` (app `Godot`) at 1080p with pixel content, nothing of the page in the frame. Report: [docs/reports/godot-feature-check.md](docs/reports/godot-feature-check.md).
+- Works: full Arc (Approach, Climb, Fall, Reset), 345 logic tests, OSC in on 9201 (the one scene port; 20 of 20 test packets applied live on 2026-11-11), control page on 9211 with a self-check (22 of 22 from the page's "Check all" in a browser on Metal, 2026-11-11, [rows](docs/reports/godot-page-check-2026-11-11.json)), values persist without packets, Syphon `COLOSSUS_OUT` (app `Godot`) at 1080p with pixel content, nothing of the page in the frame. Report: [docs/reports/godot-feature-check.md](docs/reports/godot-feature-check.md).
 - Look rounds 2 and 3 (2026-11-11, same rubric, 357 logic tests): 19 of the 21 round 1 frames pass. Ground no longer flat black, the Colossus reads at 1.6 km, the Wanderer is in the close grip on 30 of 30 samples, `/vj/shock` works from real packets. Notes: [docs/handover/godot-look-round2.md](docs/handover/godot-look-round2.md).
 - Still failing: `shot-2` and `2-approach-low-hero`. The low hero shot now holds the Wanderer whole in frame (probe), but the reviewer cannot see him: a dark stand-in of about 19 px on dark ground. Left for the real model.
 - Syphon publishes from frame 120 (2 s after the window opens) and the Reset holds black 2 s, because the lighting needs that long to converge.
