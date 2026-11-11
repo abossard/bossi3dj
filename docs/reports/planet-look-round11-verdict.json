@@ -1,0 +1,213 @@
+{
+ "round": 11,
+ "rubric": "blender/review/rubric-round11.md",
+ "counterexample": "blender/scenes/planet_proto/visual_check/user/2026-11-11-dummy-wireframe.webp",
+ "passes": [
+  {
+   "pass": 1,
+   "build": "PLAIN_SWELL (12, 320), PLAIN_KNOLL (4, 90), level 150 m past each pyramid",
+   "grabs": "blender/review/out/round11/grabs",
+   "shots": [
+    {
+     "shot": "CAM_0_night_f00_e0_grid1",
+     "verdict": "fail",
+     "failed": [
+      "R11-BEND",
+      "R11-R10"
+     ],
+     "evidence": "Whole lower third (foreground plain) is an evenly spaced, near-parallel straight line lattice that converges in perspective and does not bend; looks like the counterexample."
+    },
+    {
+     "shot": "CAM_0_night_f00_e0_grid0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "No lines anywhere."
+    },
+    {
+     "shot": "CAM_3_night_f00_e0_grid1",
+     "verdict": "fail",
+     "failed": [
+      "R11-BEND",
+      "R11-R10"
+     ],
+     "evidence": "Bottom strip below the pyramids (about 15 to 20 percent of the frame) shows straight, evenly spaced parallel lines; left slope lines bend, the plain does not."
+    },
+    {
+     "shot": "CAM_3_night_f00_e0_grid0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "No lines."
+    },
+    {
+     "shot": "CAM_1_night_f00_e0_grid1",
+     "verdict": "fail",
+     "failed": [
+      "R11-BEND"
+     ],
+     "evidence": "Left slope, lower left (about 35 percent wide by 30 percent high): regular straight quad lattice; borderline around a tenth of the frame. River in its channel."
+    },
+    {
+     "shot": "CAM_4_night_f00_e0_grid1",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Lines irregular, follow ridges and slopes. Lake intact."
+    },
+    {
+     "shot": "CAM_4_night_fly_a+fly_b",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Lines stay on the same ridges between the frames, shift only with the camera, end at vertices."
+    },
+    {
+     "shot": "CAM_0_day_f00_e0",
+     "verdict": "fail",
+     "failed": [
+      "R11-SHAPE"
+     ],
+     "evidence": "Foreground plain (lower 40 percent) is a near-uniform purple band with only faint shading."
+    },
+    {
+     "shot": "CAM_1_day_f00_e0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "SHAPE n/a. River in its channel."
+    },
+    {
+     "shot": "CAM_2_day_f00_e0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "SHAPE n/a. No lines."
+    },
+    {
+     "shot": "CAM_3_day_f00_e0",
+     "verdict": "fail",
+     "failed": [
+      "R11-SHAPE"
+     ],
+     "evidence": "Plain across the lower fifth reads as a flat uniform purple band under the pyramids."
+    },
+    {
+     "shot": "CAM_4_day_f00_e0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Clear swells and a ridge with shading. Lake intact."
+    },
+    {
+     "shot": "CAM_5_day_f00_e0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Soft shading and slight undulation; reads as ground, weakly."
+    },
+    {
+     "shot": "CAM_6_day_f00_e0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Orbit, no lattice over the land."
+    },
+    {
+     "shot": "CAM_7_day_f00_e0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Water a flat sheet, not a wall."
+    },
+    {
+     "shot": "CAM_8_day_f00_e0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "River in its channel."
+    },
+    {
+     "shot": "CAM_9_day_f00_e0",
+     "verdict": "needs_full_size",
+     "failed": [],
+     "evidence": "Plain under the pyramids looks flat at sheet scale; SHAPE not decided."
+    },
+    {
+     "shot": "CAM_10_day_f00_e0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Water a flat sheet."
+    }
+   ],
+   "overall": "the night edges still read as a lattice on the foreground plains of CAM_0 and CAM_3 (and partly CAM_1); they read as terrain on the slopes, in CAM_4 and in the fly pair."
+  },
+  {
+   "pass": 2,
+   "build": "PLAIN_SWELL (24, 320), PLAIN_KNOLL (8, 90), level 60 m past each pyramid (the committed build)",
+   "grabs": "blender/review/out/round11/grabs_pass2",
+   "shots": [
+    {
+     "shot": "CAM_0_night_f00_e0_grid1",
+     "verdict": "fail",
+     "failed": [
+      "R11-BEND",
+      "R11-R10"
+     ],
+     "evidence": "Bottom third, full width: still evenly spaced parallel converging lines in a regular lattice, only broken by the dark bushes."
+    },
+    {
+     "shot": "CAM_1_night_f00_e0_grid1",
+     "verdict": "fail",
+     "failed": [
+      "R11-BEND",
+      "R11-R10"
+     ],
+     "evidence": "Lower-left slope (x 0-450, y 210-390) a regular quad lattice; right slope (x 740-960, y 160-290) a dense regular grid; together over a tenth."
+    },
+    {
+     "shot": "CAM_3_night_f00_e0_grid1",
+     "verdict": "fail",
+     "failed": [
+      "R11-BEND",
+      "R11-R10"
+     ],
+     "evidence": "Strip below the pyramids (y 420-540) still straight, evenly spaced, converging lines, about a fifth of the frame; the hill upper left reads as terrain."
+    },
+    {
+     "shot": "CAM_0_day_f00_e0",
+     "verdict": "fail",
+     "failed": [
+      "R11-SHAPE"
+     ],
+     "evidence": "Plain (y 300-540) only very faint, low-contrast swells; foreground nearly one flat purple tone."
+    },
+    {
+     "shot": "CAM_3_day_f00_e0",
+     "verdict": "fail",
+     "failed": [
+      "R11-SHAPE"
+     ],
+     "evidence": "Plain band (y 400-540) a near-uniform purple strip, no visible shading, swell or knoll."
+    },
+    {
+     "shot": "CAM_9_day_f00_e0",
+     "verdict": "pass",
+     "failed": [],
+     "evidence": "Plain shows visible swells with light and dark falloff; water intact."
+    }
+   ],
+   "overall": "night edges still read as a lattice on the flat foreground plains (CAM_0, CAM_3) and on the CAM_1 slopes; they read as terrain only on steep hills."
+  }
+ ],
+ "final": {
+  "pass": 14,
+  "fail": 5,
+  "failed": {
+   "R11-BEND": [
+    "CAM_0 night",
+    "CAM_1 night",
+    "CAM_3 night"
+   ],
+   "R11-R10": [
+    "CAM_0 night",
+    "CAM_1 night",
+    "CAM_3 night"
+   ],
+   "R11-SHAPE": [
+    "CAM_0 day",
+    "CAM_3 day"
+   ]
+  },
+  "note": "final = pass 2 where re-grabbed, pass 1 otherwise (19 shots, fly pair counted once as two shots)"
+ }
+}

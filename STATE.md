@@ -19,9 +19,9 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 - `/vj/nebula` works on the planet since round 9 (Milky Way band from the star map, 247 x noise floor on CAM_10).
 - Look round 9 (2026-11-11, 35 shots, [notes](docs/handover/planet-look-round9.md), [verdicts](docs/reports/planet-look-round9-verdict.json)): 26 pass. CAM_0 to CAM_3 and CAM_6 to CAM_9 pass. Open: CAM_5 pale top band in fog, CAM_4 water step, crease and night haze at fog 1, CAM_10 core glow at nebula 0, square stars at 200 mm. Moon maps at 4096 and the nebula band show no frame-time cost (context only).
 - Round 10 (2026-11-11, [notes](docs/handover/planet-look-round10.md), [verdicts](docs/reports/planet-look-round10-verdict.json)): every dummy line source is out of the build (terrain lattice, orbit lattice, scroll, lattice light on the fog). No lines by day: `/vj/grid` 0 against 1 is within the noise floor on three cameras, all 12 day shots pass. The orbit night shot passes. Frame time, context only: day 35.4 to 33.9 ms, orbit night 23.9 to 20.3 ms.
-- Real mesh edges show at night (Wireframe node on the terrain). Both night shots with `/vj/grid` 1 fail: the flat plain's real mesh is itself a regular grid. Keep or drop is the user's choice.
+- Real mesh edges show at night (Wireframe node on the terrain, strength `/vj/grid`). Round 11 (2026-11-11, [notes](docs/handover/planet-look-round11.md), [verdicts](docs/reports/planet-look-round11-verdict.json)) added relief to the plains: swells about 4 m over 320 m, knolls about 1.4 m over 90 m; faces under 1 degree in the CAM_0 foreground 57 % to 1.4 %; lakes and rivers unchanged; no camera under ground. 14 of 19 shots pass. Still failing: the night edges on smooth ground read as a regular lattice (CAM_0, CAM_1, CAM_3), and the day plain reads flat in tone (CAM_0, CAM_3). Relief cannot fix the lattice look: the cells are regular wherever the ground is smooth. Options in the note: irregular triangulation, vertex jitter, or no edges.
 - Reviewer on the day land without lines: CAM_0 "a little empty", CAM_3 foreground "a flat uniform purple band".
-- Flight (branch `blender/flight`, not merged, never run live): the runtime starts `flight_rt` on the planet, self-check rows exist, Hover arrival in the model 12 s worst. `make verify` passes (348 checks). Notes: [flight-presentable.md](.claude/worktrees/blender-flight/docs/handover/flight-presentable.md) in the worktree.
+- Flight (branch `blender/flight`, not merged; notes in the worktree `.claude/worktrees/blender-flight/docs/handover/flight-presentable.md`): `make verify` passes (348 checks). Live on 2026-11-11: `/vj/flight`, `/vj/boost`, `/vj/blend`, `/vj/energy`, `/vj/hit` show an effect, `/vj/cam` cuts all 12 shots. Not mergeable yet: with `flight_rt` running every shot draws the Flight's own LOD terrain and `Sea LOD` water instead of the reviewed planet, and `/vj/water`, `/vj/flamingos` and `/vj/meteor` lose their effect. Hover arrival, cut stalls and idle cost are not measured live. The Flight shot is `CAM_11`; the contract's `/vj/cam` ends at 10.
 - `/vj/energy` and `/vj/hit` showed an effect without a reader because one strong cell counted in the self-check; on `blender/flight` a lone strong cell is repeated before it counts.
 - Blender is 5.3.0 since 2026-11-11, settings copied from 5.2 (a fresh 5.3 folder had no MCP add-on and opened out of camera view).
 - M1 cut timing: 11 of 84 cuts over 70 ms at load 86, not judged. No fps table yet.
@@ -45,6 +45,8 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 ## Decided by the user
 
 - Contract: every continuous `/vj/*` control is 0..1 on the wire, each scene scales it to its own range; the wire default gives each scene its tuned look. Indices (`/vj/cam`) stay integers, triggers keep their strength.
+- Blender planet, 2026-11-11: `/vj/grid` at night is the only wireframe control; no day control (`/vj/grid_day` was proposed and withdrawn the same day).
+- Blender planet, 2026-11-11: the real mesh edges stay at night; the flat ground gets gentle relief so they read as terrain ("make it a little bit less flat"). The drop decided earlier that day is withdrawn.
 - Blender planet, 2026-11-11, hard rule: never a dummy wireframe, on the ground or from orbit, at any time of day. Dummy is every line pattern that is not the edge set of the drawn mesh (today: the 24 m `WIRE_CELL` lattice and the 600 m `ORBIT_LATTICE` in `build_planet.py`). The real mesh edges may show from sunset to night, no lines by day. `/vj/grid_speed` is island only.
 - Godot, 2026-11-11: bring in the real Colossus and Wanderer models now, to learn their cost early. Target: looks great at very high frame rate, tricks allowed. Model pages are in `godot/colossus/docs/SPEC.md`.
 - Godot low hero shot on the long walk keeps the Wanderer in frame, the giant may shrink below 60 px (2026-11-11).
@@ -52,7 +54,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 
 ## Waiting for the user
 
-- Planet at night: keep the real mesh edges or no lines at all (sheets in `docs/images/2026-11-11/`).
+- Planet night edges after round 11: good enough as they are, make the mesh irregular (flipped diagonals, jittered vertices), or drop the edges.
 - Eclipse in space: the moon's shadow on the Planet, or lining up per space camera.
 - Bend the straight show valley, or keep it.
 - Keep godot-mcp, or remove the addon and autoload.

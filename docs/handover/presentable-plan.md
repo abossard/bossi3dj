@@ -101,3 +101,13 @@ Worktrees (user, 2026-11-11): fewer. The three wave 1 worktrees are removed. The
 - G6: live part running, holds the GPU.
 
 GPU order: G6, B6, B2 live, then fps tables.
+
+## Status 2026-11-11, after round 10
+
+- B6 done in the main checkout: no dummy line source left on the planet, 17 of 19 shots pass.
+- G6 merged: Godot look round 3, 357 tests, worktree removed.
+- B7, round 11 (running): gentle relief on the flat ground so the real mesh edges read at night. Live part after B2.
+- B2 live part running, holds Blender. Last worktree: `blender-flight`.
+- G4 is active by the user's word: real models now, for early cost numbers. Waits for the downloads (pages in `godot/colossus/docs/SPEC.md`).
+
+GPU order: B2 live, merge, B7 live, then G4 and the fps tables.
