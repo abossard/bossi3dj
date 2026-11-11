@@ -45,6 +45,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 ## Decided by the user
 
 - Contract: every continuous `/vj/*` control is 0..1 on the wire, each scene scales it to its own range; the wire default gives each scene its tuned look. Indices (`/vj/cam`) stay integers, triggers keep their strength.
+- Blender planet, 2026-11-11: the terrain mesh becomes irregular (cell diagonals flipped by a hash, interior vertices shifted sideways) so the real night edges form an uneven net. Round 12, session running.
 - Blender planet, 2026-11-11: `/vj/grid` at night is the only wireframe control; no day control (`/vj/grid_day` was proposed and withdrawn the same day).
 - Blender planet, 2026-11-11: the real mesh edges stay at night; the flat ground gets gentle relief so they read as terrain ("make it a little bit less flat"). The drop decided earlier that day is withdrawn.
 - Blender planet, 2026-11-11, hard rule: never a dummy wireframe, on the ground or from orbit, at any time of day. Dummy is every line pattern that is not the edge set of the drawn mesh (today: the 24 m `WIRE_CELL` lattice and the 600 m `ORBIT_LATTICE` in `build_planet.py`). The real mesh edges may show from sunset to night, no lines by day. `/vj/grid_speed` is island only.
@@ -54,7 +55,6 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 
 ## Waiting for the user
 
-- Planet night edges after round 11: good enough as they are, make the mesh irregular (flipped diagonals, jittered vertices), or drop the edges.
 - Eclipse in space: the moon's shadow on the Planet, or lining up per space camera.
 - Bend the straight show valley, or keep it.
 - Keep godot-mcp, or remove the addon and autoload.
