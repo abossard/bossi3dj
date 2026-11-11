@@ -1,12 +1,12 @@
 class_name Roster
-## The Colossi in show order; each Reset brings the next. Placeholders until the rigged models
-## are imported. The only place that names a Colossus.
+## The Colossi in show order; each Reset brings the next. A Colossus with a prepared model is built
+## on its rig (`rig`); without the model (not in git, see assets/MODELS.md), or without a rig yet,
+## the rigged stand-in takes its place. The only place that names a Colossus.
 
-## `model` is the prepared model (not in git, see assets/MODELS.md); "" while there is none.
 const ENTRIES: Array[Dictionary] = [
-	{"name": "Grock", "height_m": 28.0, "seed": 1, "model": "res://assets/models/grock/grock.gltf"},
-	{"name": "Titan", "height_m": 34.0, "seed": 2, "model": ""},
-	{"name": "Golem", "height_m": 22.0, "seed": 3, "model": ""},
+	{"name": "Grock", "height_m": 28.0, "seed": 1, "model": GrockColossus.MODEL, "rig": "grock"},
+	{"name": "Titan", "height_m": 34.0, "seed": 2, "model": "", "rig": ""},
+	{"name": "Golem", "height_m": 22.0, "seed": 3, "model": "", "rig": ""},
 ]
 
 
@@ -28,11 +28,14 @@ static func size() -> int:
 static func warm() -> void:
 	for entry in ENTRIES:
 		PlaceholderColossus.stone_bumps(entry["seed"])
+	GrockColossus.warm()
 
 
 static func make(index: int) -> Colossus:
 	var entry: Dictionary = ENTRIES[index % ENTRIES.size()]
-	var c := PlaceholderColossus.new()
+	var c: Colossus = PlaceholderColossus.new()
+	if entry["rig"] == "grock" and GrockColossus.model_present():
+		c = GrockColossus.new()
 	c.name = entry["name"]
 	c.height_m = entry["height_m"]
 	c.seed_value = entry["seed"]

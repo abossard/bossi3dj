@@ -204,6 +204,7 @@ func _physics_process(delta: float) -> void:
 		_autonomous()
 	colossus.look_target = wanderer.global_position
 	colossus.seek = arc.phase == Arc.Phase.CLIMB and not wanderer.on_colossus()
+	colossus.carrying = wanderer.on_colossus()
 	world.apply_look(
 		_scene("/vj/level"),
 		_scene("/vj/fog"),

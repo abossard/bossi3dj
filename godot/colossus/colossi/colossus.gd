@@ -31,6 +31,9 @@ var weight: float = 0.5
 var roll: float = 0.0
 ## Walk to look_target and stand there facing it (the Wanderer is coming to climb).
 var seek: bool = false
+## The Wanderer holds on: stand still, no step and no turn, while he climbs (SPEC: "stands while
+## he climbs").
+var carrying: bool = false
 
 var _rng := RandomNumberGenerator.new()
 var _goal := Vector3.ZERO
@@ -168,7 +171,7 @@ func _pose(_stride: float, _roll: float, _yaw: float) -> void:
 
 ## True while the legs should rest (standing, not walking).
 func is_standing() -> bool:
-	return state != State.ROAM or (seek and _near_look_target())
+	return state != State.ROAM or carrying or (seek and _near_look_target())
 
 
 func _near_look_target() -> bool:
@@ -177,6 +180,8 @@ func _near_look_target() -> bool:
 
 
 func _roam(delta: float) -> void:
+	if carrying:
+		return
 	var flat := Vector3(global_position.x, 0.0, global_position.z)
 	var forward := -global_transform.basis.z
 	var speed := height_m * 0.45 / STEP_SECONDS

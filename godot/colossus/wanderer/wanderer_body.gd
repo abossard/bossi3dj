@@ -185,9 +185,9 @@ func _build_tree(lib: AnimationLibrary) -> void:
 	hang_reach = _reach(player) * ratio
 	var root := AnimationNodeBlendTree.new()
 	var loco := AnimationNodeBlendSpace1D.new()
-	loco.add_blend_point(_anim("idle"), 0.0)
-	loco.add_blend_point(_anim("walk"), Wanderer.WALK)
-	loco.add_blend_point(_anim("run"), Wanderer.RUN)
+	loco.add_blend_point(_anim("idle"), 0.0, -1, &"idle")
+	loco.add_blend_point(_anim("walk"), Wanderer.WALK, -1, &"walk")
+	loco.add_blend_point(_anim("run"), Wanderer.RUN, -1, &"run")
 	loco.min_space = 0.0
 	loco.max_space = Wanderer.RUN
 	root.add_node("loco", loco)
