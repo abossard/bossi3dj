@@ -21,6 +21,7 @@ func _init() -> void:
 	_test_hero_lens()
 	_test_back_for_share()
 	_test_shot_look()
+	_test_shot_names()
 	_test_clear_height()
 	_test_stone_bumps()
 	_test_brain()
@@ -253,6 +254,21 @@ func _test_shot_look() -> void:
 	]
 	for c in cases:
 		_check("shot look %s" % [c.slice(0, 2)], Shots.look(c[0], c[1]), c[2])
+
+
+func _test_shot_names() -> void:
+	var sh := Shots.Shot
+	var cases := [
+		[sh.SCALE_WIDE, "Scale Wide"],
+		[sh.LOW_HERO, "Low Hero"],
+		[sh.OVER_SHOULDER, "Over Shoulder"],
+		[sh.CLOSE_GRIP, "Close Grip"],
+		[sh.AERIAL, "Aerial"],
+	]
+	for c in cases:
+		_check("shot name %s" % c[0], Shots.shot_name(c[0]), c[1])
+		_check("shot shows %s" % c[0], Shots.shot_shows(c[0]).length() > 20, true)
+	_check("control page lists five shots", ControlServer._shots().size(), 5)
 
 
 func _test_back_for_share() -> void:

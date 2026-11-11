@@ -74,3 +74,43 @@ static func look(shot: Shot, climbing: bool) -> Vector3:
 	if shot == Shot.SCALE_WIDE:
 		return Vector3(WIDE_LAMP, 1.0, 1.0)
 	return Vector3(0.0, 1.0, 1.0)
+
+
+## The shot's name and what it shows, for the control page and the manual (the wire number of
+## /vj/cam is the shot's value minus 1).
+static func shot_name(shot: Shot) -> String:
+	match shot:
+		Shot.SCALE_WIDE:
+			return "Scale Wide"
+		Shot.LOW_HERO:
+			return "Low Hero"
+		Shot.OVER_SHOULDER:
+			return "Over Shoulder"
+		Shot.CLOSE_GRIP:
+			return "Close Grip"
+	return "Aerial"
+
+
+static func shot_shows(shot: Shot) -> String:
+	match shot:
+		Shot.SCALE_WIDE:
+			return (
+				"A telephoto view from behind the Wanderer that shows the Colossus towering over him;"
+				+ " used on the Approach and at the start of the Fall."
+			)
+		Shot.LOW_HERO:
+			return (
+				"A low camera beside the Wanderer on the plain, looking up at the Colossus;"
+				+ " used on the Approach and now and then on the Climb."
+			)
+		Shot.OVER_SHOULDER:
+			return (
+				"Looks from the Colossus's surface past the Wanderer up the Grab Path;"
+				+ " used on the Climb."
+			)
+		Shot.CLOSE_GRIP:
+			return (
+				"Close on the Wanderer's hands at a Grab Point;"
+				+ " used on the Climb, cut to at every Shake, and on the Fall."
+			)
+	return "Circles the Colossus from above; cut to at a drop."

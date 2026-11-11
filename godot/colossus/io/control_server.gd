@@ -213,6 +213,15 @@ func check_state() -> Dictionary:
 	}
 
 
+## The director's shots by wire number, with their names, for the pin buttons.
+static func _shots() -> Array:
+	var out := []
+	for n in range(Shots.Shot.SCALE_WIDE, Shots.Shot.AERIAL + 1):
+		var shot := n as Shots.Shot
+		out.append({"wire": n - 1, "name": Shots.shot_name(shot), "shows": Shots.shot_shows(shot)})
+	return out
+
+
 static func summary(rows: Array) -> Dictionary:
 	return {
 		FeatureCheck.EFFECT: FeatureCheck.count_of(rows, FeatureCheck.EFFECT),
@@ -251,6 +260,7 @@ func state() -> Dictionary:
 		"scene": "colossus",
 		"phase": Arc.name_of(main.arc.phase),
 		"shot": probe["shot"],
+		"shots": _shots(),
 		"pinned": probe["pinned"],
 		"colossus": main.colossus.name,
 		"wanderer_on_colossus": probe["on_colossus"],

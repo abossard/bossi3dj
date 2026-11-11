@@ -138,7 +138,9 @@ function build(s) {
   $("shots").innerHTML = "";
   for (let n = 0; n <= 5; n++) {
     const b = document.createElement("button");
-    b.dataset.shot = n; b.textContent = n ? "Pin " + n : "Auto";
+    const shot = n ? s.shots[n - 1] : null;   // pin n holds /vj/cam n-1
+    b.dataset.shot = n; b.textContent = n ? shot.wire + " " + shot.name : "Auto";
+    if (n) b.title = "/vj/cam " + shot.wire + ": " + shot.shows;
     b.addEventListener("click", async () => {
       if (n === 0) {
         await post("/api/set", {values: {"/vj/cam_auto": 1}, hold: false});
