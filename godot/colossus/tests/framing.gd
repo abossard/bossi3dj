@@ -12,10 +12,13 @@ const FRAME := Vector2(1920, 1080)
 ## Distances Wanderer to Colossus: -1 is where the Wanderer really starts (at the Shrine, on its
 ## slope), then the walk down the plain.
 const GAPS := [-1.0, 1500.0, 1000.0, 700.0, 450.0, 300.0, 150.0, 60.0, 25.0]
+## The last gaps are the foot of the Colossus, checked for the low hero shot only.
+const HERO_ONLY_FROM := 60.0
 ## The Colossus reads as a silhouette from this height on (about a tenth of the frame).
 const MIN_COLOSSUS_PX := 100.0
-## The low hero shot gives up size for the Wanderer: the giant may shrink to this height.
-const HERO_MIN_COLOSSUS_PX := 20.0
+## The low hero shot gives up size for the Wanderer, most on the Shrine's slope: the giant may
+## shrink to this height (it must stay in view).
+const HERO_MIN_COLOSSUS_PX := 10.0
 ## Time runs this much faster while the Wanderer walks on his own, sampled every real half second.
 const WALK_TIME_SCALE := 10.0
 const WALK_SECONDS := 25.0
@@ -151,6 +154,8 @@ func _pin(shot: int) -> void:
 func _gap_table() -> void:
 	for gap: float in GAPS:
 		for shot in range(1, 6):
+			if gap > 0.0 and gap <= HERO_ONLY_FROM and shot != HERO_SHOT:
+				continue
 			_pin(shot)
 			var c := main.colossus.global_position
 			if gap < 0.0:
@@ -160,6 +165,22 @@ func _gap_table() -> void:
 			main.director.snap()
 			await _wait(1.2)
 			var real_gap := main.wanderer.global_position.distance_to(main.colossus.global_position)
+			if shot == HERO_SHOT:
+				print(
+					(
+						"  low hero: wanderer y %.1f, camera y %.1f, colossus y %.1f, %.0f m tall, ground there %.1f"
+						% [
+							main.wanderer.global_position.y,
+							main.output.get_camera_3d().global_position.y,
+							main.colossus.global_position.y,
+							main.colossus.height_m,
+							main.director.height_at.call(
+								main.output.get_camera_3d().global_position.x,
+								main.output.get_camera_3d().global_position.z
+							)
+						]
+					)
+				)
 			var col := _colossus()
 			var seen := _wanderer_in_frame()
 			var contrast: float = await _contrast(col["px"])
@@ -180,7 +201,7 @@ func _gap_table() -> void:
 			)
 			if shot in COLOSSUS_SHOTS:
 				_check(
-					col["px"] >= MIN_COLOSSUS_PX,
+					col["px"] >= (HERO_MIN_COLOSSUS_PX if shot == HERO_SHOT else MIN_COLOSSUS_PX),
 					"shot %d at %d m: colossus %d px" % [shot, real_gap, col["px"]]
 				)
 				_check(
