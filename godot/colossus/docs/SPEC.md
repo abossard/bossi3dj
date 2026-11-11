@@ -41,10 +41,10 @@ Terms follow [GLOSSARY.md](../../../GLOSSARY.md). The look lives in the art book
 
 | Role | Asset | License | Committed |
 |---|---|---|---|
-| Colossus 1 (start) | [Grock - Endboss](https://sketchfab.com/3d-models/grock-endboss-fc582e5f47da447d934d616ad271a3fe) by Baue Franco, 49k tris, 22 joints, 8 clips | CC-BY | yes |
-| Colossus 2 | [Ancient Titan Vol2](https://sketchfab.com/3d-models/free-game-character-ancient-titan-vol2-0e71dd1a27a2455b9adae83082905958) by Kaan Tezcan, 56k tris; the rigged file is behind a link on that page | CC-BY (credit waived) | yes |
-| Colossus 3 | [Golem Rock](https://sketchfab.com/3d-models/character-free-golem-rock-by-oscar-creativo-9383d3630e2945c5bdac5f7063308037) by Oscar Creativo, 84k tris | CC-BY label, "All rights reserved" in text | only after the author confirms |
-| Wanderer | [Nomad Marksman Rig](https://sketchfab.com/3d-models/nomad-marksman-rig-aa3d08c56cc84d308e36920d3bcbe122) by DM-913, 50k tris | CC-BY | yes |
+| Colossus 1 (start) | [Grock - Endboss](https://sketchfab.com/3d-models/grock-endboss-fc582e5f47da447d934d616ad271a3fe) by Baue Franco, 49k tris, 22 joints, 8 clips | CC-BY | not in git, see `assets/MODELS.md` |
+| Colossus 2 | [Ancient Titan Vol2](https://sketchfab.com/3d-models/free-game-character-ancient-titan-vol2-0e71dd1a27a2455b9adae83082905958) by Kaan Tezcan, 56k tris; the rigged file is behind a link on that page | CC-BY (credit waived) | not in git, see `assets/MODELS.md` |
+| Colossus 3 | [Golem Rock](https://sketchfab.com/3d-models/character-free-golem-rock-by-oscar-creativo-9383d3630e2945c5bdac5f7063308037) by Oscar Creativo, 84k tris | CC-BY label, "All rights reserved" in text | not in git, see `assets/MODELS.md`; not used until the author confirms |
+| Wanderer | [Nomad Marksman Rig](https://sketchfab.com/3d-models/nomad-marksman-rig-aa3d08c56cc84d308e36920d3bcbe122) by DM-913, 50k tris | CC-BY | not in git, see `assets/MODELS.md` |
 | Wanderer clips | Mixamo | Adobe terms, no redistribution | no, `assets/mixamo/` is git-ignored |
 | Terrain textures, rock scans, sky | Poly Haven, ambientCG | CC0 | yes |
 | Ruins | Temple Ruins pack, arch bridge, statue fragment (CC-BY), Faroe ruins (CC0) | as listed | yes |
@@ -130,6 +130,8 @@ godot/colossus/
   assets/dem/        the Copernicus crop
   assets/terrain/    CC0 ground textures
   assets/mixamo/     git-ignored
+  assets/models/     git-ignored: the prepared Wanderer and Colossi (assets/MODELS.md)
+  assets/MODELS.md   what to download and the command that prepares it
   colossi/           the Colossus base, the rigged stand-in, the roster, the Grab Path
   wanderer/
   world/             land, sky, fog, dust, film grain, shrine and ruins

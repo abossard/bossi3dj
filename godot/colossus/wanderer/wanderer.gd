@@ -10,6 +10,8 @@ const HANG_LENGTH := 1.1
 const REACH := 4.0
 const CLIMB_SPEED := 1.4
 const CLOTH := Color("8f8a80")
+## The prepared Nomad (not in git, see assets/MODELS.md); the stand-in takes its place without it.
+const MODEL := "res://assets/models/nomad/nomad.gltf"
 
 var colossus: Colossus
 var height_at: Callable = func(_x: float, _z: float) -> float: return 0.0
@@ -62,6 +64,10 @@ func _ready() -> void:
 	col.shape = shape
 	col.position.y = 0.875
 	add_child(col)
+
+
+static func model_present() -> bool:
+	return ResourceLoader.exists(MODEL)
 
 
 func on_colossus() -> bool:

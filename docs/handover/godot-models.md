@@ -4,9 +4,10 @@ Branch `integration/presentable`, main checkout. Brief: bring the Nomad (Wandere
 
 ## State
 
-- Stage 1 (cost) done, committed. Stage 2 (Wanderer) and stage 3 (Colossus) not started; they wait for the orchestrator's go.
-- Prepared models committed under `godot/colossus/assets/models/{nomad,grock}/` (glTF separate: `.gltf`, `.bin`, `textures/`), 44 MB. Not used by the scene yet: `Roster` and `Wanderer` still build the stand-ins.
-- Import settings that matter (in the `.import` files, committed): every model texture `compress/mode=2`, `mipmaps/generate=true`, normal maps `compress/normal_map=1`, `detect_3d/compress_to=0`; Grock `nodes/root_scale=14.0339` (28 m). Godot's headless first import had picked lossless without mipmaps.
+- Stage 1 (cost) done. Stage 2 (Wanderer) and stage 3 (Colossus) not started; they wait for the orchestrator's go.
+- Models are not in git (user decision of 2026-11-11). They were committed in 2b0901a and taken out of the index again in the next commit (history kept). `godot/colossus/assets/models/` and `assets/incoming/` are git-ignored; [godot/colossus/assets/MODELS.md](../../godot/colossus/assets/MODELS.md) lists pages, downloads and the command. Not used by the scene yet: `Roster` and `Wanderer` still build the stand-ins.
+- Without the models the scene prints one line at start (`models missing, stand-ins in their place: ...`); the paths live in `Roster.ENTRIES` (`model`) and `Wanderer.MODEL`.
+- Import settings that matter, written by `tools/godot_model_import.py` inside `make godot-models`: every model texture `compress/mode=2`, `mipmaps/generate=true`, normal maps `compress/normal_map=1`, `detect_3d/compress_to=0`; Grock `nodes/root_scale=14.0339` (28 m). Godot's headless first import picks lossless without mipmaps.
 - License: read from each archive's `license.txt` (Sketchfab's own, CC-BY 4.0, author and page URL), not from the live page.
 
 ## Numbers (stage 1, load 65 to 75, not fps-trustworthy)

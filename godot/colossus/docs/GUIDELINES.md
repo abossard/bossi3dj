@@ -20,7 +20,9 @@ Read [SPEC.md](SPEC.md) for numbers, [GLOSSARY.md](../../../GLOSSARY.md) for ter
 
 - Import glTF where offered, FBX only when no glTF exists. Apply scale so the Wanderer is 1.75 m.
 - Check the license on the download page at download time and write the `CREDITS.md` line in the same commit as the asset.
-- Golem Rock stays out of git until its author confirms the CC-BY license.
+- No model file goes into git (Wanderer, Colossi, Mixamo): not in git, see `assets/MODELS.md`. They live in the git-ignored `assets/models/`, `assets/incoming/` and `assets/mixamo/`; `MODELS.md` holds the page, the download and the prepare command per model, and `make godot-models` rebuilds them from `~/Downloads`. Run `git status --short` before each commit: none of them staged.
+- Without a model the scene runs on its stand-in and prints one line at start; tests never need a model.
+- Golem Rock is not used until its author confirms the CC-BY license.
 - Mixamo files live in `assets/mixamo/` only. Retarget onto the Wanderer with `RetargetModifier3D` at runtime; never bake Mixamo data into committed `.tres` / `.res` files.
 - Decimate scans (statue fragment, cliffs) in Blender before import, to the budgets in SPEC.md.
 
@@ -66,5 +68,5 @@ Read [SPEC.md](SPEC.md) for numbers, [GLOSSARY.md](../../../GLOSSARY.md) for ter
 
 ## Git
 
-- Commit assets and their `CREDITS.md` lines together.
-- `.godot/` and `assets/mixamo/` are git-ignored.
+- Commit assets and their `CREDITS.md` lines together; for a model (not in git) the `CREDITS.md` line and its `assets/MODELS.md` row go in with the code that uses it.
+- `.godot/`, `assets/mixamo/`, `assets/models/` and `assets/incoming/` are git-ignored.

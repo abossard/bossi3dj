@@ -206,6 +206,11 @@ static func _build_facts(subject: Node) -> Dictionary:
 
 func _run() -> void:
 	await process_frame
+	for key: String in MODELS:
+		if not ResourceLoader.exists(MODELS[key]):
+			print("%s is missing: see godot/colossus/assets/MODELS.md (make godot-models)" % key)
+			quit(1)
+			return
 	at = Land.ARENA
 	at.y = main.world.height_at.call(at.x, at.z)
 	main.colossus.visible = false

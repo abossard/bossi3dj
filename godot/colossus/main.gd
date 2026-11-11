@@ -44,6 +44,7 @@ var _steering := false
 
 func _ready() -> void:
 	InputActions.install()
+	_report_missing_models()
 	output = SubViewport.new()
 	output.size = OUTPUT_SIZE
 	output.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -117,6 +118,23 @@ func _ready() -> void:
 	vj.shock.connect(func(_s: float) -> void: _shake())
 	arc.phase_changed.connect(_on_phase)
 	_start_syphon()
+
+
+## One line at start when a model is missing: the stand-in takes its place.
+static func _report_missing_models() -> void:
+	var missing := Roster.missing_models()
+	if not Wanderer.model_present():
+		missing.insert(0, "Nomad (Wanderer)")
+	if missing.size() > 0:
+		print(
+			(
+				(
+					"models missing, stand-ins in their place: %s. See godot/colossus/assets/MODELS.md"
+					+ " (make godot-models)"
+				)
+				% ", ".join(missing)
+			)
+		)
 
 
 func _start_syphon() -> void:

@@ -138,6 +138,8 @@ godot-models:
 	unzip -q -n $(DOWNLOADS)/grock-endboss.zip -d $(INCOMING)/grock_source
 	$(BLENDER) -b --factory-startup --disable-autoexec --python tools/godot_prepare_models.py -- nomad $(INCOMING)/nomad_source/source/Hunter106.blend $(COLOSSUS)/assets/models/nomad/nomad.gltf
 	$(BLENDER) -b --factory-startup --disable-autoexec --python tools/godot_prepare_models.py -- grock $(INCOMING)/grock_source/source/master.blend $(COLOSSUS)/assets/models/grock/grock.gltf
+	$(GODOT) --headless --path $(COLOSSUS) --import
+	python3 -I tools/godot_model_import.py $(COLOSSUS)/assets/models
 	$(MAKE) godot-import
 
 godot-shake-osc:
