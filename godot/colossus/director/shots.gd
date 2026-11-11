@@ -9,8 +9,8 @@ const MAX_AERIAL_BARS := 16
 ## to this share of the scene's, so the Wanderer and the surface he holds read (tests/climb_light.gd
 ## has the numbers). Every other shot keeps the dusk as it is.
 const CLIMB_LAMP := 3.0
-const CLIMB_EXPOSURE := 1.8
-const CLIMB_CONTRAST := 1.0 / 1.2
+const CLIMB_EXPOSURE := 1.5
+const CLIMB_CONTRAST := 0.85 / 1.2
 
 
 ## Shot to cut to at a bar line. `bars_in_phase` counts bars since the Phase began.

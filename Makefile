@@ -6,7 +6,7 @@ SCENE   ?= planet
 BLEND_planet = $(SCENES)/synthwave_planet.blend
 BLEND_island = $(SCENES)/synthwave_pyramids.blend
 
-.PHONY: help status lab test magic-test osc-test blender-test osc-sync osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-framing godot-hitch godot-warmup godot-ablate godot-cost godot-climb-light godot-grock-detail godot-model-cost godot-models godot-wanderer-motion godot-wanderer-read godot-colossus-rig godot-shake-clips godot-shake-osc godot-import godot-lint \
+.PHONY: help status lab test magic-test osc-test blender-test osc-sync osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-framing godot-hitch godot-warmup godot-ablate godot-cost godot-climb-light godot-grock-detail godot-fps godot-model-cost godot-models godot-wanderer-motion godot-wanderer-read godot-colossus-rig godot-shake-clips godot-shake-osc godot-import godot-lint \
         godot-open godot-kill blender-open blender-kill blender-check blender-prepare blender-rebuild blender-paths magic-build venv verify
 
 # Blender and Godot share one GPU: a live window of one refuses to start while the other runs.
@@ -40,6 +40,7 @@ help:
 	@echo "  godot-cost        Metal: median frame time with the fill light on and off, alternating in one run"
 	@echo "  godot-climb-light Metal: luma and near-black share of the climb shots per lighting variant, with frame time (ARGS=variant label prefix)"
 	@echo "  godot-grock-detail Metal: Grock's surface detail in the wide frames per layer (flat, model normal, rock detail), frames into OUT=<dir>"
+	@echo "  godot-fps         Metal: the frame-time table: per director shot and Phase, one Arc, vsync on, features switched off (FPS_OUT=<json>, ARGS=shots|arc|vsync|features)"
 	@echo "  godot-model-cost  Metal: what the real Wanderer and Colossus cost against their stand-ins at three shot distances (MODEL_COST_OUT=<json>)"
 	@echo "  godot-wanderer-motion  headless: the Nomad's pose, foot sliding, pops at state changes, hands on the grips (needs the models)"
 	@echo "  godot-colossus-rig     headless: the first Colossus on its rig: Grab Path, feet while walking, stands while carrying, ragdoll on flat and sloped land"
@@ -135,6 +136,13 @@ godot-climb-light:
 godot-grock-detail:
 	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
 	$(GODOT) --path $(COLOSSUS) --script res://tests/grock_detail.gd -- $(OUT) $(ARGS)
+
+FPS_OUT ?= /tmp/colossus-fps.json
+godot-fps:
+	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
+	@python3 tools/vj_status.py | jq -c '{before: {load_1m, fps_trustworthy}}'
+	$(GODOT) --path $(COLOSSUS) --script res://tests/fps.gd -- $(FPS_OUT) $(ARGS)
+	@python3 tools/vj_status.py | jq -c '{after: {load_1m, fps_trustworthy}}'
 
 MODEL_COST_OUT ?= /tmp/colossus-model-cost.json
 godot-model-cost:
