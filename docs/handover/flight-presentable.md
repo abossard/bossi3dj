@@ -1,6 +1,36 @@
-# Flight presentable (B2), Part A done, Part B half done
+# Flight presentable (B2), Part A done, Part B half done, Part C (terrain gate) Blender-free part done
 
 Branch `blender/flight`, `integration/presentable` merged (round 10, 939420e). Part A (no Blender): `make verify` and `make test` green. Part B (live, 2026-11-11, load 45 to 185, no fps numbers): the five Flight rows show an effect, the full check found four other controls that lost theirs; Hover arrival, cut stalls and idle cost are not measured. Stopped at half context, Blender closed.
+
+## Part C, the terrain gate (2026-11-11, Blender-free part)
+
+Decision (orchestrator): a fixed shot on air shows the planet as built; the Flight's streamed terrain only while the Flight shot (`CAM_11`) is on air or one side of a running blend.
+
+What the stream did before: `lod_scene.update` hid the planet's own land and water sets (`Planet.<key>`, `Water.<key>`; `Planet_Hydro` itself is an evaluation object in a hidden collection, never drawn) and its slots drew `Terrain LOD` and `Sea LOD` for every shot; the build timer ran always; and `planet_runtime` saw only `CAM_RIG` as `scene.camera`, so after the start it never switched set, anchor or flock again (the "Open" item of the planet session).
+
+- `director.streamed(flight, shot, sides, blending)`: pure, the rule. `Director.sides` holds the shots of a running blend (a change of mind mid-blend adds one, so a blend that ever had the Flight as a side stays streamed until it ends).
+- `lod_scene.pause()`: timer unregistered, every slot emptied (shown, staged, retiring; an empty slot draws nothing and is not evaluated again), selection state reset, node and block caches kept. `resume()`: timer on. `start()` no longer starts the timer; the fixed shots' prewarm is only queued and bakes while the stream runs. `live()`: the stream shows a view with all its near blocks since the last resume. `hide_sets` is gone from `lod_scene`.
+- `flight_rt.frame`: per frame `stream = streamed(...)`; on a change `resume` or `pause` (in the frame handler, before the rig is placed). LOD update, prewarm at a blend start and the cut hold run only while streamed. Publishes `driver_namespace["vj_terrain"]` = (the fixed shot whose sets the planet shows, `stream and lod_scene.live()`). The sets' shot (`planet_shot`): the fixed shot on air; in a blend between fixed shots the new one once the rig is nearer to it than to the old one (a switch at about mid-blend, where the path is high); the Flight keeps the last fixed shot.
+- `planet_runtime` (embedded at build: needs `make blender-rebuild`): `on_air()` reads `vj_terrain` (falls back to `scene.camera` without `flight_rt`); `update_lod`, `on_cut` and a path shot's sky follow that shot, so set, anchor and flamingo flock switch at a cut as without the Flight runtime. `show_lod_set` keeps `Planet.*` and `Water.*` hidden while the stream is shown; a change of that flag re-applies the current set. It owns set visibility alone now.
+- `/vj/energy` and `/vj/hit` still move the rig of every fixed shot (`moved_pose`, `Director` accents); they never touched the terrain.
+
+Hand-over at a cut (the choice: a held frame into the Flight, an immediate switch out of it):
+- Cut into the Flight: the old fixed shot stays on air (its sets, its energy move) while `lod_scene` stages the Flight's view (`holding`, up to `HOLD_MAX` 12 frames, then a forced flip); the sets hide only once `live()`, so a forced flip with near blocks still missing shows the sets under the partial stream rather than a hole. Cost: the cut lands up to 12 frames late (0.2 s at 60 fps) on a warm cache; on a cold one (first visit to that region) the forced flip may show the coarse set for a few frames. The stream's first frame after a resume writes about 150 blocks staged at 30 a frame (`STAGE_BLOCKS`, 25 ms budget), as every staged cut before.
+- Cut out of the Flight: in the same frame `pause()` empties the slots and `planet_runtime` shows the fixed shot's precomputed set and flock. Cost: one frame with about 150 `clear_geometry` calls and one depsgraph relations rebuild from `hide_set` on the set objects (15 to 20 ms measured for one show/hide before); `cut_jobs.py` measures it live.
+- Blend into the Flight: the stream resumes at the blend's start and prewarms the Flight's pose; its first view after a resume is always staged (30 blocks a frame into hidden slots, not 150 in one frame), but during a blend the rig is never held (`flight_rt.frame`: the hold needs `D.tr is None`); the sets stay on until `live()`, then hide. Blend out of the Flight: the stream runs to the blend's end, then the switch as at a cut out. The switch between the stream and the set is a LOD pop (same `PL_Surface`, other mesh density), not a gap.
+- Not chosen: prebuilding the Flight's terrain during fixed shots (costs builds while a fixed shot is on air, against the decision).
+
+Step 2, from the code:
+- `/vj/flamingos`: the flock is `Flamingos`, filled by `planet_runtime.copy_flocks` from `Flock.<key>` at a set switch. With the rig as `scene.camera` no switch happened after the start, so `CAM_0` showed the start camera's flock spots (or none). Restored by `on_air()`.
+- `/vj/water`: `CAM_1`'s water is its `Water.<key>` set (`Sea`), hidden by the stream and not switched to either. Restored by the gate and `on_air()`.
+- `/vj/meteor`: the sky reads `rt_met*` from `synthwave_runtime.meteors` (no camera, no terrain; idle meteors need dt, 0 at frozen clocks). Its night floors 10 to 17x: work on wall time between baselines, the suspects being the build timer (the prewarm of eleven fixed shots baking during the check) and `swap()` adding far blocks as they are baked. Both are off with a fixed shot now. Live check left: the floors back near the day floors.
+- Also follows from the gate: `star_system` trackers (`vj_track`) compare `tc == scene.camera` (the rig): a tracker shot on air takes the off-air branch (own radial up, sun at `p + s * 150 km`). At `/vj/energy` 0 the rig sits on the shot, so the pose is the same; not changed.
+
+Contract: `/vj/cam` 0..11 (`CAM_11` the planet's Flight shot), `make osc-sync` (CONTROLS table, bridge `SCALES` clamp 11), `magic/synthwave_magic.py` `CamSel` 0..1 to 0..11 and `CamCount` 1..12 (the auto-cutter's full cycle now includes the Flight shot), `make magic-build` (both committed projects that carry it). Godot's wire map (`vj_map.gd` hi 11, its contract test) follows; `main.gd` still clamps to `AERIAL`.
+
+Tests: `blender/tests/test_terrain.py` (the rule, and a stepped Director through cuts, blends and a change of mind). `make verify` 348 ok; `make test`: magic 44 (1 skipped), osc 21, blender 8, `godot-test` 357 passed, `godot-check` 22 effect (2026-11-11). Not run live: nothing of Part C has met Blender yet.
+
+Live next (after the merge of round 11): see the brief's live part; the equality proof is the first thing, then the full check (`vj_water`, `vj_flamingos`, `vj_meteor` back), Hover arrival, cut stalls (into and out of the Flight: the costs above), idle A/B.
 
 ## Part B, live results
 
@@ -105,7 +135,7 @@ The rebuild is needed only if the scene files are stale; the runtime files load 
 
 ## Open
 
-- `planet_runtime.update_lod` still runs with `CAM_RIG` as `scene.camera` and the planet's own LOD sets stay built (the planet session's hooks from `flight-energy-lod-handover.md`).
+- `planet_runtime` follows the shot behind the rig (Part C); the planet's own LOD sets stay built (the planet session's hooks from `flight-energy-lod-handover.md`).
 - `make test` exits 0 when a Godot test script does not parse.
 
 ## Commands
