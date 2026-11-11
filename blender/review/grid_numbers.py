@@ -2,7 +2,7 @@
 
 mode "day": clocks frozen (exec freeze_clocks.py after this), by day on CAM_0, CAM_3 and CAM_PULL_10K:
     <cam>_day_g1a, <cam>_day_g1b (the noise floor) and <cam>_day_g0. /vj/grid must not change the frame.
-mode "night": clocks running, static CAM_0 at night: <cam>_night_g<0|1>_t0 and _t1, 1 s apart.
+mode "night" (DN["grid_exec"] adds code run before each grab, see terrain_equality.py's HOLD and STOP): clocks running, static CAM_0 at night: <cam>_night_g<0|1>_t0 and _t1, 1 s apart.
     The t0 to t1 difference must be no larger with /vj/grid 1 than with 0 (no line moves against the terrain).
 mode "fly": clocks running, CAM_4 flying (cam speed 1) at night with /vj/grid 1: CAM_4_night_fly_a and _b, 1 s apart.
 Compare with grid_diff.py."""
@@ -14,7 +14,7 @@ TOOLS = bpy.path.abspath("//../review/")
 exec(open(TOOLS + "proof_setup.py").read())
 FIXED = {"vj_shock": 0.0, "vj_cam_speed": 0.0, "vj_fog": 0.0, "vj_eclipse": 0.0, "vj_moon_phase": 1.0, "vj_nebula": 1.0}
 LANDED = "S['rt_flock'] = 0.0; S['rt_flock_dir'] = -1.0"
-FLOWN = "S['rt_flock'] = 60.0; S['rt_flock_dir'] = 1.0"
+FLOWN = "S['rt_flock'] = 60.0; S['rt_flock_dir'] = 1.0\n" + DN.get("grid_exec", "")   # grid_exec: more code per grab (the rig held, the Flight stopped)
 
 
 def job(cam, st, name, settle, ex):

@@ -214,21 +214,21 @@ check("3i FL2/FL4: once on its water loop the Hover stays on it, programs withou
 
 
 # 3j. the Hover from the Skim: start states over seeds, time on the Skim track and two regions
-def hover_jump(region, seed, hold):
+def hover_jump(region, seed, hold, dt=DT):
     """A jump of /vj/flight from the Skim (2/3, held hold s on the region's Skim track) to the Hover (1): seconds from
-    f reaching 1 until the Hover is in effect (fe 1), and the water's distance at the jump (m)."""
+    f reaching 1 until the Hover is in effect (fe 1), and the water's distance at the jump (m). dt is the frame time."""
     T.candidates = lambda: [region]
     F = fl.Flight(T, seed=seed, sun=SUN)
     t, on = 0.0, None
     while on is None or t < on + hold:
-        F.step(DT, KEYS_SKIM, 0, sun=SUN, moon=MOON)
-        t += DT
+        F.step(dt, KEYS_SKIM, 0, sun=SUN, moon=MOON)
+        t += dt
         if on is None and F.f > KEYS_SKIM - 1e-3 and fl.R * fl.angle(F.u, F.region[1]) < 1.15 * fl.SKIM_RING + 500.0:
             on = t
     at_one = gap = None
-    for _ in range(int(150.0 * FPS)):
-        F.step(DT, 1.0, 0, sun=SUN, moon=MOON)
-        t += DT
+    for _ in range(int(150.0 / dt)):
+        F.step(dt, 1.0, 0, sun=SUN, moon=MOON)
+        t += dt
         if gap is None and F.f > KEYS_SKIM + 1e-3:
             gap = F.gap
         if at_one is None and F.f >= 0.999:
@@ -242,10 +242,11 @@ KEYS_SKIM = fl.KEYS[fl.SKIM]
 if not (LOD_ONLY or BLEND_ONLY or ENERGY_ONLY):
     regions_ = (("the sea", T.far), ("water on one side", T.mtn))
     for label, region in regions_:
-        runs = [(seed, hold) + hover_jump(region, seed, hold) for seed in SEEDS for hold in (0.0, 15.0, 30.0, 45.0)]
-        worst_ = max(runs, key=lambda r: r[2])
-        check("3j FL2: a jump from the Skim to the Hover, %s: in effect s after f reaches 1, %d start states" % (label, len(runs)), worst_[2], 15.0)
-        print("   worst (seed, s on the Skim before the jump, s, water m off at the jump):", tuple(round(x) for x in worst_))
+        for dt in (DT, 0.054, 0.1):     # the live frame time is 50 to 100 ms under load: the arrival must not depend on it
+            runs = [(seed, hold) + hover_jump(region, seed, hold, dt) for seed in SEEDS for hold in (0.0, 15.0, 30.0, 45.0)]
+            worst_ = max(runs, key=lambda r: r[2])
+            check("3j FL2: a jump from the Skim to the Hover, %s, frame %.0f ms: in effect s after f reaches 1, %d start states" % (label, 1000 * dt, len(runs)), worst_[2], 15.0)
+            print("   worst (seed, s on the Skim before the jump, s, water m off at the jump):", tuple(round(x) for x in worst_))
     del T.candidates
 
 

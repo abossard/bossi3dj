@@ -31,13 +31,19 @@ Result: the blank night-edge build was not reproduced (three rebuilds, two suspe
 - `make blender-check ARGS="--only vj_grid,vj_bass,vj_flamingos --no-fallback"` on a fresh open of rebuild 3: all effect (grid 37.6x, bass 38.2x, flamingos 28.5x the floor).
 - `vj_flamingos` row now `cams: [7]` in `synthwave_check.py`. `CAM_1` (225 flock points) has no effect: its flock covers 0.01 % of the preview. Rebuild 3 flock points: CAM_0 0, CAM_1 225, CAM_2 80, CAM_3 168, CAM_4 97 per set, CAM_10 825/765/727. CAM_7 was found by the check's fallback.
 
-## Line motion at night (step 6)
-`grid_numbers.py` night, CAM_0, rebuild 2, load 160+, `blender/review/out/edge-guard/night` and `night_frozen`; `blender/review/line_motion.py` for the masks.
-- Clocks running: `/vj/grid` 0 pair mad 0.485 (quiet, counts), `/vj/grid` 1 pair mad 11.0, changed 22.6 %, line overlap 0.147 (threshold 24), 0.217 (threshold 8, so not only a brightness pulse); shift up to 2 px does not help. Round 11 had 0.78.
-- Clocks frozen: grid 0 pair mad 0.030, grid 1 pair mad 0.468, overlap 0.894 (0.855 at threshold 8).
-- So the lines are static in the picture and change only while the clocks run. The edge multiplier is `1 + 1.6 rt_beat + 1.2 vj_bass` (at most 1.72), which a pure brightness pulse cannot turn into overlap 0.2. Cause not found; open. Next: a running pair with `rt_beat` read in each frame, and one with the idle pulse off.
+## Line motion at night (step 6): closed
+`grid_numbers.py` night, CAM_0, `blender/review/out/edge-guard/night*`; masks by `line_motion.py`, camera by `camera_drift.py`, mesh by `edge_stability.py`.
+| run | /vj/grid 0 pair mad | /vj/grid 1 pair mad | line overlap (T 24 / T 8) |
+|---|---|---|---|
+| clocks running | 0.485 | 11.0 | 0.147 / 0.217 |
+| clocks frozen | 0.030 | 0.468 | 0.894 / 0.855 |
+| running, rig held on the shot's pose (`terrain_equality.py` HOLD) | 0.301, 0.323 | 8.0, 6.3 | 0.215 / 0.352, 0.449 |
+| running, rig held and `/vj/energy` 0 | 0.039 | 0.442 | 0.923 / 0.874 |
+- Cause: the on-air camera's lens pulses with the beat and the energy (`energy.py`: `BEAT_LENS` 2 % at full pulse and energy, `TIGHT`), by 0.1 % between two grabs with the rig held (lens 24.007 to 24.028), up to 0.4 px at the frame edge. It moves 1 px lines onto other pixels; smooth shading barely changes (grid 0 pair mad 0.3). The rig's position and rotation did not move (0 deg, under 0.1 mm). With the rig held and the energy at 0 the overlap is back at 0.92.
+- The mesh is not it: the evaluated `Planet.CAM_0.0` (215895 vertices, 379306 triangles, 589025 edges) is identical over four snapshots 1.5 s apart (0 edges differ, 0 vertices moved by 1 mm).
+- So the lines do not move against the terrain; the camera's beat push moves them with it. Round 11's 0.78 was before the Flight runtime applied the energy on every shot. Closed.
+- Hold used: `DN["grid_exec"]` (new in `grid_numbers.py`) with `FR.moved_pose = lambda ob, dg, drive: FR.pose_of(ob, dg)` and `S['vj_energy'] = 0.0` (the drive eases to 0 in a few seconds: set it a few seconds before). Restore: `FR.moved_pose` back, release the bridge hold, reset the vj_* values.
 
 ## Open
-- Line motion above (running clocks).
 - Blank build cause. If it returns, `edge_guard` reports `repaired` or `missing` with the first-probe share in the start state.
 - The committed `synthwave_planet.blend` is unchanged (rebuilds were not committed).
