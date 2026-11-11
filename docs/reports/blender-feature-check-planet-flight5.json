@@ -1,0 +1,520 @@
+{
+ "scene": "Scene",
+ "time": "2026-11-11 09:53:57",
+ "controls": 37,
+ "contract": [
+  {
+   "address": "/vj/cam",
+   "kind": "range",
+   "detail": "contract index 0..10, page 0..11"
+  }
+ ],
+ "osc_probe": {
+  "sent": 37,
+  "received": 37,
+  "applied": 37,
+  "missing": [],
+  "errors": 0
+ },
+ "bridge_check": [
+  {
+   "address": "/vj/intensity",
+   "wire": 0.5,
+   "property": "vj_intensity",
+   "expected": 1.0,
+   "got": 1.0,
+   "ok": true
+  },
+  {
+   "address": "/vj/fog_height",
+   "wire": 0.42,
+   "property": "vj_fog_height",
+   "expected": 25.78,
+   "got": 25.78,
+   "ok": true
+  },
+  {
+   "address": "/vj/fog_scale",
+   "wire": 0.26,
+   "property": "vj_fog_scale",
+   "expected": 267.4,
+   "got": 267.4,
+   "ok": true
+  },
+  {
+   "address": "/vj/cam",
+   "wire": 12,
+   "property": "vj_cam",
+   "expected": 10,
+   "got": 10.0,
+   "ok": false,
+   "camera": "CAM_RIG"
+  },
+  {
+   "address": "/vj/shock",
+   "wire": 1.4,
+   "property": "vj_shock",
+   "expected": 1.4,
+   "got": 1.4,
+   "ok": true
+  },
+  {
+   "address": "/vj/cam_auto",
+   "wire": 0,
+   "property": null,
+   "ignored": 1,
+   "ok": true
+  }
+ ],
+ "check": {
+  "state": "done",
+  "scene": "Scene",
+  "rows": [
+   {
+    "key": "vj_blend",
+    "address": "/vj/blend",
+    "min": 0.0,
+    "max": 2.0,
+    "default": 1.0,
+    "trigger": false,
+    "why": "shows on a cut, a moment after it",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": [
+      "flight_rt.frame"
+     ]
+    },
+    "cams_tried": [
+     1,
+     1
+    ],
+    "attempts": [
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 57.2521,
+        "frac": 0.91105,
+        "bias": 55.114,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 5761.5
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0616,
+        "frac": 0.001102,
+        "bias": 0.005,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0827,
+        "frac": 0.001289,
+        "bias": 0.0106,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.3
+       }
+      ],
+      "floor": [
+       0.0616,
+       0.001102,
+       0.0096
+      ]
+     },
+     {
+      "cam": 1,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 57.2433,
+        "frac": 0.911042,
+        "bias": 55.0995,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 2183.8
+       },
+       {
+        "value": 1.0,
+        "mad": 0.0522,
+        "frac": 0.000981,
+        "bias": 0.0042,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 0.8
+       },
+       {
+        "value": 2.0,
+        "mad": 0.0755,
+        "frac": 0.000894,
+        "bias": 0.0235,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       }
+      ],
+      "floor": [
+       0.0731,
+       0.001289,
+       0.0252
+      ]
+     }
+    ],
+    "verdict": "effect",
+    "cam": 1,
+    "effect_mad": 57.2521,
+    "effect_frac": 0.91105,
+    "effect_bias": 55.114,
+    "ratio": 5761.5,
+    "floor_mad": 0.0616,
+    "floor_frac": 0.001102,
+    "floor_bias": 0.0096,
+    "note": "weak or single-cell, repeated"
+   },
+   {
+    "key": "vj_boost",
+    "address": "/vj/boost",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.0,
+    "trigger": false,
+    "why": "the accelerator works while the Flight skims or hovers",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": [
+      "flight_rt.frame"
+     ]
+    },
+    "cams_tried": [
+     11
+    ],
+    "attempts": [
+     {
+      "cam": 11,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.0889,
+        "frac": 0.001128,
+        "bias": 0.0144,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       },
+       {
+        "value": 0.5,
+        "mad": 9.672,
+        "frac": 0.366155,
+        "bias": 3.8727,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 324.6
+       },
+       {
+        "value": 1.0,
+        "mad": 15.0291,
+        "frac": 0.623468,
+        "bias": 7.4613,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 552.7
+       }
+      ],
+      "floor": [
+       0.0889,
+       0.001128,
+       0.0144
+      ]
+     }
+    ],
+    "verdict": "effect",
+    "cam": 11,
+    "effect_mad": 15.0291,
+    "effect_frac": 0.623468,
+    "effect_bias": 7.4613,
+    "ratio": 552.7,
+    "floor_mad": 0.0889,
+    "floor_frac": 0.001128,
+    "floor_bias": 0.0144,
+    "note": ""
+   },
+   {
+    "key": "vj_energy",
+    "address": "/vj/energy",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.3,
+    "trigger": false,
+    "why": "every shot moves harder, eased over seconds",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": [
+      "flight_rt.frame"
+     ]
+    },
+    "cams_tried": [
+     0
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 7.2399,
+        "frac": 0.282431,
+        "bias": 1.3724,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 256.2
+       },
+       {
+        "value": 0.3,
+        "mad": 0.1566,
+        "frac": 0.000951,
+        "bias": 0.0513,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       },
+       {
+        "value": 0.5,
+        "mad": 5.39,
+        "frac": 0.175755,
+        "bias": 1.2313,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 159.4
+       },
+       {
+        "value": 1.0,
+        "mad": 11.6032,
+        "frac": 0.511207,
+        "bias": 5.3716,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 463.7
+       }
+      ],
+      "floor": [
+       0.1566,
+       0.001102,
+       0.0513
+      ]
+     }
+    ],
+    "verdict": "effect",
+    "cam": 0,
+    "effect_mad": 11.6032,
+    "effect_frac": 0.511207,
+    "effect_bias": 5.3716,
+    "ratio": 463.7,
+    "floor_mad": 0.1566,
+    "floor_frac": 0.001102,
+    "floor_bias": 0.0513,
+    "note": ""
+   },
+   {
+    "key": "vj_flight",
+    "address": "/vj/flight",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.0,
+    "trigger": false,
+    "why": "a cell starts the Flight settled at the stage (flight_rt.quiesce); verify_flight checks the damping",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": [
+      "flight_rt.frame"
+     ]
+    },
+    "cams_tried": [
+     11
+    ],
+    "attempts": [
+     {
+      "cam": 11,
+      "cells": [
+       {
+        "value": 0.0,
+        "mad": 0.5157,
+        "frac": 0.011684,
+        "bias": 0.0412,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": false,
+        "ratio": 1.0
+       },
+       {
+        "value": 0.5,
+        "mad": 144.6022,
+        "frac": 0.9999,
+        "bias": 176.5883,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 3709.2
+       },
+       {
+        "value": 1.0,
+        "mad": 164.2894,
+        "frac": 0.999718,
+        "bias": 193.7592,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 4069.9
+       }
+      ],
+      "floor": [
+       0.5157,
+       0.011684,
+       0.0476
+      ]
+     }
+    ],
+    "verdict": "effect",
+    "cam": 11,
+    "effect_mad": 164.2894,
+    "effect_frac": 0.999718,
+    "effect_bias": 193.7592,
+    "ratio": 4069.9,
+    "floor_mad": 0.5157,
+    "floor_frac": 0.011684,
+    "floor_bias": 0.0476,
+    "note": ""
+   },
+   {
+    "key": "vj_hit",
+    "address": "/vj/hit",
+    "min": 0.0,
+    "max": 1.0,
+    "default": 0.0,
+    "trigger": true,
+    "why": "a wide-angle kick on the On-Air Camera",
+    "readers": {
+     "nodes": 0,
+     "drivers": 0,
+     "python": [
+      "flight_rt.frame"
+     ]
+    },
+    "cams_tried": [
+     0
+    ],
+    "attempts": [
+     {
+      "cam": 0,
+      "cells": [
+       {
+        "value": 0.5,
+        "mad": 15.7369,
+        "frac": 0.531667,
+        "bias": 5.3697,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 108.4
+       },
+       {
+        "value": 1.0,
+        "mad": 15.7407,
+        "frac": 0.531654,
+        "bias": 5.3914,
+        "readback": true,
+        "settled": true,
+        "probe": null,
+        "effect": true,
+        "ratio": 108.4
+       }
+      ],
+      "floor": [
+       0.2574,
+       0.004905,
+       0.0919
+      ]
+     }
+    ],
+    "verdict": "effect",
+    "cam": 0,
+    "effect_mad": 15.7369,
+    "effect_frac": 0.531667,
+    "effect_bias": 5.3697,
+    "ratio": 108.4,
+    "floor_mad": 0.2574,
+    "floor_frac": 0.004905,
+    "floor_bias": 0.0919,
+    "note": ""
+   }
+  ],
+  "progress": {
+   "done": 5,
+   "total": 5,
+   "current": null
+  },
+  "started": 1794387244.7259772,
+  "error": null,
+  "noise_floor": {
+   "mad": 0.5152,
+   "frac": 0.011615,
+   "bias": 0.0919
+  },
+  "settings": {
+   "average": 8,
+   "replicates": 3,
+   "changed": 8,
+   "mad_min": 0.05,
+   "frac_min": 0.0005,
+   "bias_min": 0.02,
+   "noise_factor": 2.0,
+   "step_s": 0.1
+  },
+  "defaults_restored": true,
+  "off_default": {},
+  "finished": 1794387404.711759,
+  "counts": {
+   "effect": 5
+  }
+ },
+ "state_equals_defaults": true,
+ "off_default": {},
+ "holds_released": true
+}

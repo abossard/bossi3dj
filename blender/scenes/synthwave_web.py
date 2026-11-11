@@ -69,6 +69,14 @@ def load_check():
     return module
 
 
+def shot_name(scene):
+    """The shot on air: flight_rt keeps the rig in scene.camera and names the shot asked for in driver_namespace."""
+    shot = bpy.app.driver_namespace.get("vj_shot")
+    if shot is not None:
+        return shot()
+    return scene.camera.name if scene.camera else None
+
+
 def address(key):
     return "/" + key.replace("_", "/", 1)   # vj_fog_height -> /vj/fog_height, which the bridge maps back
 
@@ -238,7 +246,7 @@ class Web:
         (t0, f0, d0), (t1, f1, d1) = self.frames[0], self.frames[-1]
         rate = lambda a, b: round((b - a) / (t1 - t0), 1) if t1 > t0 and b >= a else 0.0
         snap = {
-            "scene": scene.name, "camera": scene.camera.name if scene.camera else None,
+            "scene": scene.name, "camera": shot_name(scene),
             "fps": rate(d0, d1), "scene_fps": rate(f0, f1),   # drawn frames (what Syphon gets) vs frame counter, which skips
             "playing": bool(bpy.context.screen and bpy.context.screen.is_animation_playing),
             "controls": controls(scene), "sim": self.sim.state(),

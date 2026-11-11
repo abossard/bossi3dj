@@ -348,7 +348,8 @@ class Check:
         else:
             yield from self.wait_frames(1)
             if key == "vj_cam":
-                readback = scene.camera is not None and scene.camera.name == "CAM_%d" % int(round(value))
+                shot = self.ns["vj_shot"]() if "vj_shot" in self.ns else scene.camera and scene.camera.name     # flight_rt
+                readback = shot == "CAM_%d" % int(round(value))
             elif key is not None:
                 readback = abs(float(scene[key]) - value) <= 1e-6 * max(1.0, abs(value))
         if pre.get("then"):

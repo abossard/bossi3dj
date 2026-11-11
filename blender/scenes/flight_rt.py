@@ -48,6 +48,7 @@ import lod_stream as ls  # noqa: E402
 
 RIG = "CAM_RIG"
 FLIGHT_KEY = "vj_flight_cam"
+SHOT_KEY = "vj_shot"                # driver_namespace: the shot asked for (scene.camera is the rig), for the page and check
 SHOT_PROPS = {"fog_k": 1.0, "fog_clear": 180.0, "fog_dip": 0.005}
 MAP_RES = 512                       # texels per cube face side: about 49 m
 PYR_PAD = 25.0                      # m around a pyramid's footprint
@@ -55,6 +56,8 @@ CACHE = os.path.expanduser("~/Library/Caches/swiftvj-flight")
 MOON_R = 11500.0
 SUBJECT = 300.0                     # m down the view: the aim point of a shot that tracks nothing
 CHECK_SEED = 1                      # the Flight's seed after a reset (quiesce), so every check cell flies alike
+CHECK_SUN = (0.0, 0.9038, 0.4280)   # and its sun: the scene's (star_system) follows the camera, so after a reset it is
+                                    # the previous cell's, and the orbit plane and region with it
 _state = {"last": None, "director": None, "flight": None, "shot": None, "map": None, "fix": 0, "lod": False, "lod_ms": [],
           "every": 1, "n": 0, "drive": None}
 
@@ -331,7 +334,8 @@ def flight_pose(scene, dt, fc):
     F = _state["flight"]
     if F is None:
         reset = _state.pop("reset", False)
-        F = _state["flight"] = fl.Flight(_state["map"], seed=CHECK_SEED if reset else int(time.time()) % 100000, sun=sun)
+        F = _state["flight"] = fl.Flight(_state["map"], seed=CHECK_SEED if reset else int(time.time()) % 100000,
+                                         sun=CHECK_SUN if reset else sun)
         if reset:       # settled at the stage asked for: the self-check shows the stage, verify_flight the damping
             F.f = fl.clamp(s("vj_flight", 0.0), 0.0, 1.0)
     drive = _state["drive"]
@@ -427,6 +431,7 @@ def start():
                 handlers.remove(h)
         handlers.insert(0, fn)
     scene.camera = rig
+    bpy.app.driver_namespace[SHOT_KEY] = lambda: _state["shot"].name if _state["shot"] is not None else None
     lod_scene.start(scene, _state["map"])
     _state["lod"] = True
     dg = bpy.context.evaluated_depsgraph_get()
@@ -437,6 +442,7 @@ def start():
 
 
 def stop():
+    bpy.app.driver_namespace.pop(SHOT_KEY, None)
     if _state["lod"]:
         lod_scene.stop(bpy.context.scene)
         _state["lod"] = False

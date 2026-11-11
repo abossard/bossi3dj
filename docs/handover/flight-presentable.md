@@ -1,6 +1,36 @@
-# Flight presentable (B2), Part A done, Part B waits for the Blender slot
+# Flight presentable (B2), Part A done, Part B half done
 
-Branch `blender/flight`, `integration/presentable` merged (round 9). Part A (no Blender) is done: `make verify` and `make test` green. Part B (live) has not started: it needs the orchestrator's go for the Blender slot. No Blender was opened.
+Branch `blender/flight`, `integration/presentable` merged (round 10, 939420e). Part A (no Blender): `make verify` and `make test` green. Part B (live, 2026-11-11, load 45 to 185, no fps numbers): the five Flight rows show an effect, the full check found four other controls that lost theirs; Hover arrival, cut stalls and idle cost are not measured. Stopped at half context, Blender closed.
+
+## Part B, live results
+
+- Start: the runtime starts `flight_rt` once (one `frame` and one `on_cut` handler from `flight_rt`, LOD on, 178 regions, Flight shot `CAM_11`). `open -a` keeps no log, so the start line was read from the handler's module state; a reload through `start_sibling` prints it once.
+- Five rows (`--only vj_flight,vj_boost,vj_blend,vj_energy,vj_hit --no-fallback`, `docs/reports/blender-feature-check-planet-flight5.json`): all `effect`. `vj_flight` 4070x on `CAM_11`, `vj_boost` 553x on `CAM_11`, `vj_blend` 5762x on `CAM_1` (single-cell, repeated on fresh baselines: only blend 0 is a hard cut), `vj_energy` 464x and `vj_hit` 108x on `CAM_0` (two and more cells each, not single-cell). Every cell settled.
+- Fixed on the way (both in this commit):
+  - `vj_boost` first showed no effect: floor mad 58, frac 0.94 on `CAM_11` at `vj_flight` 0.66. `blender/review/flight_repeat.py` showed seed 1 but a different region per cell (153, 62, 35): `star_system` computes the sun from the camera, so a reset Flight took the previous cell's sun and with it another orbit plane. `flight_rt.CHECK_SUN` is the reset Flight's sun; three cells then end on the same pose to 0.01 m.
+  - `vj_cam` errored (`no camera cut` for every camera): `flight_rt` keeps `CAM_RIG` in `scene.camera`. `flight_rt` now publishes the shot asked for as `driver_namespace["vj_shot"]` (a function, removed by `stop`); `Check.cell` and the page's `camera` (`synthwave_web.shot_name`) read it. Rerun of `--only vj_cam`: effect 1146x, all 12 cameras cut.
+- Full check (`docs/reports/blender-feature-check-planet-flight.json`, before the `vj_cam` fix): 31 effect, 1 error (`vj_cam`, fixed since), 5 no effect. Against `docs/reports/blender-feature-check-planet.json` (2026-11-10):
+  - new effect: `vj_blend`, `vj_boost`, `vj_flight`, `vj_nebula` (8.5x, single-cell, repeated)
+  - lost, round 10 (lattice removed): `vj_grid_speed` (expected), `vj_bass` (was 1437x through the lattice's pulse `gk`; now it only pulses the night mesh edges at `build_planet.py` `pulse`, and its row tests by day on `CAM_0`). Round 10's to set the row (`vj_night`).
+  - lost, from `flight_rt`'s LOD terrain: `vj_water` (was 2058x on `CAM_1`). With `flight_rt` started `Planet_Hydro` is hidden and the water is the LOD slots' `Sea LOD` material; at frozen clocks `vj_water` 1 to 0 on `CAM_1` changes mad 0.04, frac 0.0002 (MCP probe). `Sea LOD` reads `vj_water` (two attribute nodes) but the river shot shows nearly nothing of it: compare `Sea` and `Sea LOD` (the `lift` waves at `build_planet.py` `lift` are on `Planet_Hydro`).
+  - lost, probably the same cause: `vj_flamingos` (was 103x on `CAM_0`, one cell: 0 hides them; now 1.6x on every camera). The flock is on the planet surface; check whether the LOD slots carry it.
+  - lost, noisy floor: `vj_meteor` (was 29x on `CAM_2`). Its state is `vj_night` 1 and its floors are 10 to 17x the day floors (`CAM_0` mad 2.4, frac 0.17 against 0.14 before): something at night changes between baselines at frozen clocks with `flight_rt` on. First suspect: the LOD set swap or block builds on wall time.
+  - contract: `/vj/cam` page 0..11 against contract 0..10 (`CAM_11` is the Flight shot), and the bridge clamps a wire index to 10, so Magic cannot cut to the Flight shot. The contract row is the orchestrator's call (`osc/contract.json`, then Magic).
+  - bridge check `/vj/cam 12`: BAD because the page reported `CAM_RIG`; fixed by `shot_name` (the page module loads at open, so it shows after the next `make blender-open`).
+- A cut at frozen clocks with a fresh Director lands at once (`blender/review/cut_trace.py`, `CAM_0` to `CAM_1`: on air in 0.2 s, rig 0.6 m off the shot, no blend, no LOD hold).
+
+## Part B, next (exact commands)
+
+```
+git merge integration/presentable
+make blender-open                      # the .blend was not committed; rebuild only if build_planet changed
+make blender-check ARGS="--only vj_water,vj_flamingos,vj_meteor,vj_bass,vj_cam"
+```
+Then the water and flamingo loss (LOD slots), the night floor, and the rest of the brief:
+- Hover arrival: Blender MCP `DN["hover_job"] = {"out": "/abs/hover.json"}`, exec `blender/review/hover_arrival.py`, wait for `DN["hover_done"]`; `events.arrive_s` is the time (10 to 15 s), `draws` hold per-frame ms by stage (Approach 1, Skim 2). Not run yet.
+- Cut stalls: `blender/review/cut_jobs.py` (M1 70 ms).
+- Idle cost: `DN["ab"]` with cell A exec `m = DN['vj_runtime'].quiesce.__globals__['_state']['flight_rt']; m._state['lod'] or m.start()` and B `m = ...; m._state['lod'] and m.stop()`, both `set` `{"vj_cam": 0}`, `settle` 8, `measure` 10, exec `blender/review/ab_frametime.py`; the last cell is B, so start `flight_rt` again after. Only with `fps_trustworthy`.
+- Then the planet table of `docs/reports/blender-feature-check.md` from a fresh full run (`feature_check_table.py`).
 
 ## State
 
