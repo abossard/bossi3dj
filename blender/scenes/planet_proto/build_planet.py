@@ -95,7 +95,7 @@ METEOR_PROPS = ["rt_met%d_%s" % (i, f) for i in range(METEORS) for f in ("ax", "
 for k, v in DEFAULTS.items():
     if not GRAFT or k not in S:
         S[k] = v
-for k in ("rt_time", "rt_grid_phase", "rt_cam_phase", "rt_fog_phase", "rt_beat", *SHOCK_PROPS, "rt_shake",
+for k in ("rt_time", "rt_cam_phase", "rt_fog_phase", "rt_beat", *SHOCK_PROPS, "rt_shake",
           "rt_flock", "rt_flock_dir", *METEOR_PROPS, "rt_space", "rt_up_x", "rt_up_y", "rt_cam_x", "rt_cam_y", "rt_cam_z"):
     if not GRAFT or k not in S:
         S[k] = 0.0
@@ -719,7 +719,6 @@ def eye_space(T):
 
 
 GLOBE_BAND = (8000.0, 12000.0)     # m: the globe takes the planet over from the ground's patches across this band
-ORBIT_LATTICE = 600.0              # m, the night side's neon lattice seen from high up (900 m read as a coarse, bold lattice)
 SITE_GLOW = 140.0                  # m, the radius of a pyramid site's light seen from high up
 
 
@@ -747,8 +746,8 @@ def orbit_look(T, pos, inc, up, n_, h, depth, land, sun, city=0.0):
     """The planet seen from high up, one look for the ground's patches, its water and the globe (S8, S9, FL2): land
     magenta to violet by height h with lighter pink peaks and a fine mottling in the flat lowlands, lit on its normal n_
     by the real sun; water by its depth, a cyan fringe to deep teal-indigo, with a soft glint; land is the land share.
-    On the night side the neon lattice, faint and fine, and the pyramid sites (city, 1 at a site) as warm lights. On the
-    globe alone, they vanished across the handover band and came back above it (night)."""
+    On the night side the pyramid sites (city, 1 at a site) as warm lights. On the globe alone, they vanished across the
+    handover band and came back above it (night)."""
     land_c = T.ramp(T.mrange(h, 0.0, 520.0, 0.0, 1.0), [(0.0, (0.62, 0.08, 0.36)), (0.35, (0.48, 0.08, 0.46)), (0.7, (0.40, 0.10, 0.52)),
                                                         (0.88, (0.62, 0.22, 0.54)), (1.0, (0.80, 0.42, 0.66))])   # lighter pink peaks
     sea_c = T.ramp(T.mrange(depth, 0.0, 30.0, 0.0, 1.0), [(0.0, (0.10, 0.50, 0.60)), (0.25, (0.04, 0.20, 0.34)), (1.0, (0.02, 0.07, 0.18))])
@@ -782,25 +781,9 @@ def orbit_look(T, pos, inc, up, n_, h, depth, land, sun, city=0.0):
     lit_sea = T.add(T.scale(sea_c, T.mul(day, T.addf(0.35, T.mul(T.math("MAXIMUM", mu, 0.0), 0.65)))), T.scale((1.0, 0.80, 0.90), spec))
     col = T.mix(land, lit_sea, lit_land)
     night = T.sub(1.0, T.smooth(mu, -0.2, 0.05))
-    q_ = T.sep(up)
-    la = T.mul(T.math("ARCSINE", T.math("MINIMUM", T.math("MAXIMUM", q_[0], -1.0), 1.0)), R / ORBIT_LATTICE)
-    lo = T.mul(T.math("ARCTAN2", q_[2], q_[1]), R / ORBIT_LATTICE)
-    wp = T.math("DIVIDE", T.mul(T.node("ShaderNodeCameraData").outputs["View Distance"], 0.0011), ORBIT_LATTICE)
-
-    def gline(coord):
-        dd = T.math("SUBTRACT", 0.5, T.math("ABSOLUTE", T.math("SUBTRACT", T.math("FRACT", coord), 0.5)))
-        return T.mrange(dd, 0.0, wp, 1.0, 0.0)
-    thin = T.math("MINIMUM", T.math("DIVIDE", 0.05, wp), 1.0)
-    lat_ = T.mul(T.math("MAXIMUM", T.math("MAXIMUM", gline(la), gline(lo)), gline(T.addf(la, lo))), T.mul(thin, thin))
-    # only from 12 km up, where the ground's own wires have faded under a pixel: lower it lay over them as a second, wavy
-    # line layer (10 km, round 7). And not round the spin axis's poles, where its rings drew a concentric moire
-    lat_ = T.mul(lat_, T.mul(T.smooth(eye_alt(T), GLOBE_BAND[1], GLOBE_BAND[1] + 6000.0),
-                             T.sub(1.0, T.smooth(T.math("ABSOLUTE", q_[0]), 0.85, 0.96))))
-    # the wireframe's cyan (S8), over land and sea alike: on land only, the night side broke into lattice patches
-    # with holes where the seas are (CAM_6)
-    # faint, and the sites' lights small points: city^3 peaks within about 30 m of a site (squared, they were blobs)
-    return T.add(col, T.scale((0.05, 0.55, 0.95), T.mul(lat_, T.mul(night, 0.07))),
-                 T.scale((1.0, 0.70, 0.35), T.mul(T.math("POWER", city, 3.0), T.mul(night, 2.0))), (0.003, 0.002, 0.008))
+    # no lines on the night side (user, 2026-11-11: no dummy wireframe, ever; the 600 m lattice here was one). The
+    # sites' lights are small points: city^3 peaks within about 30 m of a site (squared, they were blobs)
+    return T.add(col, T.scale((1.0, 0.70, 0.35), T.mul(T.math("POWER", city, 3.0), T.mul(night, 2.0))), (0.003, 0.002, 0.008))
 
 
 def sun_lit(T, up, n_, sun):
@@ -1584,7 +1567,8 @@ SUN_KEY = (-0.72, -0.30, 0.62)     # standalone only: in the graft the star syst
 
 def key_dir(T, sun):
     return sun["Dir"] if GRAFT else T.vmath("NORMALIZE", SUN_KEY)
-WIRE_CELL = 24.0          # m, the terrain wire lattice
+
+
 SHOCK_LAMBDA, SHOCK_LAND, SHOCK_FALLOFF, SHOCK_PEAKS, SHOCK_WATER = 170.0, 16.0, 2400.0, 4.0, 12.0
 SHOCK_CHOP = (55.0, 4.0, 7.0)
 
@@ -1718,63 +1702,6 @@ def terrain_build(T):
     col = T.scale(col, T.mrange(tw, 0.0, 1.0, 1.0, 0.22))
     glowk = T.mul(T.math("MAXIMUM", T.dot(N, T.group(g_frame)["North"]), 0.0), slope)
     col = T.add(col, T.scale((1.0, 0.32, 0.30), T.mul(T.mul(T.math("POWER", T.math("SUBTRACT", 1.0, ndv), 3.0), glowk), T.mul(tw, 0.55))))
-    cam = T.node("ShaderNodeCameraData")
-    # one line layer on the ground, the wireframe (user: "ONLY the wireframe please"): the pole's planar violet grid
-    # over it read as a second, thick layer of lines (night)
-    # the wires: a triangle lattice of fixed spacing (WIRE_CELL) in metres along the equator and meridians of the spin
-    # axis +x (the shots sit on its equator), not the LOD mesh's edges, so spacing and line width hold across the whole
-    # ground (G2): the mesh's cells halved at every LOD ring as square patch borders, and its long thin faces drew
-    # needle streaks (CAM_4 p75). Thinned toward their mean where a cell is under a pixel
-    q_ = T.vmath("NORMALIZE", T.vmath("SUBTRACT", geo.outputs["Position"], tuple(CENTER)))
-    qx_, qy_, qz_ = T.sep(q_)
-    # the lattice scrolls along the meridians at vj_grid_speed cells/s (rt_grid_phase counts cells; its fraction, as a
-    # whole cell moves a lattice onto itself)
-    la = T.addf(T.mul(T.math("ARCSINE", T.math("MINIMUM", T.math("MAXIMUM", qx_, -1.0), 1.0)), R / WIRE_CELL),
-                T.math("FRACT", T.attr("rt_grid_phase")))
-    lo = T.mul(T.math("ARCTAN2", qz_, qy_), R / WIRE_CELL)
-    wpw = T.math("DIVIDE", T.mul(cam.outputs["View Distance"], 0.0011), WIRE_CELL)
-    ww = T.mul(wpw, 1.2)         # a pixel, in cells: for the thinning and the fade into the mean below
-    # every line about a pixel wide on screen, whatever its direction and slope (user: "Wireframe can cover everything",
-    # "In the same style"). Each family's width comes from its coordinate's gradient along the surface (its spacing on a
-    # slope) over the foreshortening of that gradient seen from the camera. At one width in lattice units, the lines
-    # across the view thinned away on a low view of flat ground, and the plaza's triangles read as a coarse square grid
-    # beside the hills' fine triangles (CAM_5, round 7)
-    inc_ = geo.outputs["Incoming"]
-    px_m = T.mul(cam.outputs["View Distance"], 0.0011)
-    g_la = T.vmath("SCALE", T.vmath("NORMALIZE", T.vmath("SUBTRACT", (1.0, 0.0, 0.0), T.vmath("SCALE", q_, scale=qx_))), scale=1.0 / WIRE_CELL)
-    g_lo = T.vmath("SCALE", T.comb(0.0, T.mul(qz_, -1.0), qy_),
-                   scale=T.math("DIVIDE", 1.0, T.mul(T.math("MAXIMUM", T.addf(T.mul(qy_, qy_), T.mul(qz_, qz_)), 1e-6), WIRE_CELL)))
-    g_di = T.vmath("ADD", g_la, g_lo)
-
-    def wwidth(g):
-        gs = T.vmath("SUBTRACT", g, T.vmath("SCALE", N, scale=T.dot(N, g)))
-        gl = T.vmath("LENGTH", gs)
-        gv = T.math("DIVIDE", T.dot(gs, inc_), T.math("MAXIMUM", gl, 1e-9))
-        fore = T.math("SQRT", T.math("MAXIMUM", T.sub(1.0, T.mul(gv, gv)), 0.04))
-        return T.math("DIVIDE", T.mul(T.mul(px_m, gl), 1.2), fore)
-
-    def wline(coord, w_):
-        dd = T.math("SUBTRACT", 0.5, T.math("ABSOLUTE", T.math("SUBTRACT", T.math("FRACT", coord), 0.5)))
-        return T.mrange(dd, 0.0, w_, 1.0, 0.0)
-    thin_w = T.math("MINIMUM", T.math("DIVIDE", 0.012, ww), 1.0)
-    lat0 = T.math("MAXIMUM", T.math("MAXIMUM", wline(la, wwidth(g_la)), wline(lo, wwidth(g_lo))), wline(T.addf(la, lo), wwidth(g_di)))
-    lat_ = T.mul(lat0, T.mul(thin_w, thin_w))
-    # lines while a cell is over about 3 px on screen, then their mean (at 10 px the wires were gone from CAM_4's height)
-    # by distance alone: by the ground's slant as well, the fade followed each facet's normal, so on far slopes the wires
-    # dropped out in patches that changed at the LOD rings (G2; PROOF lod rings, round 7)
-    wres = T.mrange(wpw, 0.05, 0.4, 1.0, 0.0)
-    # by day the lines without thin_w^2: their width is already about a pixel (wwidth), and dimmed again they faded into
-    # the sunlit slopes from about 300 m (0.19 at 500 m; round 8 "washed out on sunlit slopes", round 9)
-    lattice = T.addf(T.mul(lat0, wres), T.mul(T.sub(1.0, wres), T.mul(thin_w, 0.036)))
-    graze = T.mrange(ndv, 0.03, 0.2, 0.25, 1.0)      # wires crowd where the ground is seen edge-on: fade toward their average
-    # at every distance, dimming a little toward the far ground (they ended at 3.5 km)
-    dwire = T.mul(T.mul(lattice, T.mul(T.mrange(cam.outputs["View Distance"], 500.0, 9000.0, 1.0, 0.45), graze)), T.smooth(zw, 0.3, 2.0))
-    gk = T.mul(T.addf(1.6, T.addf(T.mul(T.attr("vj_bass"), 2.5), T.mul(T.attr("rt_beat"), 1.4))), T.attr("vj_grid"))
-    wc = (0.05, 0.75, 1.0)       # one cyan on every height: magenta and violet wires read as the removed grid
-    # by day drawn over the ground in their cyan, not added to it: added, they washed out to pale pink on sunlit hills
-    # and vanished on the bright far mountains (CAM_3, round 7)
-    col = T.mix(T.math("MINIMUM", T.mul(T.mul(dwire, gk), 1.2), 1.0), col, (0.08, 0.80, 1.0))     # (at 0.5 the lines on
-    # far slopes, under a pixel, tinted them too little to show)
     land_lit = col               # the ground lit as if dry: what a bank's mirror image in the water shows
     bank = T.smooth(zw, 0.0, 7.0)
     col = T.scale(col, T.mrange(bank, 0.0, 1.0, 0.6, 1.0))
@@ -1782,11 +1709,24 @@ def terrain_build(T):
     # at night a slight glow (T-night) at every distance, but only as lines: where they crowd under a pixel they fade out,
     # not into their mean glow, so the far floor stays a dark silhouette (a flat grey-violet plane at 0.03 to 0.05 read
     # as a slab, CAM_0 at night)
-    wdist = T.mrange(cam.outputs["View Distance"], 1000.0, 12000.0, 1.0, 0.4)
-    wire = T.mul(T.mul(T.mul(lat_, wres), T.mul(T.mul(wdist, graze), 0.6)), T.mul(T.smooth(zw, 0.3, 2.0), T.attr("vj_grid")))
+    col = T.mix(ph["Night"], col, (0.0015, 0.0, 0.006))
+    # the only lines on the planet: the real edges of the drawn ground mesh (Wireframe node, pixel size), from sunset to
+    # night (vj_night 0.25 to 0.5), strength vj_grid, pulsed by bass and beat. No lattice of any kind (user, 2026-11-11:
+    # "I NVER want to see ANY dummy wireframe"); the 24 m terrain lattice and its scroll were one. Only on dry land and
+    # not on the mirror copy, and faded where a cell's smaller side is under about 10 px on screen, where the edges
+    # crowd into a solid fill. The globe draws no edges: its sphere is a proxy under shaded relief
+    cam = T.node("ShaderNodeCameraData")
+    wf = T.node("ShaderNodeWireframe", use_pixel_size=True)
+    wf.inputs["Size"].default_value = 1.0
+    cell_px = T.math("DIVIDE", T.math("DIVIDE", PATCH_M, T.math("POWER", 2.0, T.gattr("pl_l"))),
+                     T.mul(cam.outputs["View Distance"], 0.0011))
+    # the smaller side of a cell on screen: its size in pixels, foreshortened by the view's slant (ndv). Faded by
+    # distance alone, the far ground's edges crowded into a cyan web over 29% of CAM_0 at night (round 10)
+    dense = T.mrange(T.mul(cell_px, ndv), 4.0, 10.0, 0.0, 1.0)
+    edge = T.mul(T.mul(wf.outputs["Fac"], dense), T.mul(T.smooth(zw, 0.3, 2.0), T.sub(1.0, mir)))
     pulse = T.addf(1.0, T.addf(T.mul(T.attr("rt_beat"), 1.6), T.mul(T.attr("vj_bass"), 1.2)))
-    ncol = T.add((0.0015, 0.0, 0.006), T.scale(wc, T.mul(wire, pulse)))
-    col = T.mix(ph["Night"], col, ncol)
+    edge = T.mul(T.mul(edge, pulse), T.mul(T.smooth(T.attr("vj_night"), 0.25, 0.5), T.attr("vj_grid")))
+    col = T.mix(T.math("MINIMUM", T.mul(edge, 0.7), 1.0), col, (0.05, 0.75, 1.0))
     # the shallow bed fades into what the sea reflects where the bed ends (1 m down): cut off there, its edge drew a
     # bowl's lip across the sea (CAM_7) and pale polygon blotches over sandbanks (CAM_10)
     # and flats under 0.5 m above it read as wet (with their mirror copies): sandbanks just above the sea showed as
@@ -2706,7 +2646,8 @@ G.feed(sm_.inputs["Material"], gi["Material"])
 
 def globe_build(T):
     """The globe's look: the ground's palette under the real sun, relief-shaded ridges, rivers and lakes, a deep
-    teal-indigo sea with a soft glint, and on the night side the neon lattice and the pyramid sites as city lights."""
+    teal-indigo sea with a soft glint, and on the night side the pyramid sites as city lights. No lines: its sphere is
+    a proxy under the shaded relief, so its edges would be a dummy wireframe."""
     geo = T.node("ShaderNodeNewGeometry")
     pos, inc = geo.outputs["Position"], geo.outputs["Incoming"]
     up, _ = planet_frame(T, pos)
@@ -2724,7 +2665,7 @@ def globe_build(T):
     mu = T.dot(up, sun["Dir"])
     day = T.smooth(mu, -0.12, 0.18)
     # rivers as cyan threads (in the shallow-sea teal they did not stand out from the land), by day only: mixed in with
-    # their unlit colour at night they cut the night lattice as black strokes (S9 orbit night, round 6). At 70% over
+    # their unlit colour at night they cut the (since removed) night lattice as black strokes (S9 orbit night, round 6). At 70% over
     # the land, not full: solid, the short coastal rivers read as cyan capsules
     col = T.mix(T.mul(T.smooth(riv, 0.3, 0.7), T.mul(day, 0.7)), col,
                 T.scale((0.18, 0.62, 0.72), T.mul(day, T.addf(0.35, T.mul(T.math("MAXIMUM", mu, 0.0), 0.65)))))
@@ -2886,17 +2827,13 @@ def fog_build(T, pv):
     pv.inputs["Anisotropy"].default_value = 0.4       # forward scattering: halos round the sun and the lamps (0.6 blinded by day)
     alb, glow, _ = fog_look(T)
     T.feed(pv.inputs["Color"], alb)
-    # own light: the sunset glow, and at night the neon wires below lighting its lowest metres a little
-    # over land within 1.5 km only: over the sea and summed toward the horizon it was a self-lit violet band (round 3)
-    near_ = T.mul(T.smooth(pz, 0.5, 3.0), T.smooth(T.vmath("DISTANCE", pos, cam), 1500.0, 600.0))
-    under = T.scale((0.05, 0.45, 0.85), T.mul(T.mul(T.math("EXPONENT", T.math("DIVIDE", T.math("MAXIMUM", hag, 0.0), -14.0)),
-                                                   T.phase()["Night"]), T.mul(T.attr("vj_grid"), T.mul(near_, 0.03))))
+    # own light: the sunset glow (the night lattice's cyan light on its lowest metres went with the lattice, round 10)
     # by day the sky's light on it: the scene's only light in the volume is the sun, so away from it the fog went a
     # muddy mauve-grey over the sea (CAM_10 f1), not the white of the reference photos
     ph_f = T.phase()
     skyl = T.scale((0.30, 0.30, 0.35), T.mul(T.sub(1.0, ph_f["Night"]), T.sub(1.0, T.mul(ph_f["Twilight"], 0.6))))   # 0.5 burnt
     # thick fog near a camera into a flat white slab (CAM_2 f1, round 6)
-    T.feed(pv.inputs["Emission Color"], T.group(g_col, Color=T.add(T.scale(glow, T.mul(pump, 0.6)), under, skyl), Strength=1.0)["Color"])
+    T.feed(pv.inputs["Emission Color"], T.group(g_col, Color=T.add(T.scale(glow, T.mul(pump, 0.6)), skyl), Strength=1.0)["Color"])
     T.feed(pv.inputs["Emission Strength"], dens)
 
 

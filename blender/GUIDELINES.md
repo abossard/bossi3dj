@@ -40,6 +40,7 @@ What each control does is in [README.md](README.md). The pass rules for images a
 | MCP call returns nothing | the add-on wants `result` to be a dict | always assign a dict to `result` |
 | A sheet shows banding or a grid | montage scaling | sheets are for triage; judge fine detail on the full-size frame |
 | Texture looks washed out | float TIFF or EXR loaded as sRGB | set the colour space when loading data maps |
+| Lines on the ground that are not the drawn mesh's edges (a shader lattice, a projected grid, a proxy mesh's edges) | user, 2026-11-11: no dummy wireframe, ever | lines only as the real edges of the drawn mesh, from sunset, or none |
 
 ## Measuring fps
 
