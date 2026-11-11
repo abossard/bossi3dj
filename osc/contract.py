@@ -117,7 +117,7 @@ def _pictures(row, root=ROOT):
     for who, label in (("blender", "Blender"), ("godot", "Godot")):
         rel = os.path.join(MANUAL_IMAGES, "%s-%s.jpg" % (name, who)).replace(os.sep, "/")
         if row[who] and os.path.exists(os.path.join(root, rel)):
-            out.append('<img src="%s" width="300" alt="%s, %s: %s"><br><sub>%s, %s</sub>' % (rel, row["address"], label, what, label, what))
+            out.append('<img src="%s" width="360" alt="%s, %s: %s"><br><sub>%s, %s</sub>' % (rel, row["address"], label, what, label, what))
     return "<br>".join(out)
 
 

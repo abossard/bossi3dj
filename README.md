@@ -42,28 +42,31 @@ The full list with ranges is in [osc/CONTROLS.md](osc/CONTROLS.md).
 
 <table>
 <tr>
-<td width="50%"><img src="docs/images/readme/planet-valley-palms-day.jpg" alt="A valley of purple hills with a large pink sun, palms and small pyramids on a magenta plain"><br><sub><b>Day, <code>CAM_0</code></b>: wide, up the plaza toward the pyramids and the sun (<code>/vj/night</code> 0).</sub></td>
-<td width="50%"><img src="docs/images/readme/planet-night-mesh-edges.jpg" alt="Night valley with a glowing cyan triangle net on the hills and ground under a starry sky"><br><sub><b>Night with mesh edges, <code>CAM_0</code></b>: <code>/vj/night</code> 1 and <code>/vj/grid</code> 1 draw the ground's real triangles.</sub></td>
+<td width="50%"><img src="docs/images/readme/planet-valley-day.jpg" alt="Day, CAM_0: wide, up the plaza toward the pyramids and the sun (/vj/night 0)."><br><sub><b>Day, <code>CAM_0</code></b>: wide, up the plaza toward the pyramids and the sun (<code>/vj/night</code> 0).</sub></td>
+<td width="50%"><img src="docs/images/readme/planet-sunset-valley.jpg" alt="Sunset, CAM_0: the same view at /vj/night 0.3."><br><sub><b>Sunset, <code>CAM_0</code></b>: the same view at <code>/vj/night</code> 0.3.</sub></td>
 </tr>
 <tr>
-<td><img src="docs/images/readme/planet-valley-pyramids-day.jpg" alt="Day valley of lilac and pink hills with haze, small pyramids on the valley floor and a large pink sun"><br><sub><b>Pyramids, <code>CAM_2</code></b>: the pyramid hero shot by day, with haze between the hills.</sub></td>
-<td><img src="docs/images/readme/planet-pyramids-day.jpg" alt="Five dark pyramids on a magenta ground with a water strip at the left and a pink sun in a pale blue sky"><br><sub><b>Far pyramids, <code>CAM_9</code></b>: a pyramid group far from the valley, the sun behind it.</sub></td>
+<td width="50%"><img src="docs/images/readme/planet-pyramid-day.jpg" alt="Pyramid hero, CAM_2: close and low in front of the pyramids, by day."><br><sub><b>Pyramid hero, <code>CAM_2</code></b>: close and low in front of the pyramids, by day.</sub></td>
+<td width="50%"><img src="docs/images/readme/planet-sunset-pyramid.jpg" alt="Sunset, CAM_2: the same shot at /vj/night 0.3."><br><sub><b>Sunset, <code>CAM_2</code></b>: the same shot at <code>/vj/night</code> 0.3.</sub></td>
 </tr>
 <tr>
-<td><img src="docs/images/readme/planet-flamingos-day.jpg" alt="A large pink sun over a flat lake with many pink flamingos and their reflections, dark hills and palms on the horizon"><br><sub><b>Flamingos, <code>CAM_7</code></b>: a flock on the water next to the pyramids, low, looking toward the sun (<code>/vj/flamingos</code> sets the flock size).</sub></td>
-<td><img src="docs/images/readme/planet-river-day.jpg" alt="A water channel between two magenta hills with small palms on the left bank under a pale blue sky"><br><sub><b>River, <code>CAM_8</code></b>: a river running into the sea, looking downstream.</sub></td>
+<td width="50%"><img src="docs/images/readme/planet-pyramid-orbit.jpg" alt="Pyramid orbit, CAM_5: circles the pyramids above the ground; this is one moment of its path."><br><sub><b>Pyramid orbit, <code>CAM_5</code></b>: circles the pyramids above the ground; this is one moment of its path.</sub></td>
+<td width="50%"><img src="docs/images/readme/planet-flamingos.jpg" alt="Flamingos, CAM_7: a flock on the lake next to the pyramids, looking toward the sun (/vj/flamingos sets the flock size)."><br><sub><b>Flamingos, <code>CAM_7</code></b>: a flock on the lake next to the pyramids, looking toward the sun (<code>/vj/flamingos</code> sets the flock size).</sub></td>
 </tr>
 <tr>
-<td><img src="docs/images/readme/planet-coast-day.jpg" alt="Calm blue water filling the lower right with a mirrored pink hill at the left under a pale sky"><br><sub><b>Coast, <code>CAM_10</code></b>: a low pass along a coast with the sea on one side.</sub></td>
-<td><img src="docs/images/readme/planet-sun-hills-day.jpg" alt="A large orange-pink sun with a glow over low lilac hills at the bottom of a light blue sky"><br><sub><b>Sun over the hills, <code>CAM_3</code></b>: tilted up over the pyramids (at night this camera looks at the moon).</sub></td>
+<td width="50%"><img src="docs/images/readme/planet-river.jpg" alt="River, CAM_8: a river running into the sea, looking downstream."><br><sub><b>River, <code>CAM_8</code></b>: a river running into the sea, looking downstream.</sub></td>
+<td width="50%"><img src="docs/images/readme/planet-coast.jpg" alt="Coast, CAM_10: a low pass along a coast with the sea on one side; one moment of its path."><br><sub><b>Coast, <code>CAM_10</code></b>: a low pass along a coast with the sea on one side; one moment of its path.</sub></td>
 </tr>
 <tr>
-<td><img src="docs/images/readme/planet-orbit-moon.jpg" alt="Space with a starfield, a large grey cratered moon at the left and the planet as a dark sphere with pink land and blue water"><br><sub><b>Orbit, <code>CAM_6</code></b>: the whole planet in frame, with the moon. Space is dark even when the planet's ground is in daylight.</sub></td>
-<td><img src="docs/images/readme/planet-flight-night.jpg" alt="The planet as a sphere with pink land, blue water and a lit horizon band, a half-lit moon above and stars"><br><sub><b>Flight shot, <code>CAM_11</code></b>: the camera flying over the planet, at night with <code>/vj/grid</code> 0.</sub></td>
+<td width="50%"><img src="docs/images/readme/planet-fog.jpg" alt="Fog, CAM_0: /vj/fog 0.9 by day."><br><sub><b>Fog, <code>CAM_0</code></b>: <code>/vj/fog</code> 0.9 by day.</sub></td>
+<td width="50%"><img src="docs/images/readme/planet-orbit.jpg" alt="Orbit, CAM_6: the whole planet in frame with the moon, mostly on its dark side."><br><sub><b>Orbit, <code>CAM_6</code></b>: the whole planet in frame with the moon, mostly on its dark side.</sub></td>
+</tr>
+<tr>
+<td colspan="2"><img src="docs/images/readme/osc/grid-blender.jpg" alt="Night, CAM_0, /vj/grid 0 on the left and 1 on the right"><br><sub><b>Night, <code>CAM_0</code></b>: <code>/vj/night</code> 1, <code>/vj/grid</code> 0 on the left and 1 on the right. The cyan net is the ground's real triangle edges.</sub></td>
 </tr>
 </table>
 
-These are 960x540 review grabs from the planet's look rounds 11 and 12, not all from the same build, and they are not a promise of how every frame looks. The night shot has no matching frame with `/vj/grid` 0 of the same framing, and there is no sunset or fog frame yet.
+These are 960x540 grabs of the current build with the clocks frozen, one frame per picture; the controls not named are at their defaults. Two cameras move on a path (`CAM_5`, `CAM_10`), so another moment looks different.
 
 ## The Godot scene: Colossus
 
@@ -102,12 +105,12 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
-| `/vj/level` | The sun and its glow get stronger the louder the music is. | 0..1, default 0.5 | both | <img src="docs/images/readme/osc/level-godot.jpg" width="300" alt="/vj/level, Godot: low | high"><br><sub>Godot, low | high</sub> |
-| `/vj/bass` | Bass makes things hit harder: the glowing ground net and waterline in Blender, the shake and dust of each footfall in Godot. | 0..1, default 0 | both |  |
-| `/vj/beat` | Pulses on every beat: pyramid edges, stars and water glints in Blender, footfalls and dust puffs in Godot. | 0..1, default 0 | both |  |
-| `/vj/hue` | Turns all colours around the colour wheel. | 0..1, default 0 | Blender |  |
-| `/vj/intensity` | Makes the whole picture brighter or darker. | 0..1, default 0.5 | both | <img src="docs/images/readme/osc/intensity-godot.jpg" width="300" alt="/vj/intensity, Godot: low | high"><br><sub>Godot, low | high</sub> |
-| `/vj/strobe` | Flashes the picture to white; higher means a stronger flash. | 0..1, default 0 | Blender |  |
+| `/vj/level` | The sun and its glow get stronger the louder the music is. | 0..1, default 0.5 | both | <img src="docs/images/readme/osc/level-blender.jpg" width="360" alt="/vj/level, Blender: low | high"><br><sub>Blender, low | high</sub><br><img src="docs/images/readme/osc/level-godot.jpg" width="360" alt="/vj/level, Godot: low | high"><br><sub>Godot, low | high</sub> |
+| `/vj/bass` | Bass makes things hit harder: the glowing ground net and waterline in Blender, the shake and dust of each footfall in Godot. | 0..1, default 0 | both | <img src="docs/images/readme/osc/bass-blender.jpg" width="360" alt="/vj/bass, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/beat` | Pulses on every beat: pyramid edges, stars and water glints in Blender, footfalls and dust puffs in Godot. | 0..1, default 0 | both | <img src="docs/images/readme/osc/beat-blender.jpg" width="360" alt="/vj/beat, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/hue` | Turns all colours around the colour wheel. | 0..1, default 0 | Blender | <img src="docs/images/readme/osc/hue-blender.jpg" width="360" alt="/vj/hue, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/intensity` | Makes the whole picture brighter or darker. | 0..1, default 0.5 | both | <img src="docs/images/readme/osc/intensity-blender.jpg" width="360" alt="/vj/intensity, Blender: low | high"><br><sub>Blender, low | high</sub><br><img src="docs/images/readme/osc/intensity-godot.jpg" width="360" alt="/vj/intensity, Godot: low | high"><br><sub>Godot, low | high</sub> |
+| `/vj/strobe` | Flashes the picture to white; higher means a stronger flash. | 0..1, default 0 | Blender | <img src="docs/images/readme/osc/strobe-blender.jpg" width="360" alt="/vj/strobe, Blender: low | high"><br><sub>Blender, low | high</sub> |
 
 </details>
 
@@ -116,13 +119,13 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
-| `/vj/sun` | Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon. | 0..1, default 1 | Blender |  |
+| `/vj/sun` | Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/sun-blender.jpg" width="360" alt="/vj/sun, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/moon` | Makes the moon bigger or smaller. | 0..1, default 1 | Blender |  |
-| `/vj/moon_phase` | Changes the shape of the moon from new through half to full. | 0..1, default 1 | Blender |  |
-| `/vj/stars` | Fades the stars in or out. | 0..1, default 1 | Blender |  |
-| `/vj/night` | Turns day into night: 0 is day, a quarter is sunset, half is twilight, 1 is night. | 0..1, default 0 | Blender |  |
-| `/vj/nebula` | Fades in the coloured cloud in the night sky. | 0..1, default 1 | Blender |  |
-| `/vj/eclipse` | Lines the moon up with the sun and the planet for an eclipse. | 0..1, default 0 | Blender |  |
+| `/vj/moon_phase` | Changes the shape of the moon from new through half to full. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/moon_phase-blender.jpg" width="360" alt="/vj/moon_phase, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/stars` | Fades the stars in or out. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/stars-blender.jpg" width="360" alt="/vj/stars, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/night` | Turns day into night: 0 is day, a quarter is sunset, half is twilight, 1 is night. | 0..1, default 0 | Blender | <img src="docs/images/readme/osc/night-blender.jpg" width="360" alt="/vj/night, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/nebula` | Fades in the coloured cloud in the night sky. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/nebula-blender.jpg" width="360" alt="/vj/nebula, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/eclipse` | Lines the moon up with the sun and the planet for an eclipse. | 0..1, default 0 | Blender | <img src="docs/images/readme/osc/eclipse-blender.jpg" width="360" alt="/vj/eclipse, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/star_speed` | Makes the stars drift across the sky. | 0..1, default 0 | Blender |  |
 
 </details>
@@ -133,10 +136,10 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
 | `/vj/grid_speed` | Makes the glowing grid on the ground scroll faster. | 0..1, default 0.15 | Blender |  |
-| `/vj/pyramids` | Makes the pyramids rise out of the ground. | 0..1, default 1 | Blender |  |
-| `/vj/grid` | Shows the real triangle edges of the ground as a glowing net at night; by day there is none. | 0..1, default 1 | Blender |  |
-| `/vj/water` | Turns the reflections on the water up or down. | 0..1, default 1 | Blender |  |
-| `/vj/flamingos` | Makes the flock of flamingos bigger; 0 hides it. | 0..1, default 1 | Blender |  |
+| `/vj/pyramids` | Makes the pyramids rise out of the ground. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/pyramids-blender.jpg" width="360" alt="/vj/pyramids, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/grid` | Shows the real triangle edges of the ground as a glowing net at night; by day there is none. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/grid-blender.jpg" width="360" alt="/vj/grid, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/water` | Turns the reflections on the water up or down. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/water-blender.jpg" width="360" alt="/vj/water, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/flamingos` | Makes the flock of flamingos bigger; 0 hides it. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/flamingos-blender.jpg" width="360" alt="/vj/flamingos, Blender: low | high"><br><sub>Blender, low | high</sub> |
 
 </details>
 
@@ -145,15 +148,15 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
-| `/vj/fog` | More fog near the ground; at 1 it is dense autumn fog. | 0..1, default 0.35 | both | <img src="docs/images/readme/osc/fog-godot.jpg" width="300" alt="/vj/fog, Godot: low | high"><br><sub>Godot, low | high</sub> |
-| `/vj/fog_height` | Makes the fog bank taller or lower. | 0..1, default 0.41 | both | <img src="docs/images/readme/osc/fog_height-godot.jpg" width="300" alt="/vj/fog_height, Godot: low | high"><br><sub>Godot, low | high</sub> |
-| `/vj/fog_glow` | Makes the fog glow by itself. | 0..1, default 0.3 | Blender |  |
-| `/vj/fog_hue` | Tints the fog pink, violet or cyan. | 0..1, default 0 | Blender |  |
-| `/vj/fog_noise` | Makes the fog patchier. | 0..1, default 0.6 | Blender |  |
-| `/vj/fog_scale` | Makes the fog clouds bigger or smaller. | 0..1, default 0.25 | Blender |  |
-| `/vj/fog_speed` | Makes the wind push the fog along faster. | 0..1, default 0.25 | Blender |  |
-| `/vj/fog_beat` | Makes the fog pump with the beat. | 0..1, default 0.5 | Blender |  |
-| `/vj/haze` | Adds or removes the soft haze toward the horizon. | 0..1, default 1 | both | <img src="docs/images/readme/osc/haze-godot.jpg" width="300" alt="/vj/haze, Godot: low | high"><br><sub>Godot, low | high</sub> |
+| `/vj/fog` | More fog near the ground; at 1 it is dense autumn fog. | 0..1, default 0.35 | both | <img src="docs/images/readme/osc/fog-blender.jpg" width="360" alt="/vj/fog, Blender: low | high"><br><sub>Blender, low | high</sub><br><img src="docs/images/readme/osc/fog-godot.jpg" width="360" alt="/vj/fog, Godot: low | high"><br><sub>Godot, low | high</sub> |
+| `/vj/fog_height` | Makes the fog bank taller or lower. | 0..1, default 0.41 | both | <img src="docs/images/readme/osc/fog_height-blender.jpg" width="360" alt="/vj/fog_height, Blender: low | high"><br><sub>Blender, low | high</sub><br><img src="docs/images/readme/osc/fog_height-godot.jpg" width="360" alt="/vj/fog_height, Godot: low | high"><br><sub>Godot, low | high</sub> |
+| `/vj/fog_glow` | Makes the fog glow by itself. | 0..1, default 0.3 | Blender | <img src="docs/images/readme/osc/fog_glow-blender.jpg" width="360" alt="/vj/fog_glow, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/fog_hue` | Tints the fog pink, violet or cyan. | 0..1, default 0 | Blender | <img src="docs/images/readme/osc/fog_hue-blender.jpg" width="360" alt="/vj/fog_hue, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/fog_noise` | Makes the fog patchier. | 0..1, default 0.6 | Blender | <img src="docs/images/readme/osc/fog_noise-blender.jpg" width="360" alt="/vj/fog_noise, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/fog_scale` | Makes the fog clouds bigger or smaller. | 0..1, default 0.25 | Blender | <img src="docs/images/readme/osc/fog_scale-blender.jpg" width="360" alt="/vj/fog_scale, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/fog_speed` | Makes the wind push the fog along faster. | 0..1, default 0.25 | Blender | <img src="docs/images/readme/osc/fog_speed-blender.jpg" width="360" alt="/vj/fog_speed, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/fog_beat` | Makes the fog pump with the beat. | 0..1, default 0.5 | Blender | <img src="docs/images/readme/osc/fog_beat-blender.jpg" width="360" alt="/vj/fog_beat, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/haze` | Adds or removes the soft haze toward the horizon. | 0..1, default 1 | both | <img src="docs/images/readme/osc/haze-blender.jpg" width="360" alt="/vj/haze, Blender: low | high"><br><sub>Blender, low | high</sub><br><img src="docs/images/readme/osc/haze-godot.jpg" width="360" alt="/vj/haze, Godot: low | high"><br><sub>Godot, low | high</sub> |
 
 </details>
 
@@ -162,12 +165,12 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
-| `/vj/cam` | Cuts to camera number N; 0 is the first shot. | integer 0..11, default 0 | both | <img src="docs/images/readme/osc/cam-godot.jpg" width="300" alt="/vj/cam, Godot: the shots"><br><sub>Godot, the shots</sub> |
-| `/vj/cam_speed` | Makes the camera drift and fly faster or slower. | 0..1, default 0.25 | Blender |  |
-| `/vj/flight` | Steers the flying camera: 0 high orbit, then a landing approach, a skim over the mountains, and at 1 a hover over the water. | 0..1, default 0 | Blender |  |
+| `/vj/cam` | Cuts to camera number N; 0 is the first shot. | integer 0..11, default 0 | both | <img src="docs/images/readme/osc/cam-blender.jpg" width="360" alt="/vj/cam, Blender: the shots"><br><sub>Blender, the shots</sub><br><img src="docs/images/readme/osc/cam-godot.jpg" width="360" alt="/vj/cam, Godot: the shots"><br><sub>Godot, the shots</sub> |
+| `/vj/cam_speed` | Makes the camera drift and fly faster or slower. | 0..1, default 0.25 | Blender | <img src="docs/images/readme/osc/cam_speed-blender.jpg" width="360" alt="/vj/cam_speed, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/flight` | Steers the flying camera: 0 high orbit, then a landing approach, a skim over the mountains, and at 1 a hover over the water. | 0..1, default 0 | Blender | <img src="docs/images/readme/osc/flight-blender.jpg" width="360" alt="/vj/flight, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/boost` | Gives the flying camera a burst of speed with a wider view. | 0..1, default 0 | Blender |  |
-| `/vj/blend` | Makes a camera change fly smoothly to the new shot; 0 cuts at once. | 0..1, default 0.5 | Blender |  |
-| `/vj/energy` | Makes the camera move harder, from a slow wide glide to faster, tighter moves. | 0..1, default 0.3 | Blender |  |
+| `/vj/blend` | Makes a camera change fly smoothly to the new shot; 0 cuts at once. | 0..1, default 0.5 | Blender | <img src="docs/images/readme/osc/blend-blender.jpg" width="360" alt="/vj/blend, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/energy` | Makes the camera move harder, from a slow wide glide to faster, tighter moves. | 0..1, default 0.3 | Blender | <img src="docs/images/readme/osc/energy-blender.jpg" width="360" alt="/vj/energy, Blender: low | high"><br><sub>Blender, low | high</sub> |
 
 **Cameras for `/vj/cam`**: the number picks the shot.
 
@@ -178,9 +181,9 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 | 0 | Plaza View | A wide view from 70 m up, looking up the plaza toward the pyramids and the sun. It stands still. | <img src="docs/images/readme/osc/cam-planet-0.jpg" width="200" alt="planet, shot 0"> |
 | 1 | River Skim | A low view 9 m over the nearest river, looking downstream along the water. It stands still. | <img src="docs/images/readme/osc/cam-planet-1.jpg" width="200" alt="planet, shot 1"> |
 | 2 | Pyramid Hero | Close and low in front of the pyramids, the main pyramid shot. It stands still. | <img src="docs/images/readme/osc/cam-planet-2.jpg" width="200" alt="planet, shot 2"> |
-| 3 | Moon Watch | Low among the hills, tilted up over the pyramids to follow the moon. It stands still. | <img src="docs/images/readme/osc/cam-planet-3.jpg" width="200" alt="planet, shot 3"> |
-| 4 | Pole Flyover | Flies a loop around the planet's pole over the hills, looking ahead along its path. |  |
-| 5 | Pyramid Orbit | Circles the pyramids above the ground, always looking at them. |  |
+| 3 | Moon Watch | Low among the hills, tilted up over the pyramids; at night it follows the moon. It stands still. | <img src="docs/images/readme/osc/cam-planet-3.jpg" width="200" alt="planet, shot 3"> |
+| 4 | Pole Flyover | Flies a loop around the planet's pole over the hills, looking ahead along its path. | <img src="docs/images/readme/osc/cam-planet-4.jpg" width="200" alt="planet, shot 4"> |
+| 5 | Pyramid Orbit | Circles the pyramids above the ground, always looking at them. | <img src="docs/images/readme/osc/cam-planet-5.jpg" width="200" alt="planet, shot 5"> |
 | 6 | Planet Orbit | Circles the whole Planet from space, with the Planet and the moon in frame. | <img src="docs/images/readme/osc/cam-planet-6.jpg" width="200" alt="planet, shot 6"> |
 | 7 | Flamingo Lake | Low over the water next to the pyramids, looking toward the sun, with the flamingo flock on the lake. It stands still. | <img src="docs/images/readme/osc/cam-planet-7.jpg" width="200" alt="planet, shot 7"> |
 | 8 | River Mouth | Looks downstream along a river as it runs into the sea. It stands still. | <img src="docs/images/readme/osc/cam-planet-8.jpg" width="200" alt="planet, shot 8"> |
@@ -192,13 +195,13 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 
 | Number | Name | What it shows | Picture |
 |---|---|---|---|
-| 0 | Plaza View | A wide view from 70 m up, looking up the plaza toward the pyramids. It stands still. |  |
-| 1 | Valley Low | A very wide lens 14 m up, looking toward the pyramids from 550 m before them. It stands still. |  |
-| 2 | Pyramid Hero | Close and low beside the pyramids, looking at the main pyramid. It stands still. |  |
-| 3 | Moon Watch | Low to the ground, tilted steeply up into the sky toward the moon. It stands still. |  |
-| 4 | Flyover | Flies a loop on a path, looking ahead along it. |  |
-| 5 | Pyramid Orbit | Circles the pyramids on a path, always looking at them. |  |
-| 6 | Wide Orbit | Circles on a wide path, looking at a point just north of the pyramids. |  |
+| 0 | Plaza View | A wide view from 70 m up, looking up the plaza toward the pyramids. It stands still. | <img src="docs/images/readme/osc/cam-island-0.jpg" width="200" alt="island, shot 0"> |
+| 1 | Valley Low | A very wide lens 14 m up, looking toward the pyramids from 550 m before them. It stands still. | <img src="docs/images/readme/osc/cam-island-1.jpg" width="200" alt="island, shot 1"> |
+| 2 | Pyramid Hero | Close and low beside the pyramids, looking at the main pyramid. It stands still. | <img src="docs/images/readme/osc/cam-island-2.jpg" width="200" alt="island, shot 2"> |
+| 3 | Moon Watch | Low to the ground, tilted up into the sky over the pyramids' valley. It stands still. | <img src="docs/images/readme/osc/cam-island-3.jpg" width="200" alt="island, shot 3"> |
+| 4 | Flyover | Flies a loop on a path, looking ahead along it. | <img src="docs/images/readme/osc/cam-island-4.jpg" width="200" alt="island, shot 4"> |
+| 5 | Pyramid Orbit | Circles the pyramids on a path, always looking at them. | <img src="docs/images/readme/osc/cam-island-5.jpg" width="200" alt="island, shot 5"> |
+| 6 | Wide Orbit | Circles on a wide path, looking at a point just north of the pyramids. | <img src="docs/images/readme/osc/cam-island-6.jpg" width="200" alt="island, shot 6"> |
 
 *Godot, Colossus*
 
@@ -218,9 +221,9 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
-| `/vj/shock` | A shock wave runs over the land once; in Godot the giant shakes while the Wanderer is on it. | trigger 0..1.5, default 0 | both | <img src="docs/images/readme/osc/shock-godot.jpg" width="300" alt="/vj/shock, Godot: before | during"><br><sub>Godot, before | during</sub> |
+| `/vj/shock` | A shock wave runs over the land once; in Godot the giant shakes while the Wanderer is on it. | trigger 0..1.5, default 0 | both | <img src="docs/images/readme/osc/shock-blender.jpg" width="360" alt="/vj/shock, Blender: before | during"><br><sub>Blender, before | during</sub><br><img src="docs/images/readme/osc/shock-godot.jpg" width="360" alt="/vj/shock, Godot: before | during"><br><sub>Godot, before | during</sub> |
 | `/vj/meteor` | A shooting star crosses the sky. | trigger 0..1, default 0 | Blender |  |
-| `/vj/hit` | A quick surge of speed with a wide-angle kick on the camera. | trigger 0..1, default 0 | Blender |  |
+| `/vj/hit` | A quick surge of speed with a wide-angle kick on the camera. | trigger 0..1, default 0 | Blender | <img src="docs/images/readme/osc/hit-blender.jpg" width="360" alt="/vj/hit, Blender: before | during"><br><sub>Blender, before | during</sub> |
 
 </details>
 
