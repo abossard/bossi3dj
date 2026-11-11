@@ -7,7 +7,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 - 2026-11-11: the Blender side is wrapped up and pushed (`integration/presentable`). Focus is the Godot Colossus Scene.
 - Blender, where it stands: one command (`make blender-open`) to a checked start state; planet 36 of 37 controls with an effect from the page's "Check all" (the one without is island only by design); no dummy wireframe, real mesh edges at night by `/vj/grid`; Flight shot `CAM_11`; Magic drives it straight on udp 9201.
 - Blender, left open on purpose: fps table and cut stalls on an idle machine, the island's self-check rerun (30 of 37 on 2026-11-10), the Flight shot's streamed terrain at full size, the cause of the two builds without night edges (a guard catches them), CAM_4 and CAM_5 look items of round 9, the picture inside Magic.
-- Godot now (session G4, running): real models. Stage 1 done ([cost report](docs/reports/godot-model-cost.md)): Nomad (Wanderer, 43.8k triangles, 53 bones after simplifying, 24 MB textures) and Grock (Colossus 1, 48.7k, 17 bones, 10.7 MB) cost 0.2 to 0.5 ms over the stand-ins and draw fewer calls; Godot's own LODs carry the long walk. `make godot-models` prepares them from `~/Downloads`; sources in [MODELS.md](godot/colossus/assets/MODELS.md). Stage 2 (Wanderer with clips and IK) is running, stage 3 is Grock in the scene. Mixamo so far only Idle, Idle-2, Kneeling Idle. The prepared models were committed once by mistake; the unpushed commits were rebuilt without them on 2026-11-11 (7c6633c, c1ab047), so no model file is in the branch's history.
+- Godot now (session G4, [notes](docs/handover/godot-models.md), [cost report](docs/reports/godot-model-cost.md), sources in [MODELS.md](godot/colossus/assets/MODELS.md); no model file in git, `make godot-models` prepares them from `~/Downloads`): stage 1 done, both models cost 0.2 to 0.5 ms over the stand-ins. Stage 2 done (2026-11-11): the Nomad is the Wanderer on Mixamo clips (idle, walk, run, shimmy left) through runtime retargeting, with feet on the land, hands on the grips by IK and a look-at; walk slide 0.08 m/s, hands 1.4 cm off the grip, 397 logic tests; the animated Wanderer costs 0.14 to 0.42 ms over the stand-in. Low hero shot: the camera rises until it sees him over the Shrine slope (he was hidden by it): 244 px, contrast 0.71. Look round 4: 26 of 27 pass; `4-shake-close-grip` fails (only his hands in frame). Stage 3 running: Grock as Colossus 1. Mixamo clips still to download: Braced Hang, Right Braced Hang Shimmy, Climbing Up Wall, Climbing Down Wall, Hanging Idle, Falling Idle, Standing Up; each slot has a fallback until then.
 - Run history: graph, nodes and rules in [docs/handover/presentable-plan.md](docs/handover/presentable-plan.md).
 
 ## Origin
@@ -66,7 +66,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 - Eclipse in space: the moon's shadow on the Planet, or lining up per space camera.
 - Bend the straight show valley, or keep it.
 - Keep godot-mcp, or remove the addon and autoload.
-- The remaining Mixamo clips (walk, run, braced hang idle, shimmy left and right, climb up and down, hanging swing, fall idle, stand up); Scenario OAuth.
+- Seven Mixamo clips (Braced Hang, Right Braced Hang Shimmy, Climbing Up Wall, Climbing Down Wall, Hanging Idle, Falling Idle, Standing Up); Scenario OAuth.
 
 ## Checked after the import (2026-11-10)
 
