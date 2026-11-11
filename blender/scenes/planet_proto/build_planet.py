@@ -4052,6 +4052,7 @@ def lod_sets():
             if GRAFT:
                 rtm.set_input(birds_ob, "Anchor", a)
                 bake_points(birds_ob.evaluated_get(bpy.context.evaluated_depsgraph_get()).data, "Flock." + key)
+                print("PLANET flock %s: %d points" % (key, len(bpy.data.meshes["Flock." + key].vertices)))
             keys.append(key)
         co["lod_sets"] = keys
     S["rt_cam_phase"] = 0.0
@@ -4092,5 +4093,8 @@ for scr in bpy.data.screens:
             sp_.shading.type = "RENDERED"
             sp_.clip_start, sp_.clip_end = 2.0, 1.0e6       # a free view zoomed out over the whole system
             sp_.region_3d.view_perspective = "CAMERA"
+for img_ in bpy.data.images:      # maps next to the scene file by a relative path: a build made elsewhere keeps them
+    if img_.source == "FILE" and img_.filepath and os.path.isabs(bpy.path.abspath(img_.filepath)) and not img_.filepath.startswith("//"):
+        img_.filepath = bpy.path.relpath(img_.filepath, start=os.path.dirname(OUT))
 bpy.ops.wm.save_as_mainfile(filepath=OUT, compress=True, relative_remap=True)
 print("PLANET saved %s (graft=%s), CAM_0 at %s, river shot: %s" % (OUT, GRAFT, tuple(round(c, 1) for c in c0.location), bool(best)))

@@ -2,7 +2,12 @@
   "round": 12,
   "rubric": "blender/review/rubric-round12.md",
   "build": "9a8d405 (committed scene, opened fresh) and the same scene after a re-evaluation of PL_Land's Triangulate node (mute off/on, not saved)",
-  "counts": {"pass": 29, "fail": 1, "needs_full_size": 1, "shots": 31},
+  "counts": {
+    "pass": 29,
+    "fail": 1,
+    "needs_full_size": 1,
+    "shots": 31
+  },
   "states": {
     "A_fresh_open": "night edges absent: CAM_0, CAM_1, CAM_3, CAM_4 with /vj/grid 1 show no lines (net_regularity: share 0.008, 0.011, 0.012, no window with lines)",
     "B_after_retriangulate": "night edges present (share 0.115, 0.131, 0.124)"
@@ -10,20 +15,87 @@
   "R12-NET": {
     "A_fresh_open": "pass, vacuously (no edges drawn at all)",
     "B": {
-      "CAM_0": {"verdict": "fail", "words": "Bottom plain (y 360-540, full width): stacked rows of short horizontal dashes running left to right. Left hillside (x 0-300, y 70-300): dense family of parallel dashes running down-left to up-right. CAM_0 reads as a lattice on the plain and the left hill; the rows and the parallel diagonal streaks are regular."},
-      "CAM_1": {"verdict": "pass", "words": "Slopes show clearly irregular triangles at mixed angles. Borderline: lower plain patches (y 420-540) show horizontal dash rows, fragmented and mostly small."},
-      "CAM_3": {"verdict": "pass", "words": "Both mid slopes show an irregular triangle net with varied angles and no parallel family."},
-      "CAM_4_fly_b": {"verdict": "pass", "words": "Only a small ridge strip at the bottom has edges, an irregular net."}
+      "CAM_0": {
+        "verdict": "fail",
+        "words": "Bottom plain (y 360-540, full width): stacked rows of short horizontal dashes running left to right. Left hillside (x 0-300, y 70-300): dense family of parallel dashes running down-left to up-right. CAM_0 reads as a lattice on the plain and the left hill; the rows and the parallel diagonal streaks are regular."
+      },
+      "CAM_1": {
+        "verdict": "pass",
+        "words": "Slopes show clearly irregular triangles at mixed angles. Borderline: lower plain patches (y 420-540) show horizontal dash rows, fragmented and mostly small."
+      },
+      "CAM_3": {
+        "verdict": "pass",
+        "words": "Both mid slopes show an irregular triangle net with varied angles and no parallel family."
+      },
+      "CAM_4_fly_b": {
+        "verdict": "pass",
+        "words": "Only a small ridge strip at the bottom has edges, an irregular net."
+      }
     },
-    "CAM_11_flight": {"verdict": "needs_full_size", "words": "No edges visible with /vj/grid 1, looks the same as grid0 and the warm-up; the planet disc is about 140 px wide in the sheet, edges would be sub-pixel. Not judged. Numbers: round 12 note."}
+    "CAM_11_flight": {
+      "verdict": "needs_full_size",
+      "words": "No edges visible with /vj/grid 1, looks the same as grid0 and the warm-up; the planet disc is about 140 px wide in the sheet, edges would be sub-pixel. Not judged. Numbers: round 12 note."
+    }
   },
   "R12-R10": "pass: no lattice or stray overlay pattern like the counterexample in any frame; edges render as broken dashes read as aliasing of real edges. No lines by day in any frame.",
   "R12-DAY": "pass on CAM_0 to CAM_3 and the orbit hand-over frame (smooth shading, no cracks or seams); CAM_4 to CAM_10 show sky or space only. No round 11 images were given, so judged on the absence of faceting, seams and holes only.",
   "R12-WATER": "pass: no new lakes on the plains, no wall water in the frames that show water (CAM_11, hand-over frame).",
   "shots": {
-    "night_A_committed": {"CAM_0_grid1": "pass", "CAM_0_grid0": "pass", "CAM_1_grid1": "pass", "CAM_1_grid0": "pass", "CAM_3_grid1": "pass", "CAM_3_grid0": "pass", "CAM_4_grid1": "pass"},
-    "night_B_retri": {"CAM_0_grid1": "fail R12-NET", "CAM_0_grid0": "pass", "CAM_1_grid1": "pass", "CAM_1_grid0": "pass", "CAM_3_grid1": "pass", "CAM_3_grid0": "pass", "CAM_4_grid1": "pass"},
-    "day": {"CAM_0": "pass", "CAM_1": "pass", "CAM_2": "pass", "CAM_3": "pass", "CAM_4": "pass", "CAM_5": "pass", "CAM_6": "pass", "CAM_7": "pass", "CAM_8": "pass", "CAM_9": "pass", "CAM_10": "pass"},
-    "flight_fly_orbit": {"CAM_11_warm": "pass", "CAM_11_grid1": "needs_full_size", "CAM_11_grid0": "pass", "CAM_4_fly_a": "pass", "CAM_4_fly_b": "pass", "S9_pull_2_10k_day_handover": "pass"}
-  }
+    "night_A_committed": {
+      "CAM_0_grid1": "pass",
+      "CAM_0_grid0": "pass",
+      "CAM_1_grid1": "pass",
+      "CAM_1_grid0": "pass",
+      "CAM_3_grid1": "pass",
+      "CAM_3_grid0": "pass",
+      "CAM_4_grid1": "pass"
+    },
+    "night_B_retri": {
+      "CAM_0_grid1": "fail R12-NET",
+      "CAM_0_grid0": "pass",
+      "CAM_1_grid1": "pass",
+      "CAM_1_grid0": "pass",
+      "CAM_3_grid1": "pass",
+      "CAM_3_grid0": "pass",
+      "CAM_4_grid1": "pass"
+    },
+    "day": {
+      "CAM_0": "pass",
+      "CAM_1": "pass",
+      "CAM_2": "pass",
+      "CAM_3": "pass",
+      "CAM_4": "pass",
+      "CAM_5": "pass",
+      "CAM_6": "pass",
+      "CAM_7": "pass",
+      "CAM_8": "pass",
+      "CAM_9": "pass",
+      "CAM_10": "pass"
+    },
+    "flight_fly_orbit": {
+      "CAM_11_warm": "pass",
+      "CAM_11_grid1": "needs_full_size",
+      "CAM_11_grid0": "pass",
+      "CAM_4_fly_a": "pass",
+      "CAM_4_fly_b": "pass",
+      "S9_pull_2_10k_day_handover": "pass"
+    }
+  },
+  "rebuilt": {
+    "build": "scene rebuilt in this checkout (make blender-rebuild), fresh open; supersedes states A and B",
+    "R12-NET": {
+      "CAM_0": {
+        "verdict": "pass",
+        "words": "Short dashes at mixed angles, no evenly spaced parallel family, no long collinear run. The lower plain leans horizontal, but dash lengths and offsets are irregular."
+      },
+      "CAM_1": {
+        "verdict": "pass",
+        "words": "Irregular triangle net with edges in varied directions; no straight run longer than about five cells."
+      },
+      "CAM_3": "no terrain in frame, not evidence",
+      "CAM_4": "no terrain in frame, not evidence"
+    },
+    "numbers": "longest run 193, 269, 26 px (round 11: 196, 275, 33); see docs/handover/planet-look-round12.md"
+  },
+  "note": "The first scene (committed 9a8d405 as opened) drew no night edge, the re-triangulated state B failed on CAM_0; the rebuilt scene is the one that counts."
 }

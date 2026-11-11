@@ -52,35 +52,44 @@ Built with hashed diagonals (b1154c6), the night edges almost vanished. Live exp
 
 Committed scene (9a8d405) opened with `make blender-open`, health clean, all image paths exist (star and moon maps absolute under the main checkout, so no magenta sky; `Fog_Floor` has no file, generated).
 
-**Finding: the night edges depend on state, not on the diagonal.** Opened fresh, the committed build draws almost no night edge (state A). After only muting and unmuting `PL_Land`'s Triangulate node in the open scene, the edges are there (state B). Evaluated meshes are all triangles in B (CAM_0 land 215895 vertices, 379306 triangles, water 9392); state A's mesh was not read before the toggle. So the round 12 conclusion "hashed diagonals blank EEVEE's Wireframe node" is doubtful: the b1154c6 vanish and the committed vanish look like the same fresh-load state, and every live experiment that touched a node flipped to B.
+**Finding: the committed scene (9a8d405, built headless by the orchestrator) drew no night edge when opened (state A); only touching `PL_Land`'s Triangulate in the open scene brought the edges (state B). The scene rebuilt in this session (`make blender-rebuild` in this checkout) draws them on a fresh open. Cause of the blank state not found (the evaluated mesh in B is all triangles; the one in A was not read). The round 12 claim "hashed diagonals blank EEVEE's Wireframe node" is therefore doubtful: the b1154c6 vanish probably was this blank state too.**
 
-`net_regularity.py`, night `/vj/grid` 1 over 0 (grabs in `out/round12/`, git-ignored):
+`net_regularity.py`, night `/vj/grid` 1 over 0. "Rebuilt" = fresh open of the rebuilt scene (the numbers that count, `out/round12/fresh2/`); A and B = the old committed scene (`grabs/`, `grabs_retri/`).
 
 | | line share | longest run (px) | direction share median | spectrum peak median |
 |---|---|---|---|---|
 | CAM_0 before (round 11) | 0.095 | 196 | 0.305 | 73 |
-| CAM_0 A (fresh open) | 0.008, no window with lines | | | |
-| CAM_0 B | 0.115 | 315 | 0.705 | 74 |
+| CAM_0 rebuilt | 0.121 | 193 | 0.350 | 43 |
+| CAM_0 old A / B | 0.008, no lines / 0.115 | 315 | 0.705 | 74 |
 | CAM_1 before | 0.126 | 275 | 0.310 | 114 |
-| CAM_1 A | 0.011, none | | | |
-| CAM_1 B | 0.131 | 293 | 0.591 | 138 |
+| CAM_1 rebuilt | 0.133 | 269 | 0.401 | 133 |
+| CAM_1 old A / B | 0.011, no lines / 0.131 | 293 | 0.591 | 138 |
 | CAM_3 before | 0.013 | 33 | 0.381 | 13 |
-| CAM_3 A | 0.012, none | | | |
-| CAM_3 B | 0.124 | 308 | 0.280 | 34 |
+| CAM_3 rebuilt | 0.013 | 26 | 0.379 | 9 |
+| CAM_3 old A / B | 0.012, no lines / 0.124 | 308 | 0.280 | 34 |
 
-- In B the longest straight run is longer than before on all three cameras and the direction share is up (one diagonal family): the numbers say the net is not more irregular. A first B grab of CAM_0 gave share 0.26, run 350 (the state was still settling).
+- Rebuilt: the longest straight run is the same as round 11 (193, 269, 26 against 196, 275, 33); only the CAM_0 spectrum peak falls (73 to 43). The jitter did not shorten straight runs; the numbers do not show a clearly more irregular net.
+- Reviewer on the rebuilt frames (full size 960x540): CAM_0 and CAM_1 pass R12-NET ("short dashes at mixed angles, no evenly spaced parallel family, no long collinear run"; CAM_0 foreground plain leans to loose horizontal rows, broken and uneven; CAM_1 irregular triangle net). CAM_3 and CAM_4 show no terrain at night, so they are no evidence. On the old scene in state B the same reviewer failed CAM_0 (lattice on the plain and the left hill).
 - Verdicts (`shot-reviewer`, 31 shots): 29 pass, 1 fail, 1 not judged. A is blank at night (R12-NET passes vacuously). B: CAM_0 fails R12-NET (lower plain: stacked rows of short horizontal dashes; left hill: dense family of diagonal dashes up to the right; "reads as a lattice"), CAM_1 and CAM_3 and the CAM_4 flyover pass ("irregular triangle net", CAM_1 borderline on the foreground plain). CAM_11 (Flight, streamed terrain): no edges visible, same as grid 0, but the planet disc is 140 px wide, edges sub-pixel, not judged. R12-R10, R12-DAY, R12-WATER pass (day judged without round 11 images).
 - `grid_numbers.py` night (state B, load 80): `/vj/grid` 0 pair mad 20.1 (round 11: 0.07), `/vj/grid` 1 pair mad 4.7, line overlap 0.19 (round 11: 0.78). The grid 0 pair already differs by 20: something else moved in the frame during the run, so the pair is not clean and says nothing about lines moving. Repeat in a quiet moment.
 - `ground_check.py`: no misses; 9 floats (round 11: 10), largest 12.1 m at 5.3 km (CAM_4 @0.25, 1.6 px; round 11: 11.1 m, 1.47 px); the biggest in pixels is CAM_3 @0 with 2.7 m at 5.2 px (round 11 largest 1.47 px). `ground_check.py` now picks the `on_cut` handler of the planet runtime: the Flight runtime has one too and the script failed with `KeyError: 'nearest_set'`.
 - Skipped: frame times (`fps_trustworthy` false, load 83), `ab_round11.py`, `cut_jobs.py` (load). LOD build times unchanged from above.
-- Sheets for the user: `docs/images/2026-11-11/planet-round12-night.jpg` (state B, CAM_0, 1, 3, 4, grid 0 left, 1 right; made with `blender/review/user_night_sheet.sh`) and `planet-round12-day.jpg`.
+- Sheets for the user (from the rebuilt scene): `docs/images/2026-11-11/planet-round12-night.jpg` (CAM_0, 1, 3, 4, grid 0 left, 1 right; `blender/review/user_night_sheet.sh`; CAM_3 and CAM_4 show only sky at night) and `planet-round12-day.jpg`.
 
 ## Open items
 
-1. Decide what state the show opens in: fresh open draws no night edge on the planet. Find out why a fresh load differs from a re-evaluated Triangulate (check: touch only `update_tag`, no node change, on a fresh open) before judging any more mesh lever.
-2. R12-NET fails on CAM_0 in B. Remaining levers, the user's call: jitter up to 0.35 (fold limit), option C (no night edges on the planet).
-3. Flamingos and map paths: part 2 of this session, see below if done.
+1. The old committed scene opened blank at night; find why before relying on a headless build from another checkout (the maps point at the main checkout, the rebuild here is fine).
+2. R12-NET passes on the reviewer's reading of CAM_0 and CAM_1 in the rebuilt scene, but the numbers (longest run, one diagonal family) are no better than round 11. Levers if the user wants more: jitter up to 0.35 (fold limit), option C (no night edges on the planet).
+3. `CAM_0` flamingos: see Part 2 below, still open.
 4. Streamed Flight terrain (`FLT_Lod`) is not jittered: needs a full-size CAM_11 frame to judge.
+
+## Part 2 (build fixes)
+
+- Map paths: the build now stores every file image relative to the scene file (`//planet_proto/starmaps/...`), checked after the rebuild: six paths, all relative, all exist.
+- Flamingos, not fixed. `FLOCK_DENSITY` 24 to 96 gave `Flock.CAM_0.0` 96 points (CAM_1 1004, CAM_10 about 3000), but none in the frame: one flock stands 2.9 km ahead just right of the frame edge, the others behind the camera. `vj_flamingos` still showed no effect on CAM_0. CAM_0's view holds no water, so a flock there needs water in the frame (a lake or river), a terrain decision; density reverted to 24 (flock points: CAM_0 0, CAM_1 225, CAM_6 0 as before). The build now prints `PLANET flock <set>: N points`.
+- Rebuild takes about 8 minutes.
+- Fresh open of the final rebuild (this checkout): `health.py` clean, CAM_0 night line share 0.133 (`/vj/grid` 1 over 0, `out/round12/fresh3/`; an earlier fresh open of the same build before the density revert 0.121), `make blender-check ARGS="--only vj_grid,vj_bass --no-fallback"`: both effect (46.3x and 23.4x the floor). `make test` exit 0.
+- So the blank night edges came with the committed scene file built headless from another place (9a8d405), not with this checkout's build: two fresh opens of builds made here draw the edges without any touch. Whether the headless build differs (which Blender, which cwd) is not found; the committed `.blend` is now the rebuild made here.
 
 ## Commands
 
