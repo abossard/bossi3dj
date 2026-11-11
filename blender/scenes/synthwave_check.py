@@ -76,6 +76,7 @@ PRECONDITIONS = {
     "vj_cam_speed": {"cams": [4], "advance": 1.0, "reads": ["rt_cam_phase"], "why": "only shots on a path move with it"},
     "vj_fog_speed": {"set": {"vj_fog": 0.8}, "advance": 1.0, "reads": ["rt_fog_phase"], "why": "wind moves the fog bank"},
     "vj_star_speed": {"set": {"vj_night": 1.0}, "advance": 2.0, "reads": ["py:star_system.sync"], "why": "the stars drift against the sun"},
+    "vj_flamingos": {"cams": [7], "why": "planet: a flock needs water in view: CAM_0 shows none, CAM_1's flock is too small at preview size (0.01 % of the pixels), CAM_7 shows it"},
     "vj_water": {"cams": [1], "why": "the sea shows from the low river shot"},
     "vj_fog_height": {"set": {"vj_fog": 0.7}, "why": "needs a fog bank"},
     "vj_fog_glow": {"set": {"vj_fog": 1.0, "vj_night": 0.5}, "why": "self-glow of a dense fog bank shows at dusk"},
