@@ -11,13 +11,20 @@ const TEST_PORT := 19202
 const FRAME := Vector2(1920, 1080)
 ## Distances Wanderer to Colossus: -1 is where the Wanderer really starts (at the Shrine, on its
 ## slope), then the walk down the plain.
-const GAPS := [-1.0, 1000.0, 450.0, 300.0, 150.0]
+const GAPS := [-1.0, 1500.0, 1000.0, 700.0, 450.0, 300.0, 150.0, 60.0, 25.0]
 ## The Colossus reads as a silhouette from this height on (about a tenth of the frame).
 const MIN_COLOSSUS_PX := 100.0
+## The low hero shot gives up size for the Wanderer: the giant may shrink to this height.
+const HERO_MIN_COLOSSUS_PX := 20.0
+## Time runs this much faster while the Wanderer walks on his own, sampled every real half second.
+const WALK_TIME_SCALE := 10.0
+const WALK_SECONDS := 25.0
 ## The shots the director cuts to in Approach that frame the Colossus; the over-shoulder and the
 ## close grip frame the Wanderer, and the Colossus only when he hangs on it.
 const COLOSSUS_SHOTS := [1, 2, 5]
 const WANDERER_SHOTS := [3, 4]
+## The low hero shot holds the Wanderer too, whole at every distance; the Colossus may shrink.
+const HERO_SHOT := 2
 ## The Colossus differs from the sky beside it by this share of the sky's brightness at least.
 const MIN_CONTRAST := 0.15
 
@@ -128,12 +135,20 @@ func _wanderer_in_frame() -> bool:
 	return feet["inside"] or head["inside"]
 
 
+## The Wanderer's feet and head are both in frame.
+func _wanderer_whole() -> bool:
+	var cam := main.output.get_camera_3d()
+	var feet := _on_screen(cam, main.wanderer.global_position)
+	var head := _on_screen(cam, main.wanderer.global_position + Vector3.UP * 1.7)
+	return feet["inside"] and head["inside"]
+
+
 func _pin(shot: int) -> void:
 	main.vj.apply("/vj/cam_auto", 0.0, VjSignals.SOURCE_PAGE)
 	main.vj.apply("/vj/cam", float(shot - 1), VjSignals.SOURCE_PAGE)
 
 
-func _walk_table() -> void:
+func _gap_table() -> void:
 	for gap: float in GAPS:
 		for shot in range(1, 6):
 			_pin(shot)
@@ -174,6 +189,45 @@ func _walk_table() -> void:
 				)
 			if shot in WANDERER_SHOTS:
 				_check(seen, "shot %d at %d m: wanderer in frame" % [shot, real_gap])
+
+
+## The low hero shot while the Wanderer walks on his own (the camera lags behind him), from the real
+## start down the Shrine's slope and from 300 m on the plain: he stays whole in frame throughout.
+func _walk_table() -> void:
+	for gap: float in [-1.0, 300.0]:
+		_pin(HERO_SHOT)
+		if gap < 0.0:
+			main.wanderer.place_at(Land.SHRINE + ColossusMain.SHRINE_START)
+		else:
+			var c := main.colossus.global_position
+			main.wanderer.place_at(Vector3(c.x, 0.0, c.z + gap))
+		main.director.snap()
+		await _wait(1.5)
+		Engine.time_scale = WALK_TIME_SCALE
+		var seen := 0
+		var samples := 0
+		var px_min := INF
+		var t := 0.0
+		while t < WALK_SECONDS:
+			await _wait(0.5)
+			t += 0.5
+			if main.wanderer.global_position.distance_to(main.colossus.global_position) < 30.0:
+				break
+			samples += 1
+			px_min = minf(px_min, _colossus()["px"])
+			if _wanderer_whole():
+				seen += 1
+		Engine.time_scale = 1.0
+		var left := main.wanderer.global_position.distance_to(main.colossus.global_position)
+		print(
+			(
+				"low hero walking from %s: wanderer whole on %d of %d, %d m left, colossus %d px at least"
+				% ["the start" if gap < 0.0 else "300 m", seen, samples, left, px_min]
+			)
+		)
+		_check(
+			seen == samples, "low hero walking from %d m keeps the Wanderer whole in frame" % gap
+		)
 
 
 ## The Wanderer hangs on the Colossus (Climb), a Shake starts, the close-grip shot holds him.
@@ -219,6 +273,7 @@ func _run() -> void:
 			main.vj.apply(args[i], float(args[i + 1]), VjSignals.SOURCE_PAGE)
 		print("set %s %s" % [args[i], args[i + 1]])
 	await _wait(3.0)
+	await _gap_table()
 	await _walk_table()
 	await _shake_table()
 	print("%d failed" % _failed)

@@ -15,11 +15,11 @@ const CLOSE_BACK := 3.0
 ## Beyond this gap (m) the low hero shot goes telephoto: its own lens shows the giant under 100 px
 ## (about a tenth of the frame). The over-shoulder and close-grip shots stay on the Wanderer.
 const HERO_RANGE := 200.0
-## The narrowest lens (degrees of field of view) the long walk uses, per shot, and the widest that
-## still holds the Wanderer in the low hero frame (past it the giant would be under 60 px).
+## The narrowest lens (degrees of field of view) the long walk uses, per shot.
 const WIDE_NARROWEST := 6.0
 const HERO_NARROWEST := 8.0
-const HERO_WIDEST_WITH_WANDERER := 14.0
+## The low hero lens spans the Wanderer and the giant by this factor, so both sit inside the frame.
+const HERO_SPAN_MARGIN := 1.5
 
 var wanderer: Wanderer
 var colossus: Colossus
@@ -179,7 +179,7 @@ func _place(delta: float) -> void:
 		Shots.Shot.LOW_HERO:
 			_want_pos = w + side * 3.5 - dir * 2.0 + Vector3.DOWN * 0.8
 			if gap > HERO_RANGE:
-				_long_walk(w, HERO_BACK, 1.5, -0.8, HERO_NARROWEST, true)
+				_long_walk(w, HERO_BACK, 1.5, -0.8, HERO_NARROWEST)
 			else:
 				_want_aim = head
 		Shots.Shot.OVER_SHOULDER:
@@ -225,29 +225,38 @@ func _place(delta: float) -> void:
 
 
 ## The long walk as a telephoto frame: the camera `back` m behind the Wanderer, `aside` m to his
-## side and `rise` m above his eye, aimed at the middle of the Colossus. The lens fits the giant in,
-## never wider than the shot's own and never narrower than `narrowest` degrees. With `keep_wanderer`
-## it widens as far as HERO_WIDEST_WITH_WANDERER to hold him too; where the ground behind him climbs
-## (the Shrine's slope) he would not fit and the frame is the giant's alone.
-func _long_walk(
-	w: Vector3, back: float, aside: float, rise: float, narrowest: float, keep_wanderer: bool
-) -> void:
+## side and `rise` m above his eye. The lens and the aim span the Wanderer and the Colossus: from
+## the lower of his feet and its feet to the higher of his head and its top, so both stay in frame
+## wherever the ground climbs behind him. The lens is never narrower than `narrowest` degrees.
+func _long_walk(w: Vector3, back: float, aside: float, rise: float, narrowest: float) -> void:
 	var c := colossus.global_position
 	var h := colossus.height_m
 	var dir := Vector3(c.x - w.x, 0.0, c.z - w.z)
 	var gap := dir.length()
 	dir = dir.normalized() if gap > 0.1 else Vector3.FORWARD
-	_want_pos = w - dir * back + dir.cross(Vector3.UP).normalized() * aside + Vector3.UP * rise
-	_want_aim = c + Vector3.UP * h * 0.45
-	var fov_giant := fit_fov(h, gap + back, narrowest)
-	if keep_wanderer:
-		var eye := maxf(_want_pos.y, float(height_at.call(_want_pos.x, _want_pos.z)) + 0.3)
-		var to_wanderer := rad_to_deg(atan2(eye - (w.y - 0.2), back))
-		var to_giant := rad_to_deg(atan2(eye - _want_aim.y, gap + back))
-		var needed := 2.0 * 1.4 * absf(to_wanderer - to_giant)
-		if needed <= HERO_WIDEST_WITH_WANDERER:
-			fov_giant = maxf(fov_giant, needed)
-	_want_fov = minf(_want_fov, fov_giant)
+	var pos := w - dir * back + dir.cross(Vector3.UP).normalized() * aside + Vector3.UP * rise
+	pos.y = maxf(pos.y, float(height_at.call(pos.x, pos.z)) + 0.3)
+	var feet := w.y - 1.2
+	var lo := minf(elevation_deg(feet - pos.y, back), elevation_deg(c.y - pos.y, gap + back))
+	var hi := maxf(
+		elevation_deg(feet + 1.7 - pos.y, back), elevation_deg(c.y + h - pos.y, gap + back)
+	)
+	var lens := hero_lens(lo, hi, narrowest)
+	var reach := gap + back
+	_want_pos = pos
+	_want_aim = pos + dir * reach + Vector3.UP * tan(deg_to_rad(lens.y)) * reach
+	_want_fov = minf(_want_fov, lens.x)
+
+
+## Angle (degrees) above the horizon of a point `rise` m up and `run` m away.
+static func elevation_deg(rise: float, run: float) -> float:
+	return rad_to_deg(atan2(rise, maxf(run, 1.0)))
+
+
+## The lens that holds everything between `lo` and `hi` degrees of elevation: x is the vertical
+## field of view, y the elevation to aim at. Never narrower than `narrowest`, never wider than 60.
+static func hero_lens(lo: float, hi: float, narrowest: float) -> Vector2:
+	return Vector2(clampf((hi - lo) * HERO_SPAN_MARGIN, narrowest, 60.0), (lo + hi) * 0.5)
 
 
 ## Vertical field of view that fits a figure `size` metres tall at `distance` into the frame.

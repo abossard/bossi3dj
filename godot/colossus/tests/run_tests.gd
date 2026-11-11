@@ -18,6 +18,7 @@ func _init() -> void:
 	_test_beat()
 	_test_fov()
 	_test_fit_fov()
+	_test_hero_lens()
 	_test_stone_bumps()
 	_test_brain()
 	_test_vj_map()
@@ -258,6 +259,27 @@ func _test_fit_fov() -> void:
 		if c[4] > 0.0:
 			var px: float = 1080.0 * c[0] / (2.0 * c[1] * tan(deg_to_rad(fov) * 0.5))
 			_check("fit_fov px %s" % [c.slice(0, 3)], absf(px - c[4]) < c[4] * 0.02, true)
+
+
+func _test_hero_lens() -> void:
+	# lowest and highest elevation to hold (deg), narrowest lens (deg), field of view wanted (deg),
+	# elevation to aim at (deg). A narrow span keeps the telephoto, a climb behind the Wanderer widens.
+	var cases := [
+		[-1.4, 0.7, 8.0, 8.0, -0.35],
+		[-2.0, 2.0, 8.0, 8.0, 0.0],
+		[-20.0, 2.0, 8.0, 33.0, -9.0],
+		[-45.0, 5.0, 8.0, 60.0, -20.0],
+	]
+	for c in cases:
+		var lens := Director.hero_lens(c[0], c[1], c[2])
+		_check("hero_lens fov %s" % [c.slice(0, 3)], snappedf(lens.x, 0.1), c[3])
+		_check("hero_lens aim %s" % [c.slice(0, 3)], snappedf(lens.y, 0.01), c[4])
+		# Both ends of the span sit inside the frame.
+		_check(
+			"hero_lens holds %s" % [c.slice(0, 2)],
+			lens.x * 0.5 >= maxf(absf(c[0] - lens.y), absf(c[1] - lens.y)) or lens.x == 60.0,
+			true
+		)
 
 
 ## The stone's normal map is made once per seed, and Roster.warm makes one for every Colossus.
