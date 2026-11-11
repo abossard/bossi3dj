@@ -434,9 +434,9 @@ class Check:
                     notes.append("value %s not read back" % bad)
             if row["verdict"] == "effect" and confirmed is False:
                 row["verdict"] = "no effect"
-                notes.append("a weak first effect did not repeat")
+                notes.append("a weak or single-cell first effect did not repeat")
             elif confirmed:
-                notes.append("weak, repeated")
+                notes.append("weak or single-cell, repeated")
             probes = [x["probe"] for a in attempts for x in a["cells"] if x["probe"] is not None]
             if probes and row["verdict"] == "no effect":
                 notes.append("the runtime took the trigger (%s) but no camera tried shows it" % ", ".join(pre["probe"][:1] + ["..."]) if any(probes)
@@ -486,7 +486,9 @@ class Check:
                         a, _ = yield from self.attempt(c, pre, cam, primary=False)
                         attempts.append(a)
             best = self.best(c, attempts)
-            if self.effective(c, [best]) and self.strength(c, [best]) < STRONG:     # a weak effect has to repeat on fresh baselines
+            # a weak effect, or one strong cell with the other cells of its camera at the floor, has to repeat on fresh
+            # baselines: a picture change off the stopped clocks between a cached baseline and one cell looks the same
+            if self.effective(c, [best]) and (self.strength(c, [best]) < STRONG or self.lone(c, best)):
                 self.baselines.pop(self.signature(pre, best["cam"]), None)
                 again, _ = yield from self.attempt(c, pre, best["cam"], primary=True)
                 attempts.append(again)
@@ -508,6 +510,10 @@ class Check:
         """One cell far above the floor, or two cells above it: a single marginal cell is noise."""
         return any(len(self.shown(c, a)) >= (1 if c["key"] == "vj_cam" else 2) or any(x["ratio"] >= STRONG for x in self.shown(c, a))
                    for a in attempts)
+
+    def lone(self, c, attempt):
+        """One cell shows, the other judged cells stay at the floor (vj_cam judges every cell on its own)."""
+        return c["key"] != "vj_cam" and len(self.shown(c, attempt)) == 1 and len(self.judged(c, attempt)) > 1
 
     def strength(self, c, attempts):
         return max((x["ratio"] for a in attempts if self.effective(c, [a]) for x in self.shown(c, a)), default=0.0)

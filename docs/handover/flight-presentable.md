@@ -1,15 +1,15 @@
-# Flight presentable (B2), Part A nearly done, Part B waits for the Blender slot
+# Flight presentable (B2), Part A done, Part B waits for the Blender slot
 
-Branch `blender/flight`. Part A (no Blender) is done except two `make verify` checks (step 1). Stopped at half context. Part B (live) has not started: it needs the orchestrator's go for the Blender slot. No Blender was opened.
+Branch `blender/flight`, `integration/presentable` merged (round 9). Part A (no Blender) is done: `make verify` and `make test` green. Part B (live) has not started: it needs the orchestrator's go for the Blender slot. No Blender was opened.
 
 ## State
 
 | Step | State | Proof |
 |---|---|---|
-| 1. `make verify` green | **no**: 3f 41.3 and 7h seed 1 sweep at full energy 39.9 (limit 39.24); 3d, 3j and the old 7h failures pass | `make verify` |
+| 1. `make verify` green | yes, 348 ok: 3f 37.0, 7h seed 1 sweep 19.8 (limit 39.24), 3d 34.0, 3h 10.2 s, 3j 12.1 s | `make verify` |
 | 2. Start from `synthwave_runtime.main()` | done, not run live | `make test`; live in Part B |
 | 3. `PRECONDITIONS` rows | done, not run live | `make test`; live in Part B |
-| 4. Why `/vj/energy` and `/vj/hit` showed an effect | explained below | from the code and `docs/reports/blender-feature-check-planet.json` |
+| 4. Why `/vj/energy` and `/vj/hit` showed an effect | explained below; a lone strong cell now repeats | from the code and `docs/reports/blender-feature-check-planet.json` |
 | 5. `make test` | green | see "make test" below |
 
 ## 1. Hover fixes (`blender/scenes/flight.py`)
@@ -21,11 +21,11 @@ Branch `blender/flight`. Part A (no Blender) is done except two `make verify` ch
 - `HOVER_DECEL` stays 11 (the 7h failure was not the braking); its comment now says 7 s and 330 m.
 - 3j (Hover arrival, limit 15 s): the sea 2.3 s, water on one side 12.1 s worst. 3h 10.2 s, 3i 40 m.
 
-### Still failing (both from the arrival at the water, both appeared with the two-stage `want`, which moves the paths)
+### The last two (both from the arrival at the water)
 
-- 3f, seed 6 `boost` at 153.6 s: 41.3 m/s2 at 43 m, 180 m/s. Vertical -33 (the stage height dives toward the Hover's 4 m as `fe` rises over `HOVER_ARRIVE` 400 m, at boost speed in about 2 s) plus tangential -22 (the floor `go` braking at 13.2 and the boost releasing). Next try: `fe`'s rise rate-limited (time, not distance) or `go`'s fall slowed while `fe` rises.
-- 7h seed 1 `sweep at full energy` at 67.7 s: 39.9 at 23 m, 113 m/s, tangential 36. The cap rises at 13.2 seen, and the energy's Hover term `ENERGY_HOVER * BOOST_SPEED * en * w[HOVER]` (35 m/s at full energy) grows with `fe`. Next try: follow that term at the same rate as the cap (fold it into the followed base).
-- The probe that decomposes the acceleration (tangential, vertical, lateral) was a scratch script; rebuild it in `docs/research/synthwave-flight/` if it is needed again (about 30 lines: run one program, print `|a|` split along the velocity, the radial and the rest, with `F.go`, `F.cap`, `F.vb`, `F.fe`).
+- 3f, seed 6 `boost` at 153.6 s was 41.3 m/s2 (vertical -33: a boost returning to the loop crossed `HOVER_ARRIVE` in 2 s and the stage height dived). Fix: the blend `self.arrive` rises at most at `1 / HOVER_ARRIVE_TIME` (4 s), falls at once, resets below the Skim. Worst 3f now 37.0 (seed 6 `boost` at 70.7 s, tangential).
+- 7h seed 1 `sweep at full energy` at 67.7 s was 39.9 (tangential 36: the cap rose at 13.2 seen and the energy's Hover term grew with `fe` on top). Fix: the term is in `sp` (divided by `ek`), so the followers and the cap carry it. Same drift on the loop (6 * 1.4 + 35 m/s at full energy); with the cap binding (water abeam) the term is capped too. Now 19.8.
+- `docs/research/synthwave-flight/probe_acc.py 3:6:boost "7:1:sweep at full energy"` splits the worst acceleration of single verify cases into tangential, vertical and lateral, with `fe`, `go`, `cap`, `vb`.
 
 ## 2. The start
 
@@ -49,16 +49,17 @@ Branch `blender/flight`. Part A (no Blender) is done except two `make verify` ch
 
 ## 4. Why `/vj/energy` and `/vj/hit` showed an effect without a reader
 
-Without `flight_rt` nothing reads them (`git grep`: only `flight_rt.py`, `energy.py` and the defaults in `synthwave_runtime.py`). Each verdict rests on one cell: `/vj/energy` 1.0 on `CAM_9` (mad 0.90, frac 0.0416, ratio 91) while 0.0 on the same camera sat at the floor (ratio 1.8); `/vj/hit` 0.5 on `CAM_3` (mad 0.83, frac 0.022, ratio 82) while 1.0 gave 4.7. `Check.effective` takes one cell at `STRONG` (10x the floor) or more as an effect, and only a weak effect gets the second look on fresh baselines (`Check.test`, `confirmed`). The floor comes from 3 baselines taken back to back and cached per camera and state for the whole run (`Check.baselines`), so a change of the picture that is not on the stopped clocks and falls between a baseline and one cell counts as the control's effect. Such changes happen at that size: the run's widest floor is mad 1.06, frac 0.0415, the same frac as the energy cell. Wall-time work outside the check's clocks: the planet's LOD set swap and anchor (`planet_runtime.update_lod`), the GN LOD builds, the bridge's trigger latch. Fix for the check (not done, the orchestrator's call): a strong single cell repeats once too when the other cells of its camera stay at the floor.
+Without `flight_rt` nothing reads them (`git grep`: only `flight_rt.py`, `energy.py` and the defaults in `synthwave_runtime.py`). Each verdict rests on one cell: `/vj/energy` 1.0 on `CAM_9` (mad 0.90, frac 0.0416, ratio 91) while 0.0 on the same camera sat at the floor (ratio 1.8); `/vj/hit` 0.5 on `CAM_3` (mad 0.83, frac 0.022, ratio 82) while 1.0 gave 4.7. `Check.effective` takes one cell at `STRONG` (10x the floor) or more as an effect, and only a weak effect gets the second look on fresh baselines (`Check.test`, `confirmed`). The floor comes from 3 baselines taken back to back and cached per camera and state for the whole run (`Check.baselines`), so a change of the picture that is not on the stopped clocks and falls between a baseline and one cell counts as the control's effect. Such changes happen at that size: the run's widest floor is mad 1.06, frac 0.0415, the same frac as the energy cell. Wall-time work outside the check's clocks: the planet's LOD set swap and anchor (`planet_runtime.update_lod`), the GN LOD builds, the bridge's trigger latch. Fix (done): `Check.test` repeats a strong effect on fresh baselines too when it is `Check.lone`: one cell shows and the other judged cells of that camera stay at the floor. The row's note says `weak or single-cell, repeated` or `a weak or single-cell first effect did not repeat`. No unit test: `synthwave_check.py` imports `bpy` and numpy, which `make test`'s python has neither of; the live run proves it.
 
 ## make test
 
-- Python (`magic`, `osc`, `blender`): 44 (1 skipped), 21 and 6 tests, OK.
+- Python (`magic`, `osc`, `blender`): 44 (1 skipped), 21 and 6 tests, OK (2026-11-11, after the fixes).
 - Godot: in a fresh worktree `run_tests.gd` and `check.gd` fail to parse (no `.godot` class cache) and `make test` still exits 0. After `/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --path godot/colossus --import`: `make godot-test` 345 passed, 0 failed; `make godot-check` 22 effect, 0 error.
 
 ## Part B (after the orchestrator's go)
 
 ```
+git merge integration/presentable     # the wireframe removal
 make blender-rebuild
 make blender-open
 make blender-check ARGS="--only vj_flight,vj_boost,vj_blend,vj_energy,vj_hit --no-fallback"
@@ -74,7 +75,6 @@ The rebuild is needed only if the scene files are stale; the runtime files load 
 
 ## Open
 
-- The self-check's single strong cell (section 4).
 - `planet_runtime.update_lod` still runs with `CAM_RIG` as `scene.camera` and the planet's own LOD sets stay built (the planet session's hooks from `flight-energy-lod-handover.md`).
 - `make test` exits 0 when a Godot test script does not parse.
 

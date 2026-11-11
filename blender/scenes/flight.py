@@ -69,6 +69,8 @@ HOVER_ARRIVE = 400.0                      # m: the Skim-to-Hover blend completes
                                           # height, lens, pitch) while the camera flies for the water at the Skim's
                                           # speed; it eases into the Hover over this last stretch. (At the 6 m/s drift
                                           # a loop 1.5 km away took 4 minutes, 4 m over dry hillsides.)
+HOVER_ARRIVE_TIME = 4.0                   # s: the blend rises no faster (a boost returning to the loop crossed
+                                          # HOVER_ARRIVE in 2 s, the stage height dived 30 m/s2)
 HOVER_RELEASE = 300.0                     # m: once on its loop the Hover holds until this much further off it
                                           # (a boost's surge leaves the loop: the 0.4 g turn can't follow it)
 HOVER_DECEL = 11.0                         # m/s2: the braking onto the water loop (85 m/s to the drift in 7 s, 330 m)
@@ -455,6 +457,7 @@ class Flight:
         self.gap = math.inf           # m from the Hover's water loop (inf without one)
         self.fe = 0.0                 # the stage in effect: f, held at the Skim until the camera is over the water
         self.held = False             # the Hover has taken effect over the water (HOVER_RELEASE)
+        self.arrive = 0.0             # the Skim-to-Hover blend in effect, rising at most at 1 / HOVER_ARRIVE_TIME
         self.go = 0.0                 # the speed floor that flies to and brakes onto the water loop
         self.cap = None               # m/s, the transit's speed cap: slower while the water is not ahead
         self.vb = None                # m/s, the stage in effect's speed past the Skim's key, followed (None: not past it)
@@ -527,13 +530,14 @@ class Flight:
             self.held = self.held and self.gap < HOVER_RELEASE + HOVER_ARRIVE
             arrive = 1.0 - smootherstep((self.gap - 0.5 * HOVER_SHORE - (HOVER_RELEASE if self.held else 0.0)) / HOVER_ARRIVE)
             self.held = self.held or self.gap <= 0.5 * HOVER_SHORE
-            self.fe = KEYS[SKIM] + (self.f - KEYS[SKIM]) * arrive
+            self.arrive = min(arrive, self.arrive + dt / HOVER_ARRIVE_TIME)
+            self.fe = KEYS[SKIM] + (self.f - KEYS[SKIM]) * self.arrive
             # at least the speed that brakes onto the loop at HOVER_DECEL (and back onto it after a boost), at most
             # the transit's; on the loop the drift
             go = min(math.sqrt(SPEED[HOVER] ** 2 + 2.0 * HOVER_DECEL * max(self.gap - 0.5 * HOVER_SHORE, 0.0)), HOVER_TRANSIT)
             cap = HOVER_TURN + (HOVER_TRANSIT - HOVER_TURN) * max(math.cos(self.alpha), 0.0) ** 2
         else:
-            go, cap = 0.0, None
+            go, cap, self.arrive = 0.0, None, 0.0
         # rate-limited, and not rising during a surge: a boost carrying the camera off its loop must not feed back
         # into its own speed. Not falling while a surge builds: it adds to the speed it started from, braking or not
         ek = 1.0 + self.en * (ENERGY_SPEED[1] if self.en > 0.0 else ENERGY_SPEED[0])
@@ -544,6 +548,8 @@ class Flight:
         self.go += clamp(go - self.go, fall, 0.0 if surge else acc)
         w = self.w = weights(self.fe)
         sp = mix_log(w, SPEED)      # the stage in effect's: the Skim's all the way to the water
+        # the energy's Hover term grows with fe: in the base, so it is followed and capped with it (in the speed seen)
+        sp += ENERGY_HOVER * BOOST_SPEED * max(self.en, 0.0) * w[HOVER] / ek
         if cap is not None:         # followed like the floor: a boost carrying the camera off its loop lowers fe,
             self.vb = sp if self.vb is None else self.vb + clamp(sp - self.vb, fall, 0.0 if surge else acc)
         elif self.vb is not None:   # which must not raise its own speed
@@ -557,8 +563,7 @@ class Flight:
             base = min(base, self.cap)
         low = w[SKIM] + w[HOVER]
         swoop = HIT_SWOOP * self.hk * (w[ORBIT] + w[APPROACH])
-        v = (base * (ek + swoop) + max(self.b, self.hk) * BOOST_SPEED * low
-             + ENERGY_HOVER * BOOST_SPEED * max(self.en, 0.0) * w[HOVER])
+        v = base * (ek + swoop) + max(self.b, self.hk) * BOOST_SPEED * low
         self.v = v
 
         # the orbit plane turns slowly toward its seeded plane
