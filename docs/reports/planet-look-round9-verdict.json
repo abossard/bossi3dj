@@ -1,0 +1,618 @@
+{
+  "round": 9,
+  "pass": "first grab",
+  "rubric": "blender/review/rubric-round9.md",
+  "grabs": "blender/review/out/round9 (git-ignored)",
+  "shots": [
+    {
+      "shot": "CAM_0_day_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G5": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_1_day_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G6": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "pass",
+        "R9-CAM1": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_2_day_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G5": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_3_day_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G5": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_5_day_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G5": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_7_day_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G5": "pass",
+        "G6": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "pass",
+        "R9-CAM7": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_8_day_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G6": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "pass",
+        "R9-CAM8": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_9_day_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G5": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_10_day_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G6": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_4_day_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G6": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "pass",
+        "R9-CAM4W": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_4_day_f0_e0_p25",
+      "verdict": "fail",
+      "lines": {
+        "G1": "pass",
+        "G2": "fail",
+        "G3": "pass",
+        "G4": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "fail",
+        "R9-CAM4W": "fail"
+      },
+      "fails": [
+        {
+          "line": "R9-CAM4W",
+          "reason": "Right of centre (about x 850-960, y 200-240) a straight-edged step or wedge cuts the hillside."
+        },
+        {
+          "line": "G2",
+          "reason": "Same right-hand patch reads as a square height step in the ground."
+        },
+        {
+          "line": "R9-WIRE",
+          "reason": "Left sunlit teal hillside shows almost no wireframe lines, faded into the ground colour."
+        }
+      ]
+    },
+    {
+      "shot": "CAM_4_day_f0_e0_p50",
+      "verdict": "fail",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "pass",
+        "R9-CAM4W": "fail"
+      },
+      "fails": [
+        {
+          "line": "R9-CAM4W",
+          "reason": "Centre hill has a straight crease line running down its face from the ridge (about x 1150-1200 on the tile)."
+        }
+      ]
+    },
+    {
+      "shot": "CAM_4_day_f1_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "pass",
+        "F1": "pass",
+        "R9-CAM4F": "pass",
+        "R9-CAM4W": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_4_night_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "T-night": "pass",
+        "R9-NEB1": "pass",
+        "R9-CAM4W": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_4_night_f1_e0",
+      "verdict": "fail",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "T-night": "fail",
+        "F1": "pass",
+        "R9-NEB1": "pass",
+        "R9-CAM4F": "fail",
+        "R9-CAM4W": "pass"
+      },
+      "fails": [
+        {
+          "line": "R9-CAM4F",
+          "reason": "A dull purple haze band lies across the mid and far sky above the horizon."
+        },
+        {
+          "line": "T-night",
+          "reason": "Stars are essentially not visible and the ground wireframe is barely readable."
+        }
+      ]
+    },
+    {
+      "shot": "CAM_5_day_f05_e0",
+      "verdict": "fail",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G5": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "pass",
+        "F05": "pass",
+        "R9-CAM5": "fail"
+      },
+      "fails": [
+        {
+          "line": "R9-CAM5",
+          "reason": "A pale whitish band runs along the top edge of the frame over the mountain."
+        }
+      ]
+    },
+    {
+      "shot": "CAM_5_day_f1_e0",
+      "verdict": "fail",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G5": "pass",
+        "T-day": "pass",
+        "R9-WIRE": "pass",
+        "F1": "pass",
+        "R9-CAM5": "fail"
+      },
+      "fails": [
+        {
+          "line": "R9-CAM5",
+          "reason": "Detail frame: pale band along the top edge across the whole mountain wireframe, about the top 10 px."
+        }
+      ]
+    },
+    {
+      "shot": "CAM_6_day_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "S1": "pass",
+        "S2": "pass",
+        "S3": "pass",
+        "S6": "pass",
+        "S8": "pass",
+        "R9-CAM6": "pass",
+        "R9-LIMB": "pass",
+        "R9-MOON": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_0_night_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G5": "pass",
+        "T-night": "pass",
+        "R9-NEB1": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_1_night_f0_e0",
+      "verdict": "fail",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G6": "pass",
+        "T-night": "pass",
+        "R9-NEB1": "pass",
+        "R9-CAM1": "fail"
+      },
+      "fails": [
+        {
+          "line": "R9-CAM1",
+          "reason": "Left river bank carries long straight cyan lines crossing it (x 0-340, y 230-380 in the detail frame), and the right bank has similar straight streaks."
+        }
+      ]
+    },
+    {
+      "shot": "CAM_3_night_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G5": "pass",
+        "T-night": "pass",
+        "R9-NEB1": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_5_night_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G5": "pass",
+        "T-night": "pass",
+        "R9-NEB1": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_9_night_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G5": "pass",
+        "T-night": "pass",
+        "R9-NEB1": "pass",
+        "R9-CAM9": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_9_night_f0_e0_neb0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G5": "pass",
+        "T-night": "pass",
+        "R9-NEB0": "pass",
+        "R9-CAM9": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_10_night_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G6": "pass",
+        "T-night": "pass",
+        "R9-NEB1": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_10_night_f0_e0_neb0",
+      "verdict": "fail",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G6": "pass",
+        "T-night": "pass",
+        "R9-NEB0": "fail"
+      },
+      "fails": [
+        {
+          "line": "R9-NEB0",
+          "reason": "A diffuse brown Milky Way band is still visible at the top left, identical to the nebula 1 shot."
+        }
+      ]
+    },
+    {
+      "shot": "CAM_7_night_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G6": "pass",
+        "T-night": "pass",
+        "R9-NEB1": "pass",
+        "R9-CAM7": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_6_sunset_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "S1": "pass",
+        "S2": "pass",
+        "S3": "pass",
+        "S6": "pass",
+        "S8": "pass",
+        "R9-CAM6": "pass",
+        "R9-LIMB": "pass",
+        "R9-MOON": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_6_night_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "S1": "pass",
+        "S2": "pass",
+        "S3": "pass",
+        "S6": "pass",
+        "S8": "pass",
+        "R9-CAM6": "pass",
+        "R9-LIMB": "pass",
+        "R9-MOON": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_7_sunset_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G6": "pass",
+        "T-sunset": "pass",
+        "R9-CAM7": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_8_sunset_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G6": "pass",
+        "T-sunset": "pass",
+        "R9-CAM8": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "CAM_8_night_f0_e0",
+      "verdict": "pass",
+      "lines": {
+        "G1": "pass",
+        "G2": "pass",
+        "G3": "pass",
+        "G4": "pass",
+        "G6": "pass",
+        "T-night": "pass",
+        "R9-NEB1": "pass",
+        "R9-CAM8": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "S9_pull_2_10k_day",
+      "verdict": "pass",
+      "lines": {
+        "S1": "pass",
+        "S2": "pass",
+        "S3": "pass",
+        "S6": "pass",
+        "S8": "pass",
+        "R9-LIMB": "pass",
+        "R9-RIVER": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "S9_pull_2_10k_night",
+      "verdict": "pass",
+      "lines": {
+        "S1": "pass",
+        "S2": "pass",
+        "S3": "pass",
+        "S6": "pass",
+        "S8": "pass",
+        "R9-LIMB": "pass",
+        "R9-RIVER": "pass"
+      },
+      "fails": []
+    },
+    {
+      "shot": "S9_orbit_limb",
+      "verdict": "fail",
+      "lines": {
+        "S1": "pass",
+        "S2": "pass",
+        "S3": "pass",
+        "S6": "fail",
+        "S8": "pass",
+        "R9-LIMB": "pass",
+        "R9-RIVER": "pass"
+      },
+      "fails": [
+        {
+          "line": "S6",
+          "reason": "Detail frame: stars right of the limb are smeared squares and streaks, not crisp points."
+        }
+      ]
+    }
+  ],
+  "recheck": [
+    {
+      "shot": "CAM_10_night_f0_e0_neb0",
+      "line": "R9-NEB0",
+      "verdict": "fail",
+      "on": "full-size 960x540 grab",
+      "reason": "A diffuse brown dust-and-glow Milky Way band is still visible across the top-left to top-centre sky (about x 300-700, y 0-120)."
+    },
+    {
+      "shot": "CAM_1_night_f0_e0",
+      "line": "R9-CAM1",
+      "verdict": "pass",
+      "on": "full-size 960x540 grab",
+      "reason": "Smooth curved waterlines, no straight line along them; soft ripple mottling, no blotches or square tile edges."
+    }
+  ],
+  "ab": {
+    "fps_trustworthy": false,
+    "load_1m": "71 to 103",
+    "moon_CAM_6_night_ms": {
+      "r9_4096": [
+        20.38,
+        19.98,
+        19.96
+      ],
+      "old_2048": [
+        21.3,
+        19.93,
+        20.14
+      ]
+    },
+    "band_CAM_10_night_ms": {
+      "on": [
+        35.82,
+        35.73,
+        35.31
+      ],
+      "muted": [
+        36.14,
+        34.61,
+        35.8
+      ]
+    }
+  },
+  "withdrawn": {
+    "R9-WIRE": "withdrawn by the user on 2026-11-11 (no wireframe by day, no dummy wireframe ever): not scored; its 14 pass and 1 fail are void"
+  }
+}
