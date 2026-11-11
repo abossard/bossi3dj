@@ -18,21 +18,32 @@ State 2026-11-12, Blender-free part done and committed on `integration/presentab
   - the page listens on 127.0.0.1. For a phone: `python3 tools/blender_page_lan.py on` writes `blender/local/page.json` and the next start listens on every interface. Not switched on. Decision for the user: this lets any device on the network drive the scene.
 - Tests: `blender/tests/test_page_model.py` (grouping, coverage, presets, settings, Host rule), `magic/tests/test_synthwave.py` (controls, Follow, output), `magic/tests/test_manual.py`. `make test` green.
 
-## Live part (after the slot)
+## Live results so far (2026-11-12, Magic only; Blender was held by planet-finish, so nothing was written to it)
+
+Magic ran with a copy of the project that sends to udp 9300 (`magicproj.py set --osc-target`), read with `magicproj.py listen 9300`:
+- all 38 addresses arrive (n=63 in 14 s each, `/vj/fog` more while it eases to 0.35). With no sound every value sat on its contract default (level 0.5, intensity 0.5, grid_speed 0.15, cam_speed 0.25, cam 0, cam_auto 1, fog 0.35 ...).
+- `Fog` 0.9 in the project file, loaded: `/vj/fog` ends at 0.89999; the original loaded back: 0.34999.
+- `show_magic.py --synthetic` (synthetic music): twelve music addresses move (fog 0.67, hue, level, strobe, shock 12 sends, cam changed), the rest hold. So `Live` and `Follow` work; the 0.004 threshold passed the silence case on the real input and the synthetic case, not tried with a real track.
+- Found and fixed: `show.magic` drew a black program whenever Godot's server was missing (the `Mix` draws black without its second source, even at Amount 0), so Magic's picture was black with Godot parked. The Mix is bypassed while `SceneMix` is 0 now; the picture is Blender's (mean RGB 134, 147.6, 200 as in the `CAM_OUT` grab).
+- Magic's Syphon server is `MAGIC_OUT - Magic` (`magicproj.py grab --server MAGIC_OUT` works with the default app name).
+- Orientation: `tools/magic_show_proof.py picture --no-hold`: the 16x9 luma grid of Magic's frame correlates 0.999 with the `CAM_OUT` grab with its rows reversed (-0.73 upright). The `shot-reviewer` judged Magic's frame upright (sky on top) and the `CAM_OUT` grab flipped. That matches the known state: `grab` delivers Blender's Syphon rows as Syphon stores them (flipped) and flips only Magic's. So Magic shows Blender's picture upright. Judged on sky and ground only (CAM_0 here had no pyramids in view).
+- Magic was not running before; it is closed again.
+
+## Live part still to do (needs the Blender slot)
+
+Everything about the page against Blender: the running Blender loads `synthwave_web.py` at its start, so it must be restarted to serve the new page; `/api/state` of the old module has no `sections`.
+
 
 All commands from the repo root. Tell the orchestrator before the `load` steps: `load` replaces the project open in Magic; note the open project first (`python3 magic/magicproj.py load` prints window titles) and load it back at the end.
 
 1. `make blender-open` (start state ready). `python3 tools/blender_page_test.py --check`: the page's JSON, the refusals, set, hold, camera, presets, Check all, defaults restored.
 2. Built-in browser at the mobile preset on http://127.0.0.1:9210: no horizontal scroll, Check all started from the page, a hold, camera buttons, Hold all and Release all, a preset saved and recalled; delete the test preset.
-3. `python3 magic/magicproj.py load magic/projects/show.magic` (or `open -a /Applications/MagicBeta.app magic/projects/show.magic`). `python3 tools/magic_show_proof.py osc`: all 38 addresses reached the bridge (`/vj/cam_auto` is recorded but ignored by Blender).
-4. `python3 tools/magic_show_proof.py picture --app <app name>`: Magic's `MAGIC_OUT` frame against `CAM_OUT - Blender`, upright and reversed correlation. The app name of MagicBeta's Syphon server is not known; `magicproj.py grab` prints the servers it sees when it finds none.
-5. `python3 tools/magic_show_proof.py global Fog 0.9`: the scene's `vj_fog` follows a Global changed in the project file and reloaded; the project is loaded back after.
-6. Silence check: with no sound on BlackHole, every value should sit at its default (`blender/review/health.py` `off_default` or the page). With sound (or `show_magic.py --synthetic --out <scratch file>` loaded) the twelve music addresses should move: this proves `Live` and `Follow`; the 0.004 threshold is a guess until it runs.
-7. `make blender-kill`; leave Magic as found.
+3. `python3 magic/magicproj.py load magic/projects/show.magic`. `python3 tools/magic_show_proof.py osc`: the bridge's own count of the 38 addresses (`/vj/cam_auto` is recorded but ignored by Blender). Then `python3 tools/magic_show_proof.py global Fog 0.9` for the scene value (the wire side is proven above), and `picture` without `--no-hold` once more with the live scene on a still shot.
+4. Magic's silence check against the live scene: `off_default` in `/api/health` stays empty with no sound.
+5. `make blender-kill`; quit Magic (it was not running before).
 
 ## Open
 
-- `Live` threshold (0.004 on `EnergyNow`) not tried with real input.
-- The Syphon server name Magic reports (handbook says `MAGIC_OUT`), and whether its frame is upright: both unverified.
+- `Live` threshold (0.004 on `EnergyNow`) not tried with a real track.
 - `.claude/skills/magic-projects/evals/grade.py` lists the old Global names (`HueBase`, `CamSel`); not mine, not changed.
 - Art-Net on the page: the bridge has it (another session); the page shows its source as the badge text and nothing else.

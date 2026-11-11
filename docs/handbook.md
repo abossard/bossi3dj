@@ -131,7 +131,7 @@ In Magic, set `CamAuto` to 0 and `Cam` to the shot you want. On the page, tap a 
 
 ## What Magic sends and why
 
-One OSC sender per address, straight to the scene on udp 9201. Each sends 0 to 1; the scene scales it. Magic's own picture is published as Syphon `MAGIC_OUT` (1920x1080), so another app or `python3 magic/magicproj.py grab --server MAGIC_OUT` can take the final picture. The scene's server `CAM_OUT - Blender` is separate.
+One OSC sender per address, straight to the scene on udp 9201. Each sends 0 to 1; the scene scales it. Magic's own picture is published as Syphon `MAGIC_OUT - Magic` (1920x1080), so another app or `python3 magic/magicproj.py grab --server MAGIC_OUT` can take the final picture. The scene's server `CAM_OUT - Blender` is separate.
 
 The table is generated from the project (`python3 magic/magic_manual.py sync`) and a test fails when it drifts. "follows" means the music moves the address while there is sound and `React` is above 0. Without sound every address sends its control, which holds the contract default.
 

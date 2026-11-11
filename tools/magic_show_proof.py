@@ -100,27 +100,35 @@ def corr(a, b):
 
 def cmd_picture(a):
     out = tempfile.mkdtemp(prefix="magic-proof-")
-    held = list(state()["osc"]["hold"])
-    cam = state()["values"]["vj_cam"]
-    try:
-        post("/api/set", {"vj_cam": 0, "vj_cam_speed": 0})
-        post("/api/hold", {"keys": ["vj_cam", "vj_cam_speed"], "on": True})
-        time.sleep(1.5)
+    if a.no_hold:        # the scene belongs to someone else: write nothing to it, grab as it stands
         blender = grab("Blender", "CAM_OUT", os.path.join(out, "blender.png"))
         magic = grab(a.app, "MAGIC_OUT", os.path.join(out, "magic.png"))
-    finally:
-        post("/api/hold", {"keys": ["vj_cam", "vj_cam_speed"], "on": False})
-        post("/api/set", {"vj_cam": cam, "vj_cam_speed": contract_default("vj_cam_speed")})
-        if held:
-            post("/api/hold", {"keys": held, "on": True})
-    for name, g in (("blender", blender), ("magic", magic)):
+        blender2 = grab("Blender", "CAM_OUT", os.path.join(out, "blender2.png"))
+    else:
+        held = list(state()["osc"]["hold"])
+        cam = state()["values"]["vj_cam"]
+        try:
+            post("/api/set", {"vj_cam": 0, "vj_cam_speed": 0})
+            post("/api/hold", {"keys": ["vj_cam", "vj_cam_speed"], "on": True})
+            time.sleep(1.5)
+            blender = grab("Blender", "CAM_OUT", os.path.join(out, "blender.png"))
+            magic = grab(a.app, "MAGIC_OUT", os.path.join(out, "magic.png"))
+            blender2 = grab("Blender", "CAM_OUT", os.path.join(out, "blender2.png"))
+        finally:
+            post("/api/hold", {"keys": ["vj_cam", "vj_cam_speed"], "on": False})
+            post("/api/set", {"vj_cam": cam, "vj_cam_speed": contract_default("vj_cam_speed")})
+            if held:
+                post("/api/hold", {"keys": held, "on": True})
+    for name, g in (("blender", blender), ("magic", magic), ("blender2", blender2)):
         print(name, json.dumps(g))
-    if "error" in blender or "error" in magic:
+    if "error" in blender or "error" in magic or "error" in blender2:
         return 2
     gb, gm = grid(os.path.join(out, "blender.png")), grid(os.path.join(out, "magic.png"))
     up, flipped = corr(gb, gm), corr(gb, gm[::-1])
     mad = sum(abs(x - y) for rb, rm in zip(gb, gm) for x, y in zip(rb, rm)) / (16 * 9)
     print("correlation of the 16x9 luma grids: upright %.3f, rows reversed %.3f, mean difference %.1f of 255" % (up, flipped, mad))
+    g2 = grid(os.path.join(out, "blender2.png"))
+    print("Blender against itself a moment later (how far the scene moved): correlation %.3f, rows reversed %.3f" % (corr(gb, g2), corr(gb, g2[::-1])))
     print("frames in %s" % out)
     ok = up > 0.9 and up > flipped
     print("Magic's frame is %s" % ("Blender's picture, upright" if ok else "NOT Blender's picture upright"))
@@ -156,6 +164,7 @@ def main():
     sub.add_parser("osc")
     p = sub.add_parser("picture")
     p.add_argument("--app", default="Magic", help="app name Magic's Syphon server reports")
+    p.add_argument("--no-hold", action="store_true", help="write nothing to the scene: no camera hold")
     p = sub.add_parser("global")
     p.add_argument("name")
     p.add_argument("value")

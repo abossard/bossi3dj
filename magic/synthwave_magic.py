@@ -460,7 +460,8 @@ def build(port, ip, syphon, globals_=GLOBALS, captions=None, audio=None, trails_
     sources = [syphon_in]
     if syphon2:
         syphon_in2 = p.node("SyphonClient", [p.iv("Server", syphon2)])
-        crossfade = p.node("Mix", [p.link("Amount", 0.0, mix)], children=[syphon_in, syphon_in2])
+        # Mix draws black while its second server is missing, even at Amount 0 (Godot is parked): bypassed while the fader is down, it passes the first source on.
+        crossfade = p.node("Mix", [p.link("Amount", 0.0, mix)], children=[syphon_in, syphon_in2], bypass=(mix, "if(x < 0.01, 1, 0)"))
         sources = [syphon_in, syphon_in2, crossfade]
         syphon_in = crossfade
     bloom = p.node("Bloom", [p.iv("BlurAmount", 12.0), p.link("Intensity", 1.0, "GlowAmt", "x*(0.6 + 0.8*Kick)")],
