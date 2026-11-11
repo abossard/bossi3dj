@@ -92,3 +92,12 @@ The wave 2 sessions stopped at half context; fresh sessions continue from their 
 GPU order: B3 live, G6 live, B2 live, then fps tables.
 
 Worktrees (user, 2026-11-11): fewer. The three wave 1 worktrees are removed. The three running sessions finish in theirs; each is removed after its merge. Later sessions work in the main checkout on `integration/presentable`, one writer per area.
+
+## Status 2026-11-11, after round 9
+
+- B3 merged: round 9, 26 of 35 shots pass. Its worktree is removed.
+- New node B6, round 10: no dummy wireframe on the planet (user rule). Plan: `docs/handover/planet-look-round10.md`. Runs in the main checkout, fresh session, before the Flight live part.
+- B2: Blender-free part done except two `make verify` checks; stays on `blender/flight` until it has run live.
+- G6: live part running, holds the GPU.
+
+GPU order: G6, B6, B2 live, then fps tables.
