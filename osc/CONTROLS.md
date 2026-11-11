@@ -28,7 +28,7 @@ The source of the rows is [contract.json](contract.json). The table below, the b
 | `/vj/hue` | 0..1, default 0 | rotates the whole palette | not used |
 | `/vj/intensity` | 0..1, default 0.5 | 0..2, default 1. overall brightness | 0.2..1.8 exposure, default 1. overall exposure |
 | `/vj/strobe` | 0..1, default 0 | flash to white | not used |
-| `/vj/grid_speed` | 0..1, default 0.15 | 0..4 cells/s, default 0.6. grid scroll | not used |
+| `/vj/grid_speed` | 0..1, default 0.15 | 0..4 cells/s, default 0.6. island scene only: grid scroll; the planet has no scrolling lines and does not read it | not used |
 | `/vj/cam` | integer 0..10, default 0 | cut to `CAM_N`; N above the last camera of the scene takes the last | pin the director's Nth shot (0-based); N above the last shot takes the last; held only while `/vj/cam_auto` is 0 |
 | `/vj/cam_auto` | integer 0..1, default 1 | not used | 1: the director cuts by itself; 0: it holds the shot `/vj/cam` picks |
 | `/vj/cam_speed` | 0..1, default 0.25 | 0..4, default 1. camera drift and flyover speed | not used |
@@ -36,10 +36,10 @@ The source of the rows is [contract.json](contract.json). The table below, the b
 | `/vj/moon` | 0..1, default 1 | moon size. The Moon is not faded: it rises from below the sea as the sun goes down (`/vj/sun`, `/vj/night`) and sets again by day | not used |
 | `/vj/moon_phase` | 0..1, default 1 | lunar phase: 1 full, 0.5 half, 0 new (crater shadows along the terminator). Planet scene (star system): where the moon sits on its orbit, 0 next to the sun, 1 opposite it, lit by the real sun | not used |
 | `/vj/pyramids` | 0..1, default 1 | pyramids rise from the ground | not used |
-| `/vj/grid` | 0..1, default 1 | ground wireframe by day (the real low-poly mesh edges; the projected grid only remains on the night ground) | not used |
+| `/vj/grid` | 0..1, default 1 | planet: strength of the real edges of the drawn ground mesh (its triangles, never a lattice), fading in from sunset (/vj/night 0.25 to 0.5), full at night, none by day, pulsed by bass and beat; island: ground wireframe by day (the real low-poly mesh edges; the projected grid only remains on the night ground) | not used |
 | `/vj/stars` | 0..1, default 1 | stars | not used |
 | `/vj/water` | 0..1, default 1 | water reflection | not used |
-| `/vj/night` | 0..1, default 0 | time of day: 0 day; 0.25 sunset; 0.5 twilight (blue hour, afterglow, land in silhouette, first stars); 1 night: black land with glowing low-poly wireframe, deep space sky with Milky Way, bright stars and a volumetric 3D nebula 2-5 km up. Fog darkens toward night. Flamingos take off above 0.18 and return below 0.08. Planet scene (star system): the sun's height for the camera on air, 0 +20°, 0.5 half set on the horizon, 1 -18°; the sky turns to fit, and moving it back runs time backwards | not used |
+| `/vj/night` | 0..1, default 0 | time of day: 0 day; 0.25 sunset; 0.5 twilight (blue hour, afterglow, land in silhouette, first stars); 1 night: black land (planet: with the real mesh edges at /vj/grid; island: its glowing low-poly wireframe), deep space sky with Milky Way, bright stars and a volumetric 3D nebula 2-5 km up. Fog darkens toward night. Flamingos take off above 0.18 and return below 0.08. Planet scene (star system): the sun's height for the camera on air, 0 +20°, 0.5 half set on the horizon, 1 -18°; the sky turns to fit, and moving it back runs time backwards | not used |
 | `/vj/nebula` | 0..1, default 1 | night nebula strength | not used |
 | `/vj/shock` | trigger 0..1.5, default 0 | rising edge above 0.5: shockwave from the next pyramid, a rolling ground wave (300 m/s, 170 m wavelength, up to 16 m heave) about 3.6 km out in 12 s; the sea heaves harder with chop and foam, pyramids lift and tilt, the grid warps, land and cameras shake. Up to four waves run at once. The trigger value sets the strength (0.5 to 1.5). Fires by itself every 16 s while idle | shake while the Wanderer is on the Colossus; 1.4 and above marks a drop for the next bar |
 | `/vj/meteor` | trigger 0..1, default 0 | rising edge above 0.5: a shooting star (up to three at once), brightest at night. Without the trigger only rarely, every 1-3 min at night while idle | not used |
