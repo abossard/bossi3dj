@@ -111,7 +111,34 @@ func _subjects() -> Dictionary:
 		"nomad": nomad,
 		"nomad still": _model("nomad"),
 		"wanderer": _animated_wanderer(),
+		"scene stand-ins": _pair(false),
+		"scene models": _pair(true),
 	}
+
+
+## The scene as the show builds it, the Colossus standing with the Wanderer 6 m behind it: both
+## stand-ins, or both real models (Grock on its rig with clip, gait and foot IK; the Nomad on his
+## clips with retarget and IK).
+func _pair(models: bool) -> Node3D:
+	var pair := Node3D.new()
+	main.output.add_child(pair)
+	var c: Colossus = GrockColossus.new() if models else PlaceholderColossus.new()
+	c.height_m = COLOSSUS_HEIGHT
+	c.height_at = main.world.height_at
+	pair.add_child(c)
+	c.reset_to(at, 0.0)
+	c.seek = true
+	c.look_target = at
+	var w := Wanderer.new()
+	w.use_model = models
+	w.height_at = main.world.height_at
+	w.colossus = c
+	pair.add_child(w)
+	w.place_at(at + Vector3(0.0, 0.0, 6.0))
+	w.rotation.y = 0.0
+	if not models:
+		w.process_mode = Node.PROCESS_MODE_DISABLED
+	return pair
 
 
 ## The scene's own Wanderer as the show builds it: the Nomad on its clips through the retarget,
@@ -247,6 +274,7 @@ func _run() -> void:
 	var groups := [
 		[["colossus stand-in", "grock", "grock no shadow"], COLOSSUS_VIEWS, COLOSSUS_HEIGHT],
 		[["wanderer stand-in", "nomad", "nomad still", "wanderer"], WANDERER_VIEWS, 1.75],
+		[["scene stand-ins", "scene models"], COLOSSUS_VIEWS, COLOSSUS_HEIGHT],
 	]
 	for group: Array in groups:
 		var who_all: Array = group[0]
