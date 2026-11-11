@@ -121,6 +121,30 @@ def _pictures(row, root=ROOT):
     return "<br>".join(out)
 
 
+SHOT_SCENES = [("planet", "Blender, Synthwave Planet"), ("island", "Blender, island scene (`make blender-open SCENE=island`)"), ("godot", "Godot, Colossus")]
+
+
+def shot_picture(scene, index, root=ROOT):
+    rel = os.path.join(MANUAL_IMAGES, "cam-%s-%d.jpg" % (scene, index)).replace(os.sep, "/")
+    if os.path.exists(os.path.join(root, rel)):
+        return '<img src="%s" width="200" alt="%s, shot %d">' % (rel, scene, index)
+    return ""
+
+
+def render_shots(row, root=ROOT):
+    """The cameras part under /vj/cam: per scene one table of number, name, what it shows and a small picture."""
+    out = ["", "**Cameras for `/vj/cam`**: the number picks the shot.", ""]
+    for key, label in SHOT_SCENES:
+        shots = row.get("shots", {}).get(key) or []
+        if not shots:
+            out += ["*%s*: the shots are not listed yet." % label, ""]
+            continue
+        out += ["*%s*" % label, "", "| Number | Name | What it shows | Picture |", "|---|---|---|---|"]
+        out += ["| %d | %s | %s | %s |" % (s["index"], s["name"], s["shows"], shot_picture(key, s["index"], root)) for s in shots]
+        out.append("")
+    return out
+
+
 def render_manual(rows=None, root=ROOT):
     """The README manual: one small table per group, the first group open, the others folded."""
     rows = rows or load()
@@ -131,6 +155,9 @@ def render_manual(rows=None, root=ROOT):
                 "| Address | What you see | Wire | Scene | Picture |", "|---|---|---|---|---|"]
         for r in members:
             out.append("| `%s` | %s | %s | %s | %s |" % (r["address"], r["plain"], _wire(r), _scenes(r), _pictures(r, root)))
+        for r in members:
+            if r.get("shots") is not None:
+                out += render_shots(r, root)
         out += ["", "</details>", ""]
     return "\n".join(out).rstrip("\n")
 

@@ -40,6 +40,7 @@ PUBLISH_EVERY = 0.1   # s between snapshots, built only while a page polls
 PAGE_IDLE = 2.0       # s after the last poll before snapshots stop
 PULSE = 0.1           # s a trigger stays high, longer than one frame so the runtime sees the edge
 LOG_SENT = 80         # newest OSC log lines in each snapshot
+CONTRACT_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "osc", "contract.json")
 CHECK_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "synthwave_check.py")
 HEALTH_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "review", "health.py")
 PREFIX = "vj_"
@@ -47,6 +48,16 @@ REGISTRY_KEY = "synthwave_web"
 BRIDGE_KEY = "vj_osc_bridge"
 SENDER_KEY = "syphon_out"
 PREVIEW_KEY, PREVIEW_WANTED = "syphon_preview", "syphon_preview_wanted"   # shared with syphon_out.py
+
+
+def shots(scene):
+    """The names and sentences of this scene's cameras, from the /vj/cam row of osc/contract.json: the planet scene has a Planet_Centre object."""
+    try:
+        with open(CONTRACT_FILE) as f:
+            row = next(r for r in json.load(f)["controls"] if r["address"] == "/vj/cam")
+    except (OSError, ValueError, StopIteration):
+        return []
+    return row.get("shots", {}).get("planet" if scene.objects.get("Planet_Centre") else "island", [])
 
 
 def controls(scene):
@@ -58,6 +69,8 @@ def controls(scene):
         out.append({"key": k, "min": ui.get("min", 0.0), "max": ui.get("max", 1.0),
                     "step": ui.get("step", 1.0) / 100.0, "default": ui.get("default", 0.0),
                     "trigger": ui.get("description") == "trigger"})
+        if k == "vj_cam":
+            out[-1]["shots"] = shots(scene)
     return out
 
 

@@ -29,7 +29,7 @@ flowchart LR
 
 ## The Blender scene: Synthwave Planet
 
-A whole small planet with a sun, a moon and a star sky. Fixed cameras (`CAM_0` to `CAM_10`) show it from the ground, from a river, from a coast and from orbit. `CAM_11` is the Flight shot, a camera that flies over the planet. The music changes the light and the weather:
+A whole small planet with a sun, a moon and a star sky. Fixed cameras (`CAM_0` to `CAM_10`) show it from the ground, from a river, from a coast and from orbit. `CAM_11` is the Flight shot, a camera that flies over the planet. Each camera has a name; the list is under `/vj/cam` in [All OSC channels](#all-osc-channels). The music changes the light and the weather:
 
 - `/vj/night` moves the time of day: 0 is day, 0.25 sunset, 0.5 twilight, 1 night.
 - `/vj/fog` sets how dense the fog bank is. Fog has its own colour, glow, size and wind (`/vj/fog_*`).
@@ -58,8 +58,8 @@ The full list with ranges is in [osc/CONTROLS.md](osc/CONTROLS.md).
 <td><img src="docs/images/readme/planet-sun-hills-day.jpg" alt="A large orange-pink sun with a glow over low lilac hills at the bottom of a light blue sky"><br><sub><b>Sun over the hills, <code>CAM_3</code></b>: tilted up over the pyramids (at night this camera looks at the moon).</sub></td>
 </tr>
 <tr>
-<td><img src="docs/images/readme/planet-orbit-moon.jpg" alt="Space with a starfield, a large grey cratered moon at the left and the planet as a dark globe with pink land and blue water"><br><sub><b>Orbit, <code>CAM_6</code></b>: the whole planet in frame, with the moon. Space is dark even when the planet's ground is in daylight.</sub></td>
-<td><img src="docs/images/readme/planet-flight-night.jpg" alt="The planet as a globe with pink land, blue water and a lit horizon band, a half-lit moon above and stars"><br><sub><b>Flight shot, <code>CAM_11</code></b>: the camera flying over the planet, at night with <code>/vj/grid</code> 0.</sub></td>
+<td><img src="docs/images/readme/planet-orbit-moon.jpg" alt="Space with a starfield, a large grey cratered moon at the left and the planet as a dark sphere with pink land and blue water"><br><sub><b>Orbit, <code>CAM_6</code></b>: the whole planet in frame, with the moon. Space is dark even when the planet's ground is in daylight.</sub></td>
+<td><img src="docs/images/readme/planet-flight-night.jpg" alt="The planet as a sphere with pink land, blue water and a lit horizon band, a half-lit moon above and stars"><br><sub><b>Flight shot, <code>CAM_11</code></b>: the camera flying over the planet, at night with <code>/vj/grid</code> 0.</sub></td>
 </tr>
 </table>
 
@@ -160,6 +160,40 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 | `/vj/boost` | Gives the flying camera a burst of speed with a wider view. | 0..1, default 0 | Blender |  |
 | `/vj/blend` | Makes a camera change fly smoothly to the new shot; 0 cuts at once. | 0..1, default 0.5 | Blender |  |
 | `/vj/energy` | Makes the camera move harder, from a slow wide glide to faster, tighter moves. | 0..1, default 0.3 | Blender |  |
+
+**Cameras for `/vj/cam`**: the number picks the shot.
+
+*Blender, Synthwave Planet*
+
+| Number | Name | What it shows | Picture |
+|---|---|---|---|
+| 0 | Plaza View | A wide view from 70 m up, looking up the plaza toward the pyramids and the sun. It stands still. | <img src="docs/images/readme/osc/cam-planet-0.jpg" width="200" alt="planet, shot 0"> |
+| 1 | River Skim | A low view 9 m over the nearest river, looking downstream along the water. It stands still. | <img src="docs/images/readme/osc/cam-planet-1.jpg" width="200" alt="planet, shot 1"> |
+| 2 | Pyramid Hero | Close and low in front of the pyramids, the main pyramid shot. It stands still. | <img src="docs/images/readme/osc/cam-planet-2.jpg" width="200" alt="planet, shot 2"> |
+| 3 | Moon Watch | Low among the hills, tilted up over the pyramids to follow the moon. It stands still. | <img src="docs/images/readme/osc/cam-planet-3.jpg" width="200" alt="planet, shot 3"> |
+| 4 | Pole Flyover | Flies a loop around the planet's pole over the hills, looking ahead along its path. |  |
+| 5 | Pyramid Orbit | Circles the pyramids above the ground, always looking at them. |  |
+| 6 | Planet Orbit | Circles the whole Planet from space, with the Planet and the moon in frame. | <img src="docs/images/readme/osc/cam-planet-6.jpg" width="200" alt="planet, shot 6"> |
+| 7 | Flamingo Lake | Low over the water next to the pyramids, looking toward the sun, with the flamingo flock on the lake. It stands still. | <img src="docs/images/readme/osc/cam-planet-7.jpg" width="200" alt="planet, shot 7"> |
+| 8 | River Mouth | Looks downstream along a river as it runs into the sea. It stands still. | <img src="docs/images/readme/osc/cam-planet-8.jpg" width="200" alt="planet, shot 8"> |
+| 9 | Far Pyramids | A pyramid group far from the valley with the sun behind it. It stands still and follows the sun. | <img src="docs/images/readme/osc/cam-planet-9.jpg" width="200" alt="planet, shot 9"> |
+| 10 | Coast Pass | A low pass along a coast, out over the water with the sea on one side, looking toward the land. | <img src="docs/images/readme/osc/cam-planet-10.jpg" width="200" alt="planet, shot 10"> |
+| 11 | Flight | The flying camera: /vj/flight carries it from orbit down to the mountains and a hover over the water. | <img src="docs/images/readme/osc/cam-planet-11.jpg" width="200" alt="planet, shot 11"> |
+
+*Blender, island scene (`make blender-open SCENE=island`)*
+
+| Number | Name | What it shows | Picture |
+|---|---|---|---|
+| 0 | Plaza View | A wide view from 70 m up, looking up the plaza toward the pyramids. It stands still. |  |
+| 1 | Valley Low | A very wide lens 14 m up, looking toward the pyramids from 550 m before them. It stands still. |  |
+| 2 | Pyramid Hero | Close and low beside the pyramids, looking at the main pyramid. It stands still. |  |
+| 3 | Moon Watch | Low to the ground, tilted steeply up into the sky toward the moon. It stands still. |  |
+| 4 | Flyover | Flies a loop on a path, looking ahead along it. |  |
+| 5 | Pyramid Orbit | Circles the pyramids on a path, always looking at them. |  |
+| 6 | Wide Orbit | Circles on a wide path, looking at a point just north of the pyramids. |  |
+
+*Godot, Colossus*: the shots are not listed yet.
+
 
 </details>
 

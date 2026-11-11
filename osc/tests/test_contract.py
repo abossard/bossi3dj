@@ -80,6 +80,16 @@ class TableTests(unittest.TestCase):
                 self.assertTrue(r["plain"].strip() and r["plain"].endswith("."))
                 self.assertNotIn("|", r["plain"])
 
+    def test_shots_are_listed_gapless_and_the_planet_has_every_camera_the_bridge_cuts_to(self):
+        cam = contract.by_address(ROWS)["/vj/cam"]
+        for scene, shots in cam["shots"].items():
+            with self.subTest(scene=scene):
+                self.assertEqual([s["index"] for s in shots], list(range(len(shots))))
+                self.assertEqual(len({s["name"] for s in shots}), len(shots))
+                for s in shots:
+                    self.assertTrue(s["name"] and s["shows"].endswith("."))
+        self.assertEqual(len(cam["shots"]["planet"]), int(cam["max"]) + 1)
+
     def test_manual_pictures_exist(self):
         with open(contract.README_MD) as f:
             block = contract.current_manual(f.read())

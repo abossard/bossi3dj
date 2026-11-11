@@ -164,6 +164,7 @@ function control(c) {
     const buttons = [];
     for (let v = c.min; v <= c.max; v += c.step) {
       const b = el("button", null, String(v)); b.onclick = () => send(c.key, v);
+      const shot = (c.shots || []).find(s => s.index === v); if (shot) b.title = shot.name + ": " + shot.shows;   // the names of osc/contract.json
       buttons.push([v, b]); row.appendChild(b);
     }
     row.append(t.src, t.lock);
@@ -197,7 +198,8 @@ function update(s) {
     e.src.textContent = src; e.src.className = "src " + src;
     e.lock.classList.toggle("on", hold.has(k));
   }
-  $("cam").textContent = s.camera || "-";
+  const camShot = (((s.controls || []).find(c => c.key === "vj_cam") || {}).shots || []).find(x => "CAM_" + x.index === s.camera);
+  $("cam").textContent = (s.camera || "-") + (camShot ? " " + camShot.name : "");
   $("fps").textContent = s.fps;
   $("playdot").className = "dot " + (!s.playing ? "" : s.fps >= 24 ? "ok" : "warn");
   $("sy").textContent = s.syphon ? (s.syphon.failed ? "failed" : s.syphon.frames) : "off";
