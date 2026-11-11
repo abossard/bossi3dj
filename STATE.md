@@ -50,6 +50,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 ## Decided by the user
 
 - Contract: every continuous `/vj/*` control is 0..1 on the wire, each scene scales it to its own range; the wire default gives each scene its tuned look. Indices (`/vj/cam`) stay integers, triggers keep their strength.
+- Godot, 2026-11-11: no model file goes into git. `godot/colossus/assets/MODELS.md` lists the sources, licences and the prepare command; the scene falls back to the stand-ins when a model is missing.
 - 2026-11-11: no relay in the show path, since the two scenes never run together. Magic sends straight to one scene port, udp 9201, where both the Blender bridge and Godot listen; `make lab` stays as an optional debug tool. Committed (9c8793c); the Godot side is proven by its tests only, not live.
 - Blender planet, 2026-11-11: the night edges stay as they are after round 12, as a plain OSC control: `/vj/grid`, default 1. No further mesh rounds. The fresh-open bug (no edges until a node is re-evaluated) gets fixed.
 - Blender planet, 2026-11-11: the terrain mesh becomes irregular so the real night edges form an uneven net (round 12).
