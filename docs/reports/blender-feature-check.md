@@ -21,49 +21,58 @@ Nodes B1 and B4. Planet (`synthwave_planet.blend`, rebuilt on this branch) and i
 
 ## Planet table
 
+With the Flight runtime and its terrain gate (branch `blender/flight`, round 11 ground, 2026-11-11, load 95): 35 of 37 effect. `vj_grid_speed` has no reader (lattice removed, round 10). `vj_flamingos`: no effect on any camera; `CAM_0`'s baked flock `Flock.CAM_0.0` has 0 points in the round 11 build (the runtime copies `CAM_1`'s 225 after a cut, 49 in view), so it is a build finding, not the Flight's. From `docs/reports/blender-feature-check-planet-flight.json`; counts: {'effect': 35, 'no effect': 2}; noise floor {'mad': 14.9684, 'frac': 0.15464, 'bias': 2.2395}; defaults restored: True; state equals defaults: True; holds released: True
+udp 9201: sent 37, received 37, applied 37, errors 0, not seen []
+
 | control | range | default | verdict | cam | mad (floor) | bias (floor) | x floor | readers | note |
 |---|---|---|---|---|---|---|---|---|---|
-| `/vj/bass` | 0..1 | 0 | effect | 0 | 2.100 (0.128) | 3.266 (0.074) | 1437 | 1n 0d |  |
-| `/vj/beat` | 0..1 | 0 | effect | 0 | 4.851 (0.164) | 6.658 (0.109) | 3379.1 | 0n 0d |  |
-| `/vj/blend` | 0..2 | 1 | no effect | 3 | 0.066 (0.049) | 0.007 (0.004) | 1.8 | 0n 0d py | read only in Python by flight_rt.frame |
-| `/vj/boost` | 0..1 | 0 | no effect | 10 | 0.051 (0.041) | 0.001 (0.003) | 3.4 | 0n 0d py | read only in Python by flight_rt.frame |
-| `/vj/cam` | 0..10 | 0 | effect | 0 | 103.334 (0.365) | 105.421 (0.330) | 319.1 | 0n 26d |  |
-| `/vj/cam_speed` | 0..4 | 1 | effect | 4 | 12.914 (0.039) | 8.155 (0.008) | 4416.9 | 0n 27d |  |
-| `/vj/eclipse` | 0..1 | 0 | effect | 3 | 11.064 (1.063) | 8.419 (0.038) | 221.5 | 4n 4d py |  |
-| `/vj/energy` | 0..1 | 0.3 | effect | 9 | 0.895 (0.068) | 0.090 (0.021) | 91.3 | 0n 0d py |  |
-| `/vj/flamingos` | 0..1 | 1 | effect | 0 | 0.316 (0.148) | 0.404 (0.074) | 103 | 1n 2d |  |
-| `/vj/flight` | 0..1 | 0 | no effect | 8 | 0.039 (0.061) | 0.007 (0.001) | 3.5 | 0n 0d py | read only in Python by flight_rt.frame |
-| `/vj/fog` | 0..1 | 0.35 | effect | 0 | 13.540 (0.167) | 17.227 (0.094) | 4229.2 | 3n 2d |  |
-| `/vj/fog_beat` | 0..1 | 0.5 | effect | 0 | 2.893 (0.212) | 3.497 (0.114) | 213.3 | 2n 0d |  |
-| `/vj/fog_glow` | 0..2 | 0.6 | effect | 0 | 9.048 (0.338) | 11.695 (0.202) | 249.1 | 3n 0d |  |
-| `/vj/fog_height` | 1..60 | 25 | effect | 0 | 14.768 (0.178) | 18.471 (0.108) | 1202.4 | 3n 0d |  |
-| `/vj/fog_hue` | 0..1 | 0 | effect | 0 | 4.379 (0.284) | 6.837 (0.155) | 153.1 | 3n 0d |  |
-| `/vj/fog_noise` | 0..1 | 0.6 | effect | 0 | 0.975 (0.179) | 0.579 (0.108) | 63.3 | 2n 0d |  |
-| `/vj/fog_scale` | 10..1000 | 260 | effect | 0 | 3.242 (0.171) | 2.394 (0.108) | 317.1 | 2n 0d |  |
-| `/vj/fog_speed` | 0..40 | 10 | effect | 0 | 1.311 (0.148) | 0.071 (0.066) | 258.5 | 2n 0d |  |
-| `/vj/grid` | 0..1 | 1 | effect | 0 | 3.639 (0.223) | 6.149 (0.224) | 372.9 | 2n 0d |  |
-| `/vj/grid_speed` | 0..4 | 0.6 | effect | 0 | 6.575 (0.377) | 0.160 (0.304) | 20.2 | 1n 0d |  |
-| `/vj/haze` | 0..1 | 1 | effect | 0 | 3.212 (0.192) | 4.622 (0.074) | 1468.8 | 2n 0d |  |
-| `/vj/hit` | 0..1 | 0 | effect | 3 | 0.832 (0.078) | 0.112 (0.007) | 82.5 | 0n 0d py |  |
-| `/vj/hue` | 0..1 | 0 | effect | 0 | 63.336 (0.191) | 60.503 (0.076) | 10000 | 1n 0d |  |
-| `/vj/intensity` | 0..2 | 1 | effect | 0 | 124.683 (0.207) | 141.704 (0.112) | 3906.2 | 1n 0d |  |
-| `/vj/level` | 0..1 | 0.5 | effect | 0 | 2.774 (0.161) | 3.447 (0.074) | 2064.8 | 6n 0d |  |
-| `/vj/meteor` | 0..1 | 0 | effect | 2 | 0.559 (0.098) | 0.545 (0.058) | 29.2 | 0n 0d py |  |
-| `/vj/moon` | 0..1 | 1 | effect | 4 | 19.428 (0.115) | 19.366 (0.030) | 647.7 | 3n 4d |  |
-| `/vj/moon_phase` | 0..1 | 1 | effect | 3 | 29.140 (1.064) | 21.816 (0.032) | 678 | 1n 0d py |  |
-| `/vj/nebula` | 0..1 | 1 | no effect | 3 | 0.604 (1.062) | 0.121 (0.032) | 3.8 | 1n 0d |  |
-| `/vj/night` | 0..1 | 0 | effect | 0 | 117.549 (0.305) | 136.543 (0.155) | 881.5 | 1n 28d |  |
-| `/vj/pyramids` | 0..1 | 1 | effect | 0 | 0.472 (0.155) | 0.128 (0.074) | 31.2 | 1n 4d |  |
-| `/vj/shock` | 0..1.5 | 0 | effect | 2 | 46.685 (0.084) | 39.047 (0.017) | 2247.8 | 0n 0d py |  |
-| `/vj/star_speed` | 0..10 | 0 | effect | 1 | 1.149 (0.080) | 1.268 (0.005) | 276.5 | 0n 0d py |  |
-| `/vj/stars` | 0..1 | 1 | effect | 1 | 1.127 (0.062) | 1.365 (0.031) | 46.2 | 11n 0d |  |
-| `/vj/strobe` | 0..1 | 0 | effect | 0 | 121.609 (0.156) | 152.417 (0.074) | 6578.9 | 1n 0d |  |
-| `/vj/sun` | 0..1 | 1 | effect | 0 | 14.635 (0.128) | 17.593 (0.074) | 987.4 | 3n 1d |  |
-| `/vj/water` | 0..1 | 1 | effect | 1 | 14.835 (0.069) | 19.394 (0.012) | 2058.5 | 1n 0d |  |
-
-counts: {'effect': 33, 'no effect': 4}; noise floor {'mad': 1.0616, 'frac': 0.041536, 'bias': 0.3042}; defaults restored: True; state equals defaults: True; holds released: True
-
-Columns: `cam` is the camera that showed the best effect (or the first tried, when none did). mad and bias are the largest cell value, the floor in brackets. `readers` are Attribute nodes (n) and drivers (d) found in the scene data; `py` marks a reader in Python.
+| `/vj/bass` | 0..1 | 0 | effect | 0 | 1.513 (0.414) | 1.918 (0.065) | 29.5 | 2n 0d |  |
+| `/vj/beat` | 0..1 | 0 | effect | 0 | 3.598 (0.129) | 4.789 (0.067) | 262.8 | 0n 0d |  |
+| `/vj/blend` | 0..2 | 1 | effect | 1 | 32.830 (0.133) | 35.511 (0.013) | 5276.6 | 0n 0d py |  |
+| `/vj/boost` | 0..1 | 0 | effect | 11 | 14.692 (0.237) | 6.179 (0.104) | 103.5 | 0n 0d py |  |
+| `/vj/cam` | 0..11 | 0 | effect | 0 | 119.407 (0.161) | 130.475 (0.067) | 1941 | 0n 26d |  |
+| `/vj/cam_speed` | 0..4 | 1 | effect | 4 | 8.331 (0.077) | 1.643 (0.030) | 3629.2 | 0n 27d |  |
+| `/vj/eclipse` | 0..1 | 0 | effect | 3 | 12.004 (0.288) | 9.587 (0.026) | 371.9 | 6n 4d py |  |
+| `/vj/energy` | 0..1 | 0.3 | effect | 0 | 13.319 (0.072) | 4.527 (0.030) | 6207.5 | 0n 0d py |  |
+| `/vj/flamingos` | 0..1 | 1 | no effect | 9 | 0.028 (0.024) | 0.016 (0.007) | 2.3 | 1n 2d |  |
+| `/vj/flight` | 0..1 | 0 | effect | 11 | 155.914 (0.046) | 191.191 (0.003) | 65356.7 | 0n 0d py |  |
+| `/vj/fog` | 0..1 | 0.35 | effect | 0 | 12.733 (0.144) | 16.484 (0.114) | 424.8 | 4n 2d |  |
+| `/vj/fog_beat` | 0..1 | 0.5 | effect | 0 | 2.646 (0.141) | 3.356 (0.068) | 97.6 | 2n 0d |  |
+| `/vj/fog_glow` | 0..2 | 0.6 | effect | 0 | 8.357 (0.508) | 9.966 (0.107) | 93.3 | 4n 0d |  |
+| `/vj/fog_height` | 1..60 | 25 | effect | 0 | 14.498 (0.179) | 18.026 (0.043) | 420.2 | 4n 0d |  |
+| `/vj/fog_hue` | 0..1 | 0 | effect | 0 | 4.063 (0.315) | 5.798 (0.044) | 131.2 | 4n 0d | weak or single-cell, repeated |
+| `/vj/fog_noise` | 0..1 | 0.6 | effect | 0 | 1.000 (0.179) | 1.013 (0.050) | 20.3 | 2n 0d |  |
+| `/vj/fog_scale` | 10..1000 | 260 | effect | 0 | 2.687 (0.181) | 2.479 (0.044) | 55.7 | 2n 0d |  |
+| `/vj/fog_speed` | 0..40 | 10 | effect | 0 | 1.196 (0.126) | 0.582 (0.054) | 33.8 | 2n 0d |  |
+| `/vj/grid` | 0..1 | 1 | effect | 0 | 3.147 (0.495) | 4.533 (0.398) | 11.4 | 2n 0d |  |
+| `/vj/grid_speed` | 0..4 | 0.6 | no effect | 5 | 0.352 (0.307) | 0.025 (0.016) | 1.6 | 0n 0d | no shader or driver reads it |
+| `/vj/haze` | 0..1 | 1 | effect | 0 | 2.943 (0.137) | 4.341 (0.069) | 193.7 | 3n 0d |  |
+| `/vj/hit` | 0..1 | 0 | effect | 0 | 17.308 (0.058) | 5.281 (0.030) | 5383.9 | 0n 0d py |  |
+| `/vj/hue` | 0..1 | 0 | effect | 0 | 64.932 (0.065) | 65.084 (0.012) | 5250.2 | 1n 0d | weak or single-cell, repeated |
+| `/vj/intensity` | 0..2 | 1 | effect | 0 | 120.345 (0.104) | 137.299 (0.059) | 2339 | 1n 0d |  |
+| `/vj/level` | 0..1 | 0.5 | effect | 0 | 2.681 (0.066) | 3.433 (0.012) | 703.8 | 7n 0d |  |
+| `/vj/meteor` | 0..1 | 0 | effect | 2 | 0.682 (0.197) | 0.632 (0.118) | 5.4 | 0n 0d py | weak or single-cell, repeated |
+| `/vj/moon` | 0..1 | 1 | effect | 4 | 16.899 (0.357) | 16.735 (0.128) | 131.1 | 5n 4d |  |
+| `/vj/moon_phase` | 0..1 | 1 | effect | 3 | 29.523 (0.311) | 22.813 (0.015) | 1541.4 | 1n 0d py |  |
+| `/vj/nebula` | 0..1 | 1 | effect | 10 | 1.757 (0.149) | 2.062 (0.044) | 46.7 | 3n 0d |  |
+| `/vj/night` | 0..1 | 0 | effect | 0 | 116.566 (0.093) | 135.694 (0.061) | 2224.5 | 3n 28d |  |
+| `/vj/pyramids` | 0..1 | 1 | effect | 0 | 0.263 (0.065) | 0.096 (0.012) | 13.4 | 1n 4d |  |
+| `/vj/shock` | 0..1.5 | 0 | effect | 2 | 46.697 (0.144) | 42.406 (0.106) | 777.8 | 0n 0d py |  |
+| `/vj/star_speed` | 0..10 | 0 | effect | 1 | 2.458 (0.207) | 2.643 (0.020) | 132.2 | 0n 0d py |  |
+| `/vj/stars` | 0..1 | 1 | effect | 1 | 0.737 (0.263) | 0.722 (0.066) | 10.9 | 13n 0d |  |
+| `/vj/strobe` | 0..1 | 0 | effect | 0 | 126.879 (0.081) | 160.804 (0.014) | 11652.4 | 1n 0d |  |
+| `/vj/sun` | 0..1 | 1 | effect | 0 | 14.481 (0.071) | 17.605 (0.019) | 946.5 | 3n 1d |  |
+| `/vj/water` | 0..1 | 1 | effect | 1 | 13.655 (0.165) | 17.986 (0.027) | 743.8 | 2n 0d |  |
+| address | kind | detail |
+|---|---|---|
+| message | property | expected | got | ok |
+|---|---|---|---|---|
+| `/vj/intensity 0.5` | vj_intensity | 1.0 | 1.0 | yes |
+| `/vj/fog_height 0.42` | vj_fog_height | 25.78 | 25.78 | yes |
+| `/vj/fog_scale 0.26` | vj_fog_scale | 267.4 | 267.4 | yes |
+| `/vj/cam 12` | vj_cam | 11 | 11.0 | yes |
+| `/vj/shock 1.4` | vj_shock | 1.4 | 1.4 | yes |
+| `/vj/cam_auto 0` | none (ignored +1) | - | - | yes |
 
 ## Island table
 

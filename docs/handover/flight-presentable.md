@@ -1,4 +1,4 @@
-# Flight presentable (B2), Part A done, Part B half done, Part C (terrain gate) Blender-free part done
+# Flight presentable (B2), Part A done, Part B half done, Part C (terrain gate) done, Hover live open
 
 Branch `blender/flight`, `integration/presentable` merged (round 10, 939420e). Part A (no Blender): `make verify` and `make test` green. Part B (live, 2026-11-11, load 45 to 185, no fps numbers): the five Flight rows show an effect, the full check found four other controls that lost theirs; Hover arrival, cut stalls and idle cost are not measured. Stopped at half context, Blender closed.
 
@@ -30,7 +30,23 @@ Contract: `/vj/cam` 0..11 (`CAM_11` the planet's Flight shot), `make osc-sync` (
 
 Tests: `blender/tests/test_terrain.py` (the rule, and a stepped Director through cuts, blends and a change of mind). `make verify` 348 ok; `make test`: magic 44 (1 skipped), osc 21, blender 8, `godot-test` 357 passed, `godot-check` 22 effect (2026-11-11). Not run live: nothing of Part C has met Blender yet.
 
-Live next (after the merge of round 11): see the brief's live part; the equality proof is the first thing, then the full check (`vj_water`, `vj_flamingos`, `vj_meteor` back), Hover arrival, cut stalls (into and out of the Flight: the costs above), idle A/B.
+## Part C, live (2026-11-11, `integration/presentable` 05f3b9b merged: round 11 ground; load 95, `fps_trustworthy` false)
+
+- `make verify` 348 ok after the merge, `make blender-rebuild` (needed: `planet_runtime` is embedded), `make blender-open` start state ready. On a fixed shot: `stream` False, build timer off, 0 slots shown, only `CAM_0`'s `Planet.`, `Water.`, `Props.` sets visible.
+- Equality (`blender/review/terrain_equality.py`, numbers `terrain_equality_diff.py blender/review/out/terrain_eq`): clocks frozen, `/vj/energy` 0, `flight_rt.moved_pose` held at the shot's own pose (the energy ellipse moves a fixed shot by at least 1 m at any energy, `energy.move` `AMP_MIN`). Mean abs diff 0..255 and share of pixels off by more than 8:
+
+| case | floor started (A1-A2) | floor stopped (B1-B2) | started-stopped (A1-B1, A2-B2) |
+|---|---|---|---|
+| `CAM_0` day | 0.042, 0.00013 | 0.043, 0.00031 | 0.052 / 0.042, 0.00031 / 0.00034 |
+| `CAM_1` day (river) | 0.073, 0.00073 | 0.049, 0.0002 | 0.075 / 0.055, 0.00066 / 0.00023 |
+| `CAM_0` night | 0.677, 0.031 | 0.366, 0.010 | 0.646 / 0.614, 0.029 / 0.026 |
+
+  Started against stopped stays within the larger floor in every case.
+- Full check (`docs/reports/blender-feature-check-planet-flight.json`, table in `docs/reports/blender-feature-check.md`): 35 effect, 2 no effect, contract 0 mismatches, holds released. Back: `vj_water` 744x on `CAM_1`, `vj_meteor` 5.4x on `CAM_2` (was 29x on 2026-11-10). Kept: `vj_flight` 65357x and `vj_boost` 104x on `CAM_11`, `vj_blend` 5277x on `CAM_1`, `vj_energy` 6208x, `vj_hit` 5384x, `vj_cam` 1941x, `vj_bass` 30x on `CAM_0`. New against 2026-11-10: `vj_blend`, `vj_boost`, `vj_flight`, `vj_nebula`. Lost: `vj_grid_speed` (on purpose) and `vj_flamingos` (2.3x best, all 12 cameras): `Flock.CAM_0.0` has 0 points in this build (round 11 relief; `CAM_6` also 0). The runtime part works: after a cut to `CAM_1` its sets and its 225 flock points are on, 49 in view at 818 m and more. Owner: the planet build (`build_planet.py` flock spots), not the Flight; or move the row to a camera with a flock.
+- Hover arrival (`hover_arrival.py`, `blender/review/out/hover_arrival.json`): **24.7 s** from f at 1 to the Hover (`verify_flight` 3h: 10.2 s on its synthetic ground), seed 1. Frames median 54 ms in that window, the clock's 0.1 s cap hit by 1.1 % of frames, sim time 24.6 s against wall 24.7 s: not a slow-clock artefact. Open: live ground (round 11 relief) or the larger dt (54 ms against the verify step); next look at `F.step` with `dt` 0.054 on the verify terrain (`verify_flight.py` 3h at that step).
+- Cut stalls, hard cuts `/vj/blend` 0 (`blender/review/cut_flight_jobs.py`, `blender/review/out/cut_flight.json`), worst draw interval within 1.5 s, frames 46 to 54 ms at rest: into the Flight 92, 102, 106, 108, 110 ms; out of the Flight 57, 66, 82, 88, 90 ms (to `CAM_0`, `CAM_0`, `CAM_5`, `CAM_1`, `CAM_9`); between fixed shots 71 to 90 ms. Under load: reported, not judged against M1 70 ms.
+- Idle A/B (`ab_frametime.py` on `CAM_0`, `/vj/blend` 0, 3 rounds interleaved, `blender/review/out/idle_ab.json`): started 48.3 ms (47.7 to 48.8), stopped 46.0 ms (45.5 to 46.3); 2.3 ms more, the rounds do not overlap. `flight_rt.frame` itself is 0.27 ms median (wrapped for 130 frames), the build timer is off and no slot is shown, so the rest comes after the handler: most likely the rig moving every frame (the energy ellipse) against a still `CAM_0` when stopped. `fps_trustworthy` false (load 95): context only.
+
 
 ## Part B, live results
 
