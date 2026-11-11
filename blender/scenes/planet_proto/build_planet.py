@@ -114,6 +114,9 @@ CENTER = Vector((0.0, 0.0, -R))   # the north pole sits at the origin, where the
 PATCHES = 32                   # patches per cube face side; a power of two keeps lattice coordinates exact
 LMAX = 7                       # finest patch: 2^7 cells per side (about 6 m, within about 200 m of the camera)
 PATCH_M = R * math.pi / 2 / PATCHES    # m, patch side on the sphere
+JITTER = 0.30                  # cells: each interior patch vertex moves up to this far sideways in a hashed direction,
+#                                and each cell's diagonal is chosen by a hash, so the real edges at night form an uneven net
+#                                instead of a lattice (round 12; under 0.35 no triangle can fold over)
 H_MAX = 650.0                  # m, highest terrain (horizon culling, reflection backdrop)
 HYDRO_SUBDIV = 7               # hydrology icosphere: 40962 vertices, about 260 m apart
 OCEAN_REACH = 3                # rings past the last sea vertex that still carry sea level (the coast comes from the fine terrain)
@@ -1502,11 +1505,48 @@ def patch_mesh(G, points, levels):
     return G.store(geo, "pl_y", G.math("ROUND", G.mul(G.addf(y_, 0.5), n_)))
 
 
+def lattice_hash(G, x, y, salt):
+    """Three values in 0..1 from a lattice position (x, y), the patch's level and the patch itself: no time, no
+    camera, so nothing moves while the LOD stands still. salt keeps the vertex and the cell hashes apart."""
+    seed = G.addf(G.mul(G.read("pl_f"), PATCHES * PATCHES), G.addf(G.mul(G.read("pl_j"), PATCHES), G.read("pl_i")))
+    wn = G.node("ShaderNodeTexWhiteNoise", noise_dimensions="4D")
+    G.feed(wn.inputs["Vector"], G.comb(x, y, G.read("pl_l")))
+    G.feed(wn.inputs["W"], G.addf(seed, salt))
+    return wn.outputs["Color"]
+
+
 def patch_dir(G):
+    """Unit direction of a patch vertex. Interior vertices sit up to JITTER cells off their lattice point in a hashed
+    direction (uniform over a disc); the height is read there, so the surface keeps its shape and only the sampling
+    moves. Border vertices stay on the lattice, so stitch() and the neighbour patch see the same border."""
     n_ = G.math("POWER", 2.0, G.read("pl_l"))
-    a = face_uv(G, G.addf(G.read("pl_i"), G.math("DIVIDE", G.read("pl_x"), n_)))
-    b = face_uv(G, G.addf(G.read("pl_j"), G.math("DIVIDE", G.read("pl_y"), n_)))
+    x_, y_ = G.read("pl_x"), G.read("pl_y")
+    inner = G.mul(G.mul(G.math("GREATER_THAN", x_, 0.5), G.math("LESS_THAN", x_, G.sub(n_, 0.5))),
+                  G.mul(G.math("GREATER_THAN", y_, 0.5), G.math("LESS_THAN", y_, G.sub(n_, 0.5))))
+    u_, v_ = G.sep(lattice_hash(G, x_, y_, 0.0))[:2]
+    rad = G.mul(G.math("SQRT", v_), G.mul(inner, JITTER))
+    ang = G.mul(u_, 2.0 * math.pi)
+    x_ = G.addf(x_, G.mul(rad, G.math("COSINE", ang)))
+    y_ = G.addf(y_, G.mul(rad, G.math("SINE", ang)))
+    a = face_uv(G, G.addf(G.read("pl_i"), G.math("DIVIDE", x_, n_)))
+    b = face_uv(G, G.addf(G.read("pl_j"), G.math("DIVIDE", y_, n_)))
     return cube_dir(G, G.read("pl_f"), a, b)
+
+
+def cell_triangles(G, mesh):
+    """Split each cell along the diagonal a hash of its lattice cell picks: with the jitter of patch_dir() the edges
+    run in no regular direction. The border edges are the same for either diagonal, so stitching is unchanged.
+    At the face domain pl_x and pl_y read as their corners' mean, the cell's lower corner plus 0.5."""
+    cx, cy = G.math("FLOOR", G.read("pl_x")), G.math("FLOOR", G.read("pl_y"))
+    flip = G.math("GREATER_THAN", G.sep(lattice_hash(G, cx, cy, 0.5))[0], 0.5)
+    alt = G.node("GeometryNodeTriangulate")
+    G.feed(alt.inputs["Mesh"], mesh)
+    G.feed(alt.inputs["Selection"], flip)
+    alt.inputs["Quad Method"].default_value = "Fixed Alternate"
+    fix = G.node("GeometryNodeTriangulate")
+    G.feed(fix.inputs["Mesh"], alt.outputs[0])
+    fix.inputs["Quad Method"].default_value = "Fixed"
+    return fix.outputs[0]
 
 
 def stitch(G, geo, attrs=()):
@@ -2258,6 +2298,7 @@ land = G.setpos(mesh, G.vmath("ADD", G.vmath("SCALE", dvec, scale=G.addf(R, sf["
 facet_n = G.node("ShaderNodeTexWhiteNoise", noise_dimensions="3D")     # one shade per triangle: the low-poly facets
 G.feed(facet_n.inputs["Vector"], G.vmath("SCALE", G.pos(), scale=0.37))
 land = G.store(land, "pl_facet", facet_n.outputs["Value"], domain="FACE")
+land = cell_triangles(G, land)     # after pl_facet: both triangles of a cell keep its one shade
 rel = G.vmath("SUBTRACT", G.pos(), tuple(CENTER))
 mirr = G.delete(land, G.math("LESS_THAN", G.read("pl_mir"), 0.5))
 mirr = G.setpos(mirr, G.vmath("ADD", G.vmath("SCALE", G.vmath("NORMALIZE", rel), scale=G.sub(2.0 * R, G.vmath("LENGTH", rel))), tuple(CENTER)))
@@ -2280,6 +2321,7 @@ mesh = G.setpos(mesh, G.vmath("ADD", G.vmath("SCALE", dvec, scale=G.addf(R, sf["
 mesh = stitch(G, mesh, ("pl_depth",))
 wetf = G.math("MINIMUM", G.math("MAXIMUM", G.addf(G.read("pl_depth"), 1.0), 0.0), 1.0)   # face average > 0: some corner is wet
 mesh = G.delete(mesh, G.math("LESS_THAN", wetf, 0.001), "FACE")
+mesh = cell_triangles(G, mesh)     # the land's triangles, so water and shore meet as before; wet test per cell as before
 G.feed(go["Geometry"], shade(G, mesh, m_water))
 
 # --- reflection backdrop and atmosphere shell
