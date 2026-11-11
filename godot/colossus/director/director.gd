@@ -23,10 +23,22 @@ const WIDE_NARROWEST := 6.0
 const HERO_NARROWEST := 8.0
 ## The low hero lens spans the Wanderer and the giant by this factor, so both sit inside the frame.
 const HERO_SPAN_MARGIN := 1.5
+## The Wanderer takes at most this share of the frame height in the low hero shot on the long walk
+## (the lens floor would give him half): the camera backs off, up to HERO_BACK_MAX m, until he does.
+## His height in metres, for the share.
+const HERO_MAX_SHARE := 0.28
+const HERO_BACK_MAX := 48.0
+const HERO_FIGURE := 1.7
 ## The low camera's line of sight to the Wanderer clears the land by this much (m), sampled
 ## SIGHT_SAMPLES times.
 const SIGHT_MARGIN := 0.2
 const SIGHT_SAMPLES := 16
+
+## Seconds the shot's look takes to settle after a cut.
+const LOOK_SECONDS := 0.5
+## The lamp's pitch (degrees, negative lights from above) and colour: the sky's bounce.
+const LAMP_PITCH := -30.0
+const LAMP_COLOR := Color("a9b8cc")
 
 var wanderer: Wanderer
 var colossus: Colossus
@@ -34,6 +46,13 @@ var height_at: Callable = func(_x: float, _z: float) -> float: return 0.0
 var phase: Arc.Phase = Arc.Phase.APPROACH
 var shot: Shots.Shot = Shots.Shot.SCALE_WIDE
 var takeover := Takeover.new(4.0)
+## The shot's look, settled over LOOK_SECONDS: a lamp on the camera, the exposure factor and the
+## contrast share (Shots.look); Main passes the last two to the World.
+var lamp: DirectionalLight3D
+## False keeps every shot in the dusk look (the probes that compare with and without).
+var shot_look := true
+var exposure_gain := 1.0
+var contrast_scale := 1.0
 
 var _bars_in_phase := 0
 var _bars_on_shot := 0
@@ -51,6 +70,19 @@ var _want_aim := Vector3.ZERO
 var _want_fov := 53.0
 ## Land samples along the line of sight on the long walk, reused every frame.
 var _sight := PackedVector2Array()
+
+
+func _ready() -> void:
+	lamp = DirectionalLight3D.new()
+	lamp.rotation = Vector3(deg_to_rad(LAMP_PITCH), 0.0, 0.0)
+	lamp.light_color = LAMP_COLOR
+	lamp.light_energy = 0.0
+	lamp.light_specular = 0.0
+	lamp.light_volumetric_fog_energy = 0.0
+	lamp.light_bake_mode = Light3D.BAKE_DISABLED
+	lamp.shadow_enabled = false
+	lamp.visible = false
+	add_child(lamp)
 
 
 func set_phase(p: Arc.Phase) -> void:
@@ -161,6 +193,17 @@ func _process(delta: float) -> void:
 		look_at(_aim, Vector3.UP)
 	if shot == Shots.Shot.CLOSE_GRIP and colossus.is_shaking():
 		rotate_object_local(Vector3.FORWARD, colossus.roll)
+	_settle_look(delta)
+
+
+## Eases the lamp, the exposure factor and the contrast share toward what the shot wants.
+func _settle_look(delta: float) -> void:
+	var want := Shots.look(shot, wanderer.on_colossus() and shot_look)
+	var k := 1.0 - exp(-delta / LOOK_SECONDS)
+	lamp.light_energy = lerpf(lamp.light_energy, want.x, k)
+	lamp.visible = lamp.light_energy > 0.02
+	exposure_gain = lerpf(exposure_gain, want.y, k)
+	contrast_scale = lerpf(contrast_scale, want.z, k)
 
 
 func _takeover_place() -> void:
@@ -248,28 +291,45 @@ func _long_walk(w: Vector3, back: float, aside: float, rise: float, narrowest: f
 	var dir := Vector3(c.x - w.x, 0.0, c.z - w.z)
 	var gap := dir.length()
 	dir = dir.normalized() if gap > 0.1 else Vector3.FORWARD
-	var pos := w - dir * back + dir.cross(Vector3.UP).normalized() * aside + Vector3.UP * rise
-	pos.y = maxf(pos.y, float(height_at.call(pos.x, pos.z)) + 0.3)
-	# On the Shrine's slope a crest can stand between the low camera and him: rise until the line
-	# to his knees clears the land.
 	var knees := w + Vector3.DOWN * 0.7
 	if _sight.size() != SIGHT_SAMPLES:
 		_sight.resize(SIGHT_SAMPLES)
-	for k in _sight.size():
-		var f := (k + 1.0) / (_sight.size() + 1.0)
-		var p := pos.lerp(knees, f)
-		_sight[k] = Vector2(f, float(height_at.call(p.x, p.z)))
-	pos.y = clear_height(pos, knees, _sight, SIGHT_MARGIN)
-	var feet := w.y - 1.2
-	var lo := minf(elevation_deg(feet - pos.y, back), elevation_deg(c.y - pos.y, gap + back))
-	var hi := maxf(
-		elevation_deg(feet + 1.7 - pos.y, back), elevation_deg(c.y + h - pos.y, gap + back)
-	)
-	var lens := hero_lens(lo, hi, narrowest)
+	var pos := Vector3.ZERO
+	var lens := Vector2.ZERO
+	# Second pass only when the first lens would fill the frame with him.
+	for _pass in 2:
+		pos = w - dir * back + dir.cross(Vector3.UP).normalized() * aside + Vector3.UP * rise
+		pos.y = maxf(pos.y, float(height_at.call(pos.x, pos.z)) + 0.3)
+		# On the Shrine's slope a crest can stand between the low camera and him: rise until the
+		# line to his knees clears the land.
+		for k in _sight.size():
+			var f := (k + 1.0) / (_sight.size() + 1.0)
+			var p := pos.lerp(knees, f)
+			_sight[k] = Vector2(f, float(height_at.call(p.x, p.z)))
+		pos.y = clear_height(pos, knees, _sight, SIGHT_MARGIN)
+		var feet := w.y - 1.2
+		var lo := minf(elevation_deg(feet - pos.y, back), elevation_deg(c.y - pos.y, gap + back))
+		var hi := maxf(
+			elevation_deg(feet + HERO_FIGURE - pos.y, back),
+			elevation_deg(c.y + h - pos.y, gap + back)
+		)
+		lens = hero_lens(lo, hi, narrowest)
+		var wider := back_for_share(lens.x, HERO_MAX_SHARE, HERO_FIGURE, back, HERO_BACK_MAX)
+		if wider <= back:
+			break
+		back = wider
 	var reach := gap + back
 	_want_pos = pos
 	_want_aim = pos + dir * reach + Vector3.UP * tan(deg_to_rad(lens.y)) * reach
 	_want_fov = minf(_want_fov, lens.x)
+
+
+## The distance behind a figure `size` m tall at which a lens of `fov` degrees shows him `share`
+## of the frame height, kept between `back` and `back_max`.
+static func back_for_share(
+	fov: float, share: float, size: float, back: float, back_max: float
+) -> float:
+	return clampf(size / tan(deg_to_rad(fov * share)), back, maxf(back, back_max))
 
 
 ## The lowest camera height from which the line to `target` passes `margin` m above the land:

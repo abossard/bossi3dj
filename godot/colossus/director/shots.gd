@@ -4,6 +4,13 @@ class_name Shots
 enum Shot { SCALE_WIDE = 1, LOW_HERO = 2, OVER_SHOULDER = 3, CLOSE_GRIP = 4, AERIAL = 5 }
 
 const MAX_AERIAL_BARS := 16
+## The climb shots look at a dark body with the low dusk sun behind it: a lamp of this energy hangs
+## on the camera (the sky's bounce), the exposure is lifted by this factor and the contrast eased
+## to this share of the scene's, so the Wanderer and the surface he holds read (tests/climb_light.gd
+## has the numbers). Every other shot keeps the dusk as it is.
+const CLIMB_LAMP := 3.0
+const CLIMB_EXPOSURE := 1.8
+const CLIMB_CONTRAST := 1.0 / 1.2
 
 
 ## Shot to cut to at a bar line. `bars_in_phase` counts bars since the Phase began.
@@ -53,3 +60,12 @@ static func lens_mm(shot: Shot) -> float:
 ## Vertical field of view in degrees for a full-frame (24 mm tall) sensor.
 static func fov(shot: Shot) -> float:
 	return rad_to_deg(2.0 * atan(12.0 / lens_mm(shot)))
+
+
+## The look that belongs to a shot: x the energy of the lamp on the camera, y the exposure factor,
+## z the share of the scene's contrast. Only the over-shoulder and close grip shots on the Colossus
+## change it.
+static func look(shot: Shot, climbing: bool) -> Vector3:
+	if climbing and (shot == Shot.OVER_SHOULDER or shot == Shot.CLOSE_GRIP):
+		return Vector3(CLIMB_LAMP, CLIMB_EXPOSURE, CLIMB_CONTRAST)
+	return Vector3(0.0, 1.0, 1.0)

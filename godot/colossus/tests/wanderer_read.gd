@@ -2,7 +2,9 @@ extends SceneTree
 ## Does the Wanderer read in the low hero shot on the long walk? On Metal, the shot pinned, the
 ## Wanderer at the Shrine start and at gaps down the plain: his height in pixels (of 1080) and the
 ## contrast of his body against the ground beside him (difference over the brighter, 0..1).
-## Frames are saved to OUT for the look round. No Syphon, no page, own OSC port.
+## The shot's rubric numbers: the Wanderer's share of the frame height (at most 0.40) and whether
+## his outline overlaps the Colossus's on screen (it must not). Frames are saved to OUT for the
+## look round. No Syphon, no page, own OSC port.
 ## Godot --path godot/colossus --script res://tests/wanderer_read.gd -- <out dir>
 
 const TEST_PORT := 19202
@@ -33,6 +35,24 @@ func _luma(img: Image, at: Vector2, half: int) -> float:
 				sum += 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b
 				n += 1
 	return sum / maxf(n, 1.0)
+
+
+## Screen rectangle of a box `width` m wide and `height` m tall standing at `foot`.
+func _rect(cam: Camera3D, foot: Vector3, width: float, height: float) -> Rect2:
+	var side := cam.global_basis.x * width * 0.5
+	var pts := [
+		foot - side,
+		foot + side,
+		foot + Vector3.UP * height - side,
+		foot + Vector3.UP * height + side
+	]
+	var lo := Vector2(INF, INF)
+	var hi := Vector2(-INF, -INF)
+	for p: Vector3 in pts:
+		var at := cam.unproject_position(p)
+		lo = lo.min(at)
+		hi = hi.max(at)
+	return Rect2(lo, hi - lo)
 
 
 func _run() -> void:
@@ -81,6 +101,14 @@ func _run() -> void:
 			if p.y < main.world.height_at(p.x, p.z):
 				blocked += 1
 		print("  line of sight camera to chest: %d of 19 samples under the land" % blocked)
+		var wand_rect := _rect(cam, main.wanderer.global_position, 0.8, 1.7)
+		var giant := main.colossus
+		var giant_rect := _rect(cam, giant.global_position, giant.height_m * 0.4, giant.height_m)
+		var share := px / float(img.get_height())
+		var gap_px := maxf(
+			giant_rect.position.x - wand_rect.end.x, wand_rect.position.x - giant_rect.end.x
+		)
+		var whole := Rect2(Vector2.ZERO, Vector2(img.get_size())).encloses(wand_rect)
 		var name := "start" if gap < 0.0 else "%dm" % gap
 		img.save_png("%s/low-hero-%s.png" % [out, name])
 		print(
@@ -88,6 +116,7 @@ func _run() -> void:
 				(
 					"low hero %-6s wanderer %3d px at %d,%d  luma body %.3f (hidden %.3f)"
 					+ "  beside %.3f  contrast %.2f  camera %.1f m off, fov %.1f"
+					+ "  | share %.2f, colossus %d px, side gap %d px (overlap if negative), whole %s"
 				)
 				% [
 					name,
@@ -100,6 +129,10 @@ func _run() -> void:
 					contrast,
 					cam.global_position.distance_to(main.wanderer.global_position),
 					cam.fov,
+					share,
+					giant_rect.size.y,
+					gap_px,
+					whole,
 				]
 			)
 		)

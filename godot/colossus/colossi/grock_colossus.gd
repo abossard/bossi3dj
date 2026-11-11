@@ -8,6 +8,19 @@ extends Colossus
 
 const MODEL := "res://assets/models/grock/grock.gltf"
 const IDLE := "idle2"
+const SHAKE_CLIP := ""
+const SHAKE_BLEND := 0.2
+## Rock detail over the model's own textures (grock_rock.gdshader): the terrain's tiling rock.
+const ROCK_SHADER := preload("res://colossi/grock_rock.gdshader")
+const ROCK_DETAIL := "res://assets/terrain/rocky_terrain_02_normal_rough.png"
+const ROCK_TINT := "res://assets/terrain/rocky_terrain_02_albedo_height.png"
+## The glints that stand for its eyes (it has none): pale, as the stand-in's.
+const EYE_COLOR := Color("cfe3ee")
+const EYE_ENERGY := 8.0
+## Where the eyes are on the face, in the rig's own space (x, y); the glint sits on the face's
+## front surface there. Half a metre across, flattened against the face.
+const EYES := [["eye_l", 1.0, 27.2], ["eye_r", -1.0, 27.2]]
+const EYE_RADIUS := 0.4
 ## Bones: [thigh_l, shin_l, foot_l, thigh_r, shin_r, foot_r, upper_arm_l, upper_arm_r, spine, head,
 ## hips].
 const GAIT_BONES := [
@@ -60,6 +73,10 @@ const GRID_COLS := [-3.0, 0.0, 3.0]
 static var _scene: PackedScene
 static var _layout := {}
 
+## The clip played as a Shake (one of its own: Attack1 to 3, Defend1 to 3); "" keeps the idle clip
+## and the roll RigGait gives the spine.
+var shake_clip := SHAKE_CLIP
+
 var _skeleton: Skeleton3D
 var _sim: PhysicalBoneSimulator3D
 var _ik: TwoBoneIK3D
@@ -101,15 +118,15 @@ func _build() -> void:
 	_skeleton = model.find_child("Skeleton3D", true, false)
 	_anim = model.find_child("AnimationPlayer", true, false)
 	for mi: MeshInstance3D in _skeleton.find_children("*", "MeshInstance3D", true, false):
-		var mat := (mi.mesh.surface_get_material(0) as StandardMaterial3D).duplicate()
 		# The haze must not swallow a far giant: at 1.6 km it would take him to the colour of
-		# the sky.
-		mat.disable_fog = true
-		mi.material_override = mat
+		# the sky (the rock shader draws without fog).
+		mi.material_override = _rock_material(mi.mesh.surface_get_material(0))
 	_anim.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS
 	_anim.get_animation(IDLE).loop_mode = Animation.LOOP_LINEAR
 	_anim.play(IDLE)
+	shaken.connect(_on_shaken)
 	_build_grab_path()
+	_build_eyes()
 	_build_gait()
 	_build_ragdoll()
 
@@ -117,6 +134,8 @@ func _build() -> void:
 func _build_grab_path() -> void:
 	var pts := {}
 	for key: String in _layout:
+		if key.begins_with("eye"):
+			continue
 		var g: Dictionary = _layout[key]
 		var bone: String = g["bone"]
 		var at := _attach(bone)
@@ -142,6 +161,52 @@ func _build_grab_path() -> void:
 				_link(pts["grid_%d_%d" % [row, col]], pts["grid_%d_%d" % [row + 1, col]])
 	_link(pts["grid_%d_1" % (GRID_ROWS.size() - 1)], pts["top"])
 	_link(pts["top"], pts["head"])
+
+
+## Its own textures and the terrain's rock as detail, drawn without fog.
+static func _rock_material(source: Material) -> ShaderMaterial:
+	var src := source as StandardMaterial3D
+	var mat := ShaderMaterial.new()
+	mat.shader = ROCK_SHADER
+	mat.set_shader_parameter("albedo_tex", src.albedo_texture)
+	mat.set_shader_parameter("normal_tex", src.normal_texture)
+	mat.set_shader_parameter("rough_tex", src.roughness_texture)
+	mat.set_shader_parameter("detail_tex", load(ROCK_DETAIL))
+	mat.set_shader_parameter("tint_tex", load(ROCK_TINT))
+	return mat
+
+
+## The rock shader's material, for the probes that switch its parts.
+func rock_material() -> ShaderMaterial:
+	var mi := _skeleton.find_children("*", "MeshInstance3D", true, false)[0] as MeshInstance3D
+	return mi.material_override as ShaderMaterial
+
+
+## Two emissive glints on the face, on the head bone so the head's turn carries them.
+func _build_eyes() -> void:
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = EYE_COLOR
+	mat.emission_enabled = true
+	mat.emission = EYE_COLOR
+	mat.emission_energy_multiplier = EYE_ENERGY
+	var glint := SphereMesh.new()
+	glint.radius = EYE_RADIUS
+	glint.height = EYE_RADIUS * 2.0
+	glint.radial_segments = 12
+	glint.rings = 6
+	glint.material = mat
+	var head := _skeleton.find_bone("Head")
+	var rest := _skeleton.get_bone_global_rest(head)
+	var at := _attach("Head")
+	for key: String in ["eye_l", "eye_r"]:
+		var eye := MeshInstance3D.new()
+		eye.name = key
+		eye.mesh = glint
+		eye.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var spot: Dictionary = _layout[key]
+		var flat := Basis.from_scale(Vector3(1.0, 0.6, 0.45))
+		eye.transform = rest.affine_inverse() * Transform3D(flat, spot["at"])
+		at.add_child(eye)
 
 
 func _build_gait() -> void:
@@ -250,6 +315,13 @@ func _pose(stride: float, roll: float, yaw: float) -> void:
 	_gait.bob = absf(sin(step * PI)) * 0.012 * height_m if not is_standing() else 0.0
 
 
+func _on_shaken(_strength: float) -> void:
+	if shake_clip == "" or state != State.ROAM:
+		return
+	_anim.play(shake_clip, SHAKE_BLEND)
+	_anim.queue(IDLE)
+
+
 func _topple(side: float) -> void:
 	_ik.active = false
 	_gait.active = false
@@ -318,6 +390,8 @@ static func _find_layout(model: Node) -> Dictionary:
 			spots.append(
 				["grid_%d_%d" % [row, col], Vector2(GRID_COLS[col], GRID_ROWS[row]), "back"]
 			)
+	for e: Array in EYES:
+		spots.append([e[0], Vector2(e[1], e[2]), "front"])
 	spots.append(["top", Vector2.ZERO, "top"])
 	spots.append(["head", Vector2.ZERO, "head"])
 	var out := {}
@@ -333,6 +407,9 @@ static func _find_layout(model: Node) -> Dictionary:
 					"back":
 						if Vector2(v.x, v.y).distance_to(spot[1]) < radius:
 							score = -v.z
+					"front":
+						if Vector2(v.x, v.y).distance_to(spot[1]) < radius:
+							score = v.z
 					"top":
 						if absf(v.x) < radius * 2.0 and v.z < 2.0:
 							score = v.y

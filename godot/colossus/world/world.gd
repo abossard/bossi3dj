@@ -11,10 +11,15 @@ const GATE := [5, 6, 7]
 const FILL_ELEVATION_DEG := 30.0
 const FILL_COLOR := Color("8fa0b4")
 const FILL_ENERGY := 0.5
+const CONTRAST := 1.2
 var environment: Environment
 var sun: DirectionalLight3D
 var fill: DirectionalLight3D
 var land: Land
+## The director's per-shot lift of the exposure and ease of the contrast (the climb shots look at a
+## dark body): factors on what the music and the scene set.
+var shot_exposure := 1.0
+var shot_contrast := 1.0
 
 
 func _ready() -> void:
@@ -45,8 +50,10 @@ func apply_look(
 		environment.fog_height = fog_height_m
 	if _moved(environment.fog_density, haze_density):
 		environment.fog_density = haze_density
-	if _moved(environment.tonemap_exposure, exposure):
-		environment.tonemap_exposure = exposure
+	if _moved(environment.adjustment_contrast, CONTRAST * shot_contrast):
+		environment.adjustment_contrast = CONTRAST * shot_contrast
+	if _moved(environment.tonemap_exposure, exposure * shot_exposure):
+		environment.tonemap_exposure = exposure * shot_exposure
 
 
 static func _moved(current: float, wanted: float) -> bool:
@@ -94,7 +101,7 @@ func _build_environment() -> void:
 	env.volumetric_fog_ambient_inject = 0.3
 	env.adjustment_enabled = true
 	env.adjustment_saturation = 0.75
-	env.adjustment_contrast = 1.2
+	env.adjustment_contrast = CONTRAST
 	environment = env
 	var we := WorldEnvironment.new()
 	we.environment = env

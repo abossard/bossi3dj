@@ -6,7 +6,7 @@ SCENE   ?= planet
 BLEND_planet = $(SCENES)/synthwave_planet.blend
 BLEND_island = $(SCENES)/synthwave_pyramids.blend
 
-.PHONY: help status lab test magic-test osc-test blender-test osc-sync osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-framing godot-hitch godot-warmup godot-ablate godot-cost godot-model-cost godot-models godot-wanderer-motion godot-wanderer-read godot-colossus-rig godot-shake-osc godot-import godot-lint \
+.PHONY: help status lab test magic-test osc-test blender-test osc-sync osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-framing godot-hitch godot-warmup godot-ablate godot-cost godot-climb-light godot-model-cost godot-models godot-wanderer-motion godot-wanderer-read godot-colossus-rig godot-shake-clips godot-shake-osc godot-import godot-lint \
         godot-open godot-kill blender-open blender-kill blender-check blender-prepare blender-rebuild blender-paths magic-build venv verify
 
 # Blender and Godot share one GPU: a live window of one refuses to start while the other runs.
@@ -38,9 +38,11 @@ help:
 	@echo "  godot-warmup      Metal: luma and flat-black share of the output frame from the first draw and after a new Colossus"
 	@echo "  godot-ablate      Metal: flat-black share per renderer feature switched off (ARGS=name prefix of one variant)"
 	@echo "  godot-cost        Metal: median frame time with the fill light on and off, alternating in one run"
+	@echo "  godot-climb-light Metal: luma and near-black share of the climb shots per lighting variant, with frame time (ARGS=variant label prefix)"
 	@echo "  godot-model-cost  Metal: what the real Wanderer and Colossus cost against their stand-ins at three shot distances (MODEL_COST_OUT=<json>)"
 	@echo "  godot-wanderer-motion  headless: the Nomad's pose, foot sliding, pops at state changes, hands on the grips (needs the models)"
 	@echo "  godot-colossus-rig     headless: the first Colossus on its rig: Grab Path, feet while walking, stands while carrying, ragdoll on flat and sloped land"
+	@echo "  godot-shake-clips headless: Grock's Attack and Defend clips as a Shake: hands from their IK target, grip travel (needs the models)"
 	@echo "  godot-wanderer-read    Metal: Wanderer height and contrast in the low hero shot on the long walk, frames into OUT=<dir>"
 	@echo "  godot-models      unpack the Nomad and Grock archives from DOWNLOADS (default ~/Downloads), prepare them in headless Blender, copy the Mixamo clips"
 	@echo "  godot-shake-osc   Metal: real /vj/shock packets over udp into a Climb, the Shake and the drop mark (pass/fail)"
@@ -125,6 +127,10 @@ godot-cost:
 	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
 	$(GODOT) --path $(COLOSSUS) --script res://tests/cost.gd
 
+godot-climb-light:
+	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
+	$(GODOT) --path $(COLOSSUS) --script res://tests/climb_light.gd -- $(ARGS)
+
 MODEL_COST_OUT ?= /tmp/colossus-model-cost.json
 godot-model-cost:
 	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
@@ -132,6 +138,9 @@ godot-model-cost:
 
 godot-wanderer-motion:
 	$(GODOT) --headless --path $(COLOSSUS) --script res://tests/wanderer_motion.gd
+
+godot-shake-clips:
+	$(GODOT) --headless --path $(COLOSSUS) --script res://tests/shake_clips.gd -- $(ARGS)
 
 godot-colossus-rig:
 	$(GODOT) --headless --path $(COLOSSUS) --script res://tests/colossus_rig.gd

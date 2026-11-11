@@ -19,6 +19,8 @@ func _init() -> void:
 	_test_fov()
 	_test_fit_fov()
 	_test_hero_lens()
+	_test_back_for_share()
+	_test_shot_look()
 	_test_clear_height()
 	_test_stone_bumps()
 	_test_brain()
@@ -233,6 +235,38 @@ func _test_beat() -> void:
 	]
 	for c in cases:
 		_check("beat %s" % c[0], c[1], c[2])
+
+
+func _test_shot_look() -> void:
+	var sh := Shots.Shot
+	var dusk := Vector3(0.0, 1.0, 1.0)
+	var climb := Vector3(Shots.CLIMB_LAMP, Shots.CLIMB_EXPOSURE, Shots.CLIMB_CONTRAST)
+	var cases := [
+		[sh.OVER_SHOULDER, true, climb],
+		[sh.CLOSE_GRIP, true, climb],
+		[sh.OVER_SHOULDER, false, dusk],
+		[sh.CLOSE_GRIP, false, dusk],
+		[sh.SCALE_WIDE, true, dusk],
+		[sh.LOW_HERO, true, dusk],
+		[sh.AERIAL, true, dusk],
+	]
+	for c in cases:
+		_check("shot look %s" % [c.slice(0, 2)], Shots.look(c[0], c[1]), c[2])
+
+
+func _test_back_for_share() -> void:
+	# fov deg, share, figure m, back m, back max m, distance wanted m
+	var cases := [
+		[8.0, 0.28, 1.7, 24.0, 48.0, 43.5],
+		[16.7, 0.28, 1.7, 24.0, 48.0, 24.0],
+		[8.0, 0.5, 1.7, 24.0, 48.0, 24.3],
+		[8.0, 0.33, 1.7, 24.0, 48.0, 36.9],
+		[4.0, 0.28, 1.7, 24.0, 48.0, 48.0],
+		[8.0, 0.28, 1.7, 24.0, 10.0, 24.0],
+	]
+	for c in cases:
+		var back := Director.back_for_share(c[0], c[1], c[2], c[3], c[4])
+		_check("back_for_share %s" % [c.slice(0, 5)], snappedf(back, 0.1), c[5])
 
 
 func _test_fov() -> void:
