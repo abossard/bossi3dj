@@ -42,10 +42,11 @@ Live VJ scenes driven by one OSC contract: Magic Music Visuals sends `/vj/*`, a 
 
 ## Sessions
 
-- One session, one narrow brief. Sessions work in the main checkout on the integration branch, one writer per area at a time (`blender/`, `godot/`, `osc/` with `magic/`). Commit only your own files, by path.
+- One session per area, one narrow brief at a time. Sessions work in the main checkout on the integration branch, one writer per area at a time (`blender/`, `godot/`, `osc/` with `magic/`). Commit only your own files, by path.
 - A worktree only when two sessions must write the same area at once. Its directory name equals its branch name (`/` becomes `-`); remove it after the merge.
 - Don't commit to `main` from a checkout other sessions share.
-- Stop at half context: write `docs/handover/<topic>.md` (state, open items, exact commands) and update [STATE.md](STATE.md). A fresh session continues from the note.
+- Reuse sessions: follow-up work in an area goes to the session that already knows it, not to a fresh one. A restart costs 10 to 15 minutes of reading, rebuilding and reopening.
+- Context is measured, not felt: the window is 1M tokens. Hand over to a fresh session only above about 350k tokens used (the orchestrator reads the number with `get_usage`), with `docs/handover/<topic>.md` (state, open items, exact commands).
 - Every script that produced a result you report lives in the repo (`blender/review/`, `tools/`, `godot/colossus/tests/`). A scratchpad is wiped on reboot and took the island builder and two review toolsets with it.
 - Wait for long runs with a background `until [ -f DONE ]` loop, never `sleep` chains.
 
