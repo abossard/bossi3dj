@@ -8,6 +8,13 @@
 | `assets/terrain/gravelly_sand_*`: Gravelly Sand by Dario Barresi, 1k, packed into Terrain3D channels (albedo + height, normal + roughness) | https://polyhaven.com/a/gravelly_sand | CC0 |
 | `assets/terrain/rocky_terrain_02_*`: Rocky Terrain 02 by Amal Kumar, 1k, packed the same way | https://polyhaven.com/a/rocky_terrain_02 | CC0 |
 
+## Characters
+
+| Asset | Source | License |
+|---|---|---|
+| `assets/models/nomad/`: the Wanderer, from "Nomad Marksman Rig" by DM-913 (https://sketchfab.com/SuperKapoo913); rifle removed, skeleton cut to 53 bones and renamed, scaled, made with `tools/godot_prepare_models.py` | https://sketchfab.com/3d-models/nomad-marksman-rig-aa3d08c56cc84d308e36920d3bcbe122 | CC-BY 4.0, http://creativecommons.org/licenses/by/4.0/ |
+| `assets/models/grock/`: Colossus 1, from "Grock - Endboss" by Baue Franco (https://sketchfab.com/BaueFranco); deform bones only, metallic and flat normal map dropped, normal map made from its height map, made with `tools/godot_prepare_models.py` | https://sketchfab.com/3d-models/grock-endboss-fc582e5f47da447d934d616ad271a3fe | CC-BY 4.0, http://creativecommons.org/licenses/by/4.0/ |
+
 ## Addons
 
 | Addon | Source | License |

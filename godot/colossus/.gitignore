@@ -4,3 +4,5 @@ assets/mixamo/
 # Only the macOS builds of the Terrain3D binaries are kept
 addons/terrain_3d/bin/*
 !addons/terrain_3d/bin/libterrain.macos.*
+# Unpacked Sketchfab archives from ~/Downloads (sources for tools/prepare_models.py)
+assets/incoming/

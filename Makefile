@@ -6,7 +6,7 @@ SCENE   ?= planet
 BLEND_planet = $(SCENES)/synthwave_planet.blend
 BLEND_island = $(SCENES)/synthwave_pyramids.blend
 
-.PHONY: help status lab test magic-test osc-test blender-test osc-sync osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-framing godot-hitch godot-warmup godot-ablate godot-cost godot-shake-osc godot-import godot-lint \
+.PHONY: help status lab test magic-test osc-test blender-test osc-sync osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-framing godot-hitch godot-warmup godot-ablate godot-cost godot-model-cost godot-models godot-shake-osc godot-import godot-lint \
         godot-open godot-kill blender-open blender-kill blender-check blender-prepare blender-rebuild blender-paths magic-build venv verify
 
 # Blender and Godot share one GPU: a live window of one refuses to start while the other runs.
@@ -38,6 +38,8 @@ help:
 	@echo "  godot-warmup      Metal: luma and flat-black share of the output frame from the first draw and after a new Colossus"
 	@echo "  godot-ablate      Metal: flat-black share per renderer feature switched off (ARGS=name prefix of one variant)"
 	@echo "  godot-cost        Metal: median frame time with the fill light on and off, alternating in one run"
+	@echo "  godot-model-cost  Metal: what the real Wanderer and Colossus cost against their stand-ins at three shot distances (MODEL_COST_OUT=<json>)"
+	@echo "  godot-models      unpack the Nomad and Grock archives from DOWNLOADS (default ~/Downloads) and prepare them in headless Blender"
 	@echo "  godot-shake-osc   Metal: real /vj/shock packets over udp into a Climb, the Shake and the drop mark (pass/fail)"
 	@echo "  godot-import      re-import the Godot project after adding assets or addons"
 	@echo "  godot-lint        gdlint + gdformat --check on the project's own scripts"
@@ -119,6 +121,24 @@ godot-ablate:
 godot-cost:
 	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
 	$(GODOT) --path $(COLOSSUS) --script res://tests/cost.gd
+
+MODEL_COST_OUT ?= /tmp/colossus-model-cost.json
+godot-model-cost:
+	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi
+	$(GODOT) --path $(COLOSSUS) --script res://tests/model_cost.gd -- $(MODEL_COST_OUT)
+
+# Each archive into its own new, empty folder (git-ignored); the source .blend opens with scripts off.
+DOWNLOADS ?= $(HOME)/Downloads
+INCOMING = $(COLOSSUS)/assets/incoming
+godot-models:
+	@if $(BLENDER_RUNS); then echo "a Blender is running: make blender-kill first"; exit 1; fi
+	rm -rf $(INCOMING)/nomad_source $(INCOMING)/grock_source
+	mkdir -p $(INCOMING) $(INCOMING)/nomad_source $(INCOMING)/grock_source && touch $(INCOMING)/.gdignore
+	unzip -q -n $(DOWNLOADS)/nomad-marksman-rig.zip -d $(INCOMING)/nomad_source
+	unzip -q -n $(DOWNLOADS)/grock-endboss.zip -d $(INCOMING)/grock_source
+	$(BLENDER) -b --factory-startup --disable-autoexec --python tools/godot_prepare_models.py -- nomad $(INCOMING)/nomad_source/source/Hunter106.blend $(COLOSSUS)/assets/models/nomad/nomad.gltf
+	$(BLENDER) -b --factory-startup --disable-autoexec --python tools/godot_prepare_models.py -- grock $(INCOMING)/grock_source/source/master.blend $(COLOSSUS)/assets/models/grock/grock.gltf
+	$(MAKE) godot-import
 
 godot-shake-osc:
 	@if $(BLENDER_RUNS); then echo "Blender runs and shares the GPU: make blender-kill first (make status)"; exit 1; fi

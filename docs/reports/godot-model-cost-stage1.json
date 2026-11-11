@@ -1,0 +1,397 @@
+{
+  "driver": "Apple M1 Max (Apple7)",
+  "rows": [
+    {
+      "colossus stand-in": {
+        "frame_ms": 6.88,
+        "frame_ms_rounds": [
+          5.298,
+          6.556,
+          6.816,
+          6.884,
+          7.006,
+          8.126
+        ],
+        "shadow_draws": 4,
+        "shadow_objects": 4,
+        "shadow_tris": 16128,
+        "visible_draws": 8,
+        "visible_objects": 8,
+        "visible_tris": 16128
+      },
+      "distance_m": 8.0,
+      "empty_ms": 8.35,
+      "fov": 27.0,
+      "grock": {
+        "frame_ms": 7.41,
+        "frame_ms_rounds": [
+          5.947,
+          7.057,
+          7.244,
+          7.412,
+          7.92,
+          7.982
+        ],
+        "shadow_draws": 1,
+        "shadow_objects": 1,
+        "shadow_tris": 48675,
+        "visible_draws": 2,
+        "visible_objects": 2,
+        "visible_tris": 48675
+      },
+      "grock no shadow": {
+        "frame_ms": 7.55,
+        "frame_ms_rounds": [
+          6.058,
+          7.056,
+          7.242,
+          7.552,
+          7.594,
+          8.295
+        ],
+        "shadow_draws": 0,
+        "shadow_objects": 0,
+        "shadow_tris": 0,
+        "visible_draws": 2,
+        "visible_objects": 2,
+        "visible_tris": 48675
+      },
+      "view": "close"
+    },
+    {
+      "colossus stand-in": {
+        "frame_ms": 8.32,
+        "frame_ms_rounds": [
+          8.135,
+          8.158,
+          8.313,
+          8.323,
+          8.367,
+          8.419
+        ],
+        "shadow_draws": 43,
+        "shadow_objects": 43,
+        "shadow_tris": 162432,
+        "visible_draws": 30,
+        "visible_objects": 30,
+        "visible_tris": 56448
+      },
+      "distance_m": 168.0,
+      "empty_ms": 8.23,
+      "fov": 14.3,
+      "grock": {
+        "frame_ms": 8.61,
+        "frame_ms_rounds": [
+          8.478,
+          8.556,
+          8.586,
+          8.613,
+          8.649,
+          8.715
+        ],
+        "shadow_draws": 3,
+        "shadow_objects": 3,
+        "shadow_tris": 146025,
+        "visible_draws": 2,
+        "visible_objects": 2,
+        "visible_tris": 48675
+      },
+      "grock no shadow": {
+        "frame_ms": 8.41,
+        "frame_ms_rounds": [
+          8.353,
+          8.36,
+          8.377,
+          8.408,
+          8.647,
+          8.661
+        ],
+        "shadow_draws": 0,
+        "shadow_objects": 0,
+        "shadow_tris": 0,
+        "visible_draws": 2,
+        "visible_objects": 2,
+        "visible_tris": 48675
+      },
+      "view": "medium"
+    },
+    {
+      "colossus stand-in": {
+        "frame_ms": 10.88,
+        "frame_ms_rounds": [
+          10.25,
+          10.727,
+          10.828,
+          10.884,
+          10.937,
+          10.942
+        ],
+        "shadow_draws": 0,
+        "shadow_objects": 0,
+        "shadow_tris": 0,
+        "visible_draws": 30,
+        "visible_objects": 30,
+        "visible_tris": 56448
+      },
+      "distance_m": 1624.0,
+      "empty_ms": 10.79,
+      "fov": 6.0,
+      "grock": {
+        "frame_ms": 11.08,
+        "frame_ms_rounds": [
+          10.978,
+          11.01,
+          11.021,
+          11.08,
+          11.1,
+          11.14
+        ],
+        "shadow_draws": 0,
+        "shadow_objects": 0,
+        "shadow_tris": 0,
+        "visible_draws": 2,
+        "visible_objects": 2,
+        "visible_tris": 24337
+      },
+      "grock no shadow": {
+        "frame_ms": 10.97,
+        "frame_ms_rounds": [
+          10.899,
+          10.906,
+          10.916,
+          10.969,
+          11.091,
+          11.184
+        ],
+        "shadow_draws": 0,
+        "shadow_objects": 0,
+        "shadow_tris": 0,
+        "visible_draws": 2,
+        "visible_objects": 2,
+        "visible_tris": 24337
+      },
+      "view": "long walk"
+    },
+    {
+      "distance_m": 3.2,
+      "empty_ms": 10.21,
+      "fov": 27.0,
+      "nomad": {
+        "frame_ms": 10.19,
+        "frame_ms_rounds": [
+          10.034,
+          10.097,
+          10.163,
+          10.185,
+          10.205,
+          11.284
+        ],
+        "shadow_draws": 2,
+        "shadow_objects": 2,
+        "shadow_tris": 43786,
+        "visible_draws": 4,
+        "visible_objects": 4,
+        "visible_tris": 43786
+      },
+      "nomad still": {
+        "frame_ms": 10.18,
+        "frame_ms_rounds": [
+          10.032,
+          10.071,
+          10.135,
+          10.18,
+          10.235,
+          10.241
+        ],
+        "shadow_draws": 2,
+        "shadow_objects": 2,
+        "shadow_tris": 43786,
+        "visible_draws": 4,
+        "visible_objects": 4,
+        "visible_tris": 43786
+      },
+      "view": "close",
+      "wanderer stand-in": {
+        "frame_ms": 9.83,
+        "frame_ms_rounds": [
+          9.586,
+          9.706,
+          9.734,
+          9.829,
+          10.142,
+          10.362
+        ],
+        "shadow_draws": 3,
+        "shadow_objects": 3,
+        "shadow_tris": 7688,
+        "visible_draws": 6,
+        "visible_objects": 6,
+        "visible_tris": 7688
+      }
+    },
+    {
+      "distance_m": 4.5,
+      "empty_ms": 9.29,
+      "fov": 37.8,
+      "nomad": {
+        "frame_ms": 9.62,
+        "frame_ms_rounds": [
+          9.157,
+          9.432,
+          9.582,
+          9.622,
+          9.702,
+          9.717
+        ],
+        "shadow_draws": 2,
+        "shadow_objects": 2,
+        "shadow_tris": 43786,
+        "visible_draws": 4,
+        "visible_objects": 4,
+        "visible_tris": 43786
+      },
+      "nomad still": {
+        "frame_ms": 9.57,
+        "frame_ms_rounds": [
+          9.388,
+          9.529,
+          9.541,
+          9.575,
+          9.597,
+          9.6
+        ],
+        "shadow_draws": 2,
+        "shadow_objects": 2,
+        "shadow_tris": 43786,
+        "visible_draws": 4,
+        "visible_objects": 4,
+        "visible_tris": 43786
+      },
+      "view": "medium",
+      "wanderer stand-in": {
+        "frame_ms": 9.14,
+        "frame_ms_rounds": [
+          8.616,
+          8.959,
+          9.065,
+          9.14,
+          9.167,
+          9.206
+        ],
+        "shadow_draws": 3,
+        "shadow_objects": 3,
+        "shadow_tris": 7688,
+        "visible_draws": 6,
+        "visible_objects": 6,
+        "visible_tris": 7688
+      }
+    },
+    {
+      "distance_m": 24.0,
+      "empty_ms": 9.27,
+      "fov": 53.0,
+      "nomad": {
+        "frame_ms": 8.82,
+        "frame_ms_rounds": [
+          7.483,
+          8.196,
+          8.77,
+          8.818,
+          9.42,
+          17.571
+        ],
+        "shadow_draws": 2,
+        "shadow_objects": 2,
+        "shadow_tris": 8854,
+        "visible_draws": 4,
+        "visible_objects": 4,
+        "visible_tris": 8854
+      },
+      "nomad still": {
+        "frame_ms": 8.71,
+        "frame_ms_rounds": [
+          7.733,
+          8.034,
+          8.508,
+          8.706,
+          8.808,
+          18.788
+        ],
+        "shadow_draws": 2,
+        "shadow_objects": 2,
+        "shadow_tris": 8854,
+        "visible_draws": 4,
+        "visible_objects": 4,
+        "visible_tris": 8854
+      },
+      "view": "long walk",
+      "wanderer stand-in": {
+        "frame_ms": 9.34,
+        "frame_ms_rounds": [
+          7.301,
+          8.466,
+          9.225,
+          9.344,
+          10.674,
+          11.217
+        ],
+        "shadow_draws": 3,
+        "shadow_objects": 3,
+        "shadow_tris": 7688,
+        "visible_draws": 6,
+        "visible_objects": 6,
+        "visible_tris": 7688
+      }
+    }
+  ],
+  "subjects": {
+    "colossus stand-in": {
+      "bones": 17,
+      "mesh_instances": 15,
+      "surfaces": 15,
+      "texture_mb": 1.33,
+      "textures": 1,
+      "tris_lod0": 56448
+    },
+    "grock": {
+      "bones": 17,
+      "mesh_instances": 1,
+      "surfaces": 1,
+      "texture_mb": 10.67,
+      "textures": 3,
+      "tris_lod0": 48675
+    },
+    "grock no shadow": {
+      "bones": 17,
+      "mesh_instances": 1,
+      "surfaces": 1,
+      "texture_mb": 10.67,
+      "textures": 3,
+      "tris_lod0": 48675
+    },
+    "nomad": {
+      "bones": 53,
+      "mesh_instances": 2,
+      "surfaces": 2,
+      "texture_mb": 24.0,
+      "textures": 5,
+      "tris_lod0": 43786
+    },
+    "nomad still": {
+      "bones": 53,
+      "mesh_instances": 2,
+      "surfaces": 2,
+      "texture_mb": 24.0,
+      "textures": 5,
+      "tris_lod0": 43786
+    },
+    "wanderer stand-in": {
+      "bones": 0,
+      "mesh_instances": 3,
+      "surfaces": 3,
+      "texture_mb": 0.0,
+      "textures": 0,
+      "tris_lod0": 7688
+    }
+  }
+}
