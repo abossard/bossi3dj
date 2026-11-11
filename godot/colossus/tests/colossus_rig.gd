@@ -95,7 +95,10 @@ func _fall_on(at: Vector3, label: String) -> void:
 		fast = maxf(fast, b.linear_velocity.length())
 	print(
 		(
-			"fall on %s: down after %.1f s, chest %.1f m above the land, farthest body %.1f m from it, fastest %.2f m/s"
+			(
+				"fall on %s: down after %.1f s, chest %.1f m above the land, farthest body %.1f m"
+				+ " from it, fastest %.2f m/s"
+			)
 			% [label, t, centre.y - land, far, fast]
 		)
 	)
@@ -146,7 +149,10 @@ func _run() -> void:
 				slides.append(Vector2(b.x - a.x, b.z - a.z).length() * 60.0)
 	print(
 		(
-			"walking: ankle %.2f m above the land lowest, %.2f median; planted foot slides %.2f m/s median, %.2f p90 (%d)"
+			(
+				"walking: ankle %.2f m above the land lowest, %.2f median; planted foot slides"
+				+ " %.2f m/s median, %.2f p90 (%d)"
+			)
 			% [
 				low,
 				_percentile(ankles, 0.5),
