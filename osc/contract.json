@@ -52,7 +52,12 @@
         {"index": 4, "name": "Flyover", "shows": "Flies a loop on a path, looking ahead along it."},
         {"index": 5, "name": "Pyramid Orbit", "shows": "Circles the pyramids on a path, always looking at them."},
         {"index": 6, "name": "Wide Orbit", "shows": "Circles on a wide path, looking at a point just north of the pyramids."}],
-       "godot": []},
+       "godot": [
+        {"index": 0, "name": "Scale Wide", "shows": "A telephoto view from behind the Wanderer that shows the Colossus towering over him; used on the Approach and at the start of the Fall."},
+        {"index": 1, "name": "Low Hero", "shows": "A low camera beside the Wanderer on the plain, looking up at the Colossus; used on the Approach and now and then on the Climb."},
+        {"index": 2, "name": "Over Shoulder", "shows": "Looks from the Colossus's surface past the Wanderer up the Grab Path; used on the Climb."},
+        {"index": 3, "name": "Close Grip", "shows": "Close on the Wanderer's hands at a Grab Point; used on the Climb, cut to at every Shake, and on the Fall."},
+        {"index": 4, "name": "Aerial", "shows": "Circles the Colossus from above; cut to at a drop."}]},
      "blender": {"effect": "cut to `CAM_N`; in the planet scene `CAM_11` is the Flight shot; N above the last camera of the scene takes the last"},
      "godot": {"effect": "pin the director's Nth shot (0-based); N above the last shot takes the last; held only while `/vj/cam_auto` is 0"}},
     {"address": "/vj/cam_auto", "kind": "int", "min": 0, "max": 1, "default": 1,

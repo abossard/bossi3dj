@@ -90,6 +90,22 @@ class TableTests(unittest.TestCase):
                     self.assertTrue(s["name"] and s["shows"].endswith("."))
         self.assertEqual(len(cam["shots"]["planet"]), int(cam["max"]) + 1)
 
+    def test_godot_shots_are_the_director_shots(self):
+        """godot/colossus/director/shots.gd is the source of the Godot shot names and sentences (wire 0 is Shot value 1)."""
+        with open(os.path.join(contract.ROOT, "godot", "colossus", "director", "shots.gd")) as f:
+            src = f.read()
+
+        def text(fn, key):
+            body = re.search(r"static func %s\(.*?(?=\n\nstatic func|\Z)" % fn, src, re.S).group(0)
+            m = re.search(r"Shot\.%s:\s*return (.*?)(?=\n\t\tShot\.|\n\treturn)" % key, body, re.S)
+            if m is None:                           # the last shot is the function's final return
+                return re.findall(r'return "(.*?)"', body)[-1]
+            return "".join(re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(1)))
+
+        keys = ["SCALE_WIDE", "LOW_HERO", "OVER_SHOULDER", "CLOSE_GRIP", "AERIAL"]
+        want = [{"index": i, "name": text("shot_name", k), "shows": text("shot_shows", k)} for i, k in enumerate(keys)]
+        self.assertEqual(contract.by_address(ROWS)["/vj/cam"]["shots"]["godot"], want)
+
     def test_manual_pictures_exist(self):
         with open(contract.README_MD) as f:
             block = contract.current_manual(f.read())

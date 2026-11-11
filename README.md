@@ -73,16 +73,24 @@ The music drives the weight of the scene: `/vj/bass` sets how heavy each footfal
 
 <table>
 <tr>
-<td width="50%"><img src="docs/images/2026-11-11/godot-models-wanderer.jpg" alt="Sheet of the Wanderer model"></td>
-<td width="50%"><img src="docs/images/2026-11-11/godot-models-colossus.jpg" alt="Sheet of the Colossus models"></td>
+<td width="50%"><img src="docs/images/readme/colossus-low-hero-1000m.jpg" alt="Approach, Low Hero: on the long walk, at 1000 m."><br><sub><b>Approach, Low Hero</b>: on the long walk, at 1000 m.</sub></td>
+<td width="50%"><img src="docs/images/readme/colossus-low-hero-450m.jpg" alt="Approach, Low Hero: the same walk at 450 m."><br><sub><b>Approach, Low Hero</b>: the same walk at 450 m.</sub></td>
 </tr>
 <tr>
-<td align="center"><sub>The Wanderer, the figure that climbs.</sub></td>
-<td align="center"><sub>The Colossi, one appears at a time.</sub></td>
+<td width="50%"><img src="docs/images/readme/colossus-approach-low-hero.jpg" alt="Approach, Low Hero: a low camera beside the Wanderer, looking up."><br><sub><b>Approach, Low Hero</b>: a low camera beside the Wanderer, looking up.</sub></td>
+<td width="50%"><img src="docs/images/readme/colossus-approach-over-shoulder.jpg" alt="Approach, Over Shoulder."><br><sub><b>Approach, Over Shoulder</b>.</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/images/readme/colossus-climb-over-shoulder.jpg" alt="Climb, Over Shoulder: past the Wanderer up the Grab Path."><br><sub><b>Climb, Over Shoulder</b>: past the Wanderer up the Grab Path.</sub></td>
+<td width="50%"><img src="docs/images/readme/colossus-climb-close-grip.jpg" alt="Climb, Close Grip: close on the hands at a Grab Point."><br><sub><b>Climb, Close Grip</b>: close on the hands at a Grab Point.</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/images/readme/colossus-climb-aerial.jpg" alt="Climb, Aerial: circling the Colossus from above."><br><sub><b>Climb, Aerial</b>: circling the Colossus from above.</sub></td>
+<td width="50%"><img src="docs/images/readme/colossus-fall-toppling.jpg" alt="Fall: the Colossus toppling."><br><sub><b>Fall</b>: the Colossus toppling.</sub></td>
 </tr>
 </table>
 
-Screenshots of the running scene will follow. The character models are not in the repository (they come from downloads with their own licences); without them the scene runs with stand-ins. See [godot/colossus/assets/MODELS.md](godot/colossus/assets/MODELS.md) for what is needed and how to rebuild them.
+Single frames from the Godot scene's picture rounds (1280 px; shot and Phase from the file names). The character models are not in the repository (they come from downloads with their own licences); without them the scene runs with stand-ins. See [godot/colossus/assets/MODELS.md](godot/colossus/assets/MODELS.md) for what is needed and how to rebuild them.
 
 ## All OSC channels
 
@@ -94,11 +102,11 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
-| `/vj/level` | The sun and its glow get stronger the louder the music is. | 0..1, default 0.5 | both |  |
+| `/vj/level` | The sun and its glow get stronger the louder the music is. | 0..1, default 0.5 | both | <img src="docs/images/readme/osc/level-godot.jpg" width="300" alt="/vj/level, Godot: low | high"><br><sub>Godot, low | high</sub> |
 | `/vj/bass` | Bass makes things hit harder: the glowing ground net and waterline in Blender, the shake and dust of each footfall in Godot. | 0..1, default 0 | both |  |
 | `/vj/beat` | Pulses on every beat: pyramid edges, stars and water glints in Blender, footfalls and dust puffs in Godot. | 0..1, default 0 | both |  |
 | `/vj/hue` | Turns all colours around the colour wheel. | 0..1, default 0 | Blender |  |
-| `/vj/intensity` | Makes the whole picture brighter or darker. | 0..1, default 0.5 | both |  |
+| `/vj/intensity` | Makes the whole picture brighter or darker. | 0..1, default 0.5 | both | <img src="docs/images/readme/osc/intensity-godot.jpg" width="300" alt="/vj/intensity, Godot: low | high"><br><sub>Godot, low | high</sub> |
 | `/vj/strobe` | Flashes the picture to white; higher means a stronger flash. | 0..1, default 0 | Blender |  |
 
 </details>
@@ -137,15 +145,15 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
-| `/vj/fog` | More fog near the ground; at 1 it is dense autumn fog. | 0..1, default 0.35 | both |  |
-| `/vj/fog_height` | Makes the fog bank taller or lower. | 0..1, default 0.41 | both |  |
+| `/vj/fog` | More fog near the ground; at 1 it is dense autumn fog. | 0..1, default 0.35 | both | <img src="docs/images/readme/osc/fog-godot.jpg" width="300" alt="/vj/fog, Godot: low | high"><br><sub>Godot, low | high</sub> |
+| `/vj/fog_height` | Makes the fog bank taller or lower. | 0..1, default 0.41 | both | <img src="docs/images/readme/osc/fog_height-godot.jpg" width="300" alt="/vj/fog_height, Godot: low | high"><br><sub>Godot, low | high</sub> |
 | `/vj/fog_glow` | Makes the fog glow by itself. | 0..1, default 0.3 | Blender |  |
 | `/vj/fog_hue` | Tints the fog pink, violet or cyan. | 0..1, default 0 | Blender |  |
 | `/vj/fog_noise` | Makes the fog patchier. | 0..1, default 0.6 | Blender |  |
 | `/vj/fog_scale` | Makes the fog clouds bigger or smaller. | 0..1, default 0.25 | Blender |  |
 | `/vj/fog_speed` | Makes the wind push the fog along faster. | 0..1, default 0.25 | Blender |  |
 | `/vj/fog_beat` | Makes the fog pump with the beat. | 0..1, default 0.5 | Blender |  |
-| `/vj/haze` | Adds or removes the soft haze toward the horizon. | 0..1, default 1 | both |  |
+| `/vj/haze` | Adds or removes the soft haze toward the horizon. | 0..1, default 1 | both | <img src="docs/images/readme/osc/haze-godot.jpg" width="300" alt="/vj/haze, Godot: low | high"><br><sub>Godot, low | high</sub> |
 
 </details>
 
@@ -154,7 +162,7 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
-| `/vj/cam` | Cuts to camera number N; 0 is the first shot. | integer 0..11, default 0 | both |  |
+| `/vj/cam` | Cuts to camera number N; 0 is the first shot. | integer 0..11, default 0 | both | <img src="docs/images/readme/osc/cam-godot.jpg" width="300" alt="/vj/cam, Godot: the shots"><br><sub>Godot, the shots</sub> |
 | `/vj/cam_speed` | Makes the camera drift and fly faster or slower. | 0..1, default 0.25 | Blender |  |
 | `/vj/flight` | Steers the flying camera: 0 high orbit, then a landing approach, a skim over the mountains, and at 1 a hover over the water. | 0..1, default 0 | Blender |  |
 | `/vj/boost` | Gives the flying camera a burst of speed with a wider view. | 0..1, default 0 | Blender |  |
@@ -192,7 +200,15 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 | 5 | Pyramid Orbit | Circles the pyramids on a path, always looking at them. |  |
 | 6 | Wide Orbit | Circles on a wide path, looking at a point just north of the pyramids. |  |
 
-*Godot, Colossus*: the shots are not listed yet.
+*Godot, Colossus*
+
+| Number | Name | What it shows | Picture |
+|---|---|---|---|
+| 0 | Scale Wide | A telephoto view from behind the Wanderer that shows the Colossus towering over him; used on the Approach and at the start of the Fall. | <img src="docs/images/readme/osc/cam-godot-0.jpg" width="200" alt="godot, shot 0"> |
+| 1 | Low Hero | A low camera beside the Wanderer on the plain, looking up at the Colossus; used on the Approach and now and then on the Climb. | <img src="docs/images/readme/osc/cam-godot-1.jpg" width="200" alt="godot, shot 1"> |
+| 2 | Over Shoulder | Looks from the Colossus's surface past the Wanderer up the Grab Path; used on the Climb. | <img src="docs/images/readme/osc/cam-godot-2.jpg" width="200" alt="godot, shot 2"> |
+| 3 | Close Grip | Close on the Wanderer's hands at a Grab Point; used on the Climb, cut to at every Shake, and on the Fall. | <img src="docs/images/readme/osc/cam-godot-3.jpg" width="200" alt="godot, shot 3"> |
+| 4 | Aerial | Circles the Colossus from above; cut to at a drop. | <img src="docs/images/readme/osc/cam-godot-4.jpg" width="200" alt="godot, shot 4"> |
 
 
 </details>
@@ -202,7 +218,7 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
-| `/vj/shock` | A shock wave runs over the land once; in Godot the giant shakes while the Wanderer is on it. | trigger 0..1.5, default 0 | both |  |
+| `/vj/shock` | A shock wave runs over the land once; in Godot the giant shakes while the Wanderer is on it. | trigger 0..1.5, default 0 | both | <img src="docs/images/readme/osc/shock-godot.jpg" width="300" alt="/vj/shock, Godot: before | during"><br><sub>Godot, before | during</sub> |
 | `/vj/meteor` | A shooting star crosses the sky. | trigger 0..1, default 0 | Blender |  |
 | `/vj/hit` | A quick surge of speed with a wide-angle kick on the camera. | trigger 0..1, default 0 | Blender |  |
 
