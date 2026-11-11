@@ -51,7 +51,7 @@ FALLBACK = True         # look through the other cameras when the listed ones sh
 
 # key -> what the control needs before it shows. Keys of a row:
 #   set      values held while the control varies
-#   cams     cameras to look through first (default: 0)
+#   cams     cameras to look through first (default: 0); "flight" is the Flight's shot
 #   advance  s of clock time stepped after the change (speeds, triggers, anything that moves)
 #   then     values set after the first settle (a cut for /vj/blend), before the advance
 #   why      one line for the report
@@ -82,10 +82,12 @@ PRECONDITIONS = {
     "vj_fog_beat": {"set": {"vj_fog": 0.7, "vj_beat": 1.0}, "why": "the fog pumps with the beat"},
     "vj_blend": {"set": {"vj_cam": 1.0}, "cams": [1], "then": {"vj_cam": 4.0}, "advance": 0.3, "reads": ["py:flight_rt.frame"],
                  "why": "shows on a cut, a moment after it"},
-    "vj_boost": {"set": {"vj_flight": 0.66}, "advance": 1.0, "reads": ["py:flight_rt.frame"], "why": "the accelerator works while Flight skims"},
-    "vj_flight": {"advance": 2.0, "reads": ["py:flight_rt.frame"], "why": "damped: a jump flies"},
-    "vj_energy": {"advance": 2.0, "reads": ["py:flight_rt.frame"], "why": "eased over seconds"},
-    "vj_hit": {"advance": 0.5, "reads": ["py:flight_rt.frame"], "why": "a surge of speed"},
+    "vj_boost": {"set": {"vj_flight": 0.66}, "cams": ["flight"], "advance": 2.0, "reads": ["py:flight_rt.frame"],
+                 "why": "the accelerator works while the Flight skims or hovers"},
+    "vj_flight": {"cams": ["flight"], "advance": 2.0, "reads": ["py:flight_rt.frame"],
+                  "why": "a cell starts the Flight settled at the stage (flight_rt.quiesce); verify_flight checks the damping"},
+    "vj_energy": {"advance": 2.0, "reads": ["py:flight_rt.frame"], "why": "every shot moves harder, eased over seconds"},
+    "vj_hit": {"advance": 0.5, "reads": ["py:flight_rt.frame"], "why": "a wide-angle kick on the On-Air Camera"},
 }
 
 
@@ -458,9 +460,16 @@ class Check:
                 row["note"] += "; frames not saved: %s" % e
         return row
 
+    def cam_number(self, x):
+        """A camera number, or "flight": the Flight's shot, which flight_rt adds as the last CAM_n (0 without one)."""
+        if x != "flight":
+            return int(x)
+        fc = next((o for o in self.scene.objects if o.type == "CAMERA" and o.get("vj_flight_cam")), None)
+        return int(fc.name[4:]) if fc is not None else 0
+
     def test(self, c, rd):
         pre = PRECONDITIONS.get(c["key"], {})
-        cams = [int(x) for x in pre.get("cams", [0])]
+        cams = [self.cam_number(x) for x in pre.get("cams", [0])]
         if c["key"] == "vj_cam":
             cams = [0]
         attempts, frames, error, confirmed = [], {}, None, None
