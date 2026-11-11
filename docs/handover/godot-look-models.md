@@ -44,3 +44,10 @@ make godot-wanderer-read OUT=<dir>   # Metal: low hero, Wanderer share of the fr
 tools/godot_look_sheet.sh OUT.jpg LOOK_DIR CAPTURE_DIR READ_DIR
 blender/review/named_sheet.sh OUT.png 3 <png>...   # 480 px tiles for the shot-reviewer
 ```
+
+## README pictures (for the OSC manual)
+
+- `make godot-readme-pics OUT=<dir> [ARGS=names]` then `tools/godot_readme_pics.sh <dir> docs/images/readme/osc`; pairs checked with `tools/png_pair_diff.py` (mean luma difference, share of pixels over 12 luma; film grain alone gives about 3.5 and 0.2 %).
+- Kept: `level`, `intensity`, `fog`, `fog_height`, `haze`, `shock` as `<name>-godot.jpg` (480 px halves), `cam-godot.jpg` strip and `cam-godot-0..4.jpg`. Differences: level 35.8 / 91 %, intensity 109.9 / 95 %, fog 53.4 / 88 %, fog_height 21.5 / 28 %, haze 5.8 / 11 % (shot 0 at 1550 m), shock 28.1 / 67 %. Reviewer: intensity, fog, fog_height clearly visible; level (sun glow, wire 0 to 1 is only 1.0 to 2.6 light energy), haze and shock (a still of a Shake) weak by eye.
+- Left out: `bass` and `beat`: the footfall dust at weight 0.5 against 1.0 (and none against a puff) differs by 3.4 luma on 0.2 % of the pixels, the film grain's floor, in the low hero shot 28 m from the foot.
+- Single frames at 1280 px in `docs/images/readme/colossus-*.jpg`, the reviewer's top eight of the final look.
