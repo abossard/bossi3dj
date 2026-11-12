@@ -1,0 +1,7 @@
+# Terrain test: can one terrain carry every view (paused 2026-11-12 until 17 November)
+
+- Exists: nothing for the test itself (no script, no recorder, no measurement, no recording). Only the Flight's stream (`flight_rt.py`, `lod_scene.py`, `lod_stream.py`) and its tools (`blender/review/flight_numbers.py`, `flight_grabs.py`, `flight_seams.py`, `flight_cracks.py`), which measure the stream as it is.
+- Known from earlier work: the stream's near field and hand-over to the globe sit in `GLOBE_BAND` 8 to 12 km (`build_planet.py`); the Approach holes come from the coarse morph lowering land below flat hillside lakes (`planet-finish.md`, step 3).
+- Plan, as ordered by the orchestrator: (1) a 90 s scripted flight, a pure function of time, driven through a hook in `flight_rt.flight_pose` (river skim at `CAM_1` 10 m, climb to orbit with the planet in frame, cross to the valley, descend to the pyramids, circle them at 450 m and 60 m); (2) numbers by stage: frame times, pops, near-field edge length, stream lag, the hand-over at the globe; (3) a recorder in `tools/` that reads the `CAM_OUT` Syphon frames with python3.13 (syphon only there, no numpy) and pipes raw BGRA to `/opt/homebrew/bin/ffmpeg`, 30 fps, 960x540, to `docs/video/terrain-test-before.mp4`.
+- Not started: step 4 (cheap tries) and the verdict.
+- Next step: write the hook and `blender/review/terrain_test_flight.py`, open the planet (`make blender-open SCENE=planet`), run the "before" flight with the recorder, then continue with step 4.
