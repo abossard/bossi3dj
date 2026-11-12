@@ -41,7 +41,8 @@ def blender_state():
         return None
     osc = s.get("osc") or {}
     return {"scene": s.get("scene"), "camera": s.get("camera"), "fps": s.get("fps"), "playing": s.get("playing"),
-            "syphon": s.get("syphon"), "osc_received": osc.get("received"), "osc_hold": osc.get("hold"), "artnet": osc.get("artnet")}
+            "syphon": s.get("syphon"), "osc_received": osc.get("received"), "osc_hold": osc.get("hold"),
+            "artnet": (s.get("artnet") or {}).get("state")}
 
 
 def godot_state():
