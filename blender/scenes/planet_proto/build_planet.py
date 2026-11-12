@@ -128,7 +128,6 @@ SENTINEL = -10000.0            # "no lake here" in the hydrology water level
 VALLEY_SLOPE = 0.3             # river banks rise at most this much per metre away from the water
 SHALLOW = 1.0                  # m of water under which the bed still shows (wet, darkened)
 RIVER_SHORE = 30.0             # m past the bank where the river surface stays flat (hidden under the bank)
-BANK_SOFT = 8.0                # m: the soft minimum's largest reach where a river valley's bank meets the hillside (round 13)
 D_SUN = 150000.0               # m, sun distance (far beyond the planet, so the orbit view keeps its size)
 D_MOON = 120000.0              # m, moon distance (the island's 21 km, scaled like the sun)
 MOON_R = 11500.0               # m, moon radius at vj_moon 1, on star_system.py's 50 km orbit
@@ -1446,13 +1445,7 @@ depth = G.addf(1.2, G.mul(rhw, 0.06))
 bed = G.sub(rwl, G.mul(depth, G.sub(1.0, G.math("MINIMUM", G.mul(x, x), 1.0))))
 bank = G.addf(rwl, G.mul(G.sub(dr, rhw), VALLEY_SLOPE))     # the river cuts a V valley, no cliffs; under the water
 # inside the channel, so the bed wins there (a bank clamped at the water level left the bed 0 m deep)
-bb = G.math("MAXIMUM", bed, bank)
-# (round 13) a soft minimum where the valley's bank meets the hillside: the hard min drew a sharp crease along the
-# hillside over a river (CAM_4). Its reach grows with the height over the water (0.8 of it, at most BANK_SOFT), so it
-# lowers the ground by at most a fifth of that height and never down to the water: the waterline stays
-k_s = G.math("MINIMUM", G.math("MAXIMUM", G.mul(G.sub(G.math("MINIMUM", h, bb), rwl), 0.8), 0.001), BANK_SOFT)
-gap_s = G.math("MAXIMUM", G.sub(k_s, G.math("ABSOLUTE", G.sub(h, bb))), 0.0)
-hc = G.sub(G.math("MINIMUM", h, bb), G.math("DIVIDE", G.mul(gap_s, gap_s), G.mul(k_s, 4.0)))
+hc = G.math("MINIMUM", h, G.math("MAXIMUM", bed, bank))
 in_r = G.mul(G.sub(1.0, G.smooth(G.sub(dr, rhw), RIVER_SHORE, RIVER_SHORE + 15.0)),   # flat past the bank, under the rising
              G.math("GREATER_THAN", h0, G.sub(G.sub(rwl, depth), 1.0)))                # ground: the terrain draws the waterline;
 # river water only where it cuts a channel, not over lower ground
@@ -2985,9 +2978,9 @@ if GRAFT:
     S.eevee.volumetric_samples = 32         # 64 cost the fog 13 fps at CAM_2; 32 looked the same
 # 8 px froxels showed as a checker in thick fog (CAM_2), 4 px cost about 1 fps there. The range ends with the fog box:
 # an 8 km range veiled the day sky and stretched the depth slices (the night nebula looks the same at 4.5 km)
-S.eevee.volumetric_tile_size = "8"   # (round 13) 4 drew a pale band along the top edge in fog (CAM_5: rows 0 to 5 at 1.43 x
-# the rows under them), 2 and 8 none; 8 costs the same as 4 (36.0 ms both, CAM_2 fog 1). The checker 8 drew in round 2
-# was before the clear zone and the 16 slices
+S.eevee.volumetric_tile_size = "4"   # (round 13) 4 draws a pale band along CAM_5's top edge in fog (rows 0 to 5 at 1.37 x the
+# rows under them), 2 and 8 none. 8 costs the same as 4 but brings back the checker in thick fog by day (CAM_2, CAM_5,
+# reviewer round 13); 2 costs 8.5 ms (34.8 to 43.3, CAM_2 fog 1). The band stays
 S.eevee.volumetric_end = FOG_HALF
 S.eevee.volumetric_start = 30.0   # (round 9) from 1 m the 32 slices were 90 to 140 m deep at 300 m, against a fog layer about
 # 30 m thick: terraces along the bottom of CAM_4 at fog 1. The fog's density is 0 inside its clear zone (37 m and more)

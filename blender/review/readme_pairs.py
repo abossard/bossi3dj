@@ -2,7 +2,9 @@
 
 Through the Blender MCP:  DN["readme_out"] = "/abs/dir"; exec(open(bpy.path.abspath("//../review/readme_pairs.py")).read())
 Optional: DN["readme_phase"] = seconds on the path for the pairs of a path camera (default 0), DN["readme_only"] = ["vj_fog", ...] (keys), DN["readme_cams"] = False (no camera pictures), DN["readme_extra"] = False,
-DN["readme_cam_for"] = {"vj_meteor": 9} and DN["readme_advance"] = {"vj_star_speed": 30.0} override a pair's camera and advance.
+DN["readme_cam_for"] = {"vj_meteor": 9} and DN["readme_advance"] = {"vj_star_speed": 30.0} override a pair's camera and advance; DN["readme_set"] = {"vj_meteor": {"vj_grid": 0.0}} holds more controls in both halves;
+DN["readme_exec"] = {"vj_meteor": "import random; random.seed(24)\n"} runs after the reset (the first shooting star after a
+reset is drawn from Python's random: seed 24 puts it across CAM_0's sky).
 Writes <out>/plan.json first, then the frames (960x540 .ppm):
   <key>__cam<N>__lo.ppm, __lo2.ppm (the low state again: the noise floor), __hi.ppm
       one pair per control, from the row of synthwave_check.PRECONDITIONS (its camera, its preconditions, its advance, its
@@ -36,6 +38,8 @@ CAM_FOR = {"vj_moon": 3, "vj_stars": 1, "vj_meteor": 2, "vj_pyramids": 2}     # 
 CAM_FOR.update(DN.get("readme_cam_for", {}))
 ADVANCE = {"vj_star_speed": 30.0}        # s: the stars' drift shows only over a longer interval (2 s was under the noise)
 ADVANCE.update(DN.get("readme_advance", {}))
+SET_FOR = DN.get("readme_set", {})      # more held controls for a pair, e.g. {"vj_meteor": {"vj_grid": 0.0}}
+EXEC_FOR = DN.get("readme_exec", {})    # python after the reset, e.g. {"vj_meteor": "import random; random.seed(24)\n"}
 SKIP = {"vj_cam", "vj_cam_auto"} | (set() if not PLANET else {"vj_grid_speed"})
 ISLAND_ONLY_OK = {"vj_grid_speed"}
 
@@ -66,7 +70,7 @@ for k in keys:
     ui = S.id_properties_ui(k).as_dict()
     trig = ui.get("description") == "trigger"
     row = PRE.get(k, {})
-    rows.append({"key": k, "cam": CAM_FOR.get(k, cam_of(row)), "lo": ui.get("min", 0.0), "hi": ui.get("max", 1.0), "trigger": trig, "set": row.get("set", {}), "then": row.get("then"), "advance": ADVANCE.get(k, row.get("advance", 0.0))})
+    rows.append({"key": k, "cam": CAM_FOR.get(k, cam_of(row)), "lo": ui.get("min", 0.0), "hi": ui.get("max", 1.0), "trigger": trig, "set": dict(row.get("set", {}), **SET_FOR.get(k, {})), "then": row.get("then"), "advance": ADVANCE.get(k, row.get("advance", 0.0))})
 
 jobs, plan = [], []
 last_cam = [None]
@@ -77,7 +81,9 @@ def job(name, cam, values, ex, settle, phase=0.0):
         return
     st = dict(values)
     st.setdefault("vj_cam", cam)      # a `then` state may cut to another camera itself
-    st.setdefault("vj_blend", 0.0)    # a hard cut: at the default 1 the Director blends and a grab can land mid-blend
+    if cam != FLIGHT_CAM:              # a hard cut: at the default 1 the Director blends and a grab can land mid-blend.
+        st.setdefault("vj_blend", 0.0)   # Not into the Flight: a hard cut there waits for the stream (lod_scene hold) for a
+        # wall-time while the clocks step, and the reset Flight no longer repeats (/vj/boost floor 20.9 against 0.74)
     j = {"kind": "grab", "set": st, "exec": ex, "settle": settle if cam == last_cam[0] else settle + 2.5, "out": OUT + name + ".ppm"}
     if phase is not None:
         j["phase"] = phase
@@ -95,7 +101,7 @@ def pair(r):
     for tag, v in states:
         values = dict(pre)
         values[k] = v
-        ex = RESET
+        ex = RESET + EXEC_FOR.get(k, "")
         if r["then"]:       # a state the control shows only after a change (a cut for /vj/blend): the first settle is thrown away
             job("_discard", cam, dict(pre), RESET, 2.0)
             values.update(r["then"])

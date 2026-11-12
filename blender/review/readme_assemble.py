@@ -4,7 +4,7 @@ Reads PAIRS_DIR/pairs.json (readme_pair_check.py). Writes into docs/images/readm
   cam-<scene>-<N>.jpg   one 480 px picture per camera: of its phases the one with the most picture in the lower half
   cam-blender.jpg       a 4 x 3 strip of the planet's cameras (the /vj/cam row)
 and the hero frames docs/images/readme/planet-*.jpg when PAIRS_DIR has extras. Needs ImageMagick.
-With --flight FRAME instead of PAIRS_DIR: a Flight frame of flight_grabs.py as the gallery picture, cam-planet-11 and the strip."""
+--accept KEY,... writes those pairs although they fail the share rule. With --flight FRAME instead of PAIRS_DIR: a Flight frame of flight_grabs.py as the gallery picture, cam-planet-11 and the strip."""
 import json
 import os
 import re
@@ -34,9 +34,11 @@ def magick(*args):
     subprocess.run(["magick", *args], check=True)
 
 
+ACCEPT = sys.argv[sys.argv.index("--accept") + 1].split(",") if "--accept" in sys.argv else []   # pairs written although the
+# share rule fails, e.g. a shooting star: a streak never covers 1 % of the frame (said in the note with its numbers)
 made = []
 for p in res["pairs"]:
-    if p["verdict"] != "pair":
+    if p["verdict"] != "pair" and p["key"] not in ACCEPT:
         continue
     name = p["key"][len("vj_"):]
     f = lambda t: os.path.join(d, "%s__%s.ppm" % (p["base"], t))
@@ -44,7 +46,7 @@ for p in res["pairs"]:
     magick(f("lo"), "-resize", "480x", f("hi"), "-resize", "480x", "+append", "-quality", "88", out)
     made.append(out)
 # phases picked by the shot-reviewer on the contact sheets (otherwise the frame with the most picture in its lower half)
-PICKED = {"planet": {4: 3, 11: 0}, "island": {4: 1, 5: 2, 6: 2}}.get(scene, {})
+PICKED = {"planet": {4: 3}, "island": {4: 1, 5: 2, 6: 2}}.get(scene, {})    # the Flight's picture: --flight
 best = {}
 for fr in res["frames"]:
     m = re.match(r"cam__(\d+)__p(\d+)\.ppm", fr["file"])
@@ -63,5 +65,17 @@ if scene == "planet" and len(best) == 12:
     out = os.path.join(OSC, "cam-blender.jpg")
     magick("montage", *tiles, "-tile", "4x3", "-geometry", "240x135+2+2", "-background", "black", "-quality", "88", out)
     made.append(out)
+# the README gallery (docs/images/readme/planet-*.jpg, 960 x 540): its file name, then the frame (a camera's pick above
+# when it is a camera picture)
+HEROES = {"planet-valley-day": "cam:0", "planet-sunset-valley": "extra__sunset_cam0", "planet-pyramid-day": "cam:2",
+          "planet-sunset-pyramid": "extra__sunset_cam2", "planet-pyramid-orbit": "cam:5", "planet-flamingos": "cam:7",
+          "planet-river": "cam:8", "planet-coast": "cam:10", "planet-fog": "extra__fog_cam0", "planet-orbit": "cam:6"}
+if scene == "planet":
+    for name, src in HEROES.items():
+        f = best[int(src[4:])]["file"] if src.startswith("cam:") and int(src[4:]) in best else src + ".ppm"
+        if os.path.exists(os.path.join(d, f)):
+            out = os.path.join(HERO, name + ".jpg")
+            magick(os.path.join(d, f), "-quality", "88", out)
+            made.append(out)
 print("wrote %d pictures" % len(made))
 print("cameras:", {n: "p%d" % fr["phase"] for n, fr in sorted(best.items())})

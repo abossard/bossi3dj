@@ -122,13 +122,13 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
 | `/vj/sun` | Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/sun-blender.jpg" width="360" alt="/vj/sun, Blender: low | high"><br><sub>Blender, low | high</sub> |
-| `/vj/moon` | Makes the moon bigger or smaller. | 0..1, default 1 | Blender |  |
+| `/vj/moon` | Makes the moon bigger or smaller. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/moon-blender.jpg" width="360" alt="/vj/moon, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/moon_phase` | Changes the shape of the moon from new through half to full. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/moon_phase-blender.jpg" width="360" alt="/vj/moon_phase, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/stars` | Fades the stars in or out. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/stars-blender.jpg" width="360" alt="/vj/stars, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/night` | Turns day into night: 0 is day, a quarter is sunset, half is twilight, 1 is night. | 0..1, default 0 | Blender | <img src="docs/images/readme/osc/night-blender.jpg" width="360" alt="/vj/night, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/nebula` | Fades in the coloured cloud in the night sky. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/nebula-blender.jpg" width="360" alt="/vj/nebula, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/eclipse` | Lines the moon up with the sun and the planet for an eclipse. | 0..1, default 0 | Blender | <img src="docs/images/readme/osc/eclipse-blender.jpg" width="360" alt="/vj/eclipse, Blender: low | high"><br><sub>Blender, low | high</sub> |
-| `/vj/star_speed` | Makes the stars drift across the sky. | 0..1, default 0 | Blender |  |
+| `/vj/star_speed` | Makes the stars drift across the sky. | 0..1, default 0 | Blender | <img src="docs/images/readme/osc/star_speed-blender.jpg" width="360" alt="/vj/star_speed, Blender: low | high"><br><sub>Blender, low | high</sub> |
 
 </details>
 
@@ -170,7 +170,7 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 | `/vj/cam` | Cuts to camera number N; 0 is the first shot. | integer 0..11, default 0 | both | <img src="docs/images/readme/osc/cam-blender.jpg" width="360" alt="/vj/cam, Blender: the shots"><br><sub>Blender, the shots</sub><br><img src="docs/images/readme/osc/cam-godot.jpg" width="360" alt="/vj/cam, Godot: the shots"><br><sub>Godot, the shots</sub> |
 | `/vj/cam_speed` | Makes the camera drift and fly faster or slower. | 0..1, default 0.25 | Blender | <img src="docs/images/readme/osc/cam_speed-blender.jpg" width="360" alt="/vj/cam_speed, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/flight` | Steers the flying camera: 0 high orbit, then a landing approach, a skim over the mountains, and at 1 a hover over the water. | 0..1, default 0 | Blender | <img src="docs/images/readme/osc/flight-blender.jpg" width="360" alt="/vj/flight, Blender: low | high"><br><sub>Blender, low | high</sub> |
-| `/vj/boost` | Gives the flying camera a burst of speed with a wider view. | 0..1, default 0 | Blender |  |
+| `/vj/boost` | Gives the flying camera a burst of speed with a wider view. | 0..1, default 0 | Blender | <img src="docs/images/readme/osc/boost-blender.jpg" width="360" alt="/vj/boost, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/blend` | Makes a camera change fly smoothly to the new shot; 0 cuts at once. | 0..1, default 0.5 | Blender | <img src="docs/images/readme/osc/blend-blender.jpg" width="360" alt="/vj/blend, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/energy` | Makes the camera move harder, from a slow wide glide to faster, tighter moves. | 0..1, default 0.3 | Blender | <img src="docs/images/readme/osc/energy-blender.jpg" width="360" alt="/vj/energy, Blender: low | high"><br><sub>Blender, low | high</sub> |
 
@@ -224,7 +224,7 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
 | `/vj/shock` | A shock wave runs over the land once; in Godot the giant shakes while the Wanderer is on it. | trigger 0..1.5, default 0 | both | <img src="docs/images/readme/osc/shock-blender.jpg" width="360" alt="/vj/shock, Blender: before | during"><br><sub>Blender, before | during</sub><br><img src="docs/images/readme/osc/shock-godot.jpg" width="360" alt="/vj/shock, Godot: before | during"><br><sub>Godot, before | during</sub> |
-| `/vj/meteor` | A shooting star crosses the sky. | trigger 0..1, default 0 | Blender |  |
+| `/vj/meteor` | A shooting star crosses the sky. | trigger 0..1, default 0 | Blender | <img src="docs/images/readme/osc/meteor-blender.jpg" width="360" alt="/vj/meteor, Blender: before | during"><br><sub>Blender, before | during</sub> |
 | `/vj/hit` | A quick surge of speed with a wide-angle kick on the camera. | trigger 0..1, default 0 | Blender | <img src="docs/images/readme/osc/hit-blender.jpg" width="360" alt="/vj/hit, Blender: before | during"><br><sub>Blender, before | during</sub> |
 
 </details>

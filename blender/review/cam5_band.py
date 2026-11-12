@@ -1,7 +1,7 @@
 """CAM_5's pale top band in fog: the top rows (0 to 5 of 540) against rows 8 to 13, per variant, in the live planet.
     DN["band_job"] = {"out": "/abs/band.json"}; exec this file; wait for DN["band_done"].
 Variants on CAM_5 by day at /vj/fog 1, hard cut, each grabbed after 4 s: the path running (clocks on), the clocks frozen
-(the camera still), and frozen with `volumetric_tile_size` 2 and 8; JOB["variants"] = [(name, frozen, tile, wait s), ...]
+(the camera still), and frozen with `volumetric_tile_size` 2 and 8; JOB["variants"] = [(name, frozen, tile, wait s[, python]), ...]
 replaces that list. The frames are read from the Syphon texture."""
 import json
 import time
@@ -31,8 +31,11 @@ def run():
     tile0 = S.eevee.volumetric_tile_size
     variants = JOB.get("variants", [("running", False, tile0, 4.0), ("frozen", True, tile0, 4.0), ("frozen_tile2", True, "2", 4.0),
                                      ("frozen_tile8", True, "8", 4.0)])
-    for name, frozen, tile, wait in variants:
+    for v in variants:
+        name, frozen, tile, wait = v[:4]
         S.eevee.volumetric_tile_size = tile
+        if len(v) > 4:       # a setting for this variant, as python (S = the scene)
+            exec(v[4], {"S": S, "bpy": bpy})
         t = time.perf_counter()
         while time.perf_counter() - t < wait:
             RT.freeze(frozen)
