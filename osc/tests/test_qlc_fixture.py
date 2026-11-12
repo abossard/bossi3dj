@@ -159,6 +159,9 @@ class FixtureFormatTests(unittest.TestCase):
                     for (lo, hi, text, attrs), sh in zip(caps, shots):
                         self.assertEqual(text, "%d %s: %s" % (sh["index"], sh["name"], sh["shows"]))
                         self.assertEqual((attrs["Preset"], attrs["Res1"]), ("GoboMacro", "bossi3dj/cam-planet-%d.png" % sh["index"]))
+                elif qf.only_ends(r):
+                    a, b = r["stops"]
+                    self.assertEqual([(lo, hi, t) for lo, hi, t, _ in caps], [(0, 255, "from %s (0) to %s (255): %s" % (a["name"], b["name"], r["plain"]))])
                 elif r.get("stops"):
                     self.assertEqual(len(caps), len(r["stops"]))
                     for (lo, hi, text, attrs), st in zip(caps, r["stops"]):
@@ -192,7 +195,7 @@ class FixtureFormatTests(unittest.TestCase):
 
 
 class StopTests(unittest.TestCase):
-    WITH_STOPS = [r for r in ROWS if r.get("stops")]
+    WITH_STOPS = [r for r in ROWS if qf.ranged(r)]
 
     def test_ranges_cover_0_to_255_without_gaps_and_are_centred_on_the_stops(self):
         for r in self.WITH_STOPS:
@@ -204,6 +207,20 @@ class StopTests(unittest.TestCase):
                     self.assertEqual(lo, hi + 1)
                 for lo, hi, st in ranges:
                     self.assertTrue(lo <= round(st["wire"] * 255) <= hi)
+
+    def test_a_channel_with_only_its_two_ends_as_stops_keeps_one_range_and_has_no_stop_buttons(self):
+        ends = [r["address"] for r in ROWS if qf.only_ends(r)]
+        self.assertEqual(sorted(ends), ["/vj/fog", "/vj/sun"])
+        root = ET.parse(qf.WORKSPACE).getroot()
+        captions = {f.get("Caption") for f in root.iter(W + "SoloFrame")}
+        fixture = {c.get("Name"): c for c in parsed().findall(NS + "Channel")}
+        for r in ROWS:
+            if not r.get("stops"):
+                continue
+            with self.subTest(address=r["address"], only_ends=qf.only_ends(r)):
+                n_caps = len(fixture[qf.channel_name(r)].findall(NS + "Capability"))
+                self.assertEqual(n_caps, 1 if qf.only_ends(r) else len(r["stops"]))
+                self.assertEqual(r["label"] in captions, not qf.only_ends(r))
 
     def test_the_stops_the_contract_names(self):
         by = {r["address"]: [(st["wire"], st["name"]) for st in r["stops"]] for r in self.WITH_STOPS}

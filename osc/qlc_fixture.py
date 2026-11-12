@@ -84,6 +84,17 @@ def _group(row):
     return "Effect"
 
 
+def only_ends(row):
+    """True for stops that are just the two ends of the range (fog: None and Dense autumn fog): a split in halves would call a fog of 100 None."""
+    stops = row.get("stops") or []
+    return len(stops) == 2 and [s["wire"] for s in stops] == [row["min"], row["max"]]
+
+
+def ranged(row):
+    """True when the stops have one in between, so each gets its own range (and a stop button in the workspace)."""
+    return bool(row.get("stops")) and not only_ends(row)
+
+
 def stop_ranges(row):
     """[(min, max, stop)] of a row with stops: ranges centred on the stops, no gaps, 0 to 255. A stop's DMX value is wire * 255."""
     stops = row["stops"]
@@ -102,6 +113,9 @@ def capabilities(row):
         shots = planet_shots(row)
         return [(lo, hi, "%d %s: %s" % (s["index"], s["name"], s["shows"]), {"Preset": "GoboMacro", "Res1": GOBO_REF % s["index"]})
                 for (lo, hi), s in zip(shot_ranges(len(shots)), shots)]
+    if only_ends(row):
+        a, b = row["stops"]
+        return [(0, 255, "from %s (0) to %s (255): %s" % (a["name"], b["name"], row["plain"]), {})]
     if row.get("stops"):
         out = []
         for lo, hi, s in stop_ranges(row):
@@ -160,7 +174,7 @@ def _state(x, y, w, h):
 
 def _group_height(members):
     sliders = [r for r in members if r["kind"] != "trigger"]
-    stops = [r for r in members if r.get("stops") and r["kind"] != "trigger"]
+    stops = [r for r in members if ranged(r) and r["kind"] != "trigger"]
     return (SLIDER_H + 2 * PAD + 20 if sliders else 120) + (92 if any(r["address"] == "/vj/cam" for r in members) else 0) + 52 * len(stops)
 
 
@@ -192,7 +206,7 @@ def render_workspace(rows=None):
         cam_scenes.append((ids.f(), "cut to %d %s" % (s["index"], s["name"]), cam_i, (lo + hi) // 2, s))
     stop_scenes = []                              # one scene per labelled stop: the channel at that stop's DMX value
     for i, r in enumerate(rows):
-        if r.get("stops") and r["kind"] != "trigger" and r["address"] != "/vj/cam":
+        if ranged(r) and r["kind"] != "trigger" and r["address"] != "/vj/cam":
             for st in r["stops"]:
                 stop_scenes.append((ids.f(), "%s = %s" % (r["label"], st["name"]), i, int(round(st["wire"] * 255)), r, st))
     for fid, name, ch, val, *_ in scenes + cam_scenes + stop_scenes:
@@ -212,7 +226,7 @@ def render_workspace(rows=None):
         sliders = [(i, r) for i, r in members if r["kind"] != "trigger"]
         buttons = [(i, r) for i, r in members if r["kind"] == "trigger"]
         is_cam = any(r["address"] == "/vj/cam" for _, r in members)
-        width = max(len(sliders) * (SLIDER_W + 4), len(buttons) * 124, max([len(r["stops"]) * 100 + 12 for _i, r in sliders if r.get("stops")] or [0]), 8) + 2 * PAD
+        width = max(len(sliders) * (SLIDER_W + 4), len(buttons) * 124, max([len(r["stops"]) * 100 + 12 for _i, r in sliders if ranged(r)] or [0]), 8) + 2 * PAD
         height = _group_height([r for _i, r in members])
         out += ['   <Frame Caption=%s ID="%d">' % (quoteattr(group), ids.w()), '    ' + _state(PAD, y, width, height),
                 "    <AllowResize>False</AllowResize>", "    <ShowHeader>True</ShowHeader>", "    <ShowEnableButton>False</ShowEnableButton>"]
@@ -270,7 +284,7 @@ def _wire(row):
 
 
 def _stops_text(row):
-    if not row.get("stops") or row["kind"] == "trigger" or row["address"] == "/vj/cam":
+    if not ranged(row) or row["kind"] == "trigger" or row["address"] == "/vj/cam":
         return ""
     return "; ranges: " + ", ".join("%s %d to %d" % (st["name"], lo, hi) for lo, hi, st in stop_ranges(row))
 

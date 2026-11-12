@@ -58,8 +58,7 @@
  </Channel>
  <Channel Name="Sun Height (/vj/sun)" Default="255">
   <Group Byte="0">Effect</Group>
-  <Capability Min="0" Max="127">Below the horizon: Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon.</Capability>
-  <Capability Min="128" Max="255">Peak day: Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon.</Capability>
+  <Capability Min="0" Max="255">from Below the horizon (0) to Peak day (255): Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon.</Capability>
  </Channel>
  <Channel Name="Moon Size (/vj/moon)" Default="255">
   <Group Byte="0">Effect</Group>
@@ -114,8 +113,7 @@
  </Channel>
  <Channel Name="Fog (/vj/fog)" Default="89">
   <Group Byte="0">Effect</Group>
-  <Capability Min="0" Max="127">None: More fog near the ground; at 1 it is dense autumn fog.</Capability>
-  <Capability Min="128" Max="255">Dense autumn fog: More fog near the ground; at 1 it is dense autumn fog.</Capability>
+  <Capability Min="0" Max="255">from None (0) to Dense autumn fog (255): More fog near the ground; at 1 it is dense autumn fog.</Capability>
  </Channel>
  <Channel Name="Fog Height (/vj/fog_height)" Default="105">
   <Group Byte="0">Effect</Group>

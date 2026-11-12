@@ -40,7 +40,7 @@ What is verified in the workspace file: its structure (Creator, Engine with fixt
 | 7 | Grid Speed (`/vj/grid_speed`) | Makes the glowing grid on the ground scroll faster. | 0..255 = 0..1 |
 | 8 | Camera (`/vj/cam`) | Cuts to camera number N; 0 is the first shot. | split into equal ranges, one per shot (below) |
 | 9 | Camera Speed (`/vj/cam_speed`) | Makes the camera drift and fly faster or slower. | 0..255 = 0..1 |
-| 10 | Sun Height (`/vj/sun`) | Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon. | 0..255 = 0..1; ranges: Below the horizon 0 to 127, Peak day 128 to 255 |
+| 10 | Sun Height (`/vj/sun`) | Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon. | 0..255 = 0..1 |
 | 11 | Moon Size (`/vj/moon`) | Makes the moon bigger or smaller. | 0..255 = 0..1 |
 | 12 | Moon Phase (`/vj/moon_phase`) | Changes the shape of the moon from new through half to full. | 0..255 = 0..1; ranges: New 0 to 64, Half 65 to 191, Full 192 to 255 |
 | 13 | Pyramids (`/vj/pyramids`) | Makes the pyramids rise out of the ground. | 0..255 = 0..1 |
@@ -52,7 +52,7 @@ What is verified in the workspace file: its structure (Creator, Engine with fixt
 | 19 | Shock (`/vj/shock`) | A shock wave runs over the land once; in Godot the giant shakes while the Wanderer is on it. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1.5 at 255, back below 128 re-arms |
 | 20 | Meteor (`/vj/meteor`) | A shooting star crosses the sky. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1 at 255, back below 128 re-arms |
 | 21 | Flamingos (`/vj/flamingos`) | Makes the flock of flamingos bigger; 0 hides it. | 0..255 = 0..1 |
-| 22 | Fog (`/vj/fog`) | More fog near the ground; at 1 it is dense autumn fog. | 0..255 = 0..1; ranges: None 0 to 127, Dense autumn fog 128 to 255 |
+| 22 | Fog (`/vj/fog`) | More fog near the ground; at 1 it is dense autumn fog. | 0..255 = 0..1 |
 | 23 | Fog Height (`/vj/fog_height`) | Makes the fog bank taller or lower. | 0..255 = 0..1 |
 | 24 | Fog Glow (`/vj/fog_glow`) | Makes the fog glow by itself. | 0..255 = 0..1 |
 | 25 | Fog Hue (`/vj/fog_hue`) | Tints the fog pink, violet or cyan. | 0..255 = 0..1; ranges: Pink 0 to 42, Violet 43 to 126, Cyan 127 to 211, Pink again 212 to 255 |
