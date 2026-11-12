@@ -1,6 +1,6 @@
 # Art-Net and QLC+ for the Blender scene
 
-A lighting desk or QLC+ can drive the Blender scene over Art-Net, next to Magic and the scene page. The bridge ([blender/blender_osc_bridge.py](../blender/blender_osc_bridge.py), Art-Net part in [blender/artnet_input.py](../blender/artnet_input.py)) listens for ArtDmx frames on udp 6454. One QLC+ fixture, [qlc/bossi3dj-Synthwave-Planet.qxf](../qlc/bossi3dj-Synthwave-Planet.qxf), has one DMX channel per address the Blender scene reacts to. Status: built and unit tested; not yet tried with a live Blender or a running QLC+ (see "Live test").
+A lighting desk or QLC+ can drive the Blender scene over Art-Net, next to Magic and the scene page. The bridge ([blender/blender_osc_bridge.py](../blender/blender_osc_bridge.py), Art-Net part in [blender/artnet_input.py](../blender/artnet_input.py)) listens for ArtDmx frames on udp 6454. One QLC+ fixture, [qlc/bossi3dj-Synthwave-Planet.qxf](../qlc/bossi3dj-Synthwave-Planet.qxf), has one DMX channel per address the Blender scene reacts to. Status: built, unit tested, and tried live with the sender (below); not yet tried with a running QLC+.
 
 ## What the bridge does with a frame
 
@@ -103,6 +103,29 @@ python3 osc/artnet_send.py 127.0.0.1:6454 --universe 0 --start 1 /vj/cam=3 --dry
 ```
 
 The sender sends one frame of defaults first (the bridge's baseline), then five frames with your values on top, like a desk, and for a trigger a last frame with it back at 0. `--broadcast` sends to a broadcast address. Without Blender running, nothing listens and nothing happens.
+
+## Live test with the sender, 2026-11-12
+
+`python3 osc/artnet_live_test.py` against the planet scene (`make blender-open`, committed round 13 build), frames to 127.0.0.1:6454 universe 0 from `osc/artnet_send.py`'s frame builder, one OSC packet to udp 9201, every result read back from the page's API (`/api/state`: values, `osc.source`, `osc.log`, camera). At the start the bridge reported `bound: true` on udp 6454, universe 0, address 1, 37 channels, 12 shots.
+
+| Row | Result | What was read back |
+|---|---|---|
+| Baseline and equal frames change nothing | ok | first run after the start: four frames, values equal, `applied` 3 to 3 |
+| A changed channel sets its control, source `artnet` | ok | `/vj/fog_glow` wire 0.25 gave scene 0.502 (range 0 to 2), source `artnet` |
+| A resting channel does not override OSC | ok | OSC 0.75 gave 1.500 (source `osc`); four equal frames after it left 1.500 and source `osc` |
+| A trigger fires once on the rise through 128 | ok | `/vj/shock` in the log: 1.50, then 0.00 (one rise at full strength, one fall) |
+| The camera channel picks the shots by range | ok | DMX 0 and 21 gave `CAM_0`, 22 gave `CAM_1`, 64 `CAM_3`, 128 `CAM_6`, 234 `CAM_10`, 235 and 255 `CAM_11` (the Flight): the 12 ranges of the table below |
+| A held control ignores Art-Net | ok | `vj_fog_glow` unchanged at 0.596 with the hold on, `held` counter rose |
+| Another universe is ignored | ok | frames to universe 1 changed nothing; the bridge counted them (`other_universe` 10) |
+| Restore | ok | the baseline frame again, then `vj_fog_glow`, `vj_cam`, `vj_shock` and the holds set back; every value and the camera as at the start |
+
+Bridge counters at the end: 94 ArtDmx packets, 84 frames of universe 0, 32 changed channels applied, 0 malformed.
+
+Notes from the run:
+
+- The sender's own baseline frame holds the fixture defaults. The bridge treats only the first frame after the start (or after a settings change) as the baseline, so a later run of the sender whose first frame differs from the last one of the previous run changes those channels. That is a desk moving its faders, not a fault.
+- The page's status line does not show the Art-Net state yet: `/api/state` has no Art-Net entry, so this test read the listener from the bridge (`artnet_state()` through the Blender MCP). Showing it needs a change in `blender/scenes/synthwave_web.py` (session B11's file): `snap["osc"]["artnet"] = bridge.artnet_state()` in `publish()` and a chip in `synthwave_control.html`.
+- QLC+ was not running, so whether udp 6454 can be shared with it is still untested.
 
 ## The one open risk: sharing udp 6454 with QLC+
 
