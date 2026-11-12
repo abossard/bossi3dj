@@ -2348,7 +2348,13 @@ mirr = G.delete(land, G.math("LESS_THAN", G.read("pl_mir"), 0.5))
 mirr = G.setpos(mirr, G.vmath("ADD", G.vmath("SCALE", G.vmath("NORMALIZE", rel), scale=G.sub(2.0 * R, G.vmath("LENGTH", rel))), tuple(CENTER)))
 flipf = G.node("GeometryNodeFlipFaces")
 G.feed(flipf.inputs[0], stitch(G, mirr, ("pl_w",)))
-land = G.store(stitch(G, land, ("pl_w",)), "mirror", 0.0)
+# (round 14) the land's border vertices welded: each patch is its own piece of mesh, so a border vertex took its smooth
+# normal from its own patch's faces only and the two sides of a border shaded apart (CAM_4: 567 coincident pairs within
+# 2.5 m, normals 9.6 deg apart at the median, 45 deg at p95, up to 81): a straight crease along a patch border on the hills
+land_w = G.node("GeometryNodeMergeByDistance")     # Mode: All (the default)
+G.feed(land_w.inputs["Geometry"], stitch(G, land, ("pl_w",)))
+land_w.inputs["Distance"].default_value = 0.05
+land = G.store(land_w.outputs[0], "mirror", 0.0)
 mirr = G.store(flipf.outputs[0], "mirror", 1.0)
 G.feed(go["Geometry"], shade(G, G.join(land, mirr), m_terrain, smooth=True))
 

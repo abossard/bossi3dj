@@ -1,0 +1,5 @@
+{"round": "planet-round14", "rubric": "blender/review/rubric-round14.md",
+ "frames": "blender/review/out/round14/after (local, git-ignored), 960 x 540",
+ "shots": 7, "pass": 6, "fail": 1,
+ "pass_frames": ["CAM_4 p0", "CAM_4 p25 (round 13 fail, now pass)", "CAM_4 p50 (round 13 fail, now pass)", "CAM_1", "CAM_8", "CAM_0"],
+ "fails": {"CAM_4 p75": "R14-CREASE, moderate confidence: a straight horizontal shading step on the lower-left slope (x 270 to 350, y 415 to 430), likely the known per-triangle lake-level step; worth a full-size look"}}
