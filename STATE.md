@@ -54,6 +54,15 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 ## Decided by the user
 
 - Contract: every continuous `/vj/*` control is 0..1 on the wire, each scene scales it to its own range; the wire default gives each scene its tuned look. Indices (`/vj/cam`) stay integers, triggers keep their strength.
+- Blender, 2026-11-12, direction for a generic, steerable setup (the user's answers to twelve questions):
+  - The camera runs on paths, not free flight. Path types, each working with any target: orbit a target, follow the land, rise and descend between ground and space, vantage with a slow push.
+  - Direction is a combination of path type and target. The target comes from one named list (pyramids, a lake, a river, the coast, the moon, the sun, the planet), the same on the desk, in Magic and on the page.
+  - Height above the terrain is one fader from ground to space; the path adapts.
+  - A change of path or target is flown, not cut; one fade-time control sets the flight from a cut (0) to a long glide.
+  - The music steers by default; a control the user touches is theirs and goes back to the music after a pause.
+  - Steered from QLC+ or a lighting desk and from a MIDI controller.
+  - The world stays the whole planet.
+  - Terrain: fine detail near the camera and no glitches at any height or during a flight; a steady 30 fps is acceptable.
 - Godot, 2026-11-11: parked. The look with the real models (Nomad, Grock) does not convince the user after round 6.
 - Godot, 2026-11-11: no model file goes into git. `godot/colossus/assets/MODELS.md` lists the sources, licences and the prepare command; the scene falls back to the stand-ins when a model is missing.
 - 2026-11-11: no relay in the show path, since the two scenes never run together. Magic sends straight to one scene port, udp 9201, where both the Blender bridge and Godot listen; `make lab` stays as an optional debug tool. Committed (9c8793c); the Godot side is proven by its tests only, not live.
