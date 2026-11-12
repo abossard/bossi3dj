@@ -9,7 +9,7 @@ CAMS = DN.get("matrix_cams", list(range(11)))
 TIMES = (("day", 0.0), ("sunset", 0.5), ("night", 1.0))
 FOGS = (("0", 0.0), ("05", 0.5), ("1", 1.0))
 LOOP = (0, 25, 50, 75)
-FIXED = {"vj_shock": 0.0, "vj_cam_speed": 0.0}
+FIXED = {"vj_shock": 0.0, "vj_cam_speed": 0.0, "vj_blend": 0.0}   # blend 0: hard cuts, no grab mid-blend
 LANDED = "S['rt_flock'] = 0.0; S['rt_flock_dir'] = -1.0"   # a settled day: the flamingos are home (rt_flock counts down in real time)
 FLOWN = "S['rt_flock'] = 1.0; S['rt_flock_dir'] = 1.0"      # sunset and night: about 3 s into the flock's take-off (it flies off within 30 s)
 jobs = []

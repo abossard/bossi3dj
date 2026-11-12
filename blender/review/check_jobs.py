@@ -15,8 +15,10 @@ for item in DN["check_list"]:
     ph = item[4] if len(item) > 4 and item[4] is not None else None
     extra = item[5] if len(item) > 5 else {}
     mph = 0.0 if (e == 1 and tn in ("day", "sunset")) else 1.0
+    # /vj/blend 0: a hard cut. At the wire default 1 a cut is the Director's blend, which flies the rig up to a few km
+    # (into space from CAM_6) for several seconds, and the grab landed mid-blend (round 12's CAM_6 to CAM_10 by day)
     st = {"vj_shock": 0.0, "vj_cam_speed": 0.0, "vj_night": TV[tn], "vj_fog": fog, "vj_eclipse": float(e), "vj_moon_phase": mph,
-          "vj_nebula": 1.0, **extra.get("set", {})}
+          "vj_nebula": 1.0, "vj_blend": 0.0, **extra.get("set", {})}
     job = {"kind": "grab", "set": st, "settle": 3.0, "exec": LANDED if tn == "day" else FLOWN,
            "out": OUT + "%s_%s_f%s_e%d%s.ppm" % (cam if isinstance(cam, str) else "CAM_%d" % cam, tn, str(fog).replace(".", ""), e,
                                                   ("_p%d" % ph if ph is not None else "") + ("_" + extra["tag"] if "tag" in extra else ""))}

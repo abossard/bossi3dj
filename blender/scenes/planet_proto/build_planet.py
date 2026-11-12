@@ -128,6 +128,7 @@ SENTINEL = -10000.0            # "no lake here" in the hydrology water level
 VALLEY_SLOPE = 0.3             # river banks rise at most this much per metre away from the water
 SHALLOW = 1.0                  # m of water under which the bed still shows (wet, darkened)
 RIVER_SHORE = 30.0             # m past the bank where the river surface stays flat (hidden under the bank)
+BANK_SOFT = 8.0                # m: the soft minimum's largest reach where a river valley's bank meets the hillside (round 13)
 D_SUN = 150000.0               # m, sun distance (far beyond the planet, so the orbit view keeps its size)
 D_MOON = 120000.0              # m, moon distance (the island's 21 km, scaled like the sun)
 MOON_R = 11500.0               # m, moon radius at vj_moon 1, on star_system.py's 50 km orbit
@@ -141,6 +142,9 @@ VALLEY_KNOLLS = (1.5, 9.0)     # m: little hills on the valley floor, near its a
 PLAIN_SWELL = (24.0, 320.0)    # m, m across: swells on all land, (noise - 0.5) x 2 x this (about 4 m std), so the drawn
 PLAIN_KNOLL = (8.0, 90.0)      # mesh's real edges bend at night; knolls on them, a few cells of the near LOD (round 11:
 #                                at half these the plain in front of CAM_0 still read as a lattice)
+SHADE_TILT = (2.5, 0.01, 0.06)  # the gentle slopes' light (round 13): the tilt of the land's own normal off its up, times 2.5 for
+# the sun and the key below 8 deg of slope, fading to 1 by 20 deg. The plain's 4 to 5 deg swells under a 20 deg sun
+# varied the light by about 17 % and read as one flat purple band (CAM_0, CAM_3 by day, rounds 11 and 12)
 VALLEY_Y = (-3000.0,)          # m: the valley head; it runs north from there
 VALLEY_E, VALLEY_FALL = 4.5, 0.0015    # floor elevation at the pole, fall per metre north: the river runs near sea level and meets the bay about 1.7 km north, as on the island
 
@@ -386,6 +390,9 @@ MOON_C = direction(30.0, 22.0)
 FOG_D = 6500.0
 FOG_TOP = 800.0                # m over the sea: the fog box's top (the fog lies on valley floors up to a few hundred m)
 FOG_TAIL = 0.06                # haze over the fog layer's top, as a share of its density
+FOG_TAIL_NIGHT = (0.12, 4.0)   # at night: its share and its height in layer tops (round 13; 0.3 and 6 filled the mid and far
+# sky with purple haze at fog 1 seen from high up, CAM_4 night f1, round 9)
+FOG_NIGHT_ALB = (0.055, 0.055, 0.06)   # the night fog's albedo, near neutral under the blue moon light (0.06, 0.05, 0.08 read purple)
 FOG_DENSITY = 0.005            # volume fog density at /vj/fog 1 on a valley floor: about 600 m of sight; it grows as /vj/fog^1.5
 FOG_RAMP = [(0.0, (1.0, 0.25, 0.65)), (0.33, (0.55, 0.20, 1.0)), (0.66, (0.15, 0.75, 1.0)), (1.0, (1.0, 0.25, 0.65))]   # fog colour by vj_fog_hue
 FOG_CLEAR = 0.25               # the fog fades in from this fraction of the shot's clear distance (rt_fog_clear) to all of it
@@ -421,7 +428,8 @@ def fog_layer(T, h, top, tail_k=1.0):
     # at night a thicker, higher haze: dark, it shows only where a capstone lamp lights it. A tall pyramid's capstone
     # stood over the layer with nothing to light (CAM_2)
     night_ = T.phase()["Night"]
-    tail = T.mul(T.math("EXPONENT", T.math("DIVIDE", over, T.mul(top, T.fmix(night_, -2.0, -6.0)))), T.fmix(night_, FOG_TAIL, 0.3))
+    tail = T.mul(T.math("EXPONENT", T.math("DIVIDE", over, T.mul(top, T.fmix(night_, -2.0, -FOG_TAIL_NIGHT[1])))),
+                 T.fmix(night_, FOG_TAIL, FOG_TAIL_NIGHT[0]))
     # thinning from a quarter of its top to a quarter over it: full to half its top, the layer's edge was sharp enough
     # for the volume's depth slices to draw it as stepped terraces seen from high up (CAM_4 f1, round 7)
     return T.addf(T.smooth(h, T.mul(top, 1.25), T.mul(top, 0.25)), T.mul(tail, tail_k))
@@ -434,7 +442,7 @@ def fog_look(T):
     ph = T.phase()
     fc = T.ramp(T.math("FRACT", T.attr("vj_fog_hue")), FOG_RAMP)
     dusk_c = T.mix(0.45, fc, (1.0, 0.62, 0.40))
-    alb = T.mix(ph["Night"], T.mix(ph["Twilight"], (0.92, 0.90, 0.98), dusk_c), (0.06, 0.05, 0.08))
+    alb = T.mix(ph["Night"], T.mix(ph["Twilight"], (0.92, 0.90, 0.98), dusk_c), FOG_NIGHT_ALB)
     glow = T.scale(fc, T.mul(T.mul(T.attr("vj_fog_glow"), ph["Twilight"]), T.sub(1.0, ph["Night"])))
     rad = T.mix(ph["Night"], T.mix(ph["Twilight"], (0.80, 0.80, 0.90), T.add(T.scale(dusk_c, 0.55), T.scale(glow, 0.6))), (0.004, 0.0035, 0.008))
     return alb, glow, rad
@@ -459,7 +467,7 @@ STAR_RES = ARGS[ARGS.index("--stars") + 1] if "--stars" in ARGS else "8k"
 STAR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "starmaps", "starmap_2020_%s.exr" % STAR_RES)
 STAR_BLACK, STAR_K = 0.002, 3.0
 NEB_LO, NEB_HI, NEB_K = 0.006, 0.03, 0.35     # the Milky Way band (space_sky): texel luminance where it fades in, its gain
-STAR_INTERP = "Linear"
+STAR_INTERP = "Cubic"    # (round 13) Linear drew an 8k texel as a square at 200 mm (the orbit limb); at 24 mm the same points
 STAR_IMG = bpy.data.images.load(STAR_PATH, check_existing=True)     # referenced, not packed (124 or 423 MB)
 STAR_IMG.use_half_precision = True       # a half-float GPU texture: the map itself is half float
 STAR_CAP = math.radians(35.0)    # (20 deg left the plate carree's sideways stretch, 1/cos(declination), up to 3x at
@@ -504,6 +512,39 @@ def star_caps(n=1792):     # about the map's own 0.044 deg per texel over the 35
 
 
 STAR_CAPS = star_caps()
+STAR_BG_K = 1.0                 # (round 13) at /vj/nebula 0 the stars less this share of the map's blurred light: the core's
+# diffuse glow, under the lum^2 gain, read as a glow band with the nebula off (CAM_10 neb0, round 9). A cut on texel
+# luminance took every star point with it; this keeps the points that stand above their surroundings
+
+
+def star_bg(w=1024, passes=3):
+    """The star map's diffuse light: block means to w x w/2 texels, then `passes` box blurs 3 texels wide (wrapping
+    round in right ascension). Made once from the map and kept next to it."""
+    path = STAR_PATH[:-4] + "_bg%d.exr" % w
+    if not os.path.exists(path) or os.path.getmtime(path) < os.path.getmtime(STAR_PATH):
+        w_, h_ = STAR_IMG.size
+        src = np.empty(w_ * h_ * 4, dtype=np.float32)
+        STAR_IMG.pixels.foreach_get(src)
+        k = w_ // w
+        out = src.reshape(h_ // k, k, w, k, 4).mean(axis=(1, 3))
+        del src
+        for _ in range(passes):
+            out = (np.roll(out, 1, axis=1) + out + np.roll(out, -1, axis=1)) / 3.0
+            pad = np.concatenate([out[:1], out, out[-1:]], axis=0)
+            out = (pad[:-2] + pad[1:-1] + pad[2:]) / 3.0
+        out[..., 3] = 1.0
+        img = bpy.data.images.new("starmap_bg_new", w, out.shape[0], float_buffer=True, alpha=True)
+        img.pixels.foreach_set(np.ascontiguousarray(out, dtype=np.float32).ravel())
+        img.filepath_raw = path
+        img.file_format = "OPEN_EXR"
+        img.save()
+        bpy.data.images.remove(img)
+    bg = bpy.data.images.load(path, check_existing=True)
+    bg.use_half_precision = True
+    return bg
+
+
+STAR_BG = star_bg()
 
 g_phase, T, gi, go = make_group("VJ_Phase", [], [("Dusk", "NodeSocketFloat"), ("Twilight", "NodeSocketFloat"), ("Night", "NodeSocketFloat")])
 nv = T.attr("vj_night")
@@ -1042,7 +1083,7 @@ if GRAFT:   # the planet's materials call the island's shared groups, so later i
             n.inputs[4].default_value = 1.0 - (1.0 - n.inputs[4].default_value) * 0.27
 
 
-def star_texels(T, d):
+def star_texels(T, d, bg=False):
     """The star map's colour toward the world direction d: the map's north celestial pole on the spin axis +x, so the
     sky turns about it with rt_star_ang the way the real one turns about the pole (the camera area sits on the
     equator, both celestial poles on its horizon). Right ascension runs to the left in the map, 0h in its middle."""
@@ -1073,6 +1114,11 @@ def star_texels(T, d):
     capk = T.smooth(T.math("ABSOLUTE", cx), math.cos(STAR_CAP - math.radians(2.0)), math.cos(STAR_CAP - math.radians(6.0)))
     col = T.mix(capk, col, sample(STAR_CAPS, T.comb(uc, vc, 0.0), "EXTEND"))
     v_ = T.vmath("MAXIMUM", T.vmath("SUBTRACT", col, (STAR_BLACK,) * 3), (0.0, 0.0, 0.0))
+    if bg:       # (round 13) the points only, as /vj/nebula goes to 0: the map less its blurred light (STAR_BG)
+        hp = T.vmath("MAXIMUM", T.vmath("SUBTRACT", v_, T.vmath("SCALE", sample(STAR_BG, T.comb(u, v, 0.0), "REPEAT"),
+                                                                 scale=STAR_BG_K)), (0.0, 0.0, 0.0))
+        nk = T.math("MINIMUM", T.math("MAXIMUM", T.attr("vj_nebula"), 0.0), 1.0)
+        v_ = T.mix(nk, hp, v_)
     return v_, T.dot(v_, (0.2126, 0.7152, 0.0722))
 
 
@@ -1107,7 +1153,7 @@ def space_sky(g):
     lz = T.sep(to_local(T, d))[2]
     hz = T.fmix(spc, T.mrange(T.addf(lz, horizon_dip(T)[2]), 0.0, 0.1, 0.0, 1.0), 1.0)     # ground: none at the horizon
     w = T.mul(T.mul(T.math("MAXIMUM", T.group(g_skyph)["Night"], spc), T.attr("vj_stars")), hz)
-    v_, lum = star_texels(T, d)
+    v_, lum = star_texels(T, d, bg=True)
     stars = star_gain(T, v_, lum)
     # /vj/nebula (round 9): the map's diffuse light, the Milky Way and its dust lanes, in its own colours. The lum^2
     # gain keeps the points crisp and crushes it (texels under 0.05 give 9 % of the drawn light,
@@ -1400,7 +1446,13 @@ depth = G.addf(1.2, G.mul(rhw, 0.06))
 bed = G.sub(rwl, G.mul(depth, G.sub(1.0, G.math("MINIMUM", G.mul(x, x), 1.0))))
 bank = G.addf(rwl, G.mul(G.sub(dr, rhw), VALLEY_SLOPE))     # the river cuts a V valley, no cliffs; under the water
 # inside the channel, so the bed wins there (a bank clamped at the water level left the bed 0 m deep)
-hc = G.math("MINIMUM", h, G.math("MAXIMUM", bed, bank))
+bb = G.math("MAXIMUM", bed, bank)
+# (round 13) a soft minimum where the valley's bank meets the hillside: the hard min drew a sharp crease along the
+# hillside over a river (CAM_4). Its reach grows with the height over the water (0.8 of it, at most BANK_SOFT), so it
+# lowers the ground by at most a fifth of that height and never down to the water: the waterline stays
+k_s = G.math("MINIMUM", G.math("MAXIMUM", G.mul(G.sub(G.math("MINIMUM", h, bb), rwl), 0.8), 0.001), BANK_SOFT)
+gap_s = G.math("MAXIMUM", G.sub(k_s, G.math("ABSOLUTE", G.sub(h, bb))), 0.0)
+hc = G.sub(G.math("MINIMUM", h, bb), G.math("DIVIDE", G.mul(gap_s, gap_s), G.mul(k_s, 4.0)))
 in_r = G.mul(G.sub(1.0, G.smooth(G.sub(dr, rhw), RIVER_SHORE, RIVER_SHORE + 15.0)),   # flat past the bank, under the rising
              G.math("GREATER_THAN", h0, G.sub(G.sub(rwl, depth), 1.0)))                # ground: the terrain draws the waterline;
 # river water only where it cuts a channel, not over lower ground
@@ -1744,8 +1796,13 @@ def terrain_build(T):
     zw = T.sub(T.mul(alt, flip), T.gattr("pl_w"))          # height above its own water (sea, lake or river)
     sun = T.group(g_sun)
     hgt = T.mrange(z, 0.0, 480.0, 0.0, 1.0)
-    lam_s = T.math("POWER", T.math("MAXIMUM", T.dot(N, sun["Dir"]), 0.0), 1.4)
-    lam_k = T.math("POWER", T.math("MAXIMUM", T.dot(N, key_dir(T, sun)), 0.0), 1.6)
+    # the light on gentle slopes from the land's own normal with its tilt exaggerated (SHADE_TILT): the mesh, its edges
+    # and every other term keep N
+    tilt_k = T.addf(1.0, T.mul(T.sub(1.0, T.smooth(T.sub(1.0, anu), SHADE_TILT[1], SHADE_TILT[2])), SHADE_TILT[0] - 1.0))
+    N_l = T.vmath("NORMALIZE", T.vmath("ADD", T.vmath("SCALE", up, scale=T.dot(N, up)),
+                                       T.vmath("SCALE", T.vmath("SUBTRACT", N, T.vmath("SCALE", up, scale=T.dot(N, up))), scale=tilt_k)))
+    lam_s = T.math("POWER", T.math("MAXIMUM", T.dot(N_l, sun["Dir"]), 0.0), 1.4)
+    lam_k = T.math("POWER", T.math("MAXIMUM", T.dot(N_l, key_dir(T, sun)), 0.0), 1.6)
     slope = T.math("SUBTRACT", 1.0, T.smooth(anu, 0.9, 0.99))
     fv = 1.0          # smooth shaded, no per-face shade: flat faces read as blocky stepped squares on near mountains (CAM_4)
     sunc = T.ramp(hgt, [(0.0, (0.9, 0.05, 0.45)), (0.6, (1.0, 0.12, 0.40)), (1.0, (1.0, 0.38, 0.22))])
@@ -2928,7 +2985,9 @@ if GRAFT:
     S.eevee.volumetric_samples = 32         # 64 cost the fog 13 fps at CAM_2; 32 looked the same
 # 8 px froxels showed as a checker in thick fog (CAM_2), 4 px cost about 1 fps there. The range ends with the fog box:
 # an 8 km range veiled the day sky and stretched the depth slices (the night nebula looks the same at 4.5 km)
-S.eevee.volumetric_tile_size = "4"
+S.eevee.volumetric_tile_size = "8"   # (round 13) 4 drew a pale band along the top edge in fog (CAM_5: rows 0 to 5 at 1.43 x
+# the rows under them), 2 and 8 none; 8 costs the same as 4 (36.0 ms both, CAM_2 fog 1). The checker 8 drew in round 2
+# was before the clear zone and the 16 slices
 S.eevee.volumetric_end = FOG_HALF
 S.eevee.volumetric_start = 30.0   # (round 9) from 1 m the 32 slices were 90 to 140 m deep at 300 m, against a fog layer about
 # 30 m thick: terraces along the bottom of CAM_4 at fog 1. The fog's density is 0 inside its clear zone (37 m and more)
