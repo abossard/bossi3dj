@@ -120,7 +120,8 @@ for r in rows:
 if DN.get("readme_cams", True):
     paths = {4: (0.0, 60.0, 120.0, 180.0), 5: (0.0, 17.0, 35.0, 52.0), 6: (0.0, 30.0, 60.0, 90.0), 10: (0.0, 11.0, 22.0, 34.0)}
     for c in range(NCAM):
-        for i, ph in enumerate(paths.get(c, (0.0,)) if PLANET else (0.0, 25.0, 50.0) if c >= 4 else (0.0,)):
+        # the island: four moments of every camera (its fixed shots drift too; 0 to 3 showed mostly the sun, 6 little)
+        for i, ph in enumerate(paths.get(c, (0.0,)) if PLANET else (0.0, 20.0, 40.0, 60.0)):
             job("cam__%d__p%d" % (c, i), c, {"vj_night": 0.0}, RESET, 3.0, ph)
     if PLANET:
         job("cam__%d__p0" % FLIGHT_CAM, FLIGHT_CAM, {"vj_night": 0.0}, RESET + advance(2.0), 3.0)

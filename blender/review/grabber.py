@@ -139,6 +139,8 @@ def _step():
     st["i"] = i
     if i >= len(st["jobs"]):
         st["done"] = True
+        bridge = DN.get("vj_osc_bridge")      # its holds released: left on, they refused 7 of 37 bridge packets of the
+        bridge.hold = bridge.hold - HOLD       # next self-check, and its noise floor tripled (2026-11-12)
         return None
     job = st["jobs"][i]
     if job.get("exec"):

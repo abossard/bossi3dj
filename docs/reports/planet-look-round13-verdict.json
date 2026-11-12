@@ -1,0 +1,30 @@
+{
+  "round": "planet-round13",
+  "rubric": "blender/review/rubric-round13.md",
+  "frames": "blender/review/out/round13/after (local, git-ignored): the build with volume tile 8 and the soft bank minimum",
+  "shots": 35,
+  "pass": 26,
+  "fail": 8,
+  "needs_full_size": {
+    "CAM_4_day_f00_e0": "straight-edged facet on the right hill, possibly R13-CAM4W"
+  },
+  "pass_lines": {
+    "R13-PLAIN": [
+      "CAM_0 day: soft magenta/purple swells, lighter crests and darker troughs",
+      "CAM_3 day: gentle swells with lighter ridge lines, low contrast but shaped"
+    ],
+    "R13-CAM5": "no pale band on CAM_5 at fog 0.5 and 1 (tile 8)",
+    "R13-CAM4F": "CAM_4 night fog 1: sky dark with stars, purple only as a thin glow at the horizon",
+    "R13-NEB0": "CAM_10 nebula 0: point stars only",
+    "R13-LIMB": "orbit limb 200 mm: round soft points"
+  },
+  "fails": {
+    "CAM_4_day_f00_e0_p25": "R13-CAM4W: straight vertical crease with flat facets on the right hill",
+    "CAM_4_day_f00_e0_p50": "R13-CAM4W: long straight crease on the right hill face",
+    "CAM_2_day_f10_e0": "R13-KEEP: checker pattern in the thick fog (volume tile 8)",
+    "CAM_5_day_f10_e0": "R13-KEEP: faint checker in shadow and ground (volume tile 8)"
+  },
+  "fix_pass": "volume tile back to 4 (the checker goes, the CAM_5 band comes back: rows 0-5 at 1.25 to 1.82 x); soft bank minimum reverted (the crease stayed with it)",
+  "note": "fails counted per entry: the four failing frames each appear on a sheet and at full size",
+  "needs_full_size_count": 1
+}

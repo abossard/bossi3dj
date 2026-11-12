@@ -72,3 +72,49 @@ DN["ftrace_job"] = {"out": "/abs/trace.json", "seed": 1, "flight": [(0.0, 1.0)],
 .venv/bin/python blender/review/flight_frame_stats.py DIR
 python3 blender/review/readme_assemble.py --flight DIR/skim_day.ppm
 ```
+
+## Batch 2: the day look and the camera items (round 13)
+
+Rubric `blender/review/rubric-round13.md`, frozen first. Grabs `blender/review/round13_jobs.py`, numbers `blender/review/round13_numbers.py`, sheets `round13_sheets.sh`, verdicts `docs/reports/planet-look-round13-verdict.json`. "Before" is the batch 1 build, "after" the round 13 build, "final" after the fix pass.
+
+Found on the way: `check_jobs.py` grabbed at the wire default `/vj/blend` 1, so every cut was a Director blend that flies the rig up to 2 to 4 km for seconds, and grabs landed mid-blend. Round 12's day frames of `CAM_6` to `CAM_10` were such frames (mean 12, sd 19, all alike; its reviewer passed them). `check_jobs.py`, `matrix_jobs.py` and `readme_pairs.py` now cut hard (`/vj/blend` 0); `readme_pairs.py` keeps the default for the Flight shot, where a hard cut waits for the stream's hold on wall time and the reset Flight stops repeating (boost floor 20.9).
+
+| Item | Cause | Change | Number before → final | Review |
+|---|---|---|---|---|
+| Day plain flat (`CAM_0`, `CAM_3`) | a 20° sun on 4 to 5° swells varies Lambert by about ±35 %, and half the plain's light is the flat ambient fill: ±17 % in all | the sun and key light read the land's normal with its tilt times 2.5 below 8° of slope, fading to 1 by 20° (`SHADE_TILT`); mesh, edges and all other terms unchanged | `CAM_0` spread across the band (luminance sd once each row's mean is out) 5.55 → 8.15, 5 to 95 % range 11.1 → 23.2 | pass both |
+| `CAM_5` pale top band in fog | EEVEE volume tile size 4: tile 2 and 8 draw none (rows 0 to 5 against 8 to 13: 1.37 at 4, 1.00 at 2 and 8, `cam5_band.py`) | tile 8 tried (cost 36.02 against 36.04 ms): the reviewer saw the old checker in thick fog by day (`CAM_2`, `CAM_5`). Tile 2 costs 8.5 ms (34.8 → 43.3, `CAM_2` fog 1). Back to 4 | 1.18 / 1.41 day, 1.25 / 1.37 night → 1.25 / 1.51, 1.53 / 1.82 (band kept) | dropped: the band stays |
+| `CAM_4` night haze at fog 1 | night fog tail 0.3 of the layer, 6 tops high, albedo (0.06, 0.05, 0.08) under the blue moon light | tail 0.12 and 4 tops (`FOG_TAIL_NIGHT`), albedo (0.055, 0.055, 0.06) | star points in the low sky at fog 1: 2259 → 4810 (fog 0: 4746) | pass |
+| `CAM_10` glow at `/vj/nebula` 0 | the stars' lum² gain on the Milky Way core's texels | a 1024 px blurred copy of the map (`starmap_2020_8k_bg1024.exr`, made by the build next to the map, local) subtracted from the stars as the nebula goes to 0 (`STAR_BG_K` 1); nebula 1 unchanged | sky patch at nebula 0: mean 14.9 → 6.5, pixels over 50: 645 → 0 | pass |
+| Square stars at 200 mm | Linear lookups of the 8k map: a texel is about 8 px there | star lookups Cubic (`STAR_INTERP`) | sky over 50 at 24 mm: 7602 → 7695 px (the points stay); frame time 46.4 against 51.3 ms, rounds overlap after the compile | pass (round points) |
+| `CAM_4` hillside crease | not the bank's hard minimum: a soft minimum (`hc`, reach up to 8 m, never down to the water) left the crease as it was | reverted | | fail, open |
+| `CAM_4` water step | lake level flat per 260 m hydrology triangle (`wl_face`) and the hard test in `in_r` | not changed: a fix moves every shore (a per-lake level or the lake extended over its rim triangles), a round of its own | | not regrabbed as its own line |
+
+Review round 13 (the round 13 build): 35 entries, 26 pass, 8 fail (four frames, each on a sheet and full size: `CAM_4` 25 % and 50 % crease; `CAM_2` and `CAM_5` fog 1 checker from tile 8), 1 needs full size (`CAM_4` phase 0, the same crease). Fix pass: tile back to 4, soft bank reverted; final numbers above.
+
+Open from batch 2: the `CAM_4` crease (next: per-patch normals at `stitch()` borders, read the normals across a patch border on the crease's line), the `CAM_4` water step, the `CAM_5` band (tile 4) unless 8.5 ms are worth it.
+
+Sheets for the user: `docs/images/2026-11-12/planet-round13-day.jpg`, `planet-round13-night.jpg` (final build; the limb tile from the round 13 build, same star lookups).
+
+## Batch 3: the missing manual pictures
+
+Pair rule of `readme_pair_check.py` (mad of low against high at least twice the floor of low against low again, over 1 % of pixels moved, floor under 2). `readme_pairs.py` takes per-pair overrides now: camera (`readme_cam_for`), advance (`readme_advance`), held controls (`readme_set`) and python after the reset (`readme_exec`).
+
+| Address | Camera and state | mad / floor / share | Run |
+|---|---|---|---|
+| `/vj/moon` | `CAM_6` (orbit) at night, path phase 60 s, `/vj/grid` 0: the moon well in frame (projection x 0.65, y 0.82); `CAM_3` has it behind the hills, `CAM_4` at phase 0 out of frame | 3.45 / 0.11 / 2.9 % | `out/readme/r13d` |
+| `/vj/star_speed` | `CAM_10` at night, 30 s (30° of drift), grid 0, flock off: the Milky Way band moves as a whole; on `CAM_0` the drift moved every star but under 1 % of pixels | 5.35 / 1.40 / 28 % | `r13e` |
+| `/vj/meteor` | `CAM_0` at night, grid 0, `random.seed(24)` after the reset: the first shooting star of seed 1 lies outside every camera; seed 24 crosses `CAM_0`'s sky (projected x 0.37 to 0.45, y 0.81 to 0.71 at 0.4 s) | 0.195 / 0.036 / 0.24 % | `r13e`, written with `--accept vj_meteor`: every changed pixel is in the sky (rows 0 to 293), strongest 247; a streak never covers 1 % |
+| `/vj/boost` | `CAM_11`, `/vj/flight` 0.66, seed 1, the default blend | 15.2 / 0.74 / 63 % | `boost2` (batch 1 build) |
+
+The camera pictures (`cam-planet-0` to `-10`, the strip) and the ten gallery frames were replaced from run `out/readme/r13` (hard cuts); `cam-planet-11` and `planet-flight-skim.jpg` from the Flight's Skim. `make osc-sync` wrote the four new pictures into the README's manual; `make osc-test` 40 OK.
+
+```
+# Blender MCP, for one pair:
+DN["readme_out"] = "/abs/dir"; DN["readme_only"] = ["vj_meteor"]; DN["readme_cams"] = False; DN["readme_extra"] = False
+DN["readme_cam_for"] = {"vj_meteor": 0}; DN["readme_set"] = {"vj_meteor": {"vj_grid": 0.0}}; DN["readme_exec"] = {"vj_meteor": "import random; random.seed(24)\n"}
+exec(open(bpy.path.abspath("//../review/readme_pairs.py")).read())
+.venv/bin/python blender/review/readme_pair_check.py DIR
+python3 blender/review/readme_assemble.py DIR [--accept vj_meteor]
+```
+
+Batch 2 gate (final build, 2026-11-12): start check of `make blender-open` green, `health.py` clean, full self-check 36 of 37 (`/vj/grid_speed` only), bridge 37 of 37 applied (`docs/reports/blender-feature-check-planet-2026-11-12.json`), `make test` green (python 56, 40, 45; Godot 422; godot-check 22). A first run read 35 of 37 (`/vj/flamingos` lost, noise floor 14.9): the round's grabber had left its holds on, 7 bridge packets refused. `grabber.py` now releases its holds when it ends.
