@@ -6,7 +6,7 @@ SCENE   ?= planet
 BLEND_planet = $(SCENES)/synthwave_planet.blend
 BLEND_island = $(SCENES)/synthwave_pyramids.blend
 
-.PHONY: help status lab test magic-test osc-test blender-test osc-sync qlc-fixture osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-framing godot-hitch godot-warmup godot-ablate godot-cost godot-climb-light godot-grock-detail godot-fps godot-readme-pics godot-model-cost godot-models godot-wanderer-motion godot-wanderer-read godot-colossus-rig godot-shake-clips godot-shake-osc godot-import godot-lint \
+.PHONY: help status lab test magic-test osc-test blender-test osc-sync qlc-fixture qlc-install osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-framing godot-hitch godot-warmup godot-ablate godot-cost godot-climb-light godot-grock-detail godot-fps godot-readme-pics godot-model-cost godot-models godot-wanderer-motion godot-wanderer-read godot-colossus-rig godot-shake-clips godot-shake-osc godot-import godot-lint \
         godot-open godot-kill blender-open blender-kill blender-check blender-prepare blender-rebuild blender-paths magic-build venv verify
 
 # Blender and Godot share one GPU: a live window of one refuses to start while the other runs.
@@ -25,6 +25,7 @@ help:
 	@echo "  magic-build       regenerate magic/projects/*.magic from the generators (synthwave_pyramids for Blender, show for both scenes), then the generated tables of docs/handbook.md"
 	@echo "  osc-sync          rewrite the CONTROLS.md table and the bridge's SCALES block from osc/contract.json"
 	@echo "  qlc-fixture       write qlc/bossi3dj-Synthwave-Planet.qxf (the QLC+ fixture for Art-Net) and the channel table in docs/artnet-qlc.md from the contract"
+	@echo "  qlc-install       copy the fixture into QLC+'s user fixtures folder (~/Library/Application Support/QLC+/Fixtures); prints what it did, never starts QLC+"
 	@echo "  osc-sweep         walk every /vj/* address through min, default, max (ARGS=\"--target godot --seconds 2\", ARGS=--dry-run)"
 	@echo "  godot-test        Colossus logic tests, headless"
 	@echo "  godot-smoke       one full Colossus Arc, headless, own OSC port and Syphon name"
@@ -83,6 +84,16 @@ osc-sync:
 
 qlc-fixture:
 	python3 osc/qlc_fixture.py sync
+
+QLC_FIXTURES = $(HOME)/Library/Application Support/QLC+/Fixtures
+
+qlc-install:
+	@python3 osc/qlc_fixture.py check || { echo "the fixture is out of step with the contract: make qlc-fixture first"; exit 1; }
+	@mkdir -p "$(QLC_FIXTURES)"
+	@cp qlc/bossi3dj-Synthwave-Planet.qxf "$(QLC_FIXTURES)/"
+	@echo "installed: $(QLC_FIXTURES)/bossi3dj-Synthwave-Planet.qxf"
+	@echo "workspace to open in QLC+: $(CURDIR)/qlc/bossi3dj-Synthwave-Planet.qxw"
+	@if pgrep -f "QLC\+.app/Contents/MacOS" >/dev/null; then echo "QLC+ runs: quit it and start it again, it reads fixtures at the start"; fi
 
 osc-sweep:
 	python3 osc/sweep.py $(ARGS)

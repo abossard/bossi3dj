@@ -14,6 +14,7 @@ import contract  # noqa: E402
 import qlc_fixture as qf  # noqa: E402
 
 NS = "{http://www.qlcplus.org/FixtureDefinition}"
+W = "{http://www.qlcplus.org/Workspace}"
 ROWS = qf.blender_rows()
 QLC_TYPES = {"Color Changer", "Moving Head", "Scanner", "Flower", "LED Bar (Beams)", "LED Bar (Pixels)", "Strobe", "Laser",
              "Smoke", "Effect", "Dimmer", "Other", "Hazer", "Fan"}
@@ -32,6 +33,75 @@ class DriftTests(unittest.TestCase):
     def test_doc_channel_table_is_what_the_generator_makes(self):
         with open(qf.DOC) as f:
             self.assertEqual(qf.current_table(f.read()), qf.render_table(contract.load()))
+
+
+class WorkspaceTests(unittest.TestCase):
+    """qlc/bossi3dj-Synthwave-Planet.qxw: the shape of a QLC+ 5.3.0 workspace, with the console built from the contract."""
+
+    @staticmethod
+    def root():
+        return ET.parse(qf.WORKSPACE).getroot()
+
+    def test_file_is_what_the_generator_makes(self):
+        with open(qf.WORKSPACE) as f:
+            self.assertEqual(f.read(), qf.render_workspace(contract.load()))
+
+    def test_fixture_is_patched_once_at_universe_1_address_1(self):
+        engine = self.root().find(W + "Engine")
+        fixtures = engine.findall(W + "Fixture")
+        self.assertEqual(len(fixtures), 1)
+        f = fixtures[0]
+        got = {t: f.find(W + t).text for t in ("Manufacturer", "Model", "Mode", "ID", "Universe", "Address", "Channels")}
+        self.assertEqual(got, {"Manufacturer": qf.MANUFACTURER, "Model": qf.MODEL, "Mode": qf.MODE, "ID": "0", "Universe": "0", "Address": "0", "Channels": str(len(ROWS))})
+
+    def test_the_universe_outputs_to_art_net_universe_0(self):
+        out = self.root().find(W + "Engine/" + W + "InputOutputMap/" + W + "Universe/" + W + "Output")
+        self.assertEqual(out.get("Plugin"), "ArtNet")
+        params = out.find(W + "PluginParameters").attrib
+        self.assertEqual((params["outputUni"], params["outputIP"], params["transmitMode"]), ("0", qf.ART_IP, "Full"))
+
+    def test_one_slider_per_slider_channel_and_a_flash_button_per_trigger(self):
+        root = self.root()
+        sliders = [int(s.find(W + "Level/" + W + "Channel").text) for s in root.iter(W + "Slider")]
+        want = [i for i, r in enumerate(ROWS) if r["kind"] != "trigger"]
+        self.assertEqual(sorted(sliders), want)
+        scenes = {f.get("ID"): f for f in root.iter(W + "Function") if f.get("Type")}
+        flash = [b for b in root.iter(W + "Button") if b.find(W + "Action").text == "Flash"]
+        self.assertEqual(len(flash), sum(1 for r in ROWS if r["kind"] == "trigger"))
+        for b in flash:
+            vals = scenes[b.find(W + "Function").get("ID")].find(W + "FixtureVal").text.split(",")
+            with self.subTest(button=b.get("Caption")):
+                self.assertEqual(ROWS[int(vals[0])]["kind"], "trigger")
+                self.assertEqual(ROWS[int(vals[0])]["address"], "/vj/" + b.get("Caption"))
+                self.assertEqual(vals[1], "255")
+
+    def test_one_camera_button_per_named_shot_cutting_to_that_shot(self):
+        root = self.root()
+        scenes = {f.get("ID"): f for f in root.iter(W + "Function") if f.get("Type")}
+        solo = next(root.iter(W + "SoloFrame"))
+        buttons = solo.findall(W + "Button")
+        cam = next(r for r in ROWS if r["address"] == "/vj/cam")
+        self.assertEqual([b.get("Caption") for b in buttons], ["%d %s" % (s["index"], s["name"]) for s in cam["shots"]["planet"]])
+        d = an.DmxDecoder(an.channel_map((a, v[0], v[1], v[2]) for a, v in bridge.SCALES.items()), shots=len(buttons))
+        cam_channel = [r["address"] for r in ROWS].index("/vj/cam")
+        for i, b in enumerate(buttons):
+            ch, val = (int(x) for x in scenes[b.find(W + "Function").get("ID")].find(W + "FixtureVal").text.split(","))
+            with self.subTest(shot=b.get("Caption")):
+                self.assertEqual(ch, cam_channel)
+                self.assertEqual(d.wire(("/vj/cam", "int", 0, 11), val), float(i))
+
+    def test_ids_are_unique_and_every_button_function_exists(self):
+        root = self.root()
+        widgets = [w.get("ID") for w in root.iter() if w.tag in (W + "Frame", W + "SoloFrame", W + "Slider", W + "Button")]
+        self.assertEqual(len(widgets), len(set(widgets)))
+        functions = [f.get("ID") for f in root.iter(W + "Function") if f.get("Type")]
+        self.assertEqual(len(functions), len(set(functions)))
+        for b in root.iter(W + "Button"):
+            self.assertIn(b.find(W + "Function").get("ID"), functions)
+
+    def test_groups_are_the_manuals_groups(self):
+        frames = [f.get("Caption") for f in self.root().find(W + "VirtualConsole/" + W + "Frame").findall(W + "Frame")]
+        self.assertEqual(frames, [g for g in contract.GROUPS if any(r["group"] == g for r in ROWS)])
 
 
 class FixtureFormatTests(unittest.TestCase):

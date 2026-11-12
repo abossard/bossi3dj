@@ -2,6 +2,20 @@
 
 A lighting desk or QLC+ can drive the Blender scene over Art-Net, next to Magic and the scene page. The bridge ([blender/blender_osc_bridge.py](../blender/blender_osc_bridge.py), Art-Net part in [blender/artnet_input.py](../blender/artnet_input.py)) listens for ArtDmx frames on udp 6454. One QLC+ fixture, [qlc/bossi3dj-Synthwave-Planet.qxf](../qlc/bossi3dj-Synthwave-Planet.qxf), has one DMX channel per address the Blender scene reacts to. Status: built, unit tested, and tried live with the sender (below); not yet tried with a running QLC+.
 
+## Test with QLC+
+
+1. `make qlc-install`. Pass: it prints `installed: ~/Library/Application Support/QLC+/Fixtures/bossi3dj-Synthwave-Planet.qxf`.
+2. `make blender-open` (planet), wait for `start state: ready`. Pass: `make status` lists Blender under `artnet_listeners` (udp 6454).
+3. Start QLC+ (quit and start it again if it ran) and open the workspace `qlc/bossi3dj-Synthwave-Planet.qxw`. Pass: no load error, the Fixtures tab shows `Synthwave Planet` at universe 1, address 1, the Virtual Console shows a frame per manual group.
+4. Inputs/Outputs tab, Universe 1: the output must be the Art-Net plugin; if it shows none, pick `ArtNet`. Open its configuration: IP address `255.255.255.255` (the broadcast), universe `0`, mode `Full`. Pass: the universe's Output box is ticked.
+5. Virtual Console in operate mode. Move the `fog` slider (group Fog). Pass: the fog in the Blender window changes within a second, and `make status` shows `blender_scene.osc_received` rising.
+6. Press `shock` (group Triggers). Pass: one shock wave per press. Click a button in `shots`, for example `3 Moon Watch`. Pass: `make status` shows `blender_scene.camera` `CAM_3`.
+7. Check the port: `make status` with QLC+ running should list both `QLC+` and `Blender` under `artnet_listeners`, or tell in its notes what is wrong. Pass: no note about Art-Net.
+8. Set the IP address in the plugin configuration to `127.0.0.1` and repeat step 5. Pass or fail is the answer to "does a unicast frame reach Blender next to QLC+".
+9. Tell what failed and what `make status` said. Move faders only after Blender has started: the first frame it sees is the baseline.
+
+What is verified in the workspace file: its structure (Creator, Engine with fixture, scene functions, Virtual Console with frames, sliders in Level mode and buttons) follows a workspace written by QLC+ 5.3.0 GIT on this machine, read for its element names only. The Art-Net plugin's parameter names (`outputIP`, `outputUni`, `transmitMode`, `UniverseChannels`) are read from the strings of `PlugIns/libartnet.dylib`. From memory and not verified: the `Output` element's `Name` and `Line` for the Art-Net plugin (QLC+ may leave the output unset: step 4 fixes that in two clicks), that a Flash button on a scene releases its channel to 0, and what releasing a Toggle camera button does (it may cut back to shot 0; the `/vj/cam` slider has no such effect).
+
 ## What the bridge does with a frame
 
 - **Settings** (`bridge.configure_artnet(enabled, universe, address)`): Art-Net on, universe 0, DMX start address 1. The scene page can show them later. A failed bind of udp 6454 is not fatal: the bridge reports it in `bridge.artnet_state()` (`bound`, `error`) and goes on with OSC.
@@ -82,13 +96,7 @@ A lighting desk or QLC+ can drive the Blender scene over Art-Net, next to Magic 
 
 ## Install the fixture in QLC+
 
-QLC+ reads user fixtures from `~/Library/Application Support/QLC+/Fixtures` (the folder exists once QLC+ has run). From the repository folder:
-
-```bash
-mkdir -p ~/Library/Application\ Support/QLC+/Fixtures && cp qlc/bossi3dj-Synthwave-Planet.qxf ~/Library/Application\ Support/QLC+/Fixtures/
-```
-
-Restart QLC+. Then in the Fixtures tab: Add fixture, manufacturer `bossi3dj`, model `Synthwave Planet`, mode `Synthwave`, universe 1, address 1. The 37 channels appear in Simple Desk and in a fixture console.
+QLC+ 5.3 reads user fixtures from `~/Library/Application Support/QLC+/Fixtures` (the folder exists on this machine, empty). `make qlc-install` copies the fixture there and prints what it did; it never starts QLC+. `make qlc-fixture` is the generator (fixture, workspace and the table above, all from the contract). Restart QLC+. The workspace patches it for you; by hand it is the Fixtures tab, Add fixture, manufacturer `bossi3dj`, model `Synthwave Planet`, mode `Synthwave`, universe 1, address 1. The 37 channels appear in Simple Desk and in a fixture console.
 
 ## Set QLC+'s Art-Net output
 

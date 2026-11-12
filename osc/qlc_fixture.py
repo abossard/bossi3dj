@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """The QLC+ fixture for the Blender scene's Art-Net input, made from osc/contract.json.
 
-    python3 osc/qlc_fixture.py sync    write qlc/bossi3dj-Synthwave-Planet.qxf and the channel table in docs/artnet-qlc.md
-    python3 osc/qlc_fixture.py check   exit 1 when either is out of step with the contract (tests/test_qlc_fixture.py does the same)
+    python3 osc/qlc_fixture.py sync    write qlc/bossi3dj-Synthwave-Planet.qxf, the workspace qlc/bossi3dj-Synthwave-Planet.qxw and the
+                                       channel table in docs/artnet-qlc.md
+    python3 osc/qlc_fixture.py check   exit 1 when one of them is out of step with the contract (tests/test_qlc_fixture.py does the same)
     python3 osc/qlc_fixture.py table   print the channel table
 
 One fixture, one mode, one DMX channel per address the Blender scene reacts to, in contract order (the order of
 blender/blender_osc_bridge.py's SCALES and of blender/artnet_input.py's channel map). The channel's capabilities carry the
 rows' plain sentences; /vj/cam has one range per shot of the planet scene (the island has 7 shots: its ranges are in the
-doc). Standard library only. The format is QLC+ 4.12's fixture definition (a copy of the shape of the .qxf files that
+doc). The workspace patches the fixture once (universe 1, address 1) and holds a virtual console: one slider per slider
+channel in the manual's groups, a Flash button per trigger, one button per named planet shot (docs/artnet-qlc.md says which
+parts of the format were checked against a workspace QLC+ 5.3.0 wrote and which are from memory). Standard library only. The format is QLC+ 4.12's fixture definition (a copy of the shape of the .qxf files that
 ship in /Applications/QLC+.app/Contents/Resources/Fixtures).
 """
 import os
@@ -22,6 +25,7 @@ import contract  # noqa: E402
 
 QLC_DIR = os.path.join(ROOT, "qlc")
 FIXTURE = os.path.join(QLC_DIR, "bossi3dj-Synthwave-Planet.qxf")
+WORKSPACE = os.path.join(QLC_DIR, "bossi3dj-Synthwave-Planet.qxw")
 DOC = os.path.join(ROOT, "docs", "artnet-qlc.md")
 TABLE_BEGIN, TABLE_END = "<!-- artnet-channels:begin -->", "<!-- artnet-channels:end -->"
 MANUFACTURER, MODEL, MODE = "bossi3dj", "Synthwave Planet", "Synthwave"
@@ -89,6 +93,108 @@ def render_fixture(rows=None):
     return "\n".join(out)
 
 
+# ---------------------------------------------------------------- workspace (.qxw)
+
+ART_IP = "255.255.255.255"          # the broadcast first; 127.0.0.1 is the second try (docs/artnet-qlc.md)
+SLIDER_W, SLIDER_H, PAD = 64, 230, 12
+
+
+class _Ids:
+    """Ids for virtual console widgets and functions, handed out in order."""
+
+    def __init__(self):
+        self.widget, self.function = 0, 0
+
+    def w(self):
+        self.widget += 1
+        return self.widget
+
+    def f(self):
+        self.function += 1
+        return self.function - 1
+
+
+def _state(x, y, w, h):
+    return '<WindowState Visible="True" X="%d" Y="%d" Width="%d" Height="%d"/>' % (x, y, w, h)
+
+
+def _group_height(members):
+    sliders = [r for r in members if r["kind"] != "trigger"]
+    return (SLIDER_H + 2 * PAD + 20 if sliders else 120) + (92 if any(r["address"] == "/vj/cam" for r in members) else 0)
+
+
+def _group_order(rows):
+    """The manual's groups (osc/contract.py GROUPS) that hold a Blender row, in the manual's order."""
+    return [g for g in contract.GROUPS if any(r["group"] == g for r in rows)]
+
+
+def render_workspace(rows=None):
+    rows = blender_rows(rows)
+    ids = _Ids()
+    n = len(rows)
+    out = ['<?xml version="1.0" encoding="UTF-8"?>', "<!DOCTYPE Workspace>",
+           '<Workspace xmlns="http://www.qlcplus.org/Workspace" CurrentWindow="VirtualConsole">',
+           " <Creator>", "  <Name>Q Light Controller Plus</Name>", "  <Version>5.3.0 GIT</Version>", "  <Author>bossi3dj osc/qlc_fixture.py</Author>", " </Creator>",
+           ' <Engine Autostart="0">', "  <InputOutputMap>", '   <Universe Name="Synthwave (Art-Net)" ID="0">',
+           '    <Output Plugin="ArtNet" Name="127.0.0.1" UID="" Line="0">',
+           '     <PluginParameters UniverseChannels="512" outputIP="%s" outputUni="0" transmitMode="Full"/>' % ART_IP,
+           "    </Output>", "   </Universe>", "  </InputOutputMap>",
+           "  <Fixture>", "   <Manufacturer>%s</Manufacturer>" % escape(MANUFACTURER), "   <Model>%s</Model>" % escape(MODEL), "   <Mode>%s</Mode>" % escape(MODE),
+           "   <ID>0</ID>", "   <Name>%s</Name>" % escape(MODEL), "   <Universe>0</Universe>", "   <Address>0</Address>", "   <Channels>%d</Channels>" % n, "  </Fixture>"]
+    scenes = []                                   # (function id, name, channel, value)
+    triggers = [(i, r) for i, r in enumerate(rows) if r["kind"] == "trigger"]
+    cam_i, cam = next((i, r) for i, r in enumerate(rows) if r["address"] == "/vj/cam")
+    for i, r in triggers:
+        scenes.append((ids.f(), "fire " + r["address"], i, 255))
+    cam_scenes = []
+    for (lo, hi), s in zip(shot_ranges(len(planet_shots(cam))), planet_shots(cam)):
+        cam_scenes.append((ids.f(), "cut to %d %s" % (s["index"], s["name"]), cam_i, (lo + hi) // 2, s))
+    for fid, name, ch, val, *_ in scenes + cam_scenes:
+        out += ['  <Function ID="%d" Type="Scene" Name=%s Path="Synthwave">' % (fid, quoteattr(name)), '   <Speed FadeIn="0" FadeOut="0" Duration="0"/>',
+                '   <FixtureVal ID="0">%d,%d</FixtureVal>' % (ch, val), "  </Function>"]
+    out.append(" </Engine>")
+    total = PAD + sum(_group_height([r for r in rows if r["group"] == g]) + PAD for g in _group_order(rows))
+    out += [" <VirtualConsole>", '  <Frame Caption="Synthwave Planet" ID="%d">' % ids.w(), '   ' + _state(0, 0, 1200, total),
+            "   <AllowResize>False</AllowResize>", "   <ShowHeader>False</ShowHeader>", "   <ShowEnableButton>False</ShowEnableButton>"]
+    y = PAD
+    for group in _group_order(rows):
+        members = [(i, r) for i, r in enumerate(rows) if r["group"] == group]
+        sliders = [(i, r) for i, r in members if r["kind"] != "trigger"]
+        buttons = [(i, r) for i, r in members if r["kind"] == "trigger"]
+        is_cam = any(r["address"] == "/vj/cam" for _, r in members)
+        width = max(len(sliders) * (SLIDER_W + 4), len(buttons) * 124, 8) + 2 * PAD
+        height = _group_height([r for _i, r in members])
+        out += ['   <Frame Caption=%s ID="%d">' % (quoteattr(group), ids.w()), '    ' + _state(PAD, y, width, height),
+                "    <AllowResize>False</AllowResize>", "    <ShowHeader>True</ShowHeader>", "    <ShowEnableButton>False</ShowEnableButton>"]
+        x = PAD
+        for i, r in sliders:
+            out += ['    <Slider Caption=%s ID="%d" WidgetStyle="Slider" InvertedAppearance="false">' % (quoteattr(r["address"][len("/vj/"):]), ids.w()),
+                    "     " + _state(x, 28, SLIDER_W, SLIDER_H), '     <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>',
+                    '     <Level LowLimit="0" HighLimit="255" Value="%d">' % default_dmx(r), '      <Channel Fixture="0">%d</Channel>' % i, "     </Level>", "    </Slider>"]
+            x += SLIDER_W + 4
+        x = PAD
+        fire = {ch: fid for fid, _name, ch, _v in scenes}
+        for fid, r in ((fire[i], r) for i, r in buttons):
+            out += ['    <Button Caption=%s ID="%d">' % (quoteattr(r["address"][len("/vj/"):]), ids.w()), "     " + _state(x, 28, 120, 60),
+                    '     <Function ID="%d"/>' % fid, "     <Action>Flash</Action>", "    </Button>"]
+            x += 124
+        if is_cam:
+            out += ['    <SoloFrame Caption="shots" ID="%d">' % ids.w(), "     " + _state(PAD, SLIDER_H + 40, width - 2 * PAD, 84),
+                    "     <AllowResize>False</AllowResize>", "     <ShowHeader>True</ShowHeader>", "     <ShowEnableButton>False</ShowEnableButton>"]
+            bx, by = 4, 22
+            for fid, name, ch, val, shot in cam_scenes:
+                out += ['     <Button Caption=%s ID="%d">' % (quoteattr("%d %s" % (shot["index"], shot["name"])), ids.w()), "      " + _state(bx, by, 76, 28),
+                        '      <Function ID="%d"/>' % fid, "      <Action>Toggle</Action>", "     </Button>"]
+                bx += 78
+                if bx + 78 > width - 2 * PAD - 8:
+                    bx, by = 4, by + 30
+            out.append("    </SoloFrame>")
+        out.append("   </Frame>")
+        y += height + PAD
+    out += ["  </Frame>", " </VirtualConsole>", " <FlowConsole>", '  <FlowPage Name="Page 1"/>', " </FlowConsole>", "</Workspace>", ""]
+    return "\n".join(out)
+
+
 def _wire(row):
     if row["kind"] == "trigger":
         return "below 128 off; from 128 fires once, strength 0.5 at 128 up to %g at 255, back below 128 re-arms" % row["max"]
@@ -125,6 +231,11 @@ def sync():
         with open(FIXTURE, "w") as f:
             f.write(new)
         print("wrote", os.path.relpath(FIXTURE, ROOT))
+    new = render_workspace(rows)
+    if not os.path.exists(WORKSPACE) or open(WORKSPACE).read() != new:
+        with open(WORKSPACE, "w") as f:
+            f.write(new)
+        print("wrote", os.path.relpath(WORKSPACE, ROOT))
     with open(DOC) as f:
         text = f.read()
     i, j = text.index(TABLE_BEGIN) + len(TABLE_BEGIN), text.index(TABLE_END)
@@ -140,6 +251,8 @@ def stale():
     out = []
     if not os.path.exists(FIXTURE) or open(FIXTURE).read() != render_fixture(rows):
         out.append(os.path.relpath(FIXTURE, ROOT))
+    if not os.path.exists(WORKSPACE) or open(WORKSPACE).read() != render_workspace(rows):
+        out.append(os.path.relpath(WORKSPACE, ROOT))
     if not os.path.exists(DOC) or current_table(open(DOC).read()) != render_table(rows):
         out.append(os.path.relpath(DOC, ROOT) + " channel table")
     return out
