@@ -9,3 +9,9 @@ Frozen before the first grab of the Flight review (2026-11-12). It does not chan
 | FL-DUMMY | No dummy lines: no grid, lattice or line pattern on land, water or in the sky by day, and at night no lines that do not follow the terrain's own faces. By day (`*_day`) no lines at all. |
 | FL-EDGES | `*_night_grid1`: the night edges on the land read as an uneven net that follows the terrain (as on the fixed shots), or are absent. `*_night_grid0`: no edges. |
 | FL-SKY | Horizon and sky read as on the fixed shots: a curved or straight horizon with sky above it, sun or stars and moon where they belong, no hard band, box edge or step in the fog or sky. |
+
+## Added for the next Flight round (flight-2), after round flight-1 was closed
+
+| ID | Line |
+|---|---|
+| FL-GREEN | No flat or pure green areas; lakes and shores look as on the fixed shots from the same height. Counterexample: `blender/scenes/planet_proto/visual_check/user/2026-11-12-green-shores.webp` (the hole test's green underside seen live). |

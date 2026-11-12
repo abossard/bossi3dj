@@ -118,3 +118,13 @@ python3 blender/review/readme_assemble.py DIR [--accept vj_meteor]
 ```
 
 Batch 2 gate (final build, 2026-11-12): start check of `make blender-open` green, `health.py` clean, full self-check 36 of 37 (`/vj/grid_speed` only), bridge 37 of 37 applied (`docs/reports/blender-feature-check-planet-2026-11-12.json`), `make test` green (python 56, 40, 45; Godot 422; godot-check 22). A first run read 35 of 37 (`/vj/flamingos` lost, noise floor 14.9): the round's grabber had left its holds on, 7 bridge packets refused. `grabber.py` now releases its holds when it ends.
+
+### The green lakes and shore triangles the user saw (2026-11-12)
+
+Cause: this session's diagnosis. The hole test (`flight_grabs.py` `"holes": True`) swaps the material of `Sea_Underside` for pure green emission for one grab, on the Flight's Approach. The green shows through the stream's holes along the shores (the small triangles) and under the lakes' water (the mint green). One such grab stalled for minutes when the 3D view left camera view, so the green stayed on the Syphon output. The material was restored after each grab; the scene has been rebuilt twice since. Not the stream, not round 11 or 12.
+
+Numbers (`blender/review/green_share.py`, pixels with green more than 60 above red and blue): Flight frames before the fixes (`grabs_seed1`) and after them (`grabs_seed1_fix3`), Approach, Skim, Hover by day: 0 px each. Hole-test frames: Approach 1.07 % (22,120 px), Skim 0.15 %, Approach with the morph off 0.20 %. `rubric-flight.md` has the line FL-GREEN for the next Flight round, with the user's screenshot as the counterexample. Rule kept from now on: a diagnosis that changes the picture runs only with the scene off the user's output, or not at all.
+
+## Batch 4: the island (2026-11-12, first part)
+
+`make blender-open SCENE=island` green; full self-check 29 of 37 (`docs/reports/blender-feature-check-island-2026-11-12.json`), bridge 37 of 37 applied. Without an effect: `/vj/blend`, `/vj/boost`, `/vj/flight`, `/vj/energy`, `/vj/hit` (read only by `flight_rt`, which does not start on the island by design), `/vj/eclipse`, `/vj/star_speed` (read only by the planet's `star_system`): as on 2026-11-10. New: `/vj/flamingos` (1.6x on `CAM_1`, best of all cameras). Open: its cause, the island's camera pictures, `docs/reports/blender-feature-check.md`.
