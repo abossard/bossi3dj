@@ -39,3 +39,36 @@ Not a bug: a run after the `/vj/boost` pair flew the Hover in a 38 s cycle (on t
 ### Seed
 
 `flight_rt.quiesce(seed=None)` and `flight_rt.set_seed(n)`: a reset Flight flies `seed` (default `CHECK_SEED` 1, or the one `set_seed` chose). The `/vj/boost` pair counts on seed 1: mad 15.2 and 15.2 against floors 0.79 and 0.74 in two runs (`out/readme/boost1`, `boost2`). The 6.6 floor of the earlier run did not come back.
+
+### Review after the fix pass, round flight-1-fix (`out/flight/grabs_seed1_fix3/`, verdicts `docs/reports/planet-flight-verdict.json`)
+
+9 of 12 pass: Orbit, Skim and Hover by day and at night (water present, no lines, sky whole). The three Approach frames fail FL-WHOLE: holes in the terrain, dark blue by day.
+
+Measured (`flight_grabs.py` `"holes": True`: `Sea_Underside`, seen only through a hole, painted pure green for one more grab):
+
+| Approach, seed 1 | hole pixels of 1920 x 1080 | rows |
+|---|---|---|
+| as built | 17,288 and 17,323 (two runs) | 585 |
+| morph displacement off (`Vector Displacement` Scale 0 in `Terrain LOD`, `Sea LOD`) | 3,664 | 336 |
+| morph start `m0` 0.9 instead of 0.75 (`lod_stream.Params`) | 13,890 | 531 |
+| Skim | 0 | 0 |
+
+- At every sampled hole pixel the CPU ray (the undisplaced mesh) hits land of one block on all four sides 4 px away: the gaps open on the GPU. Four fifths go with the morph off; the rest are depth-transition cracks that a full morph should close. `verify_flight` 5b proves the pure model crack-free at m0 0.75, so the shader's morph and the model disagree somewhere (candidates: the look-ahead segment the selection uses against the morph's distance to `rt_cam`; the morph range at a block border). Not fixed: past the one fix pass. `m0` stays 0.75.
+- Next step: read the displaced border vertices of two neighbouring blocks of different depth (positions, `pl_morph`, `pl_mr`, `rt_cam`) and compute the shader's morph in numpy; the crack is where the two sides land apart.
+
+### Open from batch 1
+
+- The Approach holes (above).
+- Frame times of the Flight after the fixes (the sky frame is now placed every frame while streamed): batch 5.
+- `README.md` gallery: `docs/images/readme/planet-flight-skim.jpg` (960 x 540) is new; the caption is the orchestrator's to place.
+
+### Commands
+
+```
+# in the open planet Blender, Blender MCP:
+DN["flight_job"] = {"out": "/abs/numbers.json", "seed": 1, "dwell": 10}; exec(open(bpy.path.abspath("//../review/flight_numbers.py")).read())
+DN["fgrab_job"] = {"out": "/abs/dir", "seed": 1, "probe": True, "holes": True}; exec(open(bpy.path.abspath("//../review/flight_grabs.py")).read())
+DN["ftrace_job"] = {"out": "/abs/trace.json", "seed": 1, "flight": [(0.0, 1.0)], "seconds": 150}; exec(open(bpy.path.abspath("//../review/flight_trace.py")).read())
+.venv/bin/python blender/review/flight_frame_stats.py DIR
+python3 blender/review/readme_assemble.py --flight DIR/skim_day.ppm
+```
