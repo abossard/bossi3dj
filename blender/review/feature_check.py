@@ -213,7 +213,8 @@ def main():
         for b in bridge:
             print("  %-3s %-14s %-6g %s" % ("ok" if b["ok"] else "BAD", b["address"], b["wire"], {k: v for k, v in b.items() if k not in ("address", "wire", "ok")}))
 
-    frames_dir = os.path.join(os.path.dirname(out_path), "feature_check_%s_frames" % scene)
+    # the frames always go to the git-ignored review output, whatever --out is (a report folder is for JSON and tables)
+    frames_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out", "feature_check_%s_frames" % scene)
     http("/api/check", {"only": [k for k in args.only.split(",") if k], "frames_dir": frames_dir,
                               "fallback": not args.no_fallback})
     print("\ncheck running (page: %s, press Abort there or Ctrl-C here to stop)" % BASE, flush=True)
