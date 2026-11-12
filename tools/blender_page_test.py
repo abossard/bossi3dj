@@ -93,6 +93,10 @@ def main():
     check("state has scene, camera, fps, Syphon, OSC, night-edge guard",
           s["scene"] and s["camera"] and "fps" in s and s["syphon"] is not None and s["osc"] is not None and (s["edge_guard"] or {}).get("status") in ("present", "repaired", "not_applicable"),
           json.dumps({"scene": s["scene"], "camera": s["camera"], "fps": s["fps"], "edges": (s["edge_guard"] or {}).get("status")}))
+    art = (s.get("artnet") or {})
+    check("the state has the Art-Net chip", art.get("chip", {}).get("text", "").startswith("Art-Net"), json.dumps(art.get("chip")))
+    check("Art-Net listens on 6454 for the bridge's universe", (art.get("state") or {}).get("bound") is True and (art.get("state") or {}).get("port") == 6454,
+          json.dumps({k: (art.get("state") or {}).get(k) for k in ("enabled", "bound", "port", "universe", "address", "error")}))
     frames = s["syphon"]["frames"]
     time.sleep(1.0)
     check("Syphon frames advance", state()["syphon"]["frames"] > frames)

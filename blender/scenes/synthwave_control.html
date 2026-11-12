@@ -97,6 +97,7 @@
     <span class="chip"><span id="fpsdot" class="dot"></span><b id="fps">-</b> fps</span>
     <span class="chip"><span id="sydot" class="dot"></span>Syphon <b id="sy">-</b></span>
     <span class="chip" title="where the values come from: OSC (Magic), this page, the beat simulator; held = this page owns it"><span id="oscdot" class="dot"></span><b id="from">-</b></span>
+    <span class="chip" title="Art-Net from a lighting desk or QLC+: universe, DMX start address, frames per second"><span id="adot" class="dot"></span><b id="artnet">-</b></span>
     <span class="chip" title="night edges of the ground, probed once at the start"><span id="edot" class="dot"></span><b id="edges">-</b></span>
     <span class="chip" id="checkchip" hidden><span class="dot"></span><b id="checkshort"></b></span>
   </div>
@@ -122,7 +123,7 @@
     <summary>Tools</summary>
     <div class="row"><button id="checkall" class="grow" title="Sets every control to min, default and max and measures the frame; takes a few minutes, restores the defaults">Check all</button>
       <button id="checkabort" hidden>Abort</button></div>
-    <div class="muted">Check all moves every control through its range, measures the picture and puts the defaults back. It takes a few minutes.</div>
+    <div class="muted">Check all moves every control through its range, measures the picture and puts the defaults back. It takes about 25 minutes for all 37 controls; Abort stops it and restores the defaults.</div>
     <h2 style="margin-top:14px">Beat simulator</h2>
     <div class="row">
       <button id="simon" class="grow">Start</button>
@@ -276,6 +277,8 @@ function header(s, osc, hold) {
   $("from").textContent = parts.length ? parts.join(" · ") : "no values yet";
   const live = osc.addresses ? Object.values(osc.addresses).filter(a => a.age < 1).length : 0;
   $("oscdot").className = "dot " + (!s.osc ? "bad" : live ? "ok" : "warn");
+  const art = (s.artnet || {}).chip || {level: "off", text: "Art-Net -"};
+  $("artnet").textContent = art.text; $("adot").className = "dot " + (art.level === "off" ? "" : art.level);
   const g = s.edge_guard || {}, st = g.status;
   $("edges").textContent = !st ? "edges ?" : st === "not_applicable" ? "no edges here" : st === "running" ? "edges checking" :
     st === "present" ? "edges ok" + (g.repaired ? " (repaired)" : "") : "edges " + st.replace("_", " ");

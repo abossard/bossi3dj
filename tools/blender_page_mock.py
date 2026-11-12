@@ -53,7 +53,7 @@ class Mock:
     def state(self):
         n = time.time() - self.t0
         return {"scene": "Synthwave Planet (mock)", "camera": "CAM_%d" % round(self.values["vj_cam"]), "fps": 59.8, "scene_fps": 60.0, "playing": True,
-                "sim": {"on": False, "bpm": 124.0, "shock_every": 8}, "edge_guard": {"status": "present", "repaired": False}, "lan": self.lan,
+                "sim": {"on": False, "bpm": 124.0, "shock_every": 8}, "artnet": {"state": None, "chip": page_model.artnet_chip(None)}, "edge_guard": {"status": "present", "repaired": False}, "lan": self.lan,
                 **page_model.page_state(self.controls, self.rows, contract.GROUPS), "values": self.values,
                 "syphon": {"frames": int(n * 60), "failed": False},
                 "osc": {"port": 9201, "received": int(n * 400), "applied": int(n * 400), "dropped": 0, "held": 0, "ignored": 0, "errors": 0,

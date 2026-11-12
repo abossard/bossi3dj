@@ -164,6 +164,7 @@ class Web:
         self.published = 0.0
         self.sim = Sim()
         self.presets = page_model.Presets()
+        self.art_prev = None      # (time, frames) of the Art-Net counter, for its rate
         self.lan = HOST != "127.0.0.1"
         self.check = None
         self.health = '{"error": "not run"}'
@@ -333,6 +334,9 @@ class Web:
         }
         sender = bpy.app.driver_namespace.get(SENDER_KEY)
         snap["syphon"] = {"frames": sender.frames, "failed": sender.failed} if sender is not None else None
+        art = bridge.artnet_state() if bridge is not None and hasattr(bridge, "artnet_state") else None
+        snap["artnet"] = {"state": art, "chip": page_model.artnet_chip(art, page_model.rate(self.art_prev, now, art["frames"]) if art else 0.0)}
+        self.art_prev = (now, art["frames"]) if art else None
         if bridge is not None:
             snap["osc"] = {
                 "port": bridge.port, "received": bridge.received, "applied": bridge.applied,

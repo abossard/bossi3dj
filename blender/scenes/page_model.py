@@ -93,6 +93,35 @@ def source_counts(sources, hold, keys):
     return counts
 
 
+# ---------------------------------------------------------------- Art-Net chip
+
+def artnet_chip(state, fps=0.0):
+    """The status chip for the bridge's Art-Net input (`bridge.artnet_state()`, None when the bridge has none): {"level", "text"}, level
+    "off" (nothing to say), "ok" (frames arrive), "warn" (listening, nothing usable yet) or "bad" (not listening).
+    `fps` is the rate of frames of the universe in use over the last seconds."""
+    if not state:
+        return {"level": "off", "text": "Art-Net -"}
+    if not state.get("enabled"):
+        return {"level": "off", "text": "Art-Net off"}
+    if not state.get("bound"):
+        return {"level": "bad", "text": "Art-Net not listening (%s)" % (state.get("error") or "port busy")}
+    where = "u%s a%s" % (state.get("universe"), state.get("address"))
+    if fps > 0:
+        return {"level": "ok", "text": "Art-Net %s, %d fps" % (where, round(fps))}
+    if state.get("other_universe") and not state.get("frames"):
+        return {"level": "warn", "text": "Art-Net %s, frames for another universe" % where}
+    if state.get("frames"):
+        return {"level": "warn", "text": "Art-Net %s, no frames now" % where}
+    return {"level": "warn", "text": "Art-Net %s, no frames yet" % where}
+
+
+def rate(prev, now, frames):
+    """Frames per second between two readings (time, count); 0 when there is no earlier reading or the counter went back."""
+    if prev is None or now <= prev[0] or frames < prev[1]:
+        return 0.0
+    return (frames - prev[1]) / (now - prev[0])
+
+
 # ---------------------------------------------------------------- presets
 
 class PresetError(ValueError):

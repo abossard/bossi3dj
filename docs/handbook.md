@@ -48,7 +48,7 @@ Order matters: Blender first, then Magic. Magic sends a value only when it chang
    open -a /Applications/MagicBeta.app magic/projects/show.magic
    ```
 
-   Magic shows Blender's picture with its own effects (all off by default). The control page must now report OSC values coming from Magic: open http://127.0.0.1:9210 and look at the chip with the value sources. It reads `osc` and a count while Magic drives the scene.
+   Magic shows Blender's picture with its own effects (all off by default). The control page must now report OSC values coming from Magic: open http://127.0.0.1:9210 and look at the chip with the value sources. It reads `osc` and a count while Magic drives the scene. Magic can take about 20 seconds after it opens to start sending.
 
 5. Play music. With no sound on the input Magic sends every control at its value (the defaults) and the camera stays on shot 0. With sound the music takes over the addresses listed in [What Magic sends and why](#what-magic-sends-and-why).
 
@@ -89,12 +89,12 @@ The Globals you reach for during a show:
 
 Open http://127.0.0.1:9210 on the Mac. It works at phone width too, one column.
 
-- The top bar is always visible. It shows the scene, the camera on air with its number and name, the frame rate, whether Syphon frames are advancing, where the values come from (osc, page, sim, held), and the result of the night-edge check.
+- The top bar is always visible. It shows the scene, the camera on air with its number and name, the frame rate, whether Syphon frames are advancing, where the values come from (osc, page, sim, held), the Art-Net state (universe, start address, frames per second) and the result of the night-edge check.
 - **On air**: one button per camera, number and name. Below them **Hold all**, **Release all** and **Reset** (tap twice) to put every control back to its default.
 - **Presets**: type a name and Save to store the current values. A preset button sets those values again. Presets are kept in `blender/local/presets.json` on the Mac, so the phone and the laptop see the same ones. A recalled preset still obeys the hold rule.
 - The sliders are grouped and ordered like the README manual. Each shows its address, a sentence on what you see change, its value in the scene's own units, the source of the last value, a reset to default (the round arrow) and **H**.
 - Triggers (shock, meteor, hit) are buttons.
-- **Tools**: **Check all** moves every control through its range, measures the picture and restores the defaults (a few minutes). The beat simulator stands in for Magic's analysis (hold level, bass, beat and shock so Magic does not fight it). A live preview of the Syphon frame. **Incoming OSC** lists every address that arrives with its rate and sender.
+- **Tools**: **Check all** moves every control through its range, measures the picture and restores the defaults. All 37 controls take about 25 minutes; **Abort** stops it and restores the defaults. The beat simulator stands in for Magic's analysis (hold level, bass, beat and shock so Magic does not fight it). A live preview of the Syphon frame. **Incoming OSC** lists every address that arrives with its rate and sender.
 
 **From a phone.** The page listens on the Mac only. To open it from a phone on the same network:
 
@@ -103,6 +103,12 @@ python3 tools/blender_page_lan.py on
 ```
 
 Restart the scene (`make blender-kill`, then `make blender-open`). The command prints the address to open on the phone. While this is on, any device on that network can drive the scene. Take it back with `python3 tools/blender_page_lan.py off` and another restart.
+
+## From a lighting desk (Art-Net, QLC+)
+
+A lighting desk or QLC+ can drive the planet over Art-Net, next to Magic and the page. The scene listens on udp 6454 for one DMX universe. It has one DMX channel per address, so a fader on the desk is a slider on the page. The channel table and the QLC+ steps are in [docs/artnet-qlc.md](artnet-qlc.md), not repeated here.
+
+The merge rule: a channel is applied only when its value changes. The desk sends every channel in every frame, so a resting fader never fights Magic or the page, and after a start the faders do nothing until you move them. The last change wins. The page's hold (**H**, or **Hold all**) stays above both Magic and the desk. The page's status bar shows the Art-Net state; the source of a value from the desk reads `artnet`.
 
 ## Cameras and the Flight
 
@@ -125,7 +131,7 @@ Restart the scene (`make blender-kill`, then `make blender-open`). The command p
 | 11 | Flight | The flying camera: /vj/flight carries it from orbit down to the mountains and a hover over the water. |
 <!-- cameras:end -->
 
-Shot 11, the Flight, is a camera that flies by itself. `/vj/flight` steers it: 0 is a high orbit, then a landing approach, a skim over the mountains, and 1 a hover over the water. The control is damped on purpose: from the jump to the hover takes about 20 seconds. `/vj/boost` gives it a burst of speed. `/vj/blend` sets how smoothly a cut flies to the new shot (0 cuts at once). The Flight only draws its streamed terrain while it is on air.
+Shot 11, the Flight, is a camera that flies by itself. `/vj/flight` steers it: 0 is a high orbit, then a landing approach, a skim over the mountains, and 1 a hover over the water. The control is damped on purpose: a jump flies, about a minute from end to end. `/vj/boost` gives it a burst of speed. `/vj/blend` sets how smoothly a cut flies to the new shot (0 cuts at once). The Flight only draws its streamed terrain while it is on air.
 
 In Magic, set `CamAuto` to 0 and `Cam` to the shot you want. On the page, tap a camera button. If a camera jumps back after you set it, Magic's cutter is still on (`CamAuto` 1) or the control is not held.
 
@@ -205,8 +211,10 @@ Run `make status` first. It lists what runs, the scene's frame rate, Syphon, the
 | A slider snaps back | Magic sends a new value for that control. | Hold it (**H**) or **Hold all**. Set the Global in Magic instead. |
 | The camera jumps back or cuts by itself | The auto cutter: `CamAuto` is 1 in Magic and music plays. | `CamAuto` 0 in Magic, or hold `vj_cam` on the page. |
 | Port 9201 is busy, the bridge row of the start check fails | A second Blender, or the Godot scene, holds udp 9201. | `make status` shows what runs. `lsof -nP -iUDP:9201` names the process. Close the other one. |
-| Magic runs but no values arrive: the page shows no `osc` source | The project was loaded before Blender was up, or it sends to another port. | Open the project in Magic again. `python3 magic/magicproj.py osc magic/projects/show.magic` lists each address with its target; every one must say 127.0.0.1:9201. The page's "Incoming OSC" list shows what arrives. |
+| Magic runs but no values arrive: the page shows no `osc` source | Magic is still starting (it can take about 20 seconds after the project opens), the project was loaded before Blender was up, or it sends to another port. | Open the project in Magic again. `python3 magic/magicproj.py osc magic/projects/show.magic` lists each address with its target; every one must say 127.0.0.1:9201. The page's "Incoming OSC" list shows what arrives. |
 | Low frame rate | The frame rate chip turns orange under 24. Another app uses the GPU, or the machine load is high: `make status` shows `load_1m` and `fps_trustworthy`. | Close other GPU apps (the Godot scene, a second Blender, screen recorders). Switch off Magic's `Fx*` effects. A frame rate read while the load is above 10 does not mean much. |
+| The desk does nothing (Art-Net chip says `not listening`, `no frames yet` or `frames for another universe`) | The scene could not bind udp 6454 (another program has it), the desk sends another universe or start address than the scene listens on (the chip shows both), or QLC+ sends unicast to another machine. A channel also does nothing until its value changes once. | Check universe and start address on both sides, set the output to this Mac's address or to broadcast, and move the fader. Steps: [docs/artnet-qlc.md](artnet-qlc.md). |
+| Bright green patches in the picture | A diagnosis left switched on by a session that worked on the scene, not part of the scene. | `make blender-kill`, then `make blender-open`. |
 | The page does not load | Blender runs without the scene runtime (Auto Run Python Scripts was off), or Blender is not running. `make status` shows a Blender with `blender_scene: null`. From a phone: the page listens on the Mac only, so the phone gets no answer. | `make blender-kill`, `make blender-open`. For a phone, `python3 tools/blender_page_lan.py on`, then restart. |
 
 When the start check fails the first time, read its rows: each names what failed.

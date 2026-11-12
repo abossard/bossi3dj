@@ -66,6 +66,30 @@ class DescribeTests(unittest.TestCase):
         self.assertNotIn("/vj/cam_auto", [r["address"] for r in pm.blender_rows(ROWS)])
 
 
+class ArtNetTests(unittest.TestCase):
+    BOUND = {"enabled": True, "bound": True, "error": None, "universe": 0, "address": 1, "frames": 0, "other_universe": 0}
+
+    def test_chip(self):
+        cases = [
+            (None, 0, "off", "Art-Net -"),
+            (dict(self.BOUND, enabled=False), 0, "off", "Art-Net off"),
+            (dict(self.BOUND, bound=False, error="Address already in use"), 0, "bad", "Art-Net not listening (Address already in use)"),
+            (dict(self.BOUND, bound=False), 0, "bad", "Art-Net not listening (port busy)"),
+            (self.BOUND, 0, "warn", "Art-Net u0 a1, no frames yet"),
+            (dict(self.BOUND, other_universe=12), 0, "warn", "Art-Net u0 a1, frames for another universe"),
+            (dict(self.BOUND, frames=500), 0, "warn", "Art-Net u0 a1, no frames now"),
+            (dict(self.BOUND, frames=500, universe=2, address=17), 43.6, "ok", "Art-Net u2 a17, 44 fps"),
+        ]
+        for state, fps, level, text in cases:
+            with self.subTest(text=text):
+                self.assertEqual(pm.artnet_chip(state, fps), {"level": level, "text": text})
+
+    def test_rate(self):
+        for prev, now, frames, want in ((None, 5.0, 10, 0.0), ((4.0, 0), 5.0, 44, 44.0), ((4.0, 100), 5.0, 50, 0.0), ((5.0, 0), 5.0, 9, 0.0)):
+            with self.subTest(prev=prev, frames=frames):
+                self.assertEqual(pm.rate(prev, now, frames), want)
+
+
 class SourceTests(unittest.TestCase):
     def test_counts_by_source_and_held(self):
         got = pm.source_counts({"vj_fog": "osc", "vj_cam": "web", "vj_hue": "osc"}, {"vj_cam"}, ["vj_fog", "vj_cam", "vj_hue", "vj_sun"])

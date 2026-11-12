@@ -18,6 +18,7 @@ flowchart LR
     C --- D["Blender<br/>Synthwave Planet"]
     C --- E["Godot<br/>Colossus"]
     D -->|"Syphon<br/>CAM_OUT - Blender"| B
+    L["Lighting desk<br/>or QLC+"] -.->|"Art-Net<br/>udp 6454"| D
     E -->|"Syphon<br/>COLOSSUS_OUT"| B
     B --> F["Projector or screen"]
 ```
@@ -60,6 +61,10 @@ The full list with ranges is in [osc/CONTROLS.md](osc/CONTROLS.md).
 <tr>
 <td width="50%"><img src="docs/images/readme/planet-fog.jpg" alt="Fog, CAM_0: /vj/fog 0.9 by day."><br><sub><b>Fog, <code>CAM_0</code></b>: <code>/vj/fog</code> 0.9 by day.</sub></td>
 <td width="50%"><img src="docs/images/readme/planet-orbit.jpg" alt="Orbit, CAM_6: the whole planet in frame with the moon, mostly on its dark side."><br><sub><b>Orbit, <code>CAM_6</code></b>: the whole planet in frame with the moon, mostly on its dark side.</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/images/readme/planet-flight-skim.jpg" alt="Flight, CAM_11: the Flight shot at the Skim stage, over the mountains."><br><sub><b>Flight, <code>CAM_11</code></b>: the Flight shot at the Skim stage skimming over the mountains, one moment of its path.</sub></td>
+<td width="50%"><sub><b>The Flight</b> is a camera that flies by itself. <code>/vj/flight</code> steers it: 0 is a high orbit, then a landing approach, the skim over the mountains and, at 1, a hover over the water. The list of cameras is under <code>/vj/cam</code> below.</sub></td>
 </tr>
 <tr>
 <td colspan="2"><img src="docs/images/readme/osc/grid-blender.jpg" alt="Night, CAM_0, /vj/grid 0 on the left and 1 on the right"><br><sub><b>Night, <code>CAM_0</code></b>: <code>/vj/night</code> 1, <code>/vj/grid</code> 0 on the left and 1 on the right. The cyan net is the ground's real triangle edges.</sub></td>
@@ -251,7 +256,7 @@ Lists every command.
 make blender-open
 ```
 
-Opens the planet in Blender and waits until the start state is ready (runtime, bridge, Syphon, picture, night edges). Then open http://127.0.0.1:9210 to drive it by hand without Magic. Use `SCENE=island` for the older island scene.
+Opens the planet in Blender and waits until the start state is ready (runtime, bridge, Syphon, picture, night edges). Then open http://127.0.0.1:9210 to drive it by hand without Magic. Use `SCENE=island` for the older island scene. A lighting desk or QLC+ can drive the planet over Art-Net too: [docs/artnet-qlc.md](docs/artnet-qlc.md).
 
 ```bash
 make godot-open
