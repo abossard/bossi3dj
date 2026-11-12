@@ -7,7 +7,7 @@
 
 `osc`: reads the page's OSC state (http 9210) and lists every contract address with its count; exit 1 when one never arrived.
 `picture`: grabs `CAM_OUT - Blender` and Magic's `MAGIC_OUT` (magicproj.py grab), reduces both to a 16x9 grid of luma and prints the
-correlation upright and with the rows reversed, and the mean difference. The camera is held on the still shot 0 meanwhile and put back.
+correlation as grabbed and with the rows reversed, and the mean difference. The camera is held on the still shot 0 meanwhile and put back.
 `global`: `magicproj.py set --value`, `load` (it replaces the project open in Magic: say so first), waits, prints the scene value of the
 control that follows the Global, then loads the original again. Standard library only.
 """
@@ -125,13 +125,15 @@ def cmd_picture(a):
         return 2
     gb, gm = grid(os.path.join(out, "blender.png")), grid(os.path.join(out, "magic.png"))
     up, flipped = corr(gb, gm), corr(gb, gm[::-1])
-    mad = sum(abs(x - y) for rb, rm in zip(gb, gm) for x, y in zip(rb, rm)) / (16 * 9)
-    print("correlation of the 16x9 luma grids: upright %.3f, rows reversed %.3f, mean difference %.1f of 255" % (up, flipped, mad))
+    mad = lambda m: sum(abs(x - y) for rb, rm in zip(gb, m) for x, y in zip(rb, rm)) / (16 * 9)
+    print("correlation of the 16x9 luma grids: rows as grabbed %.3f, rows reversed %.3f; mean difference %.1f as grabbed, %.1f reversed (of 255)" % (up, flipped, mad(gm), mad(gm[::-1])))
     g2 = grid(os.path.join(out, "blender2.png"))
     print("Blender against itself a moment later (how far the scene moved): correlation %.3f, rows reversed %.3f" % (corr(gb, g2), corr(gb, g2[::-1])))
     print("frames in %s" % out)
-    ok = up > 0.9 and up > flipped
-    print("Magic's frame is %s" % ("Blender's picture, upright" if ok else "NOT Blender's picture upright"))
+    # `grab` hands Blender's frame over as Syphon stores it (bottom-up) and flips only Magic's: the same picture correlates once the rows are reversed.
+    # Which of the two is upright is for the shot-reviewer (sky on top); the numbers say that Magic's frame is Blender's picture.
+    ok = max(up, flipped) > 0.9
+    print("Magic's frame %s Blender's picture (%s)" % ("is" if ok else "is NOT", "rows reversed against the raw CAM_OUT grab" if flipped > up else "rows as grabbed"))
     return 0 if ok else 1
 
 

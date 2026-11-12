@@ -29,21 +29,18 @@ Magic ran with a copy of the project that sends to udp 9300 (`magicproj.py set -
 - Orientation: `tools/magic_show_proof.py picture --no-hold`: the 16x9 luma grid of Magic's frame correlates 0.999 with the `CAM_OUT` grab with its rows reversed (-0.73 upright). The `shot-reviewer` judged Magic's frame upright (sky on top) and the `CAM_OUT` grab flipped. That matches the known state: `grab` delivers Blender's Syphon rows as Syphon stores them (flipped) and flips only Magic's. So Magic shows Blender's picture upright. Judged on sky and ground only (CAM_0 here had no pyramids in view).
 - Magic was not running before; it is closed again.
 
-## Live part still to do (needs the Blender slot)
+## Live results against Blender (2026-11-12, planet scene opened by `make blender-open`, kept open for the next session)
 
-Everything about the page against Blender: the running Blender loads `synthwave_web.py` at its start, so it must be restarted to serve the new page; `/api/state` of the old module has no `sections`.
-
-
-All commands from the repo root. Tell the orchestrator before the `load` steps: `load` replaces the project open in Magic; note the open project first (`python3 magic/magicproj.py load` prints window titles) and load it back at the end.
-
-1. `make blender-open` (start state ready). `python3 tools/blender_page_test.py --check`: the page's JSON, the refusals, set, hold, camera, presets, Check all, defaults restored.
-2. Built-in browser at the mobile preset on http://127.0.0.1:9210: no horizontal scroll, Check all started from the page, a hold, camera buttons, Hold all and Release all, a preset saved and recalled; delete the test preset.
-3. `python3 magic/magicproj.py load magic/projects/show.magic`. `python3 tools/magic_show_proof.py osc`: the bridge's own count of the 38 addresses (`/vj/cam_auto` is recorded but ignored by Blender). Then `python3 tools/magic_show_proof.py global Fog 0.9` for the scene value (the wire side is proven above), and `picture` without `--no-hold` once more with the live scene on a still shot.
-4. Magic's silence check against the live scene: `off_default` in `/api/health` stays empty with no sound.
-5. `make blender-kill`; quit Magic (it was not running before).
+- `python3 tools/blender_page_test.py`: 22 of 22 ok (37 of 37 controls with sentences in manual order, 12 named cameras, 415 and 403 refusals, set, hold, camera, presets, Hold all, Release all). The start check of that open said NOT ready on one row only: `health.py` (embedded `planet_runtime.py` differs from its file, the planet session's edit).
+- Phone width (375 px, built-in browser) on the live page: no horizontal scroll, 12 camera buttons (7 gave "7 Flamingo Lake" on air), Hold all held 37, Release all cleared them, Check all started from the page and showed its progress chip. Check all was aborted from the page after 26 of 37 rows (25 effect, 1 no effect: `vj_grid_speed`, "no shader or driver reads it", island only by design), defaults restored, no holds, `off_default` empty. The full 37 rows were proven earlier (STATE).
+- Magic loaded with `show.magic`, sending to udp 9201: `magic_show_proof.py osc`: 38 of 38 addresses reached the bridge (it took Magic about 20 s after `open -a` to start sending).
+- `magic_show_proof.py global Fog 0.9`: scene `vj_fog` 0.35 to 0.878 (still easing to 0.9) and back to 0.342 after the project was loaded back, not held.
+- `magic_show_proof.py picture`: Magic's `MAGIC_OUT - Magic` frame against `CAM_OUT - Blender` on CAM_0: correlation 0.997, mean luma difference 2.5 of 255 once the rows are reversed (as grabbed: -0.44, 71.8). `grab` flips only Magic's frames, so Blender's raw grab is the flipped one; the shot-reviewer judged Magic's frame upright and the raw grab flipped (earlier pair, same convention).
+- Magic quit again; Blender left open on the planet with no holds.
 
 ## Open
 
 - `Live` threshold (0.004 on `EnergyNow`) not tried with a real track.
+- Not proven: Magic's live behaviour with real music through BlackHole; the page opened from an actual phone over the network (LAN mode is built, tested only through its settings file and Host rule); the page's Check all beyond row 26 from the phone-size page (the full run was proven earlier from the older page).
 - `.claude/skills/magic-projects/evals/grade.py` lists the old Global names (`HueBase`, `CamSel`); not mine, not changed.
 - Art-Net on the page: the bridge has it (another session); the page shows its source as the badge text and nothing else.
