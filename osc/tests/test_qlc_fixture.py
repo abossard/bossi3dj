@@ -72,13 +72,13 @@ class WorkspaceTests(unittest.TestCase):
             vals = scenes[b.find(W + "Function").get("ID")].find(W + "FixtureVal").text.split(",")
             with self.subTest(button=b.get("Caption")):
                 self.assertEqual(ROWS[int(vals[0])]["kind"], "trigger")
-                self.assertEqual(ROWS[int(vals[0])]["address"], "/vj/" + b.get("Caption"))
+                self.assertEqual(ROWS[int(vals[0])]["label"], b.get("Caption"))
                 self.assertEqual(vals[1], "255")
 
     def test_one_camera_button_per_named_shot_cutting_to_that_shot(self):
         root = self.root()
         scenes = {f.get("ID"): f for f in root.iter(W + "Function") if f.get("Type")}
-        solo = next(root.iter(W + "SoloFrame"))
+        solo = next(f for f in root.iter(W + "SoloFrame") if f.get("Caption") == "shots")
         buttons = solo.findall(W + "Button")
         cam = next(r for r in ROWS if r["address"] == "/vj/cam")
         self.assertEqual([b.get("Caption") for b in buttons], ["%d %s" % (s["index"], s["name"]) for s in cam["shots"]["planet"]])
@@ -118,15 +118,17 @@ class FixtureFormatTests(unittest.TestCase):
 
     def test_one_channel_per_blender_row_in_contract_order(self):
         names = [c.get("Name") for c in parsed().findall(NS + "Channel")]
-        self.assertEqual(names, [r["address"] for r in ROWS])
-        self.assertEqual(names, list(bridge.SCALES))
+        self.assertEqual(names, [qf.channel_name(r) for r in ROWS])
+        self.assertEqual([r["address"] for r in ROWS], list(bridge.SCALES))
+        for r in ROWS:
+            self.assertEqual(qf.channel_name(r), "%s (%s)" % (r["label"], r["address"]))
         self.assertEqual(len(set(names)), len(names))
 
     def test_one_mode_with_every_channel_numbered_in_order(self):
         modes = parsed().findall(NS + "Mode")
         self.assertEqual(len(modes), 1)
         listed = [(int(c.get("Number")), c.text) for c in modes[0].findall(NS + "Channel")]
-        self.assertEqual(listed, list(enumerate(r["address"] for r in ROWS)))
+        self.assertEqual(listed, list(enumerate(qf.channel_name(r) for r in ROWS)))
 
     def test_capabilities_cover_0_to_255_without_gaps(self):
         for ch in parsed().findall(NS + "Channel"):
@@ -141,26 +143,85 @@ class FixtureFormatTests(unittest.TestCase):
                 self.assertTrue(0 <= int(ch.get("Default")) <= 255)
 
     def test_capabilities_by_kind(self):
-        by = {c.get("Name"): [(int(x.get("Min")), int(x.get("Max")), x.text) for x in c.findall(NS + "Capability")] for c in parsed().findall(NS + "Channel")}
+        by = {}
+        for c in parsed().findall(NS + "Channel"):
+            by[c.get("Name")] = (c.find(NS + "Group").text, [(int(x.get("Min")), int(x.get("Max")), x.text, dict(x.attrib)) for x in c.findall(NS + "Capability")])
         for r in ROWS:
+            group, caps = by[qf.channel_name(r)]
             with self.subTest(address=r["address"]):
-                caps = by[r["address"]]
                 if r["kind"] == "trigger":
-                    self.assertEqual([(lo, hi) for lo, hi, _ in caps], [(0, 127), (128, 255)])
+                    self.assertEqual([(lo, hi) for lo, hi, _, _ in caps], [(0, 127), (128, 255)])
                     self.assertEqual(caps[0][2], "off")
+                    self.assertIn(r["plain"], caps[1][2])
                 elif r["address"] == "/vj/cam":
                     shots = r["shots"]["planet"]
                     self.assertEqual(len(caps), len(shots))
-                    self.assertEqual([t for _, _, t in caps], ["%d %s" % (s["index"], s["name"]) for s in shots])
+                    for (lo, hi, text, attrs), sh in zip(caps, shots):
+                        self.assertEqual(text, "%d %s: %s" % (sh["index"], sh["name"], sh["shows"]))
+                        self.assertEqual((attrs["Preset"], attrs["Res1"]), ("GoboMacro", "bossi3dj/cam-planet-%d.png" % sh["index"]))
+                elif r.get("stops"):
+                    self.assertEqual(len(caps), len(r["stops"]))
+                    for (lo, hi, text, attrs), st in zip(caps, r["stops"]):
+                        self.assertEqual(text, "%s: %s" % (st["name"], r["plain"]))
+                        self.assertEqual(attrs.get("Res1"), st.get("colour"))
                 else:
-                    self.assertEqual([(lo, hi, t) for lo, hi, t in caps], [(0, 255, r["plain"])])
+                    self.assertEqual([(lo, hi, t) for lo, hi, t, _ in caps], [(0, 255, r["plain"])])
+                    self.assertEqual(caps[0][3].get("Preset"), "SlowToFast" if r["address"] in qf.SPEED_ROWS else None)
+
+    def test_groups(self):
+        want = {"/vj/intensity": "Intensity", "/vj/hue": "Colour", "/vj/fog_hue": "Colour", "/vj/strobe": "Shutter", "/vj/cam": "Gobo",
+                "/vj/cam_speed": "Speed", "/vj/fog_speed": "Speed", "/vj/star_speed": "Speed", "/vj/grid_speed": "Speed", "/vj/level": "Effect", "/vj/shock": "Effect"}
+        by = {c.get("Name"): c.find(NS + "Group").text for c in parsed().findall(NS + "Channel")}
+        for address, group in want.items():
+            with self.subTest(address=address):
+                row = next(r for r in ROWS if r["address"] == address)
+                self.assertEqual(by[qf.channel_name(row)], group)
+
+    def test_every_gobo_picture_a_capability_names_exists(self):
+        for c in parsed().iter(NS + "Capability"):
+            if c.get("Preset") == "GoboMacro":
+                with self.subTest(res=c.get("Res1")):
+                    self.assertTrue(os.path.exists(os.path.join(qf.QLC_DIR, "gobos", c.get("Res1"))))
 
     def test_defaults_are_the_contract_defaults(self):
         cases = {"/vj/level": 128, "/vj/fog": 89, "/vj/intensity": 128, "/vj/shock": 0, "/vj/cam": 0, "/vj/night": 0, "/vj/pyramids": 255}
         by = {c.get("Name"): int(c.get("Default")) for c in parsed().findall(NS + "Channel")}
         for address, want in cases.items():
             with self.subTest(address=address):
-                self.assertEqual(by[address], want)
+                self.assertEqual(by[qf.channel_name(next(r for r in ROWS if r["address"] == address))], want)
+
+
+class StopTests(unittest.TestCase):
+    WITH_STOPS = [r for r in ROWS if r.get("stops")]
+
+    def test_ranges_cover_0_to_255_without_gaps_and_are_centred_on_the_stops(self):
+        for r in self.WITH_STOPS:
+            with self.subTest(address=r["address"]):
+                ranges = qf.stop_ranges(r)
+                self.assertEqual(ranges[0][0], 0)
+                self.assertEqual(ranges[-1][1], 255)
+                for (_, hi, _), (lo, _, _) in zip(ranges, ranges[1:]):
+                    self.assertEqual(lo, hi + 1)
+                for lo, hi, st in ranges:
+                    self.assertTrue(lo <= round(st["wire"] * 255) <= hi)
+
+    def test_the_stops_the_contract_names(self):
+        by = {r["address"]: [(st["wire"], st["name"]) for st in r["stops"]] for r in self.WITH_STOPS}
+        self.assertEqual(by["/vj/night"], [(0, "Day"), (0.25, "Sunset"), (0.5, "Twilight"), (1, "Night")])
+        self.assertEqual(by["/vj/flight"], [(0, "Orbit"), (0.33, "Approach"), (0.66, "Skim"), (1, "Hover")])
+        self.assertEqual(by["/vj/moon_phase"], [(0, "New"), (0.5, "Half"), (1, "Full")])
+
+    def test_fog_hue_swatches_are_the_build_scripts_fog_ramp_in_srgb(self):
+        import re
+        with open(os.path.join(contract.ROOT, "blender", "scenes", "planet_proto", "build_planet.py")) as f:
+            ramp = eval(re.search(r"^FOG_RAMP = (\[.*?\])\s+#", f.read(), re.M).group(1))
+
+        def srgb(c):
+            return 12.92 * c if c <= 0.0031308 else 1.055 * c ** (1 / 2.4) - 0.055
+
+        row = next(r for r in ROWS if r["address"] == "/vj/fog_hue")
+        self.assertEqual([st["wire"] for st in row["stops"]], [w for w, _ in ramp])
+        self.assertEqual([st["colour"] for st in row["stops"]], ["#%02x%02x%02x" % tuple(round(255 * srgb(v)) for v in c) for _, c in ramp])
 
 
 class ShotRangeTests(unittest.TestCase):

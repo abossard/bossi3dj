@@ -56,20 +56,59 @@ def default_dmx(row):
     return int(round((row["default"] - row["min"]) / (row["max"] - row["min"]) * 255))
 
 
+SPEED_ROWS = {"/vj/grid_speed", "/vj/cam_speed", "/vj/fog_speed", "/vj/star_speed"}
+GOBO_DIR = os.path.join(QLC_DIR, "gobos", "bossi3dj")           # the pictures QLC+ finds as Gobos/bossi3dj/cam-planet-N.png
+GOBO_REF = "bossi3dj/cam-planet-%d.png"
+GOBO_SOURCE = os.path.join(ROOT, "docs", "images", "readme", "osc", "cam-planet-%d.jpg")
+
+
+def channel_name(row):
+    """What QLC+ shows: the short name with the address kept in it, for example `Fog (/vj/fog)`."""
+    return "%s (%s)" % (row["label"], row["address"])
+
+
 def _group(row):
-    if row["address"] == "/vj/hue":
+    """The QLC+ channel group. Intensity only for the overall brightness: QLC+'s grand master scales every Intensity channel and
+    its HTP merge applies to them, which the scene means for /vj/intensity and for nothing else."""
+    a = row["address"]
+    if a == "/vj/intensity":
+        return "Intensity"
+    if a in ("/vj/hue", "/vj/fog_hue"):
         return "Colour"
-    return "Intensity" if row["group"] == "Light and colour" else "Effect"
+    if a == "/vj/strobe":
+        return "Shutter"
+    if a in SPEED_ROWS:
+        return "Speed"
+    if a == "/vj/cam":
+        return "Gobo"
+    return "Effect"
+
+
+def stop_ranges(row):
+    """[(min, max, stop)] of a row with stops: ranges centred on the stops, no gaps, 0 to 255. A stop's DMX value is wire * 255."""
+    stops = row["stops"]
+    dmx = [int(round(s["wire"] * 255)) for s in stops]
+    edges = [(a + b) // 2 for a, b in zip(dmx, dmx[1:])]
+    lo = [0] + [e + 1 for e in edges]
+    hi = edges + [255]
+    return [(a, b, s) for a, b, s in zip(lo, hi, stops)]
 
 
 def capabilities(row):
-    """[(min, max, text)] of one channel."""
+    """[(min, max, text, attributes)] of one channel; the plain sentence is the text where QLC+ shows a capability."""
     if row["kind"] == "trigger":
-        return [(0, TRIGGER_AT - 1, "off"), (TRIGGER_AT, 255, "fire once, harder the higher: " + row["plain"])]
+        return [(0, TRIGGER_AT - 1, "off", {}), (TRIGGER_AT, 255, "fire once, harder the higher: " + row["plain"], {})]
     if row["address"] == "/vj/cam":
         shots = planet_shots(row)
-        return [(lo, hi, "%d %s" % (s["index"], s["name"])) for (lo, hi), s in zip(shot_ranges(len(shots)), shots)]
-    return [(0, 255, row["plain"])]
+        return [(lo, hi, "%d %s: %s" % (s["index"], s["name"], s["shows"]), {"Preset": "GoboMacro", "Res1": GOBO_REF % s["index"]})
+                for (lo, hi), s in zip(shot_ranges(len(shots)), shots)]
+    if row.get("stops"):
+        out = []
+        for lo, hi, s in stop_ranges(row):
+            attrs = {"Preset": "ColorMacro", "Res1": s["colour"]} if s.get("colour") else {}
+            out.append((lo, hi, "%s: %s" % (s["name"], row["plain"]), attrs))
+        return out
+    return [(0, 255, row["plain"], {"Preset": "SlowToFast"} if row["address"] in SPEED_ROWS else {})]
 
 
 def render_fixture(rows=None):
@@ -79,13 +118,14 @@ def render_fixture(rows=None):
            " <Creator>", "  <Name>bossi3dj osc/qlc_fixture.py</Name>", "  <Version>1</Version>", "  <Author>bossi3dj</Author>", " </Creator>",
            " <Manufacturer>%s</Manufacturer>" % escape(MANUFACTURER), " <Model>%s</Model>" % escape(MODEL), " <Type>Other</Type>"]
     for r in rows:
-        out.append(" <Channel Name=%s Default=%s>" % (quoteattr(r["address"]), quoteattr(str(default_dmx(r)))))
+        out.append(" <Channel Name=%s Default=%s>" % (quoteattr(channel_name(r)), quoteattr(str(default_dmx(r)))))
         out.append('  <Group Byte="0">%s</Group>' % _group(r))
-        for lo, hi, text in capabilities(r):
-            out.append('  <Capability Min="%d" Max="%d">%s</Capability>' % (lo, hi, escape(text)))
+        for lo, hi, text, attrs in capabilities(r):
+            extra = "".join(" %s=%s" % (k, quoteattr(v)) for k, v in attrs.items())
+            out.append('  <Capability Min="%d" Max="%d"%s>%s</Capability>' % (lo, hi, extra, escape(text)))
         out.append(" </Channel>")
     out.append(" <Mode Name=%s>" % quoteattr(MODE))
-    out += ['  <Channel Number="%d">%s</Channel>' % (i, escape(r["address"])) for i, r in enumerate(rows)]
+    out += ['  <Channel Number="%d">%s</Channel>' % (i, escape(channel_name(r))) for i, r in enumerate(rows)]
     out += [" </Mode>", " <Physical>", '  <Bulb Type="" Lumens="0" ColourTemperature="0"/>',
             '  <Dimensions Weight="0" Width="0" Height="0" Depth="0"/>', '  <Lens Name="Other" DegreesMin="0" DegreesMax="0"/>',
             '  <Focus Type="Fixed" PanMax="0" TiltMax="0"/>', '  <Technical PowerConsumption="0" DmxConnector="Other"/>', " </Physical>",
@@ -120,7 +160,8 @@ def _state(x, y, w, h):
 
 def _group_height(members):
     sliders = [r for r in members if r["kind"] != "trigger"]
-    return (SLIDER_H + 2 * PAD + 20 if sliders else 120) + (92 if any(r["address"] == "/vj/cam" for r in members) else 0)
+    stops = [r for r in members if r.get("stops") and r["kind"] != "trigger"]
+    return (SLIDER_H + 2 * PAD + 20 if sliders else 120) + (92 if any(r["address"] == "/vj/cam" for r in members) else 0) + 52 * len(stops)
 
 
 def _group_order(rows):
@@ -149,9 +190,18 @@ def render_workspace(rows=None):
     cam_scenes = []
     for (lo, hi), s in zip(shot_ranges(len(planet_shots(cam))), planet_shots(cam)):
         cam_scenes.append((ids.f(), "cut to %d %s" % (s["index"], s["name"]), cam_i, (lo + hi) // 2, s))
-    for fid, name, ch, val, *_ in scenes + cam_scenes:
+    stop_scenes = []                              # one scene per labelled stop: the channel at that stop's DMX value
+    for i, r in enumerate(rows):
+        if r.get("stops") and r["kind"] != "trigger" and r["address"] != "/vj/cam":
+            for st in r["stops"]:
+                stop_scenes.append((ids.f(), "%s = %s" % (r["label"], st["name"]), i, int(round(st["wire"] * 255)), r, st))
+    for fid, name, ch, val, *_ in scenes + cam_scenes + stop_scenes:
         out += ['  <Function ID="%d" Type="Scene" Name=%s Path="Synthwave">' % (fid, quoteattr(name)), '   <Speed FadeIn="0" FadeOut="0" Duration="0"/>',
                 '   <FixtureVal ID="0">%d,%d</FixtureVal>' % (ch, val), "  </Function>"]
+    # channel groups (from memory of QLC+'s ChannelsGroup element, not seen in a shipped file): one per manual group
+    for gi, group in enumerate(_group_order(rows)):
+        members = ",".join("0,%d" % i for i, r in enumerate(rows) if r["group"] == group)
+        out.append('  <ChannelsGroup ID="%d" Name=%s Value="0">%s</ChannelsGroup>' % (gi, quoteattr(group), members))
     out.append(" </Engine>")
     total = PAD + sum(_group_height([r for r in rows if r["group"] == g]) + PAD for g in _group_order(rows))
     out += [" <VirtualConsole>", '  <Frame Caption="Synthwave Planet" ID="%d">' % ids.w(), '   ' + _state(0, 0, 1200, total),
@@ -162,20 +212,20 @@ def render_workspace(rows=None):
         sliders = [(i, r) for i, r in members if r["kind"] != "trigger"]
         buttons = [(i, r) for i, r in members if r["kind"] == "trigger"]
         is_cam = any(r["address"] == "/vj/cam" for _, r in members)
-        width = max(len(sliders) * (SLIDER_W + 4), len(buttons) * 124, 8) + 2 * PAD
+        width = max(len(sliders) * (SLIDER_W + 4), len(buttons) * 124, max([len(r["stops"]) * 100 + 12 for _i, r in sliders if r.get("stops")] or [0]), 8) + 2 * PAD
         height = _group_height([r for _i, r in members])
         out += ['   <Frame Caption=%s ID="%d">' % (quoteattr(group), ids.w()), '    ' + _state(PAD, y, width, height),
                 "    <AllowResize>False</AllowResize>", "    <ShowHeader>True</ShowHeader>", "    <ShowEnableButton>False</ShowEnableButton>"]
         x = PAD
         for i, r in sliders:
-            out += ['    <Slider Caption=%s ID="%d" WidgetStyle="Slider" InvertedAppearance="false">' % (quoteattr(r["address"][len("/vj/"):]), ids.w()),
+            out += ['    <Slider Caption=%s ID="%d" WidgetStyle="Slider" InvertedAppearance="false">' % (quoteattr(r["label"]), ids.w()),
                     "     " + _state(x, 28, SLIDER_W, SLIDER_H), '     <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>',
                     '     <Level LowLimit="0" HighLimit="255" Value="%d">' % default_dmx(r), '      <Channel Fixture="0">%d</Channel>' % i, "     </Level>", "    </Slider>"]
             x += SLIDER_W + 4
         x = PAD
         fire = {ch: fid for fid, _name, ch, _v in scenes}
         for fid, r in ((fire[i], r) for i, r in buttons):
-            out += ['    <Button Caption=%s ID="%d">' % (quoteattr(r["address"][len("/vj/"):]), ids.w()), "     " + _state(x, 28, 120, 60),
+            out += ['    <Button Caption=%s ID="%d">' % (quoteattr(r["label"]), ids.w()), "     " + _state(x, 28, 120, 60),
                     '     <Function ID="%d"/>' % fid, "     <Action>Flash</Action>", "    </Button>"]
             x += 124
         if is_cam:
@@ -189,6 +239,22 @@ def render_workspace(rows=None):
                 if bx + 78 > width - 2 * PAD - 8:
                     bx, by = 4, by + 30
             out.append("    </SoloFrame>")
+        row_y = SLIDER_H + 40 + (92 if is_cam else 0)
+        by_row = {}
+        for fid, name, ch, val, r, st in stop_scenes:
+            by_row.setdefault(ch, []).append((fid, r, st))
+        for i, r in members:
+            if i not in by_row:
+                continue
+            out += ['    <SoloFrame Caption=%s ID="%d">' % (quoteattr(r["label"]), ids.w()), "     " + _state(PAD, row_y, width - 2 * PAD, 46),
+                    "     <AllowResize>False</AllowResize>", "     <ShowHeader>True</ShowHeader>", "     <ShowEnableButton>False</ShowEnableButton>"]
+            bx = 4
+            for fid, _r, st in by_row[i]:
+                out += ['     <Button Caption=%s ID="%d">' % (quoteattr(st["name"]), ids.w()), "      " + _state(bx, 18, 96, 24),
+                        '      <Function ID="%d"/>' % fid, "      <Action>Toggle</Action>", "     </Button>"]
+                bx += 100
+            out.append("    </SoloFrame>")
+            row_y += 52
         out.append("   </Frame>")
         y += height + PAD
     out += ["  </Frame>", " </VirtualConsole>", " <FlowConsole>", '  <FlowPage Name="Page 1"/>', " </FlowConsole>", "</Workspace>", ""]
@@ -203,11 +269,17 @@ def _wire(row):
     return "0..255 = 0..1" if (row["min"], row["max"]) == (0, 1) else "0..255 = %g..%g" % (row["min"], row["max"])
 
 
+def _stops_text(row):
+    if not row.get("stops") or row["kind"] == "trigger" or row["address"] == "/vj/cam":
+        return ""
+    return "; ranges: " + ", ".join("%s %d to %d" % (st["name"], lo, hi) for lo, hi, st in stop_ranges(row))
+
+
 def render_table(rows=None):
     rows = blender_rows(rows)
-    lines = ["| DMX channel | Address | What you see | DMX to wire value |", "|---|---|---|---|"]
+    lines = ["| DMX channel | Name in QLC+ | What you see | DMX to wire value |", "|---|---|---|---|"]
     for i, r in enumerate(rows):
-        lines.append("| %d | `%s` | %s | %s |" % (i + 1, r["address"], r["plain"], _wire(r)))
+        lines.append("| %d | %s | %s | %s |" % (i + 1, channel_name(r).replace("(", "(`").replace(")", "`)"), r["plain"], _wire(r) + _stops_text(r)))
     cam = next(r for r in rows if r["address"] == "/vj/cam")
     lines += ["", "`/vj/cam` ranges (channel %d), one per shot of the scene that runs:" % (rows.index(cam) + 1), "",
               "| Scene | DMX value | Shot |", "|---|---|---|"]
@@ -221,6 +293,19 @@ def render_table(rows=None):
 def current_table(text):
     i, j = text.index(TABLE_BEGIN) + len(TABLE_BEGIN), text.index(TABLE_END)
     return text[i:j].strip("\n")
+
+
+def gobos():
+    """qlc/gobos/bossi3dj/cam-planet-N.png: the manual's camera pictures as 64x64 PNG like QLC+'s own Gobos (ImageMagick). Not part of
+    sync (a PNG made twice may differ in bytes); the tests check that every picture a capability names exists."""
+    import subprocess
+    os.makedirs(GOBO_DIR, exist_ok=True)
+    cam = next(r for r in blender_rows() if r["address"] == "/vj/cam")
+    for s in planet_shots(cam):
+        src, dst = GOBO_SOURCE % s["index"], os.path.join(GOBO_DIR, "cam-planet-%d.png" % s["index"])
+        if os.path.exists(src):
+            subprocess.run(["magick", src, "-resize", "64x64", "-background", "none", "-gravity", "center", "-extent", "64x64", dst], check=True)
+            print("wrote", os.path.relpath(dst, ROOT))
 
 
 def sync():
@@ -262,6 +347,8 @@ def main(argv):
     cmd = argv[1] if len(argv) > 1 else "check"
     if cmd == "sync":
         sync()
+    elif cmd == "gobos":
+        gobos()
     elif cmd == "table":
         print(render_table())
     elif cmd == "check":

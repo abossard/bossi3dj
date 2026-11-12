@@ -29,45 +29,45 @@ What is verified in the workspace file: its structure (Creator, Engine with fixt
 ## Channel table
 
 <!-- artnet-channels:begin -->
-| DMX channel | Address | What you see | DMX to wire value |
+| DMX channel | Name in QLC+ | What you see | DMX to wire value |
 |---|---|---|---|
-| 1 | `/vj/level` | The sun and its glow get stronger the louder the music is. | 0..255 = 0..1 |
-| 2 | `/vj/bass` | Bass makes things hit harder: the glowing ground net and waterline in Blender, the shake and dust of each footfall in Godot. | 0..255 = 0..1 |
-| 3 | `/vj/beat` | Pulses on every beat: pyramid edges, stars and water glints in Blender, footfalls and dust puffs in Godot. | 0..255 = 0..1 |
-| 4 | `/vj/hue` | Turns all colours around the colour wheel. | 0..255 = 0..1 |
-| 5 | `/vj/intensity` | Makes the whole picture brighter or darker. | 0..255 = 0..1 |
-| 6 | `/vj/strobe` | Flashes the picture to white; higher means a stronger flash. | 0..255 = 0..1 |
-| 7 | `/vj/grid_speed` | Makes the glowing grid on the ground scroll faster. | 0..255 = 0..1 |
-| 8 | `/vj/cam` | Cuts to camera number N; 0 is the first shot. | split into equal ranges, one per shot (below) |
-| 9 | `/vj/cam_speed` | Makes the camera drift and fly faster or slower. | 0..255 = 0..1 |
-| 10 | `/vj/sun` | Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon. | 0..255 = 0..1 |
-| 11 | `/vj/moon` | Makes the moon bigger or smaller. | 0..255 = 0..1 |
-| 12 | `/vj/moon_phase` | Changes the shape of the moon from new through half to full. | 0..255 = 0..1 |
-| 13 | `/vj/pyramids` | Makes the pyramids rise out of the ground. | 0..255 = 0..1 |
-| 14 | `/vj/grid` | Shows the real triangle edges of the ground as a glowing net at night; by day there is none. | 0..255 = 0..1 |
-| 15 | `/vj/stars` | Fades the stars in or out. | 0..255 = 0..1 |
-| 16 | `/vj/water` | Turns the reflections on the water up or down. | 0..255 = 0..1 |
-| 17 | `/vj/night` | Turns day into night: 0 is day, a quarter is sunset, half is twilight, 1 is night. | 0..255 = 0..1 |
-| 18 | `/vj/nebula` | Fades in the coloured cloud in the night sky. | 0..255 = 0..1 |
-| 19 | `/vj/shock` | A shock wave runs over the land once; in Godot the giant shakes while the Wanderer is on it. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1.5 at 255, back below 128 re-arms |
-| 20 | `/vj/meteor` | A shooting star crosses the sky. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1 at 255, back below 128 re-arms |
-| 21 | `/vj/flamingos` | Makes the flock of flamingos bigger; 0 hides it. | 0..255 = 0..1 |
-| 22 | `/vj/fog` | More fog near the ground; at 1 it is dense autumn fog. | 0..255 = 0..1 |
-| 23 | `/vj/fog_height` | Makes the fog bank taller or lower. | 0..255 = 0..1 |
-| 24 | `/vj/fog_glow` | Makes the fog glow by itself. | 0..255 = 0..1 |
-| 25 | `/vj/fog_hue` | Tints the fog pink, violet or cyan. | 0..255 = 0..1 |
-| 26 | `/vj/fog_noise` | Makes the fog patchier. | 0..255 = 0..1 |
-| 27 | `/vj/fog_scale` | Makes the fog clouds bigger or smaller. | 0..255 = 0..1 |
-| 28 | `/vj/fog_speed` | Makes the wind push the fog along faster. | 0..255 = 0..1 |
-| 29 | `/vj/fog_beat` | Makes the fog pump with the beat. | 0..255 = 0..1 |
-| 30 | `/vj/haze` | Adds or removes the soft haze toward the horizon. | 0..255 = 0..1 |
-| 31 | `/vj/eclipse` | Lines the moon up with the sun and the planet for an eclipse. | 0..255 = 0..1 |
-| 32 | `/vj/star_speed` | Makes the stars drift across the sky. | 0..255 = 0..1 |
-| 33 | `/vj/flight` | Steers the flying camera: 0 high orbit, then a landing approach, a skim over the mountains, and at 1 a hover over the water. | 0..255 = 0..1 |
-| 34 | `/vj/boost` | Gives the flying camera a burst of speed with a wider view. | 0..255 = 0..1 |
-| 35 | `/vj/blend` | Makes a camera change fly smoothly to the new shot; 0 cuts at once. | 0..255 = 0..1 |
-| 36 | `/vj/energy` | Makes the camera move harder, from a slow wide glide to faster, tighter moves. | 0..255 = 0..1 |
-| 37 | `/vj/hit` | A quick surge of speed with a wide-angle kick on the camera. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1 at 255, back below 128 re-arms |
+| 1 | Light Level (`/vj/level`) | The sun and its glow get stronger the louder the music is. | 0..255 = 0..1 |
+| 2 | Bass (`/vj/bass`) | Bass makes things hit harder: the glowing ground net and waterline in Blender, the shake and dust of each footfall in Godot. | 0..255 = 0..1 |
+| 3 | Beat (`/vj/beat`) | Pulses on every beat: pyramid edges, stars and water glints in Blender, footfalls and dust puffs in Godot. | 0..255 = 0..1 |
+| 4 | Palette Hue (`/vj/hue`) | Turns all colours around the colour wheel. | 0..255 = 0..1 |
+| 5 | Brightness (`/vj/intensity`) | Makes the whole picture brighter or darker. | 0..255 = 0..1 |
+| 6 | Strobe (`/vj/strobe`) | Flashes the picture to white; higher means a stronger flash. | 0..255 = 0..1 |
+| 7 | Grid Speed (`/vj/grid_speed`) | Makes the glowing grid on the ground scroll faster. | 0..255 = 0..1 |
+| 8 | Camera (`/vj/cam`) | Cuts to camera number N; 0 is the first shot. | split into equal ranges, one per shot (below) |
+| 9 | Camera Speed (`/vj/cam_speed`) | Makes the camera drift and fly faster or slower. | 0..255 = 0..1 |
+| 10 | Sun Height (`/vj/sun`) | Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon. | 0..255 = 0..1; ranges: Below the horizon 0 to 127, Peak day 128 to 255 |
+| 11 | Moon Size (`/vj/moon`) | Makes the moon bigger or smaller. | 0..255 = 0..1 |
+| 12 | Moon Phase (`/vj/moon_phase`) | Changes the shape of the moon from new through half to full. | 0..255 = 0..1; ranges: New 0 to 64, Half 65 to 191, Full 192 to 255 |
+| 13 | Pyramids (`/vj/pyramids`) | Makes the pyramids rise out of the ground. | 0..255 = 0..1 |
+| 14 | Mesh Edges (`/vj/grid`) | Shows the real triangle edges of the ground as a glowing net at night; by day there is none. | 0..255 = 0..1 |
+| 15 | Stars (`/vj/stars`) | Fades the stars in or out. | 0..255 = 0..1 |
+| 16 | Water Reflection (`/vj/water`) | Turns the reflections on the water up or down. | 0..255 = 0..1 |
+| 17 | Night (`/vj/night`) | Turns day into night: 0 is day, a quarter is sunset, half is twilight, 1 is night. | 0..255 = 0..1; ranges: Day 0 to 32, Sunset 33 to 96, Twilight 97 to 191, Night 192 to 255 |
+| 18 | Nebula (`/vj/nebula`) | Fades in the coloured cloud in the night sky. | 0..255 = 0..1 |
+| 19 | Shock (`/vj/shock`) | A shock wave runs over the land once; in Godot the giant shakes while the Wanderer is on it. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1.5 at 255, back below 128 re-arms |
+| 20 | Meteor (`/vj/meteor`) | A shooting star crosses the sky. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1 at 255, back below 128 re-arms |
+| 21 | Flamingos (`/vj/flamingos`) | Makes the flock of flamingos bigger; 0 hides it. | 0..255 = 0..1 |
+| 22 | Fog (`/vj/fog`) | More fog near the ground; at 1 it is dense autumn fog. | 0..255 = 0..1; ranges: None 0 to 127, Dense autumn fog 128 to 255 |
+| 23 | Fog Height (`/vj/fog_height`) | Makes the fog bank taller or lower. | 0..255 = 0..1 |
+| 24 | Fog Glow (`/vj/fog_glow`) | Makes the fog glow by itself. | 0..255 = 0..1 |
+| 25 | Fog Hue (`/vj/fog_hue`) | Tints the fog pink, violet or cyan. | 0..255 = 0..1; ranges: Pink 0 to 42, Violet 43 to 126, Cyan 127 to 211, Pink again 212 to 255 |
+| 26 | Fog Patches (`/vj/fog_noise`) | Makes the fog patchier. | 0..255 = 0..1 |
+| 27 | Fog Size (`/vj/fog_scale`) | Makes the fog clouds bigger or smaller. | 0..255 = 0..1 |
+| 28 | Fog Wind (`/vj/fog_speed`) | Makes the wind push the fog along faster. | 0..255 = 0..1 |
+| 29 | Fog Pump (`/vj/fog_beat`) | Makes the fog pump with the beat. | 0..255 = 0..1 |
+| 30 | Haze (`/vj/haze`) | Adds or removes the soft haze toward the horizon. | 0..255 = 0..1 |
+| 31 | Eclipse (`/vj/eclipse`) | Lines the moon up with the sun and the planet for an eclipse. | 0..255 = 0..1 |
+| 32 | Star Drift (`/vj/star_speed`) | Makes the stars drift across the sky. | 0..255 = 0..1 |
+| 33 | Flight (`/vj/flight`) | Steers the flying camera: 0 high orbit, then a landing approach, a skim over the mountains, and at 1 a hover over the water. | 0..255 = 0..1; ranges: Orbit 0 to 42, Approach 43 to 126, Skim 127 to 211, Hover 212 to 255 |
+| 34 | Boost (`/vj/boost`) | Gives the flying camera a burst of speed with a wider view. | 0..255 = 0..1 |
+| 35 | Cut Blend (`/vj/blend`) | Makes a camera change fly smoothly to the new shot; 0 cuts at once. | 0..255 = 0..1 |
+| 36 | Camera Energy (`/vj/energy`) | Makes the camera move harder, from a slow wide glide to faster, tighter moves. | 0..255 = 0..1 |
+| 37 | Hit (`/vj/hit`) | A quick surge of speed with a wide-angle kick on the camera. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1 at 255, back below 128 re-arms |
 
 `/vj/cam` ranges (channel 8), one per shot of the scene that runs:
 
@@ -94,9 +94,31 @@ What is verified in the workspace file: its structure (Creator, Engine with fixt
 | Island | 220 to 255 | 6 Wide Orbit |
 <!-- artnet-channels:end -->
 
+## What QLC+ offers and what we use
+
+"Verified" means seen in a file that ships in `/Applications/QLC+.app` (5.3.0 GIT: 144 fixture folders in `Resources/Fixtures`, `Resources/Gobos`, `Resources/Sample.qxw`, a workspace QLC+ 5.3.0 wrote on this machine, strings of `PlugIns/libartnet.dylib`). The app ships no schema or fixture documentation. "Memory" means QLC+ knowledge that no shipped file shows.
+
+| QLC+ feature | Evidence | Used here |
+|---|---|---|
+| Fixture type (14 seen: Color Changer, Moving Head, Scanner, Flower, LED Bar, Strobe, Laser, Smoke, Effect, Dimmer, Other, Hazer, Fan) | verified | `Other`: no type fits a video scene. |
+| Channel groups (Effect, Colour, Shutter, Speed, Gobo, Intensity, Maintenance, Beam, Prism, Pan, Tilt, Nothing) | verified | Intensity only for `/vj/intensity` (QLC+'s grand master scales Intensity channels, memory: right for overall brightness, wrong for level, bass or beat), Colour for the two hues, Shutter for `/vj/strobe`, Speed for the four speeds, Gobo for `/vj/cam`, Effect for the rest. |
+| Channel `Preset` attribute (`IntensityMasterDimmer`, `ShutterStrobeSlowFast`, `SpeedPanTiltSlowFast`, `IntensityHue`, ...) | verified (a self-closing channel, no capability text under it in any shipped file) | Not used: a preset channel cannot carry the plain sentence, and these presets mean a master dimmer, a strobe frequency or an HSV hue channel, which the scene does not mean. |
+| Capability `Preset="ColorMacro"` with `Res1="#rrggbb"` (a colour swatch) | verified (13482 uses) | Yes, for the four ranges of `/vj/fog_hue`: the build script's `FOG_RAMP` (pink, violet, cyan, pink) converted from scene-linear to sRGB. `/vj/hue` rotates the whole palette, so it has no single colour and no swatch. |
+| Capability `Preset="GoboMacro"` with `Res1="Folder/name.png"` (a picture) | verified (4113 uses; every `Res1` is a path relative to the Gobos folder, none is absolute; shipped pictures are 64x64 PNG or SVG) | Yes, one picture per range of `/vj/cam` (`bossi3dj/cam-planet-N.png`, 64x64 PNG made from the manual's camera pictures). That QLC+ finds pictures for a user fixture in `~/Library/Application Support/QLC+/Gobos` is memory: `make qlc-install` copies them there, the live test shows whether the ranges display them. |
+| Capability `Preset="SlowToFast"` | verified (208 uses) | Yes, for the speed channels. |
+| Strobe, rotation, pulse, ramp, lamp and reset capability presets | verified | Not used: they describe a lamp or a motor; `/vj/strobe` flashes to white, it is not a frequency. |
+| Capability text | verified | Yes. QLC+ has no description field per channel (only `Name`, `Group`, `Colour`, `Capability` under a channel), so the plain sentence is the capability text, with the stop's name before it where a channel has labelled stops. |
+| Channel `Default` attribute | verified (358 uses) | Yes, the contract default as a DMX value. |
+| Aliases (`Preset="Alias"` with `<Alias Mode= Channel= With=>`), fine channels (`...Fine` presets, `Group Byte="1"`), channel `Colour` element | verified | Not used: one mode, 8 bit channels, no colour channels. |
+| Several modes | verified | One mode. A short "Essentials" mode (a dozen channels for a desk with few faders) is not built: the decoder takes its channel list from `SCALES`, so it needs a channel list per mode in `DmxDecoder`, a generated `ESSENTIALS` block next to `SCALES` (a `contract.py` change), a `mode` setting and state field in the bridge, a line in the scene page and in `make status` that says which mode is expected, and a rerun of `osc/artnet_live_test.py`. |
+| `Physical` block | verified | Zeros: a video scene has no bulb, lens or weight. |
+| Workspace: virtual console frames, level sliders, buttons, solo frames | verified (in the 5.3.0 workspace) | Yes: a frame per manual group, a slider per slider channel captioned with the short name, Flash buttons for the triggers, a solo frame of toggle buttons for the shots and one for the labelled stops of each channel that has them. |
+| Workspace `ChannelsGroup` (a group of channels as one control) | memory, no shipped file has one | Written, one per manual group; QLC+ ignores an element it does not know. |
+| Slider marks at stops | not found in any shipped workspace | Not available: the stops are buttons instead. |
+
 ## Install the fixture in QLC+
 
-QLC+ 5.3 reads user fixtures from `~/Library/Application Support/QLC+/Fixtures` (the folder exists on this machine, empty). `make qlc-install` copies the fixture there and prints what it did; it never starts QLC+. `make qlc-fixture` is the generator (fixture, workspace and the table above, all from the contract). Restart QLC+. The workspace patches it for you; by hand it is the Fixtures tab, Add fixture, manufacturer `bossi3dj`, model `Synthwave Planet`, mode `Synthwave`, universe 1, address 1. The 37 channels appear in Simple Desk and in a fixture console.
+QLC+ 5.3 reads user fixtures from `~/Library/Application Support/QLC+/Fixtures` (the folder exists on this machine, empty). `make qlc-install` copies the fixture there and the camera pictures to `Gobos/bossi3dj/` in the same QLC+ folder, and prints what it did; it never starts QLC+. `make qlc-fixture` is the generator (fixture, workspace and the table above, all from the contract). Restart QLC+. The workspace patches it for you; by hand it is the Fixtures tab, Add fixture, manufacturer `bossi3dj`, model `Synthwave Planet`, mode `Synthwave`, universe 1, address 1. The 37 channels appear in Simple Desk and in a fixture console.
 
 ## Set QLC+'s Art-Net output
 

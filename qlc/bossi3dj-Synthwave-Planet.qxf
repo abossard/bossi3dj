@@ -9,206 +9,219 @@
  <Manufacturer>bossi3dj</Manufacturer>
  <Model>Synthwave Planet</Model>
  <Type>Other</Type>
- <Channel Name="/vj/level" Default="128">
-  <Group Byte="0">Intensity</Group>
+ <Channel Name="Light Level (/vj/level)" Default="128">
+  <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">The sun and its glow get stronger the louder the music is.</Capability>
  </Channel>
- <Channel Name="/vj/bass" Default="0">
-  <Group Byte="0">Intensity</Group>
+ <Channel Name="Bass (/vj/bass)" Default="0">
+  <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Bass makes things hit harder: the glowing ground net and waterline in Blender, the shake and dust of each footfall in Godot.</Capability>
  </Channel>
- <Channel Name="/vj/beat" Default="0">
-  <Group Byte="0">Intensity</Group>
+ <Channel Name="Beat (/vj/beat)" Default="0">
+  <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Pulses on every beat: pyramid edges, stars and water glints in Blender, footfalls and dust puffs in Godot.</Capability>
  </Channel>
- <Channel Name="/vj/hue" Default="0">
+ <Channel Name="Palette Hue (/vj/hue)" Default="0">
   <Group Byte="0">Colour</Group>
   <Capability Min="0" Max="255">Turns all colours around the colour wheel.</Capability>
  </Channel>
- <Channel Name="/vj/intensity" Default="128">
+ <Channel Name="Brightness (/vj/intensity)" Default="128">
   <Group Byte="0">Intensity</Group>
   <Capability Min="0" Max="255">Makes the whole picture brighter or darker.</Capability>
  </Channel>
- <Channel Name="/vj/strobe" Default="0">
-  <Group Byte="0">Intensity</Group>
+ <Channel Name="Strobe (/vj/strobe)" Default="0">
+  <Group Byte="0">Shutter</Group>
   <Capability Min="0" Max="255">Flashes the picture to white; higher means a stronger flash.</Capability>
  </Channel>
- <Channel Name="/vj/grid_speed" Default="38">
-  <Group Byte="0">Effect</Group>
-  <Capability Min="0" Max="255">Makes the glowing grid on the ground scroll faster.</Capability>
+ <Channel Name="Grid Speed (/vj/grid_speed)" Default="38">
+  <Group Byte="0">Speed</Group>
+  <Capability Min="0" Max="255" Preset="SlowToFast">Makes the glowing grid on the ground scroll faster.</Capability>
  </Channel>
- <Channel Name="/vj/cam" Default="0">
-  <Group Byte="0">Effect</Group>
-  <Capability Min="0" Max="21">0 Plaza View</Capability>
-  <Capability Min="22" Max="42">1 River Skim</Capability>
-  <Capability Min="43" Max="63">2 Pyramid Hero</Capability>
-  <Capability Min="64" Max="85">3 Moon Watch</Capability>
-  <Capability Min="86" Max="106">4 Pole Flyover</Capability>
-  <Capability Min="107" Max="127">5 Pyramid Orbit</Capability>
-  <Capability Min="128" Max="149">6 Planet Orbit</Capability>
-  <Capability Min="150" Max="170">7 Flamingo Lake</Capability>
-  <Capability Min="171" Max="191">8 River Mouth</Capability>
-  <Capability Min="192" Max="213">9 Far Pyramids</Capability>
-  <Capability Min="214" Max="234">10 Coast Pass</Capability>
-  <Capability Min="235" Max="255">11 Flight</Capability>
+ <Channel Name="Camera (/vj/cam)" Default="0">
+  <Group Byte="0">Gobo</Group>
+  <Capability Min="0" Max="21" Preset="GoboMacro" Res1="bossi3dj/cam-planet-0.png">0 Plaza View: A wide view from 70 m up, looking up the plaza toward the pyramids and the sun. It stands still.</Capability>
+  <Capability Min="22" Max="42" Preset="GoboMacro" Res1="bossi3dj/cam-planet-1.png">1 River Skim: A low view 9 m over the nearest river, looking downstream along the water. It stands still.</Capability>
+  <Capability Min="43" Max="63" Preset="GoboMacro" Res1="bossi3dj/cam-planet-2.png">2 Pyramid Hero: Close and low in front of the pyramids, the main pyramid shot. It stands still.</Capability>
+  <Capability Min="64" Max="85" Preset="GoboMacro" Res1="bossi3dj/cam-planet-3.png">3 Moon Watch: Low among the hills, tilted up over the pyramids; at night it follows the moon. It stands still.</Capability>
+  <Capability Min="86" Max="106" Preset="GoboMacro" Res1="bossi3dj/cam-planet-4.png">4 Pole Flyover: Flies a loop around the planet's pole over the hills, looking ahead along its path.</Capability>
+  <Capability Min="107" Max="127" Preset="GoboMacro" Res1="bossi3dj/cam-planet-5.png">5 Pyramid Orbit: Circles the pyramids above the ground, always looking at them.</Capability>
+  <Capability Min="128" Max="149" Preset="GoboMacro" Res1="bossi3dj/cam-planet-6.png">6 Planet Orbit: Circles the whole Planet from space, with the Planet and the moon in frame.</Capability>
+  <Capability Min="150" Max="170" Preset="GoboMacro" Res1="bossi3dj/cam-planet-7.png">7 Flamingo Lake: Low over the water next to the pyramids, looking toward the sun, with the flamingo flock on the lake. It stands still.</Capability>
+  <Capability Min="171" Max="191" Preset="GoboMacro" Res1="bossi3dj/cam-planet-8.png">8 River Mouth: Looks downstream along a river as it runs into the sea. It stands still.</Capability>
+  <Capability Min="192" Max="213" Preset="GoboMacro" Res1="bossi3dj/cam-planet-9.png">9 Far Pyramids: A pyramid group far from the valley with the sun behind it. It stands still and follows the sun.</Capability>
+  <Capability Min="214" Max="234" Preset="GoboMacro" Res1="bossi3dj/cam-planet-10.png">10 Coast Pass: A low pass along a coast, out over the water with the sea on one side, looking toward the land.</Capability>
+  <Capability Min="235" Max="255" Preset="GoboMacro" Res1="bossi3dj/cam-planet-11.png">11 Flight: The flying camera: /vj/flight carries it from orbit down to the mountains and a hover over the water.</Capability>
  </Channel>
- <Channel Name="/vj/cam_speed" Default="64">
-  <Group Byte="0">Effect</Group>
-  <Capability Min="0" Max="255">Makes the camera drift and fly faster or slower.</Capability>
+ <Channel Name="Camera Speed (/vj/cam_speed)" Default="64">
+  <Group Byte="0">Speed</Group>
+  <Capability Min="0" Max="255" Preset="SlowToFast">Makes the camera drift and fly faster or slower.</Capability>
  </Channel>
- <Channel Name="/vj/sun" Default="255">
+ <Channel Name="Sun Height (/vj/sun)" Default="255">
   <Group Byte="0">Effect</Group>
-  <Capability Min="0" Max="255">Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon.</Capability>
+  <Capability Min="0" Max="127">Below the horizon: Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon.</Capability>
+  <Capability Min="128" Max="255">Peak day: Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon.</Capability>
  </Channel>
- <Channel Name="/vj/moon" Default="255">
+ <Channel Name="Moon Size (/vj/moon)" Default="255">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Makes the moon bigger or smaller.</Capability>
  </Channel>
- <Channel Name="/vj/moon_phase" Default="255">
+ <Channel Name="Moon Phase (/vj/moon_phase)" Default="255">
   <Group Byte="0">Effect</Group>
-  <Capability Min="0" Max="255">Changes the shape of the moon from new through half to full.</Capability>
+  <Capability Min="0" Max="64">New: Changes the shape of the moon from new through half to full.</Capability>
+  <Capability Min="65" Max="191">Half: Changes the shape of the moon from new through half to full.</Capability>
+  <Capability Min="192" Max="255">Full: Changes the shape of the moon from new through half to full.</Capability>
  </Channel>
- <Channel Name="/vj/pyramids" Default="255">
+ <Channel Name="Pyramids (/vj/pyramids)" Default="255">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Makes the pyramids rise out of the ground.</Capability>
  </Channel>
- <Channel Name="/vj/grid" Default="255">
+ <Channel Name="Mesh Edges (/vj/grid)" Default="255">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Shows the real triangle edges of the ground as a glowing net at night; by day there is none.</Capability>
  </Channel>
- <Channel Name="/vj/stars" Default="255">
+ <Channel Name="Stars (/vj/stars)" Default="255">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Fades the stars in or out.</Capability>
  </Channel>
- <Channel Name="/vj/water" Default="255">
+ <Channel Name="Water Reflection (/vj/water)" Default="255">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Turns the reflections on the water up or down.</Capability>
  </Channel>
- <Channel Name="/vj/night" Default="0">
+ <Channel Name="Night (/vj/night)" Default="0">
   <Group Byte="0">Effect</Group>
-  <Capability Min="0" Max="255">Turns day into night: 0 is day, a quarter is sunset, half is twilight, 1 is night.</Capability>
+  <Capability Min="0" Max="32">Day: Turns day into night: 0 is day, a quarter is sunset, half is twilight, 1 is night.</Capability>
+  <Capability Min="33" Max="96">Sunset: Turns day into night: 0 is day, a quarter is sunset, half is twilight, 1 is night.</Capability>
+  <Capability Min="97" Max="191">Twilight: Turns day into night: 0 is day, a quarter is sunset, half is twilight, 1 is night.</Capability>
+  <Capability Min="192" Max="255">Night: Turns day into night: 0 is day, a quarter is sunset, half is twilight, 1 is night.</Capability>
  </Channel>
- <Channel Name="/vj/nebula" Default="255">
+ <Channel Name="Nebula (/vj/nebula)" Default="255">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Fades in the coloured cloud in the night sky.</Capability>
  </Channel>
- <Channel Name="/vj/shock" Default="0">
+ <Channel Name="Shock (/vj/shock)" Default="0">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="127">off</Capability>
   <Capability Min="128" Max="255">fire once, harder the higher: A shock wave runs over the land once; in Godot the giant shakes while the Wanderer is on it.</Capability>
  </Channel>
- <Channel Name="/vj/meteor" Default="0">
+ <Channel Name="Meteor (/vj/meteor)" Default="0">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="127">off</Capability>
   <Capability Min="128" Max="255">fire once, harder the higher: A shooting star crosses the sky.</Capability>
  </Channel>
- <Channel Name="/vj/flamingos" Default="255">
+ <Channel Name="Flamingos (/vj/flamingos)" Default="255">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Makes the flock of flamingos bigger; 0 hides it.</Capability>
  </Channel>
- <Channel Name="/vj/fog" Default="89">
+ <Channel Name="Fog (/vj/fog)" Default="89">
   <Group Byte="0">Effect</Group>
-  <Capability Min="0" Max="255">More fog near the ground; at 1 it is dense autumn fog.</Capability>
+  <Capability Min="0" Max="127">None: More fog near the ground; at 1 it is dense autumn fog.</Capability>
+  <Capability Min="128" Max="255">Dense autumn fog: More fog near the ground; at 1 it is dense autumn fog.</Capability>
  </Channel>
- <Channel Name="/vj/fog_height" Default="105">
+ <Channel Name="Fog Height (/vj/fog_height)" Default="105">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Makes the fog bank taller or lower.</Capability>
  </Channel>
- <Channel Name="/vj/fog_glow" Default="76">
+ <Channel Name="Fog Glow (/vj/fog_glow)" Default="76">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Makes the fog glow by itself.</Capability>
  </Channel>
- <Channel Name="/vj/fog_hue" Default="0">
-  <Group Byte="0">Effect</Group>
-  <Capability Min="0" Max="255">Tints the fog pink, violet or cyan.</Capability>
+ <Channel Name="Fog Hue (/vj/fog_hue)" Default="0">
+  <Group Byte="0">Colour</Group>
+  <Capability Min="0" Max="42" Preset="ColorMacro" Res1="#ff89d3">Pink: Tints the fog pink, violet or cyan.</Capability>
+  <Capability Min="43" Max="126" Preset="ColorMacro" Res1="#c47cff">Violet: Tints the fog pink, violet or cyan.</Capability>
+  <Capability Min="127" Max="211" Preset="ColorMacro" Res1="#6ce1ff">Cyan: Tints the fog pink, violet or cyan.</Capability>
+  <Capability Min="212" Max="255" Preset="ColorMacro" Res1="#ff89d3">Pink again: Tints the fog pink, violet or cyan.</Capability>
  </Channel>
- <Channel Name="/vj/fog_noise" Default="153">
+ <Channel Name="Fog Patches (/vj/fog_noise)" Default="153">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Makes the fog patchier.</Capability>
  </Channel>
- <Channel Name="/vj/fog_scale" Default="64">
+ <Channel Name="Fog Size (/vj/fog_scale)" Default="64">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Makes the fog clouds bigger or smaller.</Capability>
  </Channel>
- <Channel Name="/vj/fog_speed" Default="64">
-  <Group Byte="0">Effect</Group>
-  <Capability Min="0" Max="255">Makes the wind push the fog along faster.</Capability>
+ <Channel Name="Fog Wind (/vj/fog_speed)" Default="64">
+  <Group Byte="0">Speed</Group>
+  <Capability Min="0" Max="255" Preset="SlowToFast">Makes the wind push the fog along faster.</Capability>
  </Channel>
- <Channel Name="/vj/fog_beat" Default="128">
+ <Channel Name="Fog Pump (/vj/fog_beat)" Default="128">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Makes the fog pump with the beat.</Capability>
  </Channel>
- <Channel Name="/vj/haze" Default="255">
+ <Channel Name="Haze (/vj/haze)" Default="255">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Adds or removes the soft haze toward the horizon.</Capability>
  </Channel>
- <Channel Name="/vj/eclipse" Default="0">
+ <Channel Name="Eclipse (/vj/eclipse)" Default="0">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Lines the moon up with the sun and the planet for an eclipse.</Capability>
  </Channel>
- <Channel Name="/vj/star_speed" Default="0">
-  <Group Byte="0">Effect</Group>
-  <Capability Min="0" Max="255">Makes the stars drift across the sky.</Capability>
+ <Channel Name="Star Drift (/vj/star_speed)" Default="0">
+  <Group Byte="0">Speed</Group>
+  <Capability Min="0" Max="255" Preset="SlowToFast">Makes the stars drift across the sky.</Capability>
  </Channel>
- <Channel Name="/vj/flight" Default="0">
+ <Channel Name="Flight (/vj/flight)" Default="0">
   <Group Byte="0">Effect</Group>
-  <Capability Min="0" Max="255">Steers the flying camera: 0 high orbit, then a landing approach, a skim over the mountains, and at 1 a hover over the water.</Capability>
+  <Capability Min="0" Max="42">Orbit: Steers the flying camera: 0 high orbit, then a landing approach, a skim over the mountains, and at 1 a hover over the water.</Capability>
+  <Capability Min="43" Max="126">Approach: Steers the flying camera: 0 high orbit, then a landing approach, a skim over the mountains, and at 1 a hover over the water.</Capability>
+  <Capability Min="127" Max="211">Skim: Steers the flying camera: 0 high orbit, then a landing approach, a skim over the mountains, and at 1 a hover over the water.</Capability>
+  <Capability Min="212" Max="255">Hover: Steers the flying camera: 0 high orbit, then a landing approach, a skim over the mountains, and at 1 a hover over the water.</Capability>
  </Channel>
- <Channel Name="/vj/boost" Default="0">
+ <Channel Name="Boost (/vj/boost)" Default="0">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Gives the flying camera a burst of speed with a wider view.</Capability>
  </Channel>
- <Channel Name="/vj/blend" Default="128">
+ <Channel Name="Cut Blend (/vj/blend)" Default="128">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Makes a camera change fly smoothly to the new shot; 0 cuts at once.</Capability>
  </Channel>
- <Channel Name="/vj/energy" Default="76">
+ <Channel Name="Camera Energy (/vj/energy)" Default="76">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="255">Makes the camera move harder, from a slow wide glide to faster, tighter moves.</Capability>
  </Channel>
- <Channel Name="/vj/hit" Default="0">
+ <Channel Name="Hit (/vj/hit)" Default="0">
   <Group Byte="0">Effect</Group>
   <Capability Min="0" Max="127">off</Capability>
   <Capability Min="128" Max="255">fire once, harder the higher: A quick surge of speed with a wide-angle kick on the camera.</Capability>
  </Channel>
  <Mode Name="Synthwave">
-  <Channel Number="0">/vj/level</Channel>
-  <Channel Number="1">/vj/bass</Channel>
-  <Channel Number="2">/vj/beat</Channel>
-  <Channel Number="3">/vj/hue</Channel>
-  <Channel Number="4">/vj/intensity</Channel>
-  <Channel Number="5">/vj/strobe</Channel>
-  <Channel Number="6">/vj/grid_speed</Channel>
-  <Channel Number="7">/vj/cam</Channel>
-  <Channel Number="8">/vj/cam_speed</Channel>
-  <Channel Number="9">/vj/sun</Channel>
-  <Channel Number="10">/vj/moon</Channel>
-  <Channel Number="11">/vj/moon_phase</Channel>
-  <Channel Number="12">/vj/pyramids</Channel>
-  <Channel Number="13">/vj/grid</Channel>
-  <Channel Number="14">/vj/stars</Channel>
-  <Channel Number="15">/vj/water</Channel>
-  <Channel Number="16">/vj/night</Channel>
-  <Channel Number="17">/vj/nebula</Channel>
-  <Channel Number="18">/vj/shock</Channel>
-  <Channel Number="19">/vj/meteor</Channel>
-  <Channel Number="20">/vj/flamingos</Channel>
-  <Channel Number="21">/vj/fog</Channel>
-  <Channel Number="22">/vj/fog_height</Channel>
-  <Channel Number="23">/vj/fog_glow</Channel>
-  <Channel Number="24">/vj/fog_hue</Channel>
-  <Channel Number="25">/vj/fog_noise</Channel>
-  <Channel Number="26">/vj/fog_scale</Channel>
-  <Channel Number="27">/vj/fog_speed</Channel>
-  <Channel Number="28">/vj/fog_beat</Channel>
-  <Channel Number="29">/vj/haze</Channel>
-  <Channel Number="30">/vj/eclipse</Channel>
-  <Channel Number="31">/vj/star_speed</Channel>
-  <Channel Number="32">/vj/flight</Channel>
-  <Channel Number="33">/vj/boost</Channel>
-  <Channel Number="34">/vj/blend</Channel>
-  <Channel Number="35">/vj/energy</Channel>
-  <Channel Number="36">/vj/hit</Channel>
+  <Channel Number="0">Light Level (/vj/level)</Channel>
+  <Channel Number="1">Bass (/vj/bass)</Channel>
+  <Channel Number="2">Beat (/vj/beat)</Channel>
+  <Channel Number="3">Palette Hue (/vj/hue)</Channel>
+  <Channel Number="4">Brightness (/vj/intensity)</Channel>
+  <Channel Number="5">Strobe (/vj/strobe)</Channel>
+  <Channel Number="6">Grid Speed (/vj/grid_speed)</Channel>
+  <Channel Number="7">Camera (/vj/cam)</Channel>
+  <Channel Number="8">Camera Speed (/vj/cam_speed)</Channel>
+  <Channel Number="9">Sun Height (/vj/sun)</Channel>
+  <Channel Number="10">Moon Size (/vj/moon)</Channel>
+  <Channel Number="11">Moon Phase (/vj/moon_phase)</Channel>
+  <Channel Number="12">Pyramids (/vj/pyramids)</Channel>
+  <Channel Number="13">Mesh Edges (/vj/grid)</Channel>
+  <Channel Number="14">Stars (/vj/stars)</Channel>
+  <Channel Number="15">Water Reflection (/vj/water)</Channel>
+  <Channel Number="16">Night (/vj/night)</Channel>
+  <Channel Number="17">Nebula (/vj/nebula)</Channel>
+  <Channel Number="18">Shock (/vj/shock)</Channel>
+  <Channel Number="19">Meteor (/vj/meteor)</Channel>
+  <Channel Number="20">Flamingos (/vj/flamingos)</Channel>
+  <Channel Number="21">Fog (/vj/fog)</Channel>
+  <Channel Number="22">Fog Height (/vj/fog_height)</Channel>
+  <Channel Number="23">Fog Glow (/vj/fog_glow)</Channel>
+  <Channel Number="24">Fog Hue (/vj/fog_hue)</Channel>
+  <Channel Number="25">Fog Patches (/vj/fog_noise)</Channel>
+  <Channel Number="26">Fog Size (/vj/fog_scale)</Channel>
+  <Channel Number="27">Fog Wind (/vj/fog_speed)</Channel>
+  <Channel Number="28">Fog Pump (/vj/fog_beat)</Channel>
+  <Channel Number="29">Haze (/vj/haze)</Channel>
+  <Channel Number="30">Eclipse (/vj/eclipse)</Channel>
+  <Channel Number="31">Star Drift (/vj/star_speed)</Channel>
+  <Channel Number="32">Flight (/vj/flight)</Channel>
+  <Channel Number="33">Boost (/vj/boost)</Channel>
+  <Channel Number="34">Cut Blend (/vj/blend)</Channel>
+  <Channel Number="35">Camera Energy (/vj/energy)</Channel>
+  <Channel Number="36">Hit (/vj/hit)</Channel>
  </Mode>
  <Physical>
   <Bulb Type="" Lumens="0" ColourTemperature="0"/>

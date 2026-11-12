@@ -106,6 +106,27 @@ class TableTests(unittest.TestCase):
         want = [{"index": i, "name": text("shot_name", k), "shows": text("shot_shows", k)} for i, k in enumerate(keys)]
         self.assertEqual(contract.by_address(ROWS)["/vj/cam"]["shots"]["godot"], want)
 
+    def test_labels_are_short_unique_and_avoid_no_glossary_word(self):
+        with open(os.path.join(contract.ROOT, "GLOSSARY.md")) as f:
+            avoid = [w.strip().lower() for line in f if line.startswith("_Avoid_:") for w in line[len("_Avoid_:"):].split(",")]
+        labels = [r["label"] for r in ROWS]
+        self.assertEqual(len(labels), len(set(labels)))
+        for r in ROWS:
+            with self.subTest(address=r["address"]):
+                self.assertTrue(1 <= len(r["label"].split()) <= 3)
+                for word in avoid:
+                    self.assertNotIn(word, r["label"].lower().split())
+
+    def test_stops_are_ordered_inside_the_wire_range_and_named(self):
+        for r in ROWS:
+            stops = r.get("stops")
+            if not stops:
+                continue
+            with self.subTest(address=r["address"]):
+                self.assertGreaterEqual(len(stops), 2)
+                self.assertEqual([s["wire"] for s in stops], sorted(s["wire"] for s in stops))
+                self.assertTrue(all(r["min"] <= s["wire"] <= r["max"] and s["name"] for s in stops))
+
     def test_manual_pictures_exist(self):
         with open(contract.README_MD) as f:
             block = contract.current_manual(f.read())

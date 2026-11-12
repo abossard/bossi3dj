@@ -24,8 +24,8 @@ help:
 	@echo "  blender-test      the bridge's wire-to-scene scaling, without Blender"
 	@echo "  magic-build       regenerate magic/projects/*.magic from the generators (synthwave_pyramids for Blender, show for both scenes), then the generated tables of docs/handbook.md"
 	@echo "  osc-sync          rewrite the CONTROLS.md table and the bridge's SCALES block from osc/contract.json"
-	@echo "  qlc-fixture       write qlc/bossi3dj-Synthwave-Planet.qxf (the QLC+ fixture for Art-Net) and the channel table in docs/artnet-qlc.md from the contract"
-	@echo "  qlc-install       copy the fixture into QLC+'s user fixtures folder (~/Library/Application Support/QLC+/Fixtures); prints what it did, never starts QLC+"
+	@echo "  qlc-fixture       write the QLC+ fixture and workspace (qlc/) for Art-Net, the camera pictures as gobos, and the channel table in docs/artnet-qlc.md from the contract"
+	@echo "  qlc-install       copy the fixture and its camera pictures into QLC+'s user folders (~/Library/Application Support/QLC+/Fixtures and Gobos/bossi3dj); prints what it did, never starts QLC+"
 	@echo "  osc-sweep         walk every /vj/* address through min, default, max (ARGS=\"--target godot --seconds 2\", ARGS=--dry-run)"
 	@echo "  godot-test        Colossus logic tests, headless"
 	@echo "  godot-smoke       one full Colossus Arc, headless, own OSC port and Syphon name"
@@ -84,14 +84,19 @@ osc-sync:
 
 qlc-fixture:
 	python3 osc/qlc_fixture.py sync
+	@command -v magick >/dev/null && python3 osc/qlc_fixture.py gobos || echo "no ImageMagick: qlc/gobos/ left as it is"
 
 QLC_FIXTURES = $(HOME)/Library/Application Support/QLC+/Fixtures
+QLC_GOBOS = $(HOME)/Library/Application Support/QLC+/Gobos
 
 qlc-install:
 	@python3 osc/qlc_fixture.py check || { echo "the fixture is out of step with the contract: make qlc-fixture first"; exit 1; }
 	@mkdir -p "$(QLC_FIXTURES)"
 	@cp qlc/bossi3dj-Synthwave-Planet.qxf "$(QLC_FIXTURES)/"
 	@echo "installed: $(QLC_FIXTURES)/bossi3dj-Synthwave-Planet.qxf"
+	@mkdir -p "$(QLC_GOBOS)/bossi3dj"
+	@cp qlc/gobos/bossi3dj/*.png "$(QLC_GOBOS)/bossi3dj/"
+	@echo "installed: $(QLC_GOBOS)/bossi3dj/ (the camera pictures of the /vj/cam ranges)"
 	@echo "workspace to open in QLC+: $(CURDIR)/qlc/bossi3dj-Synthwave-Planet.qxw"
 	@if pgrep -f "QLC\+.app/Contents/MacOS" >/dev/null; then echo "QLC+ runs: quit it and start it again, it reads fixtures at the start"; fi
 
