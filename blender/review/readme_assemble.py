@@ -3,7 +3,8 @@ Reads PAIRS_DIR/pairs.json (readme_pair_check.py). Writes into docs/images/readm
   <name>-blender.jpg    low | high side by side, 2 x 480 px wide, for every pair that counted (name = address without /vj/)
   cam-<scene>-<N>.jpg   one 480 px picture per camera: of its phases the one with the most picture in the lower half
   cam-blender.jpg       a 4 x 3 strip of the planet's cameras (the /vj/cam row)
-and the hero frames docs/images/readme/planet-*.jpg when PAIRS_DIR has extras. Needs ImageMagick."""
+and the hero frames docs/images/readme/planet-*.jpg when PAIRS_DIR has extras. Needs ImageMagick.
+With --flight FRAME instead of PAIRS_DIR: a Flight frame of flight_grabs.py as the gallery picture, cam-planet-11 and the strip."""
 import json
 import os
 import re
@@ -13,6 +14,16 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OSC = os.path.join(ROOT, "docs", "images", "readme", "osc")
 HERO = os.path.join(ROOT, "docs", "images", "readme")
+if "--flight" in sys.argv:       # python readme_assemble.py --flight FRAME: a full-size Flight frame (flight_grabs.py) as the
+    # gallery picture planet-flight-<stage>.jpg (960 px), the Flight shot's camera picture cam-planet-11.jpg and the strip
+    src = sys.argv[sys.argv.index("--flight") + 1]
+    stage = os.path.basename(src).split("_")[0]
+    subprocess.run(["magick", src, "-resize", "960x", "-quality", "88", os.path.join(HERO, "planet-flight-%s.jpg" % stage)], check=True)
+    subprocess.run(["magick", src, "-resize", "480x", "-quality", "88", os.path.join(OSC, "cam-planet-11.jpg")], check=True)
+    subprocess.run(["magick", "montage", *[os.path.join(OSC, "cam-planet-%d.jpg" % n) for n in range(12)], "-tile", "4x3",
+                    "-geometry", "240x135+2+2", "-background", "black", "-quality", "88", os.path.join(OSC, "cam-blender.jpg")], check=True)
+    print("wrote planet-flight-%s.jpg, cam-planet-11.jpg, cam-blender.jpg" % stage)
+    sys.exit(0)
 d = sys.argv[1]
 scene = sys.argv[sys.argv.index("--scene") + 1] if "--scene" in sys.argv else "planet"
 res = json.load(open(os.path.join(d, "pairs.json")))

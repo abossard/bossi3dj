@@ -153,6 +153,10 @@ def update_lod(scene):
         _state["streamed"] = streamed
         if _state["set"] is not None:
             show_lod_set(scene, _state["set"])
+        if not streamed and cam is not None:      # back from the Flight: the sky frame returns under the fixed shot
+            _state["camera"] = cam
+            place_anchor(scene, cam)
+            return
     if cam is None:
         return
     mode = cam.get("lod", "surface")
@@ -261,8 +265,10 @@ def planet_tick(scene):
     sun_rel(scene)
     update_lod(scene)
     cam = None if _state["streamed"] else on_air(scene)[0]
-    if free:
-        place_sky(scene, [a - b for a, b in zip(c, CENTER)])        # the free view's own horizon
+    if free or (_state["streamed"] and c is not None):
+        # the free view's own horizon; and the Flight's (its stream is on air): the sky frame stayed under the last
+        # fixed shot, so sky, stars and fog box were thousands of km off (hard bands in the sky, a flat lake at the Hover)
+        place_sky(scene, [a - b for a, b in zip(c, CENTER)])
     elif cam is not None and "path_period" in cam and cam.get("lod", "surface") != "orbit":
         place_sky(scene, [a - b for a, b in zip(cam.matrix_world.translation, CENTER)])   # flights: the sky's horizon stays level
 

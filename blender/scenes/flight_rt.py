@@ -339,10 +339,10 @@ def flight_pose(scene, dt, fc):
     moon = ((s("rt_moon_x", 0.0), s("rt_moon_y", 0.0), s("rt_moon_z", 0.0)), MOON_R * s("vj_moon", 1.0))
     F = _state["flight"]
     if F is None:
-        reset = _state.pop("reset", False)
-        F = _state["flight"] = fl.Flight(_state["map"], seed=CHECK_SEED if reset else int(time.time()) % 100000,
-                                         sun=CHECK_SUN if reset else sun)
-        if reset:       # settled at the stage asked for: the self-check shows the stage, verify_flight the damping
+        reset = _state.pop("reset", None)       # the seed of a reset Flight (quiesce), None: a fresh one per start
+        F = _state["flight"] = fl.Flight(_state["map"], seed=int(time.time()) % 100000 if reset is None else reset,
+                                         sun=sun if reset is None else CHECK_SUN)
+        if reset is not None:       # settled at the stage asked for: the self-check shows the stage, verify_flight the damping
             F.f = fl.clamp(s("vj_flight", 0.0), 0.0, 1.0)
     drive = _state["drive"]
     p, fwd, up, lens, info = F.step(dt, s("vj_flight", 0.0), s("vj_boost", 0.0), en.level(drive.e), drive.kick, sun,
@@ -442,10 +442,20 @@ def on_cut(scene, depsgraph=None):
         scene.camera = rig
 
 
-def quiesce():
+def quiesce(seed=None):
     """The self-check's reset, per cell (synthwave_runtime.quiesce): the next frame starts the Drive, the Director
-    and the Flight afresh, so a moving shot shows the same frames for the same controls."""
-    _state.update(drive=None, director=None, flight=None, flight_pose=None, reset=True)
+    and the Flight afresh, so a moving shot shows the same frames for the same controls. The Flight flies `seed`
+    (default CHECK_SEED, or the one set_seed chose for grabs that need another region)."""
+    _state.update(drive=None, director=None, flight=None, flight_pose=None,
+                  reset=_state.get("seed", CHECK_SEED) if seed is None else seed)
+
+
+def set_seed(seed=None):
+    """The seed every later reset Flight flies (None: back to CHECK_SEED)."""
+    if seed is None:
+        _state.pop("seed", None)
+    else:
+        _state["seed"] = int(seed)
 
 
 def start():

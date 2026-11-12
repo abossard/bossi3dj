@@ -376,6 +376,13 @@ def morph_material(src_name):
     else:
         L.new(vd.outputs[0], disp)
     m.displacement_method = "DISPLACEMENT"
+    # no night edges on the stream: its blocks are a regular grid, so their real edges read as a lattice (Flight
+    # review 2026-11-12); the fixed shots keep the planet's own irregular net
+    for wf in [n for n in N if n.type == "WIREFRAME"]:
+        for link in list(wf.outputs["Fac"].links):
+            sock = link.to_socket
+            L.remove(link)
+            sock.default_value = 0.0
     return m
 
 
@@ -419,7 +426,9 @@ def read_nodes(me, keys):
     if len(me.loops) != 3 * nf:
         raise ValueError("FLT_Lod faces must be triangles")
     water = _state["mats"]["water"]
-    lut = np.array([1 if m == water else 0 for m in me.materials] or [0], np.int32)
+    # an evaluated mesh lists evaluated copies of its materials: compared with the original by identity they never
+    # matched, and every water face was drawn with the land material (Flight review 2026-11-12: no water in the stream)
+    lut = np.array([1 if m is not None and m.original == water else 0 for m in me.materials] or [0], np.int32)
     raw = {}
     for at in me.attributes:
         if at.name.startswith(".") and at.name not in INDEX_OF:
