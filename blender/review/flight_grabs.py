@@ -140,6 +140,23 @@ def holes(name, extra=2.0):
     sock.value = m
     ob.update_tag()
     send(vj_night=0.0, vj_grid=1.0)
+    if JOB.get("holes_offscreen"):
+        # off the Syphon output: an OpenGL render of the camera view into an image file (Syphon publishes its own texture,
+        # the render draws the viewport once; the swap lasts about one frame)
+        S.render.filepath = OUT + "%s_holes_gl.png" % name
+        S.render.image_settings.file_format = "PNG"
+        yield 2.0
+        RT.freeze(True)
+        for win in bpy.context.window_manager.windows:
+            for area in win.screen.areas:
+                if area.type == "VIEW_3D":
+                    with bpy.context.temp_override(window=win, area=area):
+                        bpy.ops.render.opengl(write_still=True, view_context=True)
+        sock.value = old
+        ob.update_tag()
+        raw = None
+        st.setdefault("holes", {})[name] = {"file": S.render.filepath}
+        return
     w = st["want"] = {"due": time.perf_counter() + SETTLE + extra, "out": OUT + "%s_holes.ppm" % name}
     while "ok" not in w:
         RT.freeze(True)
@@ -177,6 +194,28 @@ def holes(name, extra=2.0):
             px, py = int(xs[k]), int(ys[k])
             sides.append({"px": [px, py], "at": ray(px, py), "l": ray(px - 4, py), "r": ray(px + 4, py),
                           "u": ray(px, py - 4), "d": ray(px, py + 4)})
+        # what is under each hole pixel's ray: the hit's height over the sea and the clearance map's ground and water there
+        M = FS["map"]
+        below = []
+        for sd in sides:
+            px, py = sd["px"]
+            x = fr[2].x + (fr[0].x - fr[2].x) * (px + 0.5) / 1920.0
+            y = fr[0].y + (fr[2].y - fr[0].y) * (py + 0.5) / 1080.0
+            d = (mw.to_3x3() @ type(o)((x, y, fr[0].z))).normalized()
+            org, hit_loc = o.copy(), None
+            for _ in range(6):
+                ok, loc, nrm, idx, hit, _m = S.ray_cast(dg, org, d)
+                if not ok:
+                    break
+                if hit.name in ("Fog", "Atmosphere") or hit.hide_get():
+                    org = loc + d * 0.5
+                    continue
+                hit_loc = loc
+                break
+            if hit_loc is not None:
+                u, h_ = G["dr"].spherical(tuple(hit_loc))
+                below.append({"px": sd["px"], "h": round(h_, 1), "map_ground": round(M.ground(u), 1), "map_water": round(M._bilinear(M.w, u), 1)})
+        res["under_samples"] = below
         res["samples"] = sides
         lod = {}
         for sd in sides:
