@@ -41,7 +41,7 @@ git fetch -q . "${target}:main"
 
 - Use the braces: zsh mangles `$target:refs`.
 - Before every push, no model file may be in the commits: `for c in $(git rev-list origin/main..HEAD); do git ls-tree -r --name-only $c -- godot/colossus/assets/models godot/colossus/assets/incoming godot/colossus/assets/mixamo; done | wc -l` must print 0.
-- Three state commits after `5338a61` are local only on 2026-11-13.
+- The commits after `5338a61` (the model settings and this note) are local only on 2026-11-13.
 
 ## Left as it is on the Mac
 
