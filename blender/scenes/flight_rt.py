@@ -54,6 +54,7 @@ import lod_stream as ls  # noqa: E402
 RIG = "CAM_RIG"
 FLIGHT_KEY = "vj_flight_cam"
 SHOT_KEY = "vj_shot"                # driver_namespace: the shot asked for (scene.camera is the rig), for the page and check
+SCRIPT_KEY = "vj_flight_script"     # driver_namespace: a function () -> pose that replaces the Flight (test flights only)
 TERRAIN_KEY = "vj_terrain"          # driver_namespace: (the shot whose sets the planet shows, the stream is shown instead)
 SHOT_PROPS = {"fog_k": 1.0, "fog_clear": 180.0, "fog_dip": 0.005}
 MAP_RES = 512                       # texels per cube face side: about 49 m
@@ -331,6 +332,12 @@ def moved_pose(ob, dg, drive):
 
 
 def flight_pose(scene, dt, fc):
+    script = bpy.app.driver_namespace.get(SCRIPT_KEY)
+    if script is not None:      # a scripted test flight (blender/review/terrain_test_flight.py): the pose is its own
+        pose = script()         # function of time; off unless a job sets it, so the show's Flight is unchanged
+        place(fc, pose)
+        _state["flight_pose"] = pose
+        return pose
     if dt <= 0.0 and _state.get("flight_pose") is not None:     # clocks stopped (the self-check): it holds
         return _state["flight_pose"]
     dt = max(dt, 1e-3)

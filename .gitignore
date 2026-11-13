@@ -20,3 +20,6 @@ blender/review/out/
 
 # presets and page settings of this machine (blender/scenes/page_model.py)
 blender/local/
+
+# terrain test recordings and other videos: for the user, not for git
+docs/video/*.mp4
