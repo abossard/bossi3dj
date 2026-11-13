@@ -22,138 +22,130 @@
    <Name>Synthwave Planet</Name>
    <Universe>0</Universe>
    <Address>0</Address>
-   <Channels>37</Channels>
+   <Channels>38</Channels>
   </Fixture>
   <Function ID="0" Type="Scene" Name="fire /vj/shock" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">18,255</FixtureVal>
+   <FixtureVal ID="0">20,255</FixtureVal>
   </Function>
   <Function ID="1" Type="Scene" Name="fire /vj/meteor" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">19,255</FixtureVal>
+   <FixtureVal ID="0">21,255</FixtureVal>
   </Function>
   <Function ID="2" Type="Scene" Name="fire /vj/hit" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">36,255</FixtureVal>
+   <FixtureVal ID="0">37,255</FixtureVal>
   </Function>
-  <Function ID="3" Type="Scene" Name="cut to 0 Plaza View" Path="Synthwave">
+  <Function ID="3" Type="Scene" Name="Path = Orbit" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">7,10</FixtureVal>
+   <FixtureVal ID="0">8,31</FixtureVal>
   </Function>
-  <Function ID="4" Type="Scene" Name="cut to 1 River Skim" Path="Synthwave">
+  <Function ID="4" Type="Scene" Name="Path = Follow the land" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">7,32</FixtureVal>
+   <FixtureVal ID="0">8,95</FixtureVal>
   </Function>
-  <Function ID="5" Type="Scene" Name="cut to 2 Pyramid Hero" Path="Synthwave">
+  <Function ID="5" Type="Scene" Name="Path = Rise and descend" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">7,53</FixtureVal>
+   <FixtureVal ID="0">8,159</FixtureVal>
   </Function>
-  <Function ID="6" Type="Scene" Name="cut to 3 Moon Watch" Path="Synthwave">
+  <Function ID="6" Type="Scene" Name="Path = Vantage" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">7,74</FixtureVal>
+   <FixtureVal ID="0">8,223</FixtureVal>
   </Function>
-  <Function ID="7" Type="Scene" Name="cut to 4 Pole Flyover" Path="Synthwave">
+  <Function ID="7" Type="Scene" Name="Target = Pyramids" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">7,96</FixtureVal>
+   <FixtureVal ID="0">9,18</FixtureVal>
   </Function>
-  <Function ID="8" Type="Scene" Name="cut to 5 Pyramid Orbit" Path="Synthwave">
+  <Function ID="8" Type="Scene" Name="Target = Lake" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">7,117</FixtureVal>
+   <FixtureVal ID="0">9,55</FixtureVal>
   </Function>
-  <Function ID="9" Type="Scene" Name="cut to 6 Planet Orbit" Path="Synthwave">
+  <Function ID="9" Type="Scene" Name="Target = River" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">7,138</FixtureVal>
+   <FixtureVal ID="0">9,91</FixtureVal>
   </Function>
-  <Function ID="10" Type="Scene" Name="cut to 7 Flamingo Lake" Path="Synthwave">
+  <Function ID="10" Type="Scene" Name="Target = Coast" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">7,160</FixtureVal>
+   <FixtureVal ID="0">9,128</FixtureVal>
   </Function>
-  <Function ID="11" Type="Scene" Name="cut to 8 River Mouth" Path="Synthwave">
+  <Function ID="11" Type="Scene" Name="Target = Moon" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">7,181</FixtureVal>
+   <FixtureVal ID="0">9,164</FixtureVal>
   </Function>
-  <Function ID="12" Type="Scene" Name="cut to 9 Far Pyramids" Path="Synthwave">
+  <Function ID="12" Type="Scene" Name="Target = Sun" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">7,202</FixtureVal>
+   <FixtureVal ID="0">9,201</FixtureVal>
   </Function>
-  <Function ID="13" Type="Scene" Name="cut to 10 Coast Pass" Path="Synthwave">
+  <Function ID="13" Type="Scene" Name="Target = Planet" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">7,224</FixtureVal>
+   <FixtureVal ID="0">9,237</FixtureVal>
   </Function>
-  <Function ID="14" Type="Scene" Name="cut to 11 Flight" Path="Synthwave">
+  <Function ID="14" Type="Scene" Name="Height = Ground" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">7,245</FixtureVal>
+   <FixtureVal ID="0">10,0</FixtureVal>
   </Function>
-  <Function ID="15" Type="Scene" Name="Moon Phase = New" Path="Synthwave">
+  <Function ID="15" Type="Scene" Name="Height = 800 m" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">11,0</FixtureVal>
+   <FixtureVal ID="0">10,128</FixtureVal>
   </Function>
-  <Function ID="16" Type="Scene" Name="Moon Phase = Half" Path="Synthwave">
+  <Function ID="16" Type="Scene" Name="Height = Space" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">11,128</FixtureVal>
+   <FixtureVal ID="0">10,255</FixtureVal>
   </Function>
-  <Function ID="17" Type="Scene" Name="Moon Phase = Full" Path="Synthwave">
+  <Function ID="17" Type="Scene" Name="Moon Phase = New" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">11,255</FixtureVal>
+   <FixtureVal ID="0">13,0</FixtureVal>
   </Function>
-  <Function ID="18" Type="Scene" Name="Night = Day" Path="Synthwave">
+  <Function ID="18" Type="Scene" Name="Moon Phase = Half" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">16,0</FixtureVal>
+   <FixtureVal ID="0">13,128</FixtureVal>
   </Function>
-  <Function ID="19" Type="Scene" Name="Night = Sunset" Path="Synthwave">
+  <Function ID="19" Type="Scene" Name="Moon Phase = Full" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">16,64</FixtureVal>
+   <FixtureVal ID="0">13,255</FixtureVal>
   </Function>
-  <Function ID="20" Type="Scene" Name="Night = Twilight" Path="Synthwave">
+  <Function ID="20" Type="Scene" Name="Night = Day" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">16,128</FixtureVal>
+   <FixtureVal ID="0">18,0</FixtureVal>
   </Function>
-  <Function ID="21" Type="Scene" Name="Night = Night" Path="Synthwave">
+  <Function ID="21" Type="Scene" Name="Night = Sunset" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">16,255</FixtureVal>
+   <FixtureVal ID="0">18,64</FixtureVal>
   </Function>
-  <Function ID="22" Type="Scene" Name="Fog Hue = Pink" Path="Synthwave">
+  <Function ID="22" Type="Scene" Name="Night = Twilight" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">24,0</FixtureVal>
+   <FixtureVal ID="0">18,128</FixtureVal>
   </Function>
-  <Function ID="23" Type="Scene" Name="Fog Hue = Violet" Path="Synthwave">
+  <Function ID="23" Type="Scene" Name="Night = Night" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">24,84</FixtureVal>
+   <FixtureVal ID="0">18,255</FixtureVal>
   </Function>
-  <Function ID="24" Type="Scene" Name="Fog Hue = Cyan" Path="Synthwave">
+  <Function ID="24" Type="Scene" Name="Fog Hue = Pink" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">24,168</FixtureVal>
+   <FixtureVal ID="0">26,0</FixtureVal>
   </Function>
-  <Function ID="25" Type="Scene" Name="Fog Hue = Pink again" Path="Synthwave">
+  <Function ID="25" Type="Scene" Name="Fog Hue = Violet" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">24,255</FixtureVal>
+   <FixtureVal ID="0">26,84</FixtureVal>
   </Function>
-  <Function ID="26" Type="Scene" Name="Flight = Orbit" Path="Synthwave">
+  <Function ID="26" Type="Scene" Name="Fog Hue = Cyan" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">32,0</FixtureVal>
+   <FixtureVal ID="0">26,168</FixtureVal>
   </Function>
-  <Function ID="27" Type="Scene" Name="Flight = Approach" Path="Synthwave">
+  <Function ID="27" Type="Scene" Name="Fog Hue = Pink again" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">32,84</FixtureVal>
-  </Function>
-  <Function ID="28" Type="Scene" Name="Flight = Skim" Path="Synthwave">
-   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">32,168</FixtureVal>
-  </Function>
-  <Function ID="29" Type="Scene" Name="Flight = Hover" Path="Synthwave">
-   <Speed FadeIn="0" FadeOut="0" Duration="0"/>
-   <FixtureVal ID="0">32,255</FixtureVal>
+   <FixtureVal ID="0">26,255</FixtureVal>
   </Function>
   <ChannelsGroup ID="0" Name="Light and colour" Value="0">0,0,0,1,0,2,0,3,0,4,0,5</ChannelsGroup>
-  <ChannelsGroup ID="1" Name="Sky, sun and moon" Value="0">0,9,0,10,0,11,0,14,0,16,0,17,0,30,0,31</ChannelsGroup>
-  <ChannelsGroup ID="2" Name="Ground, water and things on it" Value="0">0,6,0,12,0,13,0,15,0,20</ChannelsGroup>
-  <ChannelsGroup ID="3" Name="Fog" Value="0">0,21,0,22,0,23,0,24,0,25,0,26,0,27,0,28,0,29</ChannelsGroup>
-  <ChannelsGroup ID="4" Name="Camera and Flight" Value="0">0,7,0,8,0,32,0,33,0,34,0,35</ChannelsGroup>
-  <ChannelsGroup ID="5" Name="Triggers" Value="0">0,18,0,19,0,36</ChannelsGroup>
+  <ChannelsGroup ID="1" Name="Sky, sun and moon" Value="0">0,11,0,12,0,13,0,16,0,18,0,19,0,32,0,33</ChannelsGroup>
+  <ChannelsGroup ID="2" Name="Ground, water and things on it" Value="0">0,6,0,14,0,15,0,17,0,22</ChannelsGroup>
+  <ChannelsGroup ID="3" Name="Fog" Value="0">0,23,0,24,0,25,0,26,0,27,0,28,0,29,0,30,0,31</ChannelsGroup>
+  <ChannelsGroup ID="4" Name="Camera" Value="0">0,7,0,8,0,9,0,10,0,34,0,35,0,36</ChannelsGroup>
+  <ChannelsGroup ID="5" Name="Triggers" Value="0">0,20,0,21,0,37</ChannelsGroup>
  </Engine>
  <VirtualConsole>
   <Frame Caption="Synthwave Planet" ID="1">
-   <WindowState Visible="True" X="0" Y="0" Width="1200" Height="1874"/>
+   <WindowState Visible="True" X="0" Y="0" Width="1200" Height="1886"/>
    <AllowResize>False</AllowResize>
    <ShowHeader>False</ShowHeader>
    <ShowEnableButton>False</ShowEnableButton>
@@ -214,56 +206,56 @@
      <WindowState Visible="True" X="12" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="255">
-      <Channel Fixture="0">9</Channel>
+      <Channel Fixture="0">11</Channel>
      </Level>
     </Slider>
     <Slider Caption="Moon Size" ID="11" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="80" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="255">
-      <Channel Fixture="0">10</Channel>
+      <Channel Fixture="0">12</Channel>
      </Level>
     </Slider>
     <Slider Caption="Moon Phase" ID="12" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="148" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="255">
-      <Channel Fixture="0">11</Channel>
+      <Channel Fixture="0">13</Channel>
      </Level>
     </Slider>
     <Slider Caption="Stars" ID="13" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="216" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="255">
-      <Channel Fixture="0">14</Channel>
+      <Channel Fixture="0">16</Channel>
      </Level>
     </Slider>
     <Slider Caption="Night" ID="14" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="284" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="0">
-      <Channel Fixture="0">16</Channel>
+      <Channel Fixture="0">18</Channel>
      </Level>
     </Slider>
     <Slider Caption="Nebula" ID="15" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="352" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="255">
-      <Channel Fixture="0">17</Channel>
+      <Channel Fixture="0">19</Channel>
      </Level>
     </Slider>
     <Slider Caption="Eclipse" ID="16" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="420" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="0">
-      <Channel Fixture="0">30</Channel>
+      <Channel Fixture="0">32</Channel>
      </Level>
     </Slider>
     <Slider Caption="Star Drift" ID="17" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="488" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="0">
-      <Channel Fixture="0">31</Channel>
+      <Channel Fixture="0">33</Channel>
      </Level>
     </Slider>
     <SoloFrame Caption="Moon Phase" ID="18">
@@ -273,17 +265,17 @@
      <ShowEnableButton>False</ShowEnableButton>
      <Button Caption="New" ID="19">
       <WindowState Visible="True" X="4" Y="18" Width="96" Height="24"/>
-      <Function ID="15"/>
+      <Function ID="17"/>
       <Action>Toggle</Action>
      </Button>
      <Button Caption="Half" ID="20">
       <WindowState Visible="True" X="104" Y="18" Width="96" Height="24"/>
-      <Function ID="16"/>
+      <Function ID="18"/>
       <Action>Toggle</Action>
      </Button>
      <Button Caption="Full" ID="21">
       <WindowState Visible="True" X="204" Y="18" Width="96" Height="24"/>
-      <Function ID="17"/>
+      <Function ID="19"/>
       <Action>Toggle</Action>
      </Button>
     </SoloFrame>
@@ -294,22 +286,22 @@
      <ShowEnableButton>False</ShowEnableButton>
      <Button Caption="Day" ID="23">
       <WindowState Visible="True" X="4" Y="18" Width="96" Height="24"/>
-      <Function ID="18"/>
+      <Function ID="20"/>
       <Action>Toggle</Action>
      </Button>
      <Button Caption="Sunset" ID="24">
       <WindowState Visible="True" X="104" Y="18" Width="96" Height="24"/>
-      <Function ID="19"/>
+      <Function ID="21"/>
       <Action>Toggle</Action>
      </Button>
      <Button Caption="Twilight" ID="25">
       <WindowState Visible="True" X="204" Y="18" Width="96" Height="24"/>
-      <Function ID="20"/>
+      <Function ID="22"/>
       <Action>Toggle</Action>
      </Button>
      <Button Caption="Night" ID="26">
       <WindowState Visible="True" X="304" Y="18" Width="96" Height="24"/>
-      <Function ID="21"/>
+      <Function ID="23"/>
       <Action>Toggle</Action>
      </Button>
     </SoloFrame>
@@ -330,28 +322,28 @@
      <WindowState Visible="True" X="80" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="255">
-      <Channel Fixture="0">12</Channel>
+      <Channel Fixture="0">14</Channel>
      </Level>
     </Slider>
     <Slider Caption="Mesh Edges" ID="30" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="148" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="255">
-      <Channel Fixture="0">13</Channel>
+      <Channel Fixture="0">15</Channel>
      </Level>
     </Slider>
     <Slider Caption="Water Reflection" ID="31" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="216" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="255">
-      <Channel Fixture="0">15</Channel>
+      <Channel Fixture="0">17</Channel>
      </Level>
     </Slider>
     <Slider Caption="Flamingos" ID="32" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="284" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="255">
-      <Channel Fixture="0">20</Channel>
+      <Channel Fixture="0">22</Channel>
      </Level>
     </Slider>
    </Frame>
@@ -364,63 +356,63 @@
      <WindowState Visible="True" X="12" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="89">
-      <Channel Fixture="0">21</Channel>
+      <Channel Fixture="0">23</Channel>
      </Level>
     </Slider>
     <Slider Caption="Fog Height" ID="35" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="80" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="105">
-      <Channel Fixture="0">22</Channel>
+      <Channel Fixture="0">24</Channel>
      </Level>
     </Slider>
     <Slider Caption="Fog Glow" ID="36" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="148" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="76">
-      <Channel Fixture="0">23</Channel>
+      <Channel Fixture="0">25</Channel>
      </Level>
     </Slider>
     <Slider Caption="Fog Hue" ID="37" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="216" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="0">
-      <Channel Fixture="0">24</Channel>
+      <Channel Fixture="0">26</Channel>
      </Level>
     </Slider>
     <Slider Caption="Fog Patches" ID="38" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="284" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="153">
-      <Channel Fixture="0">25</Channel>
+      <Channel Fixture="0">27</Channel>
      </Level>
     </Slider>
     <Slider Caption="Fog Size" ID="39" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="352" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="64">
-      <Channel Fixture="0">26</Channel>
+      <Channel Fixture="0">28</Channel>
      </Level>
     </Slider>
     <Slider Caption="Fog Wind" ID="40" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="420" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="64">
-      <Channel Fixture="0">27</Channel>
+      <Channel Fixture="0">29</Channel>
      </Level>
     </Slider>
     <Slider Caption="Fog Pump" ID="41" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="488" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="128">
-      <Channel Fixture="0">28</Channel>
+      <Channel Fixture="0">30</Channel>
      </Level>
     </Slider>
     <Slider Caption="Haze" ID="42" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="556" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="255">
-      <Channel Fixture="0">29</Channel>
+      <Channel Fixture="0">31</Channel>
      </Level>
     </Slider>
     <SoloFrame Caption="Fog Hue" ID="43">
@@ -430,168 +422,171 @@
      <ShowEnableButton>False</ShowEnableButton>
      <Button Caption="Pink" ID="44">
       <WindowState Visible="True" X="4" Y="18" Width="96" Height="24"/>
-      <Function ID="22"/>
+      <Function ID="24"/>
       <Action>Toggle</Action>
      </Button>
      <Button Caption="Violet" ID="45">
       <WindowState Visible="True" X="104" Y="18" Width="96" Height="24"/>
-      <Function ID="23"/>
+      <Function ID="25"/>
       <Action>Toggle</Action>
      </Button>
      <Button Caption="Cyan" ID="46">
       <WindowState Visible="True" X="204" Y="18" Width="96" Height="24"/>
-      <Function ID="24"/>
+      <Function ID="26"/>
       <Action>Toggle</Action>
      </Button>
      <Button Caption="Pink again" ID="47">
       <WindowState Visible="True" X="304" Y="18" Width="96" Height="24"/>
-      <Function ID="25"/>
+      <Function ID="27"/>
       <Action>Toggle</Action>
      </Button>
     </SoloFrame>
    </Frame>
-   <Frame Caption="Camera and Flight" ID="48">
-    <WindowState Visible="True" X="12" Y="1312" Width="436" Height="418"/>
+   <Frame Caption="Camera" ID="48">
+    <WindowState Visible="True" X="12" Y="1312" Width="736" Height="430"/>
     <AllowResize>False</AllowResize>
     <ShowHeader>True</ShowHeader>
     <ShowEnableButton>False</ShowEnableButton>
-    <Slider Caption="Camera" ID="49" WidgetStyle="Slider" InvertedAppearance="false">
+    <Slider Caption="Camera Speed" ID="49" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="12" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
-     <Level LowLimit="0" HighLimit="255" Value="0">
+     <Level LowLimit="0" HighLimit="255" Value="64">
       <Channel Fixture="0">7</Channel>
      </Level>
     </Slider>
-    <Slider Caption="Camera Speed" ID="50" WidgetStyle="Slider" InvertedAppearance="false">
+    <Slider Caption="Path" ID="50" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="80" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
-     <Level LowLimit="0" HighLimit="255" Value="64">
+     <Level LowLimit="0" HighLimit="255" Value="0">
       <Channel Fixture="0">8</Channel>
      </Level>
     </Slider>
-    <Slider Caption="Flight" ID="51" WidgetStyle="Slider" InvertedAppearance="false">
+    <Slider Caption="Target" ID="51" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="148" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="0">
-      <Channel Fixture="0">32</Channel>
+      <Channel Fixture="0">9</Channel>
      </Level>
     </Slider>
-    <Slider Caption="Boost" ID="52" WidgetStyle="Slider" InvertedAppearance="false">
+    <Slider Caption="Height" ID="52" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="216" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
-     <Level LowLimit="0" HighLimit="255" Value="0">
-      <Channel Fixture="0">33</Channel>
+     <Level LowLimit="0" HighLimit="255" Value="76">
+      <Channel Fixture="0">10</Channel>
      </Level>
     </Slider>
-    <Slider Caption="Cut Blend" ID="53" WidgetStyle="Slider" InvertedAppearance="false">
+    <Slider Caption="Fade Time" ID="53" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="284" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
      <Level LowLimit="0" HighLimit="255" Value="128">
       <Channel Fixture="0">34</Channel>
      </Level>
     </Slider>
-    <Slider Caption="Camera Energy" ID="54" WidgetStyle="Slider" InvertedAppearance="false">
+    <Slider Caption="Takeover Pause" ID="54" WidgetStyle="Slider" InvertedAppearance="false">
      <WindowState Visible="True" X="352" Y="28" Width="64" Height="230"/>
      <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
-     <Level LowLimit="0" HighLimit="255" Value="76">
+     <Level LowLimit="0" HighLimit="255" Value="84">
       <Channel Fixture="0">35</Channel>
      </Level>
     </Slider>
-    <SoloFrame Caption="shots" ID="55">
-     <WindowState Visible="True" X="12" Y="270" Width="412" Height="84"/>
+    <Slider Caption="Camera Energy" ID="55" WidgetStyle="Slider" InvertedAppearance="false">
+     <WindowState Visible="True" X="420" Y="28" Width="64" Height="230"/>
+     <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
+     <Level LowLimit="0" HighLimit="255" Value="76">
+      <Channel Fixture="0">36</Channel>
+     </Level>
+    </Slider>
+    <SoloFrame Caption="Path" ID="56">
+     <WindowState Visible="True" X="12" Y="270" Width="712" Height="46"/>
      <AllowResize>False</AllowResize>
      <ShowHeader>True</ShowHeader>
      <ShowEnableButton>False</ShowEnableButton>
-     <Button Caption="0 Plaza View" ID="56">
-      <WindowState Visible="True" X="4" Y="22" Width="76" Height="28"/>
+     <Button Caption="Orbit" ID="57">
+      <WindowState Visible="True" X="4" Y="18" Width="96" Height="24"/>
       <Function ID="3"/>
       <Action>Toggle</Action>
      </Button>
-     <Button Caption="1 River Skim" ID="57">
-      <WindowState Visible="True" X="82" Y="22" Width="76" Height="28"/>
+     <Button Caption="Follow the land" ID="58">
+      <WindowState Visible="True" X="104" Y="18" Width="96" Height="24"/>
       <Function ID="4"/>
       <Action>Toggle</Action>
      </Button>
-     <Button Caption="2 Pyramid Hero" ID="58">
-      <WindowState Visible="True" X="160" Y="22" Width="76" Height="28"/>
+     <Button Caption="Rise and descend" ID="59">
+      <WindowState Visible="True" X="204" Y="18" Width="96" Height="24"/>
       <Function ID="5"/>
       <Action>Toggle</Action>
      </Button>
-     <Button Caption="3 Moon Watch" ID="59">
-      <WindowState Visible="True" X="238" Y="22" Width="76" Height="28"/>
+     <Button Caption="Vantage" ID="60">
+      <WindowState Visible="True" X="304" Y="18" Width="96" Height="24"/>
       <Function ID="6"/>
       <Action>Toggle</Action>
      </Button>
-     <Button Caption="4 Pole Flyover" ID="60">
-      <WindowState Visible="True" X="316" Y="22" Width="76" Height="28"/>
-      <Function ID="7"/>
-      <Action>Toggle</Action>
-     </Button>
-     <Button Caption="5 Pyramid Orbit" ID="61">
-      <WindowState Visible="True" X="4" Y="52" Width="76" Height="28"/>
-      <Function ID="8"/>
-      <Action>Toggle</Action>
-     </Button>
-     <Button Caption="6 Planet Orbit" ID="62">
-      <WindowState Visible="True" X="82" Y="52" Width="76" Height="28"/>
-      <Function ID="9"/>
-      <Action>Toggle</Action>
-     </Button>
-     <Button Caption="7 Flamingo Lake" ID="63">
-      <WindowState Visible="True" X="160" Y="52" Width="76" Height="28"/>
-      <Function ID="10"/>
-      <Action>Toggle</Action>
-     </Button>
-     <Button Caption="8 River Mouth" ID="64">
-      <WindowState Visible="True" X="238" Y="52" Width="76" Height="28"/>
-      <Function ID="11"/>
-      <Action>Toggle</Action>
-     </Button>
-     <Button Caption="9 Far Pyramids" ID="65">
-      <WindowState Visible="True" X="316" Y="52" Width="76" Height="28"/>
-      <Function ID="12"/>
-      <Action>Toggle</Action>
-     </Button>
-     <Button Caption="10 Coast Pass" ID="66">
-      <WindowState Visible="True" X="4" Y="82" Width="76" Height="28"/>
-      <Function ID="13"/>
-      <Action>Toggle</Action>
-     </Button>
-     <Button Caption="11 Flight" ID="67">
-      <WindowState Visible="True" X="82" Y="82" Width="76" Height="28"/>
-      <Function ID="14"/>
-      <Action>Toggle</Action>
-     </Button>
     </SoloFrame>
-    <SoloFrame Caption="Flight" ID="68">
-     <WindowState Visible="True" X="12" Y="362" Width="412" Height="46"/>
+    <SoloFrame Caption="Target" ID="61">
+     <WindowState Visible="True" X="12" Y="322" Width="712" Height="46"/>
      <AllowResize>False</AllowResize>
      <ShowHeader>True</ShowHeader>
      <ShowEnableButton>False</ShowEnableButton>
-     <Button Caption="Orbit" ID="69">
+     <Button Caption="Pyramids" ID="62">
       <WindowState Visible="True" X="4" Y="18" Width="96" Height="24"/>
-      <Function ID="26"/>
+      <Function ID="7"/>
       <Action>Toggle</Action>
      </Button>
-     <Button Caption="Approach" ID="70">
+     <Button Caption="Lake" ID="63">
       <WindowState Visible="True" X="104" Y="18" Width="96" Height="24"/>
-      <Function ID="27"/>
+      <Function ID="8"/>
       <Action>Toggle</Action>
      </Button>
-     <Button Caption="Skim" ID="71">
+     <Button Caption="River" ID="64">
       <WindowState Visible="True" X="204" Y="18" Width="96" Height="24"/>
-      <Function ID="28"/>
+      <Function ID="9"/>
       <Action>Toggle</Action>
      </Button>
-     <Button Caption="Hover" ID="72">
+     <Button Caption="Coast" ID="65">
       <WindowState Visible="True" X="304" Y="18" Width="96" Height="24"/>
-      <Function ID="29"/>
+      <Function ID="10"/>
+      <Action>Toggle</Action>
+     </Button>
+     <Button Caption="Moon" ID="66">
+      <WindowState Visible="True" X="404" Y="18" Width="96" Height="24"/>
+      <Function ID="11"/>
+      <Action>Toggle</Action>
+     </Button>
+     <Button Caption="Sun" ID="67">
+      <WindowState Visible="True" X="504" Y="18" Width="96" Height="24"/>
+      <Function ID="12"/>
+      <Action>Toggle</Action>
+     </Button>
+     <Button Caption="Planet" ID="68">
+      <WindowState Visible="True" X="604" Y="18" Width="96" Height="24"/>
+      <Function ID="13"/>
+      <Action>Toggle</Action>
+     </Button>
+    </SoloFrame>
+    <SoloFrame Caption="Height" ID="69">
+     <WindowState Visible="True" X="12" Y="374" Width="712" Height="46"/>
+     <AllowResize>False</AllowResize>
+     <ShowHeader>True</ShowHeader>
+     <ShowEnableButton>False</ShowEnableButton>
+     <Button Caption="Ground" ID="70">
+      <WindowState Visible="True" X="4" Y="18" Width="96" Height="24"/>
+      <Function ID="14"/>
+      <Action>Toggle</Action>
+     </Button>
+     <Button Caption="800 m" ID="71">
+      <WindowState Visible="True" X="104" Y="18" Width="96" Height="24"/>
+      <Function ID="15"/>
+      <Action>Toggle</Action>
+     </Button>
+     <Button Caption="Space" ID="72">
+      <WindowState Visible="True" X="204" Y="18" Width="96" Height="24"/>
+      <Function ID="16"/>
       <Action>Toggle</Action>
      </Button>
     </SoloFrame>
    </Frame>
    <Frame Caption="Triggers" ID="73">
-    <WindowState Visible="True" X="12" Y="1742" Width="396" Height="120"/>
+    <WindowState Visible="True" X="12" Y="1754" Width="396" Height="120"/>
     <AllowResize>False</AllowResize>
     <ShowHeader>True</ShowHeader>
     <ShowEnableButton>False</ShowEnableButton>

@@ -28,6 +28,10 @@ Run it inside Blender (Text Editor > Run Script, or
   baseline, triggers fire on a rise through 128. Settings through `configure_artnet()` (universe 0, DMX start address 1, on);
   a failed bind is reported in artnet_state(), never fatal. docs/artnet-qlc.md.
 
+- Takeover (GLOSSARY, docs/handover/path-camera.md section 3): a touch from the scene page or Art-Net makes that address
+  the user's; Magic's (OSC) latest value for it is kept, not applied, until /vj/takeover (scene seconds, 20 by
+  default) has passed with no touch; then Magic's kept value is applied. Triggers are events and always pass.
+
 Re-running the script replaces the previous instance. The scaling functions
 (scale_wire, wire_to_scene) need no bpy and are unit tested in
 blender/tests/test_bridge_scaling.py.
@@ -201,6 +205,48 @@ def wire_to_scene(address, args):
     return None if scaled is None else [scaled]
 
 
+TOUCH_SOURCES = ("web", "artnet")      # the user's hand: the scene page and a desk or QLC+; everything else steers as music
+TAKEOVER_DEFAULT = 20.0                  # s, when the scene has no vj_takeover yet
+
+
+class Takeover:
+    """Whose value an address takes. Pure: the clock is passed in, so it is tested without Blender or waiting."""
+
+    def __init__(self):
+        self.touched = {}        # address -> time of the last touch
+        self.music = {}          # address -> Magic's latest args while the address is the user's
+
+    def admit(self, latest, source, now, pause, is_trigger=lambda addr: False):
+        """The part of `latest` to apply now. A touch claims its addresses; music for a claimed address is kept, not applied."""
+        out = {}
+        for addr, args in latest.items():
+            if is_trigger(addr):
+                out[addr] = args
+            elif source in TOUCH_SOURCES:
+                self.touched[addr] = now
+                out[addr] = args
+            elif addr in self.touched and now - self.touched[addr] < pause:
+                self.music[addr] = args
+            else:
+                self.touched.pop(addr, None)
+                out[addr] = args
+        return out
+
+    def release(self, now, pause):
+        """Addresses whose pause has passed with no touch: they are the music's again. Returns Magic's kept values to apply."""
+        back = {}
+        for addr, t in list(self.touched.items()):
+            if now - t >= pause:
+                del self.touched[addr]
+                if addr in self.music:
+                    back[addr] = self.music.pop(addr)
+        return back
+
+    def state(self, now, pause):
+        """address -> seconds until the music steers it again."""
+        return {a: round(max(pause - (now - t), 0.0), 1) for a, t in self.touched.items()}
+
+
 def high(args):
     v = next((a for a in args if isinstance(a, (int, float)) and not isinstance(a, bool)), 0.0)
     return v >= 0.5
@@ -231,6 +277,8 @@ class Bridge:
         self.pending = {}         # trigger address -> (args, source): the fall, applied after a frame change
         self.triggers = {}        # property name -> is it a trigger
         self.latest_art = {}      # address -> args from Art-Net, latest wins within a tick
+        self.takeover = Takeover()
+        self.clock = time.monotonic
         rows = artnet_input.channel_map((a, v[0], v[1], v[2]) for a, v in SCALES.items())
         self.artnet = artnet_input.ArtNetInput(artnet_input.DmxDecoder(rows), artnet_host, artnet_port, artnet_enabled)
 
@@ -276,6 +324,9 @@ class Bridge:
                 else:
                     self.latest[addr] = args
         self.drain_artnet(now)
+        back = self.takeover.release(self.clock(), self.takeover_pause())
+        if back:
+            self.write(back, "osc")
         self.release()
         if self.latest:
             self.apply(self.latest)
@@ -368,7 +419,22 @@ class Bridge:
             args, source = self.pending.pop(addr)
             self.apply({addr: args}, source)
 
+    def takeover_pause(self):
+        try:
+            return float(bpy.context.scene.get("vj_takeover", TAKEOVER_DEFAULT))
+        except AttributeError:
+            return TAKEOVER_DEFAULT
+
+    def takeover_state(self):
+        return self.takeover.state(self.clock(), self.takeover_pause())
+
     def apply(self, latest, source="osc"):
+        """Takeover first (a touch claims, music for a claimed address waits), then the scene write."""
+        latest = self.takeover.admit(latest, source, self.clock(), self.takeover_pause(), lambda a: self.is_trigger(prop_name(a)))
+        if latest:
+            self.write(latest, source)
+
+    def write(self, latest, source="osc"):
         scene = bpy.context.scene
         for addr, args in latest.items():
             v = next((a for a in args if isinstance(a, (int, float)) and not isinstance(a, bool)), None)

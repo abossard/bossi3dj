@@ -4,7 +4,7 @@
     python3 osc/artnet_send.py [HOST[:PORT]] [--universe 0] [--start 1] [--frames 5] [--rate 20] [--no-baseline] [--broadcast] SET ...
 
 HOST defaults to 127.0.0.1, PORT to 6454. A SET is `/vj/fog=0.8` (the row's wire value: 0..1 for a float, 1 for a trigger at full
-strength, the shot number for /vj/cam) or `N=V` (DMX channel N of the universe, value 0..255). Every frame holds all channels of the
+strength, the index for an index row such as /vj/target) or `N=V` (DMX channel N of the universe, value 0..255). Every frame holds all channels of the
 fixture (qlc/bossi3dj-Synthwave-Planet.qxf) at their defaults from the DMX start address on, with the SETs on top, like a desk does.
 The bridge takes the first frame it sees as its baseline and applies only what changes after it, so the sender first sends one
 frame of defaults (--no-baseline skips it) and then --frames frames with the SETs. A trigger that was SET gets one last frame with
@@ -22,10 +22,11 @@ import artnet_input  # noqa: E402
 import qlc_fixture  # noqa: E402
 
 
-def dmx_value(row, wire, shots=12):
-    """The DMX value a wire value stands for (the inverse of artnet_input's mapping; a shot number gives the middle of its range)."""
-    if row["address"] == "/vj/cam":
-        lo, hi = qlc_fixture.shot_ranges(shots)[min(int(wire), shots - 1)]
+def dmx_value(row, wire):
+    """The DMX value a wire value stands for (the inverse of artnet_input's mapping; an index gives the middle of its range)."""
+    if row["kind"] == "int":
+        n = int(row["max"] - row["min"]) + 1
+        lo, hi = qlc_fixture.index_ranges(n)[min(max(int(round(wire - row["min"])), 0), n - 1)]
         return (lo + hi) // 2
     if row["kind"] == "trigger":
         return 255 if wire >= 0.5 else 0

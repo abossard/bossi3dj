@@ -75,20 +75,22 @@ class WorkspaceTests(unittest.TestCase):
                 self.assertEqual(ROWS[int(vals[0])]["label"], b.get("Caption"))
                 self.assertEqual(vals[1], "255")
 
-    def test_one_camera_button_per_named_shot_cutting_to_that_shot(self):
+    def test_one_button_per_stop_and_an_index_button_picks_its_index(self):
         root = self.root()
         scenes = {f.get("ID"): f for f in root.iter(W + "Function") if f.get("Type")}
-        solo = next(f for f in root.iter(W + "SoloFrame") if f.get("Caption") == "shots")
-        buttons = solo.findall(W + "Button")
-        cam = next(r for r in ROWS if r["address"] == "/vj/cam")
-        self.assertEqual([b.get("Caption") for b in buttons], ["%d %s" % (s["index"], s["name"]) for s in cam["shots"]["planet"]])
-        d = an.DmxDecoder(an.channel_map((a, v[0], v[1], v[2]) for a, v in bridge.SCALES.items()), shots=len(buttons))
-        cam_channel = [r["address"] for r in ROWS].index("/vj/cam")
-        for i, b in enumerate(buttons):
-            ch, val = (int(x) for x in scenes[b.find(W + "Function").get("ID")].find(W + "FixtureVal").text.split(","))
-            with self.subTest(shot=b.get("Caption")):
-                self.assertEqual(ch, cam_channel)
-                self.assertEqual(d.wire(("/vj/cam", "int", 0, 11), val), float(i))
+        solos = {f.get("Caption"): f for f in root.iter(W + "SoloFrame")}
+        d = an.DmxDecoder(an.channel_map((a, v[0], v[1], v[2]) for a, v in bridge.SCALES.items()))
+        for i, r in enumerate(ROWS):
+            if not qf.ranged(r):
+                continue
+            buttons = solos[r["label"]].findall(W + "Button")
+            with self.subTest(address=r["address"]):
+                self.assertEqual([b.get("Caption") for b in buttons], [st["name"] for st in r["stops"]])
+                for b, st in zip(buttons, r["stops"]):
+                    ch, val = (int(x) for x in scenes[b.find(W + "Function").get("ID")].find(W + "FixtureVal").text.split(","))
+                    self.assertEqual(ch, i)
+                    if r["kind"] == "int":
+                        self.assertEqual(d.wire((r["address"], "int", r["min"], r["max"]), val), float(st["wire"]))
 
     def test_ids_are_unique_and_every_button_function_exists(self):
         root = self.root()
@@ -153,12 +155,6 @@ class FixtureFormatTests(unittest.TestCase):
                     self.assertEqual([(lo, hi) for lo, hi, _, _ in caps], [(0, 127), (128, 255)])
                     self.assertEqual(caps[0][2], "off")
                     self.assertIn(r["plain"], caps[1][2])
-                elif r["address"] == "/vj/cam":
-                    shots = r["shots"]["planet"]
-                    self.assertEqual(len(caps), len(shots))
-                    for (lo, hi, text, attrs), sh in zip(caps, shots):
-                        self.assertEqual(text, "%d %s: %s" % (sh["index"], sh["name"], sh["shows"]))
-                        self.assertEqual((attrs["Preset"], attrs["Res1"]), ("GoboMacro", "bossi3dj/cam-planet-%d.png" % sh["index"]))
                 elif qf.only_ends(r):
                     a, b = r["stops"]
                     self.assertEqual([(lo, hi, t) for lo, hi, t, _ in caps], [(0, 255, "from %s (0) to %s (255): %s" % (a["name"], b["name"], r["plain"]))])
@@ -172,7 +168,7 @@ class FixtureFormatTests(unittest.TestCase):
                     self.assertEqual(caps[0][3].get("Preset"), "SlowToFast" if r["address"] in qf.SPEED_ROWS else None)
 
     def test_groups(self):
-        want = {"/vj/intensity": "Intensity", "/vj/hue": "Colour", "/vj/fog_hue": "Colour", "/vj/strobe": "Shutter", "/vj/cam": "Gobo",
+        want = {"/vj/intensity": "Intensity", "/vj/hue": "Colour", "/vj/fog_hue": "Colour", "/vj/strobe": "Shutter", "/vj/path": "Effect", "/vj/target": "Effect",
                 "/vj/cam_speed": "Speed", "/vj/fog_speed": "Speed", "/vj/star_speed": "Speed", "/vj/grid_speed": "Speed", "/vj/level": "Effect", "/vj/shock": "Effect"}
         by = {c.get("Name"): c.find(NS + "Group").text for c in parsed().findall(NS + "Channel")}
         for address, group in want.items():
@@ -180,14 +176,12 @@ class FixtureFormatTests(unittest.TestCase):
                 row = next(r for r in ROWS if r["address"] == address)
                 self.assertEqual(by[qf.channel_name(row)], group)
 
-    def test_every_gobo_picture_a_capability_names_exists(self):
-        for c in parsed().iter(NS + "Capability"):
-            if c.get("Preset") == "GoboMacro":
-                with self.subTest(res=c.get("Res1")):
-                    self.assertTrue(os.path.exists(os.path.join(qf.QLC_DIR, "gobos", c.get("Res1"))))
+    def test_no_channel_names_a_picture(self):
+        """The camera pictures went with the 12 shots; the Path Camera's targets are names only."""
+        self.assertFalse([c for c in parsed().iter(NS + "Capability") if c.get("Preset") == "GoboMacro"])
 
     def test_defaults_are_the_contract_defaults(self):
-        cases = {"/vj/level": 128, "/vj/fog": 89, "/vj/intensity": 128, "/vj/shock": 0, "/vj/cam": 0, "/vj/night": 0, "/vj/pyramids": 255}
+        cases = {"/vj/level": 128, "/vj/fog": 89, "/vj/intensity": 128, "/vj/shock": 0, "/vj/path": 0, "/vj/target": 0, "/vj/height": 76, "/vj/night": 0, "/vj/pyramids": 255}
         by = {c.get("Name"): int(c.get("Default")) for c in parsed().findall(NS + "Channel")}
         for address, want in cases.items():
             with self.subTest(address=address):
@@ -205,8 +199,12 @@ class StopTests(unittest.TestCase):
                 self.assertEqual(ranges[-1][1], 255)
                 for (_, hi, _), (lo, _, _) in zip(ranges, ranges[1:]):
                     self.assertEqual(lo, hi + 1)
+                d = an.DmxDecoder(an.channel_map((a, v[0], v[1], v[2]) for a, v in bridge.SCALES.items()))
                 for lo, hi, st in ranges:
-                    self.assertTrue(lo <= round(st["wire"] * 255) <= hi)
+                    if r["kind"] == "int":                       # an index: every value of its range decodes to it
+                        self.assertEqual({d.wire((r["address"], "int", r["min"], r["max"]), v) for v in (lo, hi)}, {float(st["wire"])})
+                    else:
+                        self.assertTrue(lo <= round(st["wire"] * 255) <= hi)
 
     def test_a_channel_with_only_its_two_ends_as_stops_keeps_one_range_and_has_no_stop_buttons(self):
         ends = [r["address"] for r in ROWS if qf.only_ends(r)]
@@ -225,8 +223,9 @@ class StopTests(unittest.TestCase):
     def test_the_stops_the_contract_names(self):
         by = {r["address"]: [(st["wire"], st["name"]) for st in r["stops"]] for r in self.WITH_STOPS}
         self.assertEqual(by["/vj/night"], [(0, "Day"), (0.25, "Sunset"), (0.5, "Twilight"), (1, "Night")])
-        self.assertEqual(by["/vj/flight"], [(0, "Orbit"), (0.33, "Approach"), (0.66, "Skim"), (1, "Hover")])
         self.assertEqual(by["/vj/moon_phase"], [(0, "New"), (0.5, "Half"), (1, "Full")])
+        self.assertEqual(by["/vj/path"], [(0, "Orbit"), (1, "Follow the land"), (2, "Rise and descend"), (3, "Vantage")])
+        self.assertEqual([n for _, n in by["/vj/target"]], ["Pyramids", "Lake", "River", "Coast", "Moon", "Sun", "Planet"])
 
     def test_fog_hue_swatches_are_the_build_scripts_fog_ramp_in_srgb(self):
         import re
@@ -241,22 +240,22 @@ class StopTests(unittest.TestCase):
         self.assertEqual([st["colour"] for st in row["stops"]], ["#%02x%02x%02x" % tuple(round(255 * srgb(v)) for v in c) for _, c in ramp])
 
 
-class ShotRangeTests(unittest.TestCase):
+class IndexRangeTests(unittest.TestCase):
     def test_ranges_are_what_the_decoder_decodes(self):
-        for n in (12, 7, 1, 5):
-            with self.subTest(shots=n):
-                d = an.DmxDecoder(an.channel_map((a, v[0], v[1], v[2]) for a, v in bridge.SCALES.items()), shots=n)
-                for i, (lo, hi) in enumerate(qf.shot_ranges(n)):
+        for n in (4, 7, 1, 12):
+            with self.subTest(indices=n):
+                d = an.DmxDecoder([])
+                for i, (lo, hi) in enumerate(qf.index_ranges(n)):
                     for v in (lo, hi):
-                        self.assertEqual(d.wire(("/vj/cam", "int", 0, 11), v), float(i))
-                self.assertEqual(qf.shot_ranges(n)[0][0], 0)
-                self.assertEqual(qf.shot_ranges(n)[-1][1], 255)
+                        self.assertEqual(d.wire(("/vj/x", "int", 0, n - 1), v), float(i))
+                self.assertEqual(qf.index_ranges(n)[0][0], 0)
+                self.assertEqual(qf.index_ranges(n)[-1][1], 255)
 
 
 class SenderTests(unittest.TestCase):
     def test_build_puts_defaults_then_the_sets(self):
         base, _ = artnet_send.build([], 1)
-        changed, triggers = artnet_send.build(["/vj/fog=0.8", "/vj/shock=1", "/vj/cam=3", "500=7"], 1)
+        changed, triggers = artnet_send.build(["/vj/fog=0.8", "/vj/shock=1", "/vj/target=3", "500=7"], 1)
         order = [r["address"] for r in ROWS]
         at = lambda a, start=1: start - 1 + order.index(a)
         self.assertEqual(changed[at("/vj/fog")], 204)
@@ -274,12 +273,12 @@ class SenderTests(unittest.TestCase):
 
     def test_what_the_sender_sends_the_decoder_reads_back(self):
         """A frame of defaults, then the sets: the decoder sees exactly the sets as changes."""
-        cases = [(["/vj/fog=0.8"], {"/vj/fog": 0.8}), (["/vj/cam=3"], {"/vj/cam": 3.0}), (["/vj/shock=1"], {"/vj/shock": 1.5}),
+        cases = [(["/vj/fog=0.8"], {"/vj/fog": 0.8}), (["/vj/target=3"], {"/vj/target": 3.0}), (["/vj/path=2"], {"/vj/path": 2.0}), (["/vj/shock=1"], {"/vj/shock": 1.5}),
                  (["/vj/intensity=2"], {"/vj/intensity": 1.0})]
         for sets, want in cases:
             for start in (1, 33):
                 with self.subTest(sets=sets, start=start):
-                    d = an.DmxDecoder(an.channel_map((a, v[0], v[1], v[2]) for a, v in bridge.SCALES.items()), shots=12, address=start)
+                    d = an.DmxDecoder(an.channel_map((a, v[0], v[1], v[2]) for a, v in bridge.SCALES.items()), address=start)
                     base, _ = artnet_send.build([], start)
                     changed, _ = artnet_send.build(sets, start)
                     d.feed(0, base)
@@ -287,6 +286,25 @@ class SenderTests(unittest.TestCase):
                     self.assertEqual(sorted(got), sorted(want))
                     for a, w in want.items():
                         self.assertAlmostEqual(got[a], w, places=2)
+
+    def test_the_cli_sends_to_a_test_port_and_the_decoder_reads_the_changes(self):
+        """The sender end to end on an ephemeral port (never 6454 or 9201): baseline, five frames, the trigger's release."""
+        import contextlib
+        import io
+        inp = an.ArtNetInput(an.DmxDecoder(an.channel_map((a, v[0], v[1], v[2]) for a, v in bridge.SCALES.items())), "127.0.0.1", 0)
+        self.addCleanup(inp.close)
+        with contextlib.redirect_stdout(io.StringIO()):
+            artnet_send.main(["127.0.0.1:%d" % inp.bound_port(), "/vj/target=4", "/vj/height=0.5", "/vj/shock=1", "--rate", "200"])
+        import time
+        time.sleep(0.05)
+        changes = [c for _src, cs in inp.poll() for c in cs]
+        got = {}
+        for a, v in changes:
+            got.setdefault(a, []).append(round(v, 3))
+        self.assertEqual(got["/vj/target"], [4.0])
+        self.assertEqual(got["/vj/height"], [0.502])    # 128 of 255
+        self.assertEqual(got["/vj/shock"], [1.5, 0.0])
+        self.assertEqual(inp.state()["packets"], 7)
 
     def test_a_non_blender_address_is_refused(self):
         with self.assertRaises(SystemExit):

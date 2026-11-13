@@ -8,9 +8,10 @@
 
 One fixture, one mode, one DMX channel per address the Blender scene reacts to, in contract order (the order of
 blender/blender_osc_bridge.py's SCALES and of blender/artnet_input.py's channel map). The channel's capabilities carry the
-rows' plain sentences; /vj/cam has one range per shot of the planet scene (the island has 7 shots: its ranges are in the
-doc). The workspace patches the fixture once (universe 1, address 1) and holds a virtual console: one slider per slider
-channel in the manual's groups, a Flash button per trigger, one button per named planet shot (docs/artnet-qlc.md says which
+rows' plain sentences; a row with `stops` gets named ranges (an index row like /vj/path or /vj/target one equal range per
+index, the split blender/artnet_input.py decodes). The workspace patches the fixture once (universe 1, address 1) and holds a
+virtual console: one slider per slider channel in the manual's groups, a Flash button per trigger, a row of buttons per
+channel with named stops (docs/artnet-qlc.md says which
 parts of the format were checked against a workspace QLC+ 5.3.0 wrote and which are from memory). Standard library only. The format is QLC+ 4.12's fixture definition (a copy of the shape of the .qxf files that
 ship in /Applications/QLC+.app/Contents/Resources/Fixtures).
 """
@@ -36,7 +37,7 @@ def blender_rows(rows=None):
     return [r for r in (rows or contract.load()) if r.get("blender")]
 
 
-def shot_ranges(n):
+def index_ranges(n):
     """[(first DMX value, last DMX value)] of n equal ranges of 0..255, the split blender/artnet_input.py decodes (v * n // 256)."""
     out = []
     for i in range(n):
@@ -46,10 +47,6 @@ def shot_ranges(n):
     return out
 
 
-def planet_shots(row):
-    return row["shots"]["planet"]
-
-
 def default_dmx(row):
     if row["kind"] != "float":
         return 0
@@ -57,9 +54,6 @@ def default_dmx(row):
 
 
 SPEED_ROWS = {"/vj/grid_speed", "/vj/cam_speed", "/vj/fog_speed", "/vj/star_speed"}
-GOBO_DIR = os.path.join(QLC_DIR, "gobos", "bossi3dj")           # the pictures QLC+ finds as Gobos/bossi3dj/cam-planet-N.png
-GOBO_REF = "bossi3dj/cam-planet-%d.png"
-GOBO_SOURCE = os.path.join(ROOT, "docs", "images", "readme", "osc", "cam-planet-%d.jpg")
 
 
 def channel_name(row):
@@ -79,8 +73,6 @@ def _group(row):
         return "Shutter"
     if a in SPEED_ROWS:
         return "Speed"
-    if a == "/vj/cam":
-        return "Gobo"
     return "Effect"
 
 
@@ -98,6 +90,9 @@ def ranged(row):
 def stop_ranges(row):
     """[(min, max, stop)] of a row with stops: ranges centred on the stops, no gaps, 0 to 255. A stop's DMX value is wire * 255."""
     stops = row["stops"]
+    if row["kind"] == "int":                    # an index: one equal range per index, named by the stop at that index
+        ranges = index_ranges(int(row["max"] - row["min"]) + 1)
+        return [(ranges[int(s["wire"] - row["min"])][0], ranges[int(s["wire"] - row["min"])][1], s) for s in stops]
     dmx = [int(round(s["wire"] * 255)) for s in stops]
     edges = [(a + b) // 2 for a, b in zip(dmx, dmx[1:])]
     lo = [0] + [e + 1 for e in edges]
@@ -109,10 +104,6 @@ def capabilities(row):
     """[(min, max, text, attributes)] of one channel; the plain sentence is the text where QLC+ shows a capability."""
     if row["kind"] == "trigger":
         return [(0, TRIGGER_AT - 1, "off", {}), (TRIGGER_AT, 255, "fire once, harder the higher: " + row["plain"], {})]
-    if row["address"] == "/vj/cam":
-        shots = planet_shots(row)
-        return [(lo, hi, "%d %s: %s" % (s["index"], s["name"], s["shows"]), {"Preset": "GoboMacro", "Res1": GOBO_REF % s["index"]})
-                for (lo, hi), s in zip(shot_ranges(len(shots)), shots)]
     if only_ends(row):
         a, b = row["stops"]
         return [(0, 255, "from %s (0) to %s (255): %s" % (a["name"], b["name"], row["plain"]), {})]
@@ -175,7 +166,7 @@ def _state(x, y, w, h):
 def _group_height(members):
     sliders = [r for r in members if r["kind"] != "trigger"]
     stops = [r for r in members if ranged(r) and r["kind"] != "trigger"]
-    return (SLIDER_H + 2 * PAD + 20 if sliders else 120) + (92 if any(r["address"] == "/vj/cam" for r in members) else 0) + 52 * len(stops)
+    return (SLIDER_H + 2 * PAD + 20 if sliders else 120) + 52 * len(stops)
 
 
 def _group_order(rows):
@@ -198,18 +189,15 @@ def render_workspace(rows=None):
            "   <ID>0</ID>", "   <Name>%s</Name>" % escape(MODEL), "   <Universe>0</Universe>", "   <Address>0</Address>", "   <Channels>%d</Channels>" % n, "  </Fixture>"]
     scenes = []                                   # (function id, name, channel, value)
     triggers = [(i, r) for i, r in enumerate(rows) if r["kind"] == "trigger"]
-    cam_i, cam = next((i, r) for i, r in enumerate(rows) if r["address"] == "/vj/cam")
     for i, r in triggers:
         scenes.append((ids.f(), "fire " + r["address"], i, 255))
-    cam_scenes = []
-    for (lo, hi), s in zip(shot_ranges(len(planet_shots(cam))), planet_shots(cam)):
-        cam_scenes.append((ids.f(), "cut to %d %s" % (s["index"], s["name"]), cam_i, (lo + hi) // 2, s))
     stop_scenes = []                              # one scene per labelled stop: the channel at that stop's DMX value
     for i, r in enumerate(rows):
-        if ranged(r) and r["kind"] != "trigger" and r["address"] != "/vj/cam":
-            for st in r["stops"]:
-                stop_scenes.append((ids.f(), "%s = %s" % (r["label"], st["name"]), i, int(round(st["wire"] * 255)), r, st))
-    for fid, name, ch, val, *_ in scenes + cam_scenes + stop_scenes:
+        if ranged(r) and r["kind"] != "trigger":
+            for lo, hi, st in stop_ranges(r):
+                val = (lo + hi) // 2 if r["kind"] == "int" else int(round(st["wire"] * 255))     # an index: the middle of its range
+                stop_scenes.append((ids.f(), "%s = %s" % (r["label"], st["name"]), i, val, r, st))
+    for fid, name, ch, val, *_ in scenes + stop_scenes:
         out += ['  <Function ID="%d" Type="Scene" Name=%s Path="Synthwave">' % (fid, quoteattr(name)), '   <Speed FadeIn="0" FadeOut="0" Duration="0"/>',
                 '   <FixtureVal ID="0">%d,%d</FixtureVal>' % (ch, val), "  </Function>"]
     # channel groups (from memory of QLC+'s ChannelsGroup element, not seen in a shipped file): one per manual group
@@ -225,7 +213,6 @@ def render_workspace(rows=None):
         members = [(i, r) for i, r in enumerate(rows) if r["group"] == group]
         sliders = [(i, r) for i, r in members if r["kind"] != "trigger"]
         buttons = [(i, r) for i, r in members if r["kind"] == "trigger"]
-        is_cam = any(r["address"] == "/vj/cam" for _, r in members)
         width = max(len(sliders) * (SLIDER_W + 4), len(buttons) * 124, max([len(r["stops"]) * 100 + 12 for _i, r in sliders if ranged(r)] or [0]), 8) + 2 * PAD
         height = _group_height([r for _i, r in members])
         out += ['   <Frame Caption=%s ID="%d">' % (quoteattr(group), ids.w()), '    ' + _state(PAD, y, width, height),
@@ -242,18 +229,7 @@ def render_workspace(rows=None):
             out += ['    <Button Caption=%s ID="%d">' % (quoteattr(r["label"]), ids.w()), "     " + _state(x, 28, 120, 60),
                     '     <Function ID="%d"/>' % fid, "     <Action>Flash</Action>", "    </Button>"]
             x += 124
-        if is_cam:
-            out += ['    <SoloFrame Caption="shots" ID="%d">' % ids.w(), "     " + _state(PAD, SLIDER_H + 40, width - 2 * PAD, 84),
-                    "     <AllowResize>False</AllowResize>", "     <ShowHeader>True</ShowHeader>", "     <ShowEnableButton>False</ShowEnableButton>"]
-            bx, by = 4, 22
-            for fid, name, ch, val, shot in cam_scenes:
-                out += ['     <Button Caption=%s ID="%d">' % (quoteattr("%d %s" % (shot["index"], shot["name"])), ids.w()), "      " + _state(bx, by, 76, 28),
-                        '      <Function ID="%d"/>' % fid, "      <Action>Toggle</Action>", "     </Button>"]
-                bx += 78
-                if bx + 78 > width - 2 * PAD - 8:
-                    bx, by = 4, by + 30
-            out.append("    </SoloFrame>")
-        row_y = SLIDER_H + 40 + (92 if is_cam else 0)
+        row_y = SLIDER_H + 40
         by_row = {}
         for fid, name, ch, val, r, st in stop_scenes:
             by_row.setdefault(ch, []).append((fid, r, st))
@@ -278,13 +254,13 @@ def render_workspace(rows=None):
 def _wire(row):
     if row["kind"] == "trigger":
         return "below 128 off; from 128 fires once, strength 0.5 at 128 up to %g at 255, back below 128 re-arms" % row["max"]
-    if row["address"] == "/vj/cam":
-        return "split into equal ranges, one per shot (below)"
+    if row["kind"] == "int":
+        return "split into %d equal ranges, one per index" % (int(row["max"] - row["min"]) + 1)
     return "0..255 = 0..1" if (row["min"], row["max"]) == (0, 1) else "0..255 = %g..%g" % (row["min"], row["max"])
 
 
 def _stops_text(row):
-    if not ranged(row) or row["kind"] == "trigger" or row["address"] == "/vj/cam":
+    if not ranged(row) or row["kind"] == "trigger":
         return ""
     return "; ranges: " + ", ".join("%s %d to %d" % (st["name"], lo, hi) for lo, hi, st in stop_ranges(row))
 
@@ -294,32 +270,12 @@ def render_table(rows=None):
     lines = ["| DMX channel | Name in QLC+ | What you see | DMX to wire value |", "|---|---|---|---|"]
     for i, r in enumerate(rows):
         lines.append("| %d | %s | %s | %s |" % (i + 1, channel_name(r).replace("(", "(`").replace(")", "`)"), r["plain"], _wire(r) + _stops_text(r)))
-    cam = next(r for r in rows if r["address"] == "/vj/cam")
-    lines += ["", "`/vj/cam` ranges (channel %d), one per shot of the scene that runs:" % (rows.index(cam) + 1), "",
-              "| Scene | DMX value | Shot |", "|---|---|---|"]
-    for key, label in (("planet", "Planet"), ("island", "Island")):
-        shots = cam["shots"][key]
-        for (lo, hi), s in zip(shot_ranges(len(shots)), shots):
-            lines.append("| %s | %d to %d | %d %s |" % (label, lo, hi, s["index"], s["name"]))
     return "\n".join(lines)
 
 
 def current_table(text):
     i, j = text.index(TABLE_BEGIN) + len(TABLE_BEGIN), text.index(TABLE_END)
     return text[i:j].strip("\n")
-
-
-def gobos():
-    """qlc/gobos/bossi3dj/cam-planet-N.png: the manual's camera pictures as 64x64 PNG like QLC+'s own Gobos (ImageMagick). Not part of
-    sync (a PNG made twice may differ in bytes); the tests check that every picture a capability names exists."""
-    import subprocess
-    os.makedirs(GOBO_DIR, exist_ok=True)
-    cam = next(r for r in blender_rows() if r["address"] == "/vj/cam")
-    for s in planet_shots(cam):
-        src, dst = GOBO_SOURCE % s["index"], os.path.join(GOBO_DIR, "cam-planet-%d.png" % s["index"])
-        if os.path.exists(src):
-            subprocess.run(["magick", src, "-resize", "64x64", "-background", "none", "-gravity", "center", "-extent", "64x64", dst], check=True)
-            print("wrote", os.path.relpath(dst, ROOT))
 
 
 def sync():
@@ -361,8 +317,6 @@ def main(argv):
     cmd = argv[1] if len(argv) > 1 else "check"
     if cmd == "sync":
         sync()
-    elif cmd == "gobos":
-        gobos()
     elif cmd == "table":
         print(render_table())
     elif cmd == "check":

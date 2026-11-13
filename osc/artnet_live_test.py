@@ -5,7 +5,7 @@
 
 Sends ArtDmx frames to 127.0.0.1:6454 with osc/artnet_send.py's frame builder and one OSC packet to udp 9201 (sending is allowed,
 binding is not), and reads every result back from the page's API (/api/state: values, osc.source, osc.log, camera). Writes the
-table to stdout as Markdown. It touches vj_fog_glow, vj_cam, vj_shock and the holds, and puts them back at the end. Standard library."""
+table to stdout as Markdown. It touches vj_fog_glow, vj_target, vj_shock and the holds, and puts them back at the end. Standard library."""
 import argparse
 import json
 import os
@@ -24,7 +24,7 @@ import qlc_fixture  # noqa: E402
 
 PAGE = "http://127.0.0.1:9210"
 ORDER = [r["address"] for r in qlc_fixture.blender_rows()]
-CAM_CHANNEL = ORDER.index("/vj/cam") + 1
+TARGET_CHANNEL = ORDER.index("/vj/target") + 1
 SETTLE = 0.4
 
 
@@ -101,13 +101,20 @@ def main():
     row("b changed channel sets the control (source artnet)", abs(v["vj_fog_glow"] - 0.5) < 0.01 and osc["source"].get("vj_fog_glow") == "artnet",
         "vj_fog_glow %.3f (wire 0.25 = scene 0.5), source %s" % (v["vj_fog_glow"], osc["source"].get("vj_fog_glow")))
 
-    # (c) a resting channel does not override a later OSC value
+    # (c) Takeover: after an Art-Net touch, Magic's OSC value is kept, not applied, until /vj/takeover has passed; then it is
+    # applied, and frames that repeat the touched value (a resting fader) do not take it back
     send_osc("/vj/fog_glow", 0.75)
     v1, osc1, _ = state()
-    send_frames(["/vj/fog_glow=0.25"], frames=4)
+    pause = float(v1.get("vj_takeover", 20.0))
+    time.sleep(pause + 1.0)
     v2, osc2, _ = state()
-    row("c resting channel does not override OSC", abs(v1["vj_fog_glow"] - 1.5) < 0.01 and abs(v2["vj_fog_glow"] - 1.5) < 0.01 and osc2["source"].get("vj_fog_glow") == "osc",
-        "after OSC %.3f (source %s), after 4 equal frames %.3f (source %s)" % (v1["vj_fog_glow"], osc1["source"].get("vj_fog_glow"), v2["vj_fog_glow"], osc2["source"].get("vj_fog_glow")))
+    send_frames(["/vj/fog_glow=0.25"], frames=4)
+    v3, osc3, _ = state()
+    row("c takeover: Magic waits for the pause, a resting channel does not take it back",
+        abs(v1["vj_fog_glow"] - 0.5) < 0.01 and osc1["source"].get("vj_fog_glow") == "artnet"
+        and abs(v2["vj_fog_glow"] - 1.5) < 0.01 and osc2["source"].get("vj_fog_glow") == "osc" and abs(v3["vj_fog_glow"] - 1.5) < 0.01,
+        "OSC 0.75 right after the touch: %.3f (source %s); after the %.0f s pause: %.3f (source %s); after 4 equal frames %.3f" % (
+            v1["vj_fog_glow"], osc1["source"].get("vj_fog_glow"), pause, v2["vj_fog_glow"], osc2["source"].get("vj_fog_glow"), v3["vj_fog_glow"]))
 
     # (d) a trigger rising through 128 fires once: the log has one rise (strength 0.5 or more) and then one fall to 0 for /vj/shock
     t0 = time.time()
@@ -117,19 +124,18 @@ def main():
     row("d trigger fires once on the rise through 128", len([a for a in args if a >= 0.5]) == 1 and args.count(0.0) == 1,
         "/vj/shock in the log: %s" % ", ".join("%.2f" % a for a in args))
 
-    # (e) the camera channel picks the planet's shots by range
-    cam_cases = [(0, 0), (21, 0), (22, 1), (64, 3), (128, 6), (234, 10), (235, 11), (255, 11)]
-    bad = []
-    cam_names = {}
-    send_frames([], frames=1, raw={CAM_CHANNEL: 255})        # a known start, then the cases
-    for dmx, shot in cam_cases:
-        send_frames([], frames=2, raw={CAM_CHANNEL: dmx})
-        v, _, camera = state()
-        cam_names[dmx] = (v["vj_cam"], camera)
-        if int(round(v["vj_cam"])) != shot:
-            bad.append((dmx, shot, v["vj_cam"]))
-    row("e camera channel picks shots by range (12 shots)", not bad,
-        "DMX -> vj_cam, camera: " + ", ".join("%d -> %d %s" % (k, v[0], v[1]) for k, v in cam_names.items()) + (" MISMATCH %s" % bad if bad else ""))
+    # (e) an index channel picks by equal ranges: /vj/target, 7 targets
+    cases = [(0, 0), (36, 0), (37, 1), (146, 3), (147, 4), (219, 5), (220, 6), (255, 6)]
+    bad, seen = [], {}
+    send_frames([], frames=1, raw={TARGET_CHANNEL: 128})
+    for dmx, want in cases:
+        send_frames([], frames=2, raw={TARGET_CHANNEL: dmx})
+        got = state()[0]["vj_target"]
+        seen[dmx] = got
+        if int(round(got)) != want:
+            bad.append((dmx, want, got))
+    row("e index channel picks /vj/target by range (7 targets)", not bad,
+        "DMX -> vj_target: " + ", ".join("%d -> %d" % (k, v) for k, v in seen.items()) + (" MISMATCH %s" % bad if bad else ""))
 
     # (f) a held control ignores Art-Net
     post("/api/hold", {"keys": ["vj_fog_glow"], "on": True})
@@ -150,7 +156,7 @@ def main():
 
     # the baseline again, then every touched value back to what it was
     send_frames([], baseline=True, frames=2)
-    post("/api/set", {k: values0[k] for k in ("vj_fog_glow", "vj_cam", "vj_shock") if k in values0})
+    post("/api/set", {k: values0[k] for k in ("vj_fog_glow", "vj_target", "vj_shock") if k in values0})
     post("/api/hold", {"keys": [k for k in ("vj_fog_glow",) if k not in hold0], "on": False})
     time.sleep(SETTLE)
     values_end, osc_end, camera_end = state()
