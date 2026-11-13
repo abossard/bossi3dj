@@ -15,6 +15,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 - Blender, left open on purpose: fps table and cut stalls on an idle machine, the island's self-check rerun (30 of 37 on 2026-11-10), the Flight shot's streamed terrain at full size, the cause of the two builds without night edges (a guard catches them), CAM_4 and CAM_5 look items of round 9, the picture inside Magic.
 - README: explanation, screenshots, named cameras and the manual of all OSC channels are on `main`.
 - Run history: graph, nodes and rules in [docs/handover/presentable-plan.md](docs/handover/presentable-plan.md).
+- Orchestration was handed to a fresh session on 2026-11-13; how it works here (sessions to reuse, GPU slots, pushing) is in [docs/handover/orchestrator.md](docs/handover/orchestrator.md).
 
 ## Origin
 
