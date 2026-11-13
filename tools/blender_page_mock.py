@@ -28,8 +28,7 @@ def scene_controls(rows):
     for r in page_model.blender_rows(rows):
         b, key = r["blender"], page_model.key_of(r["address"])
         if r["kind"] == "int":
-            c = {"key": key, "min": 0, "max": r["max"], "step": 1.0, "default": r["default"], "trigger": False}
-            c["shots"] = r["shots"]["planet"]
+            c = {"key": key, "min": r["min"], "max": r["max"], "step": 1.0, "default": r["default"], "trigger": False}
         elif r["kind"] == "trigger":
             c = {"key": key, "min": 0.0, "max": r["max"], "step": 0.01, "default": 0.0, "trigger": True}
         else:
@@ -52,7 +51,7 @@ class Mock:
 
     def state(self):
         n = time.time() - self.t0
-        return {"scene": "Synthwave Planet (mock)", "camera": "CAM_%d" % round(self.values["vj_cam"]), "fps": 59.8, "scene_fps": 60.0, "playing": True,
+        return {"scene": "Synthwave Planet (mock)", "camera": "CAM_RIG", "fps": 59.8, "scene_fps": 60.0, "playing": True,
                 "sim": {"on": False, "bpm": 124.0, "shock_every": 8}, "artnet": {"state": None, "chip": page_model.artnet_chip(None)}, "edge_guard": {"status": "present", "repaired": False}, "lan": self.lan,
                 **page_model.page_state(self.controls, self.rows, contract.GROUPS), "values": self.values,
                 "syphon": {"frames": int(n * 60), "failed": False},

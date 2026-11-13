@@ -5,7 +5,7 @@ Live visuals for music. A 3D scene reacts to the sound, and you mix its picture 
 How it works, in four steps:
 
 1. Music goes into **Magic Music Visuals** (Magic), a VJ program.
-2. Magic turns it into about 38 simple numbers, for example *louder*, *bass*, *beat*, *night*, *fog*, *which camera*. Every number is a row in [osc/contract.json](osc/contract.json) and goes out as an OSC message named `/vj/<name>` (OSC is a small network message format).
+2. Magic turns it into about 40 simple numbers, for example *louder*, *bass*, *beat*, *night*, *fog*, *which camera*. Every number is a row in [osc/contract.json](osc/contract.json) and goes out as an OSC message named `/vj/<name>` (OSC is a small network message format).
 3. One 3D scene reads the numbers and moves, glows and changes. Two scenes exist: a **Blender** scene and a **Godot** scene. Only one runs at a time, so both listen on the same port, udp 9201.
 4. The scene publishes its picture as a **Syphon** video stream (a way for Mac apps to share frames). Magic picks it up, adds effects and mixes the two scenes.
 
@@ -30,12 +30,12 @@ flowchart LR
 
 ## The Blender scene: Synthwave Planet
 
-A whole small planet with a sun, a moon and a star sky. Fixed cameras (`CAM_0` to `CAM_10`) show it from the ground, from a river, from a coast and from orbit. `CAM_11` is the Flight shot, a camera that flies over the planet. Each camera has a name; the list is under `/vj/cam` in [All OSC channels](#all-osc-channels). The music changes the light and the weather:
+A whole small planet with a sun, a moon and a star sky. One camera, the Path Camera, flies over it: you pick a path (how it moves), a target (what it looks at) and a height from just over the ground to space. The names are under `/vj/path` and `/vj/target` in [All OSC channels](#all-osc-channels). The music changes the light, the weather and where the camera goes:
 
 - `/vj/night` moves the time of day: 0 is day, 0.25 sunset, 0.5 twilight, 1 night.
 - `/vj/fog` sets how dense the fog bank is. Fog has its own colour, glow, size and wind (`/vj/fog_*`).
-- `/vj/cam` cuts to a camera, `/vj/blend` sets how smoothly the cut flies over, `/vj/energy` how hard the camera moves.
-- `/vj/flight` runs the Flight shot from orbit down to a skim over the mountains and a hover over the water.
+- `/vj/path`, `/vj/target` and `/vj/height` steer the camera; a change flies over in the fade time `/vj/blend` (0 cuts). `/vj/energy` sets how hard the camera moves.
+- A control you touch stays yours for `/vj/takeover` (20 s by default), then the music steers it again.
 - `/vj/grid` shows the real triangle edges of the ground at night as a glowing cyan net. By day there are none.
 - `/vj/level`, `/vj/bass` and `/vj/beat` pulse the sun, the net, the pyramid edges and the water glints with the music. `/vj/hue` turns the whole palette.
 
@@ -64,14 +64,14 @@ The full list with ranges is in [osc/CONTROLS.md](osc/CONTROLS.md).
 </tr>
 <tr>
 <td width="50%"><img src="docs/images/readme/planet-flight-skim.jpg" alt="Flight, CAM_11: the Flight shot at the Skim stage, over the mountains."><br><sub><b>Flight, <code>CAM_11</code></b>: the Flight shot at the Skim stage skimming over the mountains, one moment of its path.</sub></td>
-<td width="50%"><sub><b>The Flight</b> is a camera that flies by itself. <code>/vj/flight</code> steers it: 0 is a high orbit, then a landing approach, the skim over the mountains and, at 1, a hover over the water. The list of cameras is under <code>/vj/cam</code> below.</sub></td>
+<td width="50%"><sub><b>The Path Camera</b> replaces these shots. The Flight became the path "Follow the land" at a low height. Pictures of the Path Camera follow once it is built.</sub></td>
 </tr>
 <tr>
 <td colspan="2"><img src="docs/images/readme/osc/grid-blender.jpg" alt="Night, CAM_0, /vj/grid 0 on the left and 1 on the right"><br><sub><b>Night, <code>CAM_0</code></b>: <code>/vj/night</code> 1, <code>/vj/grid</code> 0 on the left and 1 on the right. The cyan net is the ground's real triangle edges.</sub></td>
 </tr>
 </table>
 
-These are 960x540 grabs of the current build with the clocks frozen, one frame per picture; the controls not named are at their defaults. Two cameras move on a path (`CAM_5`, `CAM_10`), so another moment looks different.
+These are 960x540 grabs of the build before the Path Camera (fixed shots `CAM_0` to `CAM_11`, gone since 2026-11-13), with the clocks frozen, one frame per picture; the controls not named are at their defaults. They show the look; the camera views come back as path and target pairs.
 
 ## The Godot scene: Colossus
 

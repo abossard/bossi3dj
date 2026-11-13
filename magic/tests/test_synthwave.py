@@ -81,10 +81,39 @@ class ControlTests(unittest.TestCase):
         live = " ".join(e for _k, _p, e, _b in mp.modifiers(self.controls["Live"]) if e)
         self.assertIn("EnergyNow >", live)
 
-    def test_the_cutter_needs_the_music_and_CamAuto(self):
+    def test_cam_is_manual_and_for_godot_only(self):
         expr = [e for _k, _p, e, _b in mp.modifiers(self.controls["OutCam"]) if e][0]
-        self.assertTrue(expr.startswith("if(CamAuto > 0.5 and Follow > 0.5,"))
-        self.assertIn("floor(Cam*11.999)", expr)
+        self.assertEqual(expr, "floor(Cam*11.999)")
+        for gone in ("CamCount", "Flight", "Boost", "OutFlight", "OutBoost"):
+            with self.subTest(gone=gone):
+                self.assertNotIn(gone, self.controls)
+
+    def test_path_and_target_step_with_the_music_or_take_the_control(self):
+        for out, steer, stops in (("OutPath", "PathFollow", 4), ("OutTarget", "TargetFollow", 7)):
+            with self.subTest(out=out):
+                expr = [e for _k, _p, e, _b in mp.modifiers(self.controls[out]) if e][0]
+                self.assertTrue(expr.startswith("if(%s > 0.5, " % steer))
+                self.assertIn("%% %d" % stops, expr)
+                self.assertIn("*%d.999)" % (stops - 1), expr)
+
+    def test_every_steered_control_has_takeover(self):
+        """A touched control is the user's for Takeover x 60 s: <Name>Touch keeps the clock of its last change, <Name>Follow is 0 meanwhile."""
+        for name in sm.STEERED:
+            with self.subTest(control=name):
+                touch = [e for _k, _p, e, _b in mp.modifiers(self.controls[name + "Touch"]) if e][0]
+                follow = [e for _k, _p, e, _b in mp.modifiers(self.controls[name + "Follow"]) if e][0]
+                self.assertEqual(touch, "if(Clock > 1 and abs(%s - %sPrev) > 0.0001, Clock, y)" % (name, name))
+                self.assertEqual(follow, "Follow*if(%sTouch > 0 and Clock - %sTouch < Takeover*60, 0, 1)" % (name, name))
+
+    def test_every_music_address_reads_its_own_takeover(self):
+        outs = dict(sm.OSC_OUT)
+        for address in sm.MUSIC:
+            if address == "/vj/shock":
+                continue
+            name = manual.control_name(address)
+            with self.subTest(address=address):
+                exprs = " ".join(e for _k, _p, e, _b in mp.modifiers(self.controls[outs[address]]) if e)
+                self.assertIn(name + "Follow", exprs)
 
 
 class ProjectTests(unittest.TestCase):

@@ -1,5 +1,5 @@
 """The handbook's generated parts: the table of what Magic sends and why (made from the built show project and
-synthwave_magic.MUSIC) and the list of the planet's cameras (made from osc/contract.json).
+synthwave_magic.MUSIC) and the stops of the Path Camera (made from osc/contract.json).
 
     python3 magic/magic_manual.py sync     rewrite both blocks in docs/handbook.md (between their begin and end markers)
     python3 magic/magic_manual.py check    exit 1 when a block is out of step (tests/test_manual.py does the same)
@@ -67,17 +67,22 @@ def render(root=None):
 
 
 PAD_TEXT = {"/vj/meteor": "Nothing: the Meteor pad fires one.", "/vj/hit": "Nothing: the Hit pad fires one.",
-            "/vj/cam_auto": "Nothing: CamAuto 1 lets the cutter cut (Godot: its own director), 0 holds the shot Cam picks."}
+            "/vj/cam_auto": "Nothing. Godot only: CamAuto 1 lets Godot's director cut, 0 holds the shot Cam picks.",
+            "/vj/cam": "Nothing. Godot only: the shot while CamAuto is 0.",
+            "/vj/takeover": "Nothing: how long a control you touched stays yours, here and in the scene."}
 
 
-def render_cameras():
-    shots = sm.CONTRACT["/vj/cam"]["shots"]["planet"]
-    lines = ["| Number | Name | What it shows |", "|---|---|---|"]
-    lines += ["| %d | %s | %s |" % (s["index"], s["name"], s["shows"]) for s in shots]
-    return "\n".join(lines)
+def render_camera():
+    """The stops of the Path Camera's index controls and of its height, from the contract rows' `stops`."""
+    lines = []
+    for address in ("/vj/path", "/vj/target", "/vj/height"):
+        row = sm.CONTRACT[address]
+        lines += ["", "`%s`: %s" % (address, row["plain"]), "", "| Value | Name |", "|---|---|"]
+        lines += ["| %g | %s |" % (s["wire"], s["name"]) for s in row["stops"]]
+    return "\n".join(lines).strip("\n")
 
 
-BLOCKS = {"magic-table": render, "cameras": render_cameras}
+BLOCKS = {"magic-table": render, "path-camera": render_camera}
 
 
 def markers(name):

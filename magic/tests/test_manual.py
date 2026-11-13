@@ -20,11 +20,12 @@ class HandbookTests(unittest.TestCase):
             with self.subTest(address=address):
                 self.assertTrue(line.startswith("| `%s` |" % address))
 
-    def test_every_camera_of_the_planet_is_listed_by_number_and_name(self):
-        text = manual.render_cameras()
-        for shot in sm.CONTRACT["/vj/cam"]["shots"]["planet"]:
-            with self.subTest(shot=shot["index"]):
-                self.assertIn("| %d | %s |" % (shot["index"], shot["name"]), text)
+    def test_every_path_and_target_is_listed_by_value_and_name(self):
+        text = manual.render_camera()
+        for address in ("/vj/path", "/vj/target", "/vj/height"):
+            for stop in sm.CONTRACT[address]["stops"]:
+                with self.subTest(address=address, stop=stop["name"]):
+                    self.assertIn("| %g | %s |" % (stop["wire"], stop["name"]), text)
 
 
 if __name__ == "__main__":

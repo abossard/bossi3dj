@@ -4,7 +4,7 @@
     python3 tools/blender_page_test.py [--check] [--base http://127.0.0.1:9210]
 
 The scene must be open (`make blender-open`). Checks what the page is told (every Blender address has a control, grouped and
-described from the contract, the camera shots with names, the start state), what the page may and may not do (JSON only,
+described from the contract, the Path Camera's named paths and targets, the start state), what the page may and may not do (JSON only,
 loopback Host only), that sets, holds, the camera and the presets take effect in the scene, and leaves every value as it was.
 `--check` also runs the page's "Check all" and waits for the verdicts (minutes). Standard library only.
 """
@@ -88,11 +88,13 @@ def main():
     check("sections follow the manual groups", [x["title"] for x in s["sections"]] == [g for g in contract.GROUPS if g != "Godot only"],
           ", ".join(x["title"] for x in s["sections"]))
     check("every control has its sentence", all(c["plain"] for c in s["controls"]))
-    cam = next(c for c in s["controls"] if c["key"] == "vj_cam")
-    check("camera shots carry number and name", len(cam["shots"]) == cam["max"] + 1 and all(x["name"] for x in cam["shots"]), "%d shots" % len(cam["shots"]))
-    check("state has scene, camera, fps, Syphon, OSC, night-edge guard",
-          s["scene"] and s["camera"] and "fps" in s and s["syphon"] is not None and s["osc"] is not None and (s["edge_guard"] or {}).get("status") in ("present", "repaired", "not_applicable"),
-          json.dumps({"scene": s["scene"], "camera": s["camera"], "fps": s["fps"], "edges": (s["edge_guard"] or {}).get("status")}))
+    by_key = {c["key"]: c for c in s["controls"]}
+    check("the Path Camera comes first", s["path_camera"] == page_model.CAMERA, json.dumps(s["path_camera"]))
+    check("path and target buttons carry the contract names",
+          all(len(by_key[k]["stops"]) == by_key[k]["max"] - by_key[k]["min"] + 1 and all(x["name"] for x in by_key[k]["stops"]) for k in ("vj_path", "vj_target")))
+    check("state has scene, Path Camera, fps, Syphon, OSC, night-edge guard",
+          s["scene"] and s["path_camera"] and "fps" in s and s["syphon"] is not None and s["osc"] is not None and (s["edge_guard"] or {}).get("status") in ("present", "repaired", "not_applicable"),
+          json.dumps({"scene": s["scene"], "path": s["values"].get("vj_path"), "target": s["values"].get("vj_target"), "fps": s["fps"], "edges": (s["edge_guard"] or {}).get("status")}))
     art = (s.get("artnet") or {})
     check("the state has the Art-Net chip", art.get("chip", {}).get("text", "").startswith("Art-Net"), json.dumps(art.get("chip")))
     check("Art-Net listens on 6454 for the bridge's universe", (art.get("state") or {}).get("bound") is True and (art.get("state") or {}).get("port") == 6454,
@@ -119,9 +121,10 @@ def main():
         time.sleep(0.3)
         check("release shows in the state", "vj_fog" not in state()["osc"]["hold"])
 
-        api("POST", "/api/set", {"vj_cam": 4})
-        check("a camera button changes the shot on air", wait_for(lambda: state()["camera"] == "CAM_4", 5), state()["camera"])
-        api("POST", "/api/set", {"vj_cam": before["vj_cam"]})
+        api("POST", "/api/set", {"vj_path": 2, "vj_target": 4})
+        check("a path and a target button reach the scene", wait_for(lambda: (state()["values"]["vj_path"], state()["values"]["vj_target"]) == (2, 4), 5),
+              json.dumps([state()["values"]["vj_path"], state()["values"]["vj_target"]]))
+        api("POST", "/api/set", {"vj_path": before["vj_path"], "vj_target": before["vj_target"]})
 
         name = "page-test-%d" % int(time.time())
         r = api("POST", "/api/presets", {"name": name})

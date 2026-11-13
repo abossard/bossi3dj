@@ -17,6 +17,8 @@ SETTINGS_FILE = os.path.join(LOCAL, "page.json")
 PREFIX = "vj_"
 CAMERA_KEY = "vj_cam"
 OTHER = "Other"
+# The Path Camera's choices, drawn first on the page in this order: index controls with named stops as buttons, the rest as faders.
+CAMERA = ["vj_path", "vj_target", "vj_height", "vj_blend"]
 NAME_MAX = 40
 HOSTS = {"local": "127.0.0.1", "lan": "0.0.0.0"}
 
@@ -45,10 +47,12 @@ def describe(controls, rows, groups):
         i, row = by_key.get(c["key"], (len(rows), None))
         d = dict(c, address=address_of(c["key"]))
         if row is None:
-            d.update(group=OTHER, plain="", effect="", unit="", wire_default=None, order=(len(groups), i, c["key"]))
+            d.update(group=OTHER, label=c["key"][len(PREFIX):], plain="", effect="", unit="", stops=None, wire_default=None,
+                     order=(len(groups), i, c["key"]))
         else:
             b = row.get("blender") or {}
-            d.update(group=row["group"], plain=row["plain"], effect=b.get("effect", ""), unit=b.get("unit", ""),
+            d.update(group=row["group"], label=row.get("label") or c["key"][len(PREFIX):], plain=row["plain"], effect=b.get("effect", ""),
+                     unit=b.get("unit", ""), stops=row.get("stops"),
                      wire_default=row["default"], order=(rank.get(row["group"], len(groups)), i, c["key"]))
         out.append(d)
     out.sort(key=lambda d: d["order"])
@@ -57,10 +61,12 @@ def describe(controls, rows, groups):
     return out
 
 
-def sections(described):
-    """[{"title", "keys"}] in manual order, one per group that has controls: what the page draws."""
+def sections(described, skip=()):
+    """[{"title", "keys"}] in manual order, one per group that has controls: what the page draws below the camera."""
     out = []
     for d in described:
+        if d["key"] in skip:
+            continue
         if not out or out[-1]["title"] != d["group"]:
             out.append({"title": d["group"], "keys": []})
         out[-1]["keys"].append(d["key"])
@@ -77,7 +83,9 @@ def coverage(controls, rows):
 def page_state(controls, rows, groups):
     """The part of /api/state that describes the controls (the values and the rest come from the scene on every snapshot)."""
     d = describe(controls, rows, groups)
-    return {"controls": d, "sections": sections(d), "coverage": coverage(controls, rows)}
+    have = {c["key"] for c in d}
+    camera = [k for k in CAMERA if k in have]
+    return {"controls": d, "path_camera": camera, "sections": sections(d, camera), "coverage": coverage(controls, rows)}
 
 
 # ---------------------------------------------------------------- source badge counts

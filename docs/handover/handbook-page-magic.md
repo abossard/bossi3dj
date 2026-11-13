@@ -44,3 +44,22 @@ Magic ran with a copy of the project that sends to udp 9300 (`magicproj.py set -
 - Not proven: Magic's live behaviour with real music through BlackHole; the page opened from an actual phone over the network (LAN mode is built, tested only through its settings file and Host rule); the page's Check all beyond row 26 from the phone-size page (the full run was proven earlier from the older page).
 - `.claude/skills/magic-projects/evals/grade.py` lists the old Global names (`HueBase`, `CamSel`); not mine, not changed.
 - Art-Net on the page: the bridge has it (another session); the page shows its source as the badge text and nothing else.
+
+## Path Camera (2026-11-13)
+
+Magic, page and handbook follow the contract of 2c370ae ([path-camera.md](path-camera.md), the user's "Yes, all five").
+
+- Magic: the auto cutter, `CamCount`, `Flight`, `Boost` are gone. New controls `Path`, `Target` (0..1 faders over the stops, like `Cam`), `Height` (0.3), `Takeover` (0.33 = 20 s), `Blend` is the Fade Time. With music: `Moves` = 16-bar blocks plus drops; path = `Moves % 4`, target = `Moves*3 % 7` (every target in turn); height sinks on builds and drops, rises in breakdowns (smoothed). `Cam` and `CamAuto` stay for Godot, manual only.
+- Takeover in Magic for every steered control (`STEERED` in `synthwave_magic.py`, 13 controls): `<Name>Prev`, `<Name>Touch` (clock of the last change by hand or MIDI, 0 = never, changes in the first second ignored), `<Name>Follow` = `Follow` or 0 while the touch is younger than `Takeover` x 60 s. The return to the music is a step in Magic; the scene's flight (fade time) and height glide smooth it. `/vj/shock` keeps its pads, no takeover.
+- Page: the Camera card first (`page_model.CAMERA`): Path and Target as buttons with the contract's stop names, Height and Fade Time as faders; the header chip shows path and target by name; labels from the contract. `/api/state` has `path_camera` (the keys). Checked at 375 px against `tools/blender_page_mock.py`: no horizontal scroll, buttons set the values.
+- Handbook: "The Path Camera" replaces "Cameras and the Flight" (stops generated from the contract, `magic_manual.py sync`); the hold rule became Takeover plus hold. README: Blender intro, the Flight cell and the gallery note.
+
+Unverified (needs the Blender build and a Magic load):
+- Magic's steering live: path and target stepping on drops and every 16 bars, height on builds and breakdowns, the takeover pause after a touch in Magic or by MIDI. Only the expressions are tested.
+- The page against the new bridge: `tools/blender_page_test.py` (new rows: Path Camera first, named stops, a path and target set reaching the scene). Run against the mock it fails only where the mock has no bridge (Art-Net, 415, 403).
+- The handbook's takeover for the page and the desk describes B9's bridge work, not yet seen.
+
+Pictures for B10 (need Blender; the README gallery still shows the fixed shots, marked as the build before the Path Camera):
+- Gallery: a handful of path and target pairs by day and at sunset (for example Orbit / Pyramids, Follow the land / River, Vantage / Coast, Rise and descend / Planet at height 1), replacing the `CAM_N` captions.
+- OSC manual pictures (`docs/images/readme/osc/<name>-blender.jpg`, low | high): `path`, `target`, `height` (0 and 1), `blend` (a cut against a flight; the current picture shows the old shot change), `takeover` has none (a time).
+- Remove from the manual folder once replaced: `cam-planet-*.jpg`, `cam-island-*.jpg` if the island goes too, `flight-blender.jpg`; `cam-blender.jpg` is unused since `/vj/cam` is Godot only.

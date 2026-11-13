@@ -40,13 +40,34 @@ class DescribeTests(unittest.TestCase):
     def test_order_inside_a_group_is_the_contract_order(self):
         for sec in self.page["sections"]:
             with self.subTest(group=sec["title"]):
-                want = [pm.key_of(r["address"]) for r in ROWS if r["group"] == sec["title"] and r.get("blender")]
+                want = [pm.key_of(r["address"]) for r in ROWS if r["group"] == sec["title"] and r.get("blender") and pm.key_of(r["address"]) not in pm.CAMERA]
                 self.assertEqual(sec["keys"], want)
 
-    def test_camera_buttons_carry_number_and_name(self):
-        cam = next(c for c in self.page["controls"] if c["key"] == "vj_cam")
-        self.assertEqual([(s["index"], s["name"]) for s in cam["shots"]][:3], [(0, "Plaza View"), (1, "River Skim"), (2, "Pyramid Hero")])
-        self.assertEqual(len(cam["shots"]), cam["max"] + 1)
+    def test_the_path_camera_comes_first_and_only_once(self):
+        self.assertEqual(self.page["path_camera"], ["vj_path", "vj_target", "vj_height", "vj_blend"])
+        below = [k for sec in self.page["sections"] for k in sec["keys"]]
+        self.assertFalse(set(self.page["path_camera"]) & set(below))
+        self.assertEqual(sorted(below + self.page["path_camera"]), sorted(c["key"] for c in self.page["controls"]))
+
+    def test_path_and_target_buttons_carry_the_contract_names(self):
+        by_key = {c["key"]: c for c in self.page["controls"]}
+        cases = [("vj_path", ["Orbit", "Follow the land", "Rise and descend", "Vantage"]),
+                 ("vj_target", ["Pyramids", "Lake", "River", "Coast", "Moon", "Sun", "Planet"])]
+        for key, names in cases:
+            with self.subTest(key=key):
+                c = by_key[key]
+                self.assertEqual([x["name"] for x in c["stops"]], names)
+                self.assertEqual([x["wire"] for x in c["stops"]], list(range(c["min"], c["max"] + 1)))
+
+    def test_labels_come_from_the_contract(self):
+        by_key = {c["key"]: c for c in self.page["controls"]}
+        for key, label in (("vj_blend", "Fade Time"), ("vj_height", "Height"), ("vj_takeover", "Takeover Pause")):
+            with self.subTest(key=key):
+                self.assertEqual(by_key[key]["label"], label)
+
+    def test_no_shot_control_on_the_planet(self):
+        keys = {c["key"] for c in self.page["controls"]}
+        self.assertFalse(keys & {"vj_cam", "vj_cam_auto", "vj_flight", "vj_boost"})
 
     def test_triggers_are_their_own_section_of_buttons(self):
         trig = next(s for s in self.page["sections"] if s["title"] == "Triggers")

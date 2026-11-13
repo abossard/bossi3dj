@@ -50,11 +50,23 @@ def ctl(name, value):
     return (name, None, value, [])
 
 
+# The controls the music steers. Each gets Takeover: <Name>Prev (its value a frame ago), <Name>Touch (the clock of its last change by hand
+# or MIDI, 0 = never) and <Name>Follow (Follow, or 0 while the touch is younger than Takeover x 60 s). Its Out uses <Name>Follow.
+STEERED = ["Level", "Bass", "Beat", "Hue", "Intensity", "Strobe", "GridSpeed", "CamSpeed", "Path", "Target", "Height", "Fog", "FogGlow"]
+
+
+def takeover(name):
+    return [("%sPrev" % name, "calc", 0, [ex(name)]),
+            ("%sTouch" % name, "calc", 0, [ex("if(Clock > 1 and abs(%s - %sPrev) > 0.0001, Clock, y)" % (name, name))]),
+            ("%sFollow" % name, "calc", 0, [ex("Follow*if(%sTouch > 0 and Clock - %sTouch < Takeover*60, 0, 1)" % (name, name))])]
+
+
 GLOBALS = [
     # Controls, 0..1 so a MIDI CC maps straight on.
     # Every /vj/* address has a control Global named like it (/vj/fog_height: FogHeight), set here by hand. It holds the
     # contract's default. Where the music drives the address (Follow below), the control is the value while no music plays
-    # and the base the music moves; Cam is the camera shot while CamAuto is 0.
+    # and the base the music moves. Takeover: a control you touch (by hand or MIDI) is yours for Takeover x 60 s, then the
+    # music steers it again (<Name>Follow below). An index control is a 0..1 fader over its stops (Path, Target, Cam).
     ctl("Gain", 0.5),        # input sensitivity, 0.5 = x2
     ctl("Master", 1.0),      # overall brightness, scales Intensity and Strobe
     ctl("React", 1.0),       # the music mapping on/off: 0 = the controls alone, 1 = music drives the addresses it can
@@ -72,9 +84,12 @@ GLOBALS = [
     ctl("Meteor", 0.0),      # momentary pad: shooting star
     ctl("Hue", 0.0),         # /vj/hue base, the music walks it by HueDrift
     ctl("HueDrift", 0.05),   # hue walk per bar and per drop
-    ctl("CamAuto", 1.0),     # 1 = Magic cuts every 8 bars and on drops, and Godot's director cuts by itself; 0 = Cam
-    ctl("Cam", 0.0),         # /vj/cam: manual camera while CamAuto is 0, 0..1 -> shot 0..11 (11: the planet's Flight; a scene without that many takes its last)
-    ctl("CamCount", 1.0),    # shots the auto-cutter cycles through, 0..1 -> 1..12
+    ctl("CamAuto", 1.0),     # /vj/cam_auto, Godot only: 1 = Godot's director cuts by itself, 0 = it holds the shot Cam picks
+    ctl("Cam", 0.0),         # /vj/cam, Godot only: 0..1 -> shot 0..11 (a scene without that many takes its last)
+    ctl("Path", 0.0),        # /vj/path: 0..1 -> path 0..3 (orbit, follow the land, rise and descend, vantage)
+    ctl("Target", 0.0),      # /vj/target: 0..1 -> target 0..6 (pyramids, lake, river, coast, moon, sun, planet)
+    ctl("Height", 0.3),      # /vj/height: 0 just over the ground, 0.5 about 800 m, 1 space (log scale in the scene)
+    ctl("Takeover", 0.33),   # /vj/takeover: how long a touched control stays yours, 0..1 = 0..60 s (0.33 = 20 s)
     ctl("CamSpeed", 0.25),   # /vj/cam_speed
     ctl("GridSpeed", 0.15),  # /vj/grid_speed
     ctl("Sun", 1.0), ctl("Moon", 1.0), ctl("Pyramids", 1.0),
@@ -92,9 +107,7 @@ GLOBALS = [
     ctl("FogNoise", 0.6),
     ctl("FogScale", 0.25),   # 10..1000 m
     ctl("FogSpeed", 0.25),   # x40 m/s
-    ctl("Flight", 0.0),      # planet scene: 0 orbit, 0.33 approach, 0.66 skim, 1 hover
-    ctl("Boost", 0.0),       # planet scene: accelerator while skimming or hovering
-    ctl("Blend", 0.5),       # planet scene: shot change duration, 0 cuts, x2
+    ctl("Blend", 0.5),       # /vj/blend, Fade Time: how long a change of path or target flies, 0 cuts, 0..1 = 0..60 s
     ctl("Energy", 0.3),      # /vj/energy, planet scene: how hard the cameras move
     ctl("Hit", 0.0),         # momentary pad: speed surge with a wide-angle kick
     ctl("FogBeat", 0.5),     # how much fog pulses on the beat
@@ -175,6 +188,9 @@ GLOBALS = [
     # drives the addresses it can: Live x React. With no sound or React 0 every address holds its control (the contract default).
     ("Live", "calc", 0, [ex("if(EnergyNow > 0.004, 1, max(0, y - Dt/3))")]),
     ("Follow", "calc", 0, [ex("Live*React")]),
+    # Path and target move on: one step on every drop and every 16 bars.
+    ("Moves", "calc", 0, [ex("floor(Bars/16) + Drops")]),
+    *[g for name in STEERED for g in takeover(name)],
 
     # EDM structure, keyed on the kick: 1.5-4 s without one is a breakdown, or
     # a build while the highs rise (riser, snare roll); the first kick after
@@ -200,19 +216,24 @@ GLOBALS = [
 
     # Values sent to the scenes (/vj/*), in wire units: 0..1 for every continuous control (osc/CONTROLS.md).
     # Level and bass relative to the track's own average, so any input level works.
-    ("OutLevel", "calc", 0.5, [ex("Level + Follow*(min(1, 0.4*EnergyNow/max(EnergyAvg, 0.02) + 0.3*BeatNow) - Level)")]),
-    ("OutBass", "calc", 0, [ex("Bass + Follow*(min(1, 0.35*Sub/max(SubLong, 0.03) + 0.5*Kick) - Bass)")]),
-    ("OutBeat", "calc", 0, [ex("Beat + Follow*(BeatNow - Beat)")]),
-    ("OutHue", "calc", 0, [ex("frac(Hue + Follow*HueDrift*(Bars/8 + Drops*0.25))")]),
-    ("OutIntensity", "calc", 0.5, [ex("Master*(1 - Blackout)*Intensity*(1 + Follow*(Auto*(0.35*DropEnv + 0.15*Build - 0.25*Breakdown) - 0.15))")]),
-    ("OutStrobe", "calc", 0, [ex("Master*(1 - Blackout)*min(1, max(Strobe, Follow*Auto*DropEnv*0.5)*BeatNow^4 + Follow*Auto*Build*Build*Snare^4*0.6)")]),
+    ("OutLevel", "calc", 0.5, [ex("Level + LevelFollow*(min(1, 0.4*EnergyNow/max(EnergyAvg, 0.02) + 0.3*BeatNow) - Level)")]),
+    ("OutBass", "calc", 0, [ex("Bass + BassFollow*(min(1, 0.35*Sub/max(SubLong, 0.03) + 0.5*Kick) - Bass)")]),
+    ("OutBeat", "calc", 0, [ex("Beat + BeatFollow*(BeatNow - Beat)")]),
+    ("OutHue", "calc", 0, [ex("frac(Hue + HueFollow*HueDrift*(Bars/8 + Drops*0.25))")]),
+    ("OutIntensity", "calc", 0.5, [ex("Master*(1 - Blackout)*Intensity*(1 + IntensityFollow*(Auto*(0.35*DropEnv + 0.15*Build - 0.25*Breakdown) - 0.15))")]),
+    ("OutStrobe", "calc", 0, [ex("Master*(1 - Blackout)*min(1, max(Strobe, StrobeFollow*Auto*DropEnv*0.5)*BeatNow^4 + StrobeFollow*Auto*Build*Build*Snare^4*0.6)")]),
     # 0..4 cells/s on the wire as 0..1
-    ("OutGridSpeed", "calc", 0.15, [ex("min(1, max(0, GridSpeed*(1 + Follow*(0.5*EnergyAvg + 0.8*DropEnv + 0.4*Build - 0.4*Breakdown))))")]),
+    ("OutGridSpeed", "calc", 0.15, [ex("min(1, max(0, GridSpeed*(1 + GridSpeedFollow*(0.5*EnergyAvg + 0.8*DropEnv + 0.4*Build - 0.4*Breakdown))))")]),
     # An index: shot N of the scene, 0-based. A scene with fewer shots takes its last.
-    ("OutCam", "calc", 0, [ex("if(CamAuto > 0.5 and Follow > 0.5, (floor(Beats/32) + Drops) % (floor(CamCount*11 + 0.001) + 1), floor(Cam*11.999))")]),
+    ("OutCam", "calc", 0, [ex("floor(Cam*11.999)")]),
     ("OutCamAuto", "calc", 1, [ex("if(CamAuto > 0.5, 1, 0)")]),
     # 0..4 on the wire as 0..1
-    ("OutCamSpeed", "calc", 0.25, [ex("min(1, max(0, CamSpeed*(1 + Follow*Auto*(0.5*Build + 0.8*DropEnv - 0.3*Breakdown))))")]),
+    # The Path Camera: path and target step on with the music (Moves), height sinks on builds and rises in breakdowns.
+    ("OutPath", "calc", 0, [ex("if(PathFollow > 0.5, Moves % 4, floor(Path*3.999))")]),
+    ("OutTarget", "calc", 0, [ex("if(TargetFollow > 0.5, (Moves*3) % 7, floor(Target*6.999))")]),
+    ("OutHeight", "calc", 0.3, [ex("min(1, max(0, Height + HeightFollow*Auto*(0.2*Breakdown - 0.2*Build - 0.1*DropEnv)))"), ("Smooth", 0.95, "x")]),
+    ("OutTakeover", ("global", "Takeover"), 0.33, []),
+    ("OutCamSpeed", "calc", 0.25, [ex("min(1, max(0, CamSpeed*(1 + CamSpeedFollow*Auto*(0.5*Build + 0.8*DropEnv - 0.3*Breakdown))))")]),
     ("OutSun", ("global", "Sun"), 1, [("Smooth", 0.95, "x")]),
     ("OutMoon", ("global", "Moon"), 1, [("Smooth", 0.95, "x")]),
     ("OutMoonPhase", ("global", "MoonPhase"), 1, [("Smooth", 0.95, "x")]),
@@ -226,9 +247,9 @@ GLOBALS = [
     ("OutNebula", ("global", "Nebula"), 1, [("Smooth", 0.95, "x")]),
     ("OutFlamingos", ("global", "Flamingos"), 1, [("Smooth", 0.95, "x")]),
     ("OutHaze", ("global", "Haze"), 1, [("Smooth", 0.95, "x")]),
-    ("OutFog", "calc", 0.35, [ex("max(Fog, min(0.6, Fog + Follow*Auto*Breakdown*0.3))"), ("Smooth", 0.95, "x")]),
+    ("OutFog", "calc", 0.35, [ex("max(Fog, min(0.6, Fog + FogFollow*Auto*Breakdown*0.3))"), ("Smooth", 0.95, "x")]),
     ("OutFogHeight", ("global", "FogHeight"), 0.41, [("Smooth", 0.95, "x")]),
-    ("OutFogGlow", "calc", 0.3, [ex("min(1, FogGlow*(1 + Follow*Auto*0.5*DropEnv))")]),
+    ("OutFogGlow", "calc", 0.3, [ex("min(1, FogGlow*(1 + FogGlowFollow*Auto*0.5*DropEnv))")]),
     ("OutFogHue", ("global", "FogHue"), 0, [("Smooth", 0.95, "x")]),
     ("OutFogNoise", ("global", "FogNoise"), 0.6, [("Smooth", 0.95, "x")]),
     ("OutFogScale", ("global", "FogScale"), 0.25, [("Smooth", 0.95, "x")]),
@@ -239,8 +260,6 @@ GLOBALS = [
     ("OutMeteor", "calc", 0, [ex("if(Meteor > 0.5, 1, 0)")]),
     ("OutHit", "calc", 0, [ex("if(Hit > 0.5, 1, 0)")]),
     # Planet scene controls that are plain faders here; the scene eases them itself.
-    ("OutFlight", ("global", "Flight"), 0, []),
-    ("OutBoost", ("global", "Boost"), 0, []),
     ("OutBlend", ("global", "Blend"), 0.5, []),
     ("OutEnergy", ("global", "Energy"), 0.3, []),
 
@@ -256,6 +275,7 @@ OSC_OUT = [
     ("/vj/level", "OutLevel"), ("/vj/bass", "OutBass"), ("/vj/beat", "OutBeat"),
     ("/vj/hue", "OutHue"), ("/vj/intensity", "OutIntensity"), ("/vj/strobe", "OutStrobe"),
     ("/vj/grid_speed", "OutGridSpeed"), ("/vj/cam", "OutCam"), ("/vj/cam_auto", "OutCamAuto"), ("/vj/cam_speed", "OutCamSpeed"),
+    ("/vj/path", "OutPath"), ("/vj/target", "OutTarget"), ("/vj/height", "OutHeight"), ("/vj/takeover", "OutTakeover"),
     ("/vj/sun", "OutSun"), ("/vj/moon", "OutMoon"), ("/vj/moon_phase", "OutMoonPhase"), ("/vj/pyramids", "OutPyramids"),
     ("/vj/grid", "OutGrid"), ("/vj/stars", "OutStars"), ("/vj/water", "OutWater"),
     ("/vj/night", "OutNight"), ("/vj/shock", "OutShock"), ("/vj/nebula", "OutNebula"),
@@ -264,12 +284,12 @@ OSC_OUT = [
     ("/vj/fog_speed", "OutFogSpeed"), ("/vj/fog_beat", "OutFogBeat"),
     ("/vj/meteor", "OutMeteor"), ("/vj/flamingos", "OutFlamingos"), ("/vj/haze", "OutHaze"),
     ("/vj/eclipse", "OutEclipse"), ("/vj/star_speed", "OutStarSpeed"),
-    ("/vj/flight", "OutFlight"), ("/vj/boost", "OutBoost"), ("/vj/blend", "OutBlend"), ("/vj/energy", "OutEnergy"),
+    ("/vj/blend", "OutBlend"), ("/vj/energy", "OutEnergy"),
     ("/vj/hit", "OutHit"),
 ]
 
-# What the music does to an address, in plain words. An address in this dict follows the music while Follow is above 0 (its Out Global
-# names Follow); every other address is its control Global alone. The handbook table (magic_manual.py) is built from this and the project.
+# What the music does to an address, in plain words. An address in this dict follows the music while Follow is above 0 and its control
+# was not touched within the Takeover pause (its Out Global reads <Name>Follow); every other address is its control Global alone. The handbook table (magic_manual.py) is built from this and the project.
 MUSIC = {
     "/vj/level": "Loudness against the track's own average, plus the beat.",
     "/vj/bass": "Sub-bass against its recent average, plus the kick.",
@@ -278,7 +298,9 @@ MUSIC = {
     "/vj/intensity": "Lifts on drops and builds, dips in breakdowns (Auto 1).",
     "/vj/strobe": "Flashes on the beat during a drop and on snare rolls in a build (Auto 1); Strobe adds a flash on every beat.",
     "/vj/grid_speed": "Faster with energy, drops and builds, slower in breakdowns.",
-    "/vj/cam": "The auto cutter: a new shot every 8 bars and on every drop, through the first CamCount shots (CamAuto 1). CamAuto 0 sends Cam.",
+    "/vj/path": "Steps to the next path on every drop and every 16 bars.",
+    "/vj/target": "Steps on with the path, through all seven targets.",
+    "/vj/height": "Sinks on builds and drops, rises in breakdowns (Auto 1).",
     "/vj/cam_speed": "Faster on builds and drops, slower in breakdowns (Auto 1).",
     "/vj/fog": "Thickens in a breakdown, up to 0.6 (Auto 1).",
     "/vj/fog_glow": "Glows brighter on a drop (Auto 1).",

@@ -8,7 +8,7 @@ Generators and tooling for `.magic` files. The skill `.claude/skills/magic-proje
 
 ## Show project
 
-`projects/show.magic` (`show_magic.py`, `python3 magic/show_magic.py`) is the synthwave project with two Syphon sources, `CAM_OUT - Blender` and `COLOSSUS_OUT - Godot`, in the Program scene. A `Mix` module crossfades them with the Global `SceneMix` (0 Blender only, 1 Godot only) and the effects run on the mix. Its senders go straight to the scene on udp 9201, which Blender's bridge and the Godot Colossus Scene both listen on (one runs at a time). `--syphon-godot` sets another server name. `CamAuto` 1 lets Magic cut Blender and Godot's own director cut Godot (`/vj/cam_auto` 1); 0 sends `Cam` as `/vj/cam` to both and holds Godot on that shot. Magic publishes its own mixed picture as Syphon `MAGIC_OUT - Magic` (1920x1080, `--syphon-out` renames it), which `magicproj.py grab --server MAGIC_OUT` reads and another app can take. The handbook's table of what Magic sends and why is made from this project: `python3 magic/magic_manual.py sync`.
+`projects/show.magic` (`show_magic.py`, `python3 magic/show_magic.py`) is the synthwave project with two Syphon sources, `CAM_OUT - Blender` and `COLOSSUS_OUT - Godot`, in the Program scene. A `Mix` module crossfades them with the Global `SceneMix` (0 Blender only, 1 Godot only) and the effects run on the mix. Its senders go straight to the scene on udp 9201, which Blender's bridge and the Godot Colossus Scene both listen on (one runs at a time). `--syphon-godot` sets another server name. `Cam` and `CamAuto` are for Godot only (`/vj/cam`, `/vj/cam_auto`); Blender's Path Camera takes `Path`, `Target` and `Height`. Magic publishes its own mixed picture as Syphon `MAGIC_OUT - Magic` (1920x1080, `--syphon-out` renames it), which `magicproj.py grab --server MAGIC_OUT` reads and another app can take. The handbook's table of what Magic sends and why is made from this project: `python3 magic/magic_manual.py sync`.
 
 Scenes:
 - **Master**: Program behind Blackout, the Monitor overlay, and OSC Out.
@@ -32,7 +32,9 @@ Controls are unlinked Globals in 0..1, ready for MIDI or OSC learn. Every `/vj/*
 | `Shock`, `ShockKick` | momentary pad, fires a shockwave; shockwaves on heavy kicks |
 | `Meteor` | momentary pad, fires a shooting star |
 | `Hue`, `HueDrift` | hue offset; hue walk per bar and per drop |
-| `CamAuto`, `Cam`, `CamCount`, `CamSpeed` | auto cuts through the first `CamCount` cameras every 8 bars and on drops (only while music plays); manual camera 0..1 over shots 0..11; drift speed |
+| `Path`, `Target`, `Height`, `CamSpeed` | the Path Camera: path 0..1 over 4 paths, target 0..1 over 7 targets, height (0.5 about 800 m); with music path and target step on at every drop and every 16 bars (`Moves`), height sinks on builds and rises in breakdowns; speed along the path |
+| `Takeover` | how long a touched control stays yours before the music steers it again, 0..1 = 0..60 s; per steered control `<Name>Touch` keeps the clock of its last change and `<Name>Follow` is 0 meanwhile |
+| `CamAuto`, `Cam` | Godot only: its director on or off; the shot 0..1 over shots 0..11 |
 | `GridSpeed` | grid scroll speed (`/vj/grid_speed`) |
 | `Sun` `Moon` `Pyramids` `Grid` `Stars` `Water` | scene elements, faded |
 | `MoonPhase`, `Eclipse`, `StarSpeed` | moon on its orbit (0 new, next to the sun; 1 full, opposite); eclipse alignment (lunar at full, solar at new moon); star drift against the sun (×10, 1° per second at 0.1) |
@@ -58,13 +60,14 @@ OSC out (latest value of each Global; ranges and meaning per scene are in [osc/C
 |---|---|
 | `/vj/level` `/vj/bass` `/vj/beat` | `OutLevel` `OutBass` `OutBeat` |
 | `/vj/hue` `/vj/intensity` `/vj/strobe` | `OutHue` `OutIntensity` `OutStrobe` |
-| `/vj/grid_speed` `/vj/cam` `/vj/cam_auto` `/vj/cam_speed` | `OutGridSpeed` `OutCam` `OutCamAuto` `OutCamSpeed`; `OutCam` is a whole number, shot 0..11 (`CamCount` shots while `CamAuto` cuts and music plays, `Cam` otherwise) |
+| `/vj/grid_speed` `/vj/cam` `/vj/cam_auto` `/vj/cam_speed` | `OutGridSpeed` `OutCam` `OutCamAuto` `OutCamSpeed`; `OutCam` is a whole number from `Cam`, for Godot |
+| `/vj/path` `/vj/target` `/vj/height` `/vj/takeover` | `OutPath` `OutTarget` (whole numbers) `OutHeight` `OutTakeover` |
 | `/vj/sun` `/vj/moon` `/vj/pyramids` `/vj/grid` `/vj/stars` `/vj/water` | `OutSun` … `OutWater` |
 | `/vj/night` `/vj/nebula` `/vj/shock` | `OutNight` `OutNebula` `OutShock`: a 50 ms pulse at the wave's strength on heavy kicks (at most every 0.9 s, every 0.35 s while a drop is fresh; 0.6 rising to 1.5), on each drop (1.5) and on the pad |
 | `/vj/fog` … `/vj/fog_beat` | `OutFog` … `OutFogBeat`; fog thickens in breakdowns and glows on drops while `Auto` is on |
 | `/vj/meteor` `/vj/flamingos` `/vj/haze` `/vj/moon_phase` | `OutMeteor` (1 while the pad is held) `OutFlamingos` `OutHaze` `OutMoonPhase` |
 | `/vj/eclipse` `/vj/star_speed` | `OutEclipse` `OutStarSpeed` |
-| `/vj/flight` `/vj/boost` `/vj/blend` `/vj/energy` `/vj/hit` | `OutFlight` `OutBoost` `OutBlend` `OutEnergy` (faders `Flight` `Boost` `Blend` `Energy`, passed on as they are) and `OutHit` (1 while the `Hit` pad is held) |
+| `/vj/blend` `/vj/energy` `/vj/hit` | `OutBlend` (Fade Time) `OutEnergy` (faders `Blend` `Energy`, passed on as they are) and `OutHit` (1 while the `Hit` pad is held) |
 
 
 ## Magic projects (`magicproj.py`)

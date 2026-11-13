@@ -54,11 +54,11 @@
   button.fire:active { background: var(--accent); color: #1a0716; }
   button.fire code { font: 14px var(--mono); }
   .trig { margin: 0 0 12px; } .trig .plain { font-size: 13px; color: var(--dim); margin: 3px 0 0; }
-  .cams { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .cams button { min-height: 56px; padding: 4px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; }
-  .cams button b { font: 600 16px var(--mono); }
-  .cams button span { font-size: 12px; text-align: center; overflow-wrap: anywhere; }
-  .cams button.on span { color: inherit; }
+  .stops { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; margin: 4px 0 12px; }
+  .stops button { min-height: 52px; padding: 4px 6px; line-height: 1.15; overflow-wrap: anywhere; }
+  .pick .head { display: flex; align-items: center; gap: 6px; }
+  .pick .head b, .ctl .head b { flex: 1; min-width: 0; font-size: 14px; }
+  .ctl .head b + code { flex: 0 1 auto; color: var(--dim); }
   .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
   .row > button.grow { flex: 1; }
   .muted { color: var(--dim); font-size: 13px; }
@@ -93,7 +93,7 @@
 <header>
   <div class="top"><h1 id="title">Synthwave Control</h1><span id="link" class="dot bad" title="connection to Blender"></span></div>
   <div class="chips">
-    <span class="chip" title="the camera on air">cam <b id="cam">-</b></span>
+    <span class="chip" title="the Path Camera: path and target">cam <b id="cam">-</b></span>
     <span class="chip"><span id="fpsdot" class="dot"></span><b id="fps">-</b> fps</span>
     <span class="chip"><span id="sydot" class="dot"></span>Syphon <b id="sy">-</b></span>
     <span class="chip" title="where the values come from: OSC (Magic), this page, the beat simulator; held = this page owns it"><span id="oscdot" class="dot"></span><b id="from">-</b></span>
@@ -106,8 +106,8 @@
   <div class="banner bad" id="offline" hidden>Blender is not reachable. Start it with <code>make blender-open</code>; the page reconnects by itself.</div>
   <div class="banner" id="gaps" hidden></div>
   <section id="onair">
-    <h2>On air</h2>
-    <div class="cams" id="cams"></div>
+    <h2>Camera</h2>
+    <div id="camera"></div>
     <div class="row"><button id="holdall" class="grow" title="Skip all incoming OSC so this page owns the scene">Hold all</button>
       <button id="release" class="grow" title="Let OSC drive every control again">Release all</button>
       <button id="defaults" class="grow">Reset</button></div>
@@ -178,10 +178,10 @@ function build(s) {
   document.querySelectorAll("details.ctlsec").forEach(d => d.remove());
   for (const k in els) delete els[k];
   const byKey = Object.fromEntries(s.controls.map(c => [c.key, c]));
-  buildCams(byKey["vj_cam"]);
+  buildCamera(s.path_camera || [], byKey);
   const anchor = $("tools-sec");
   for (const sec of s.sections) {
-    const keys = sec.keys.filter(k => k !== "vj_cam");
+    const keys = sec.keys;
     if (!keys.length) continue;
     const d = el("details", "group ctlsec");
     d.open = store("sec:" + sec.title) !== "closed";
@@ -192,20 +192,29 @@ function build(s) {
   }
 }
 
-function buildCams(c) {
-  const box = $("cams"); box.innerHTML = "";
-  if (!c) { $("onair").querySelector("h2").textContent = "On air (no camera control)"; return; }
-  const t = tail(c), buttons = [];
-  const shots = c.shots && c.shots.length ? c.shots : Array.from({length: c.max - c.min + 1}, (_, i) => ({index: c.min + i, name: ""}));
-  for (const sh of shots) {
-    const b = el("button"); b.append(el("b", null, String(sh.index)), el("span", null, sh.name));
-    b.title = (sh.name ? sh.name + ": " : "") + (sh.shows || ""); b.onclick = () => send(c.key, sh.index);
-    buttons.push([sh.index, b]); box.appendChild(b);
+// The Path Camera first: a control with named stops is a row of buttons (path, target), the others are faders (height, fade time).
+function buildCamera(keys, byKey) {
+  const box = $("camera"); box.innerHTML = "";
+  if (!keys.length) { box.appendChild(el("div", "muted", "This scene has no Path Camera controls.")); return; }
+  for (const k of keys) {
+    const c = byKey[k];
+    if (c.step >= 1 && c.stops && c.stops.length) box.appendChild(pick(c));
+    else box.appendChild(control(c));
   }
+}
+
+function pick(c) {
+  const t = tail(c), wrap = el("div", "pick"), head = el("div", "head"), grid = el("div", "stops"), buttons = [];
+  head.append(el("b", null, c.label), el("code", null, c.address), t.src, t.lock);
+  for (const st of c.stops) {
+    const b = el("button", null, st.name); b.title = c.address + " " + st.wire;
+    b.onclick = () => send(c.key, st.wire);
+    buttons.push([st.wire, b]); grid.appendChild(b);
+  }
+  wrap.append(head, el("div", "plain", c.plain), grid);
+  wrap.querySelector(".plain").className = "muted";
   els[c.key] = {buttons, src: t.src, lock: t.lock};
-  const h = $("onair").querySelector("h2"); h.textContent = "On air"; h.append(" ", t.src, " ", t.lock);
-  h.style.display = "flex"; h.style.alignItems = "center"; h.style.gap = "6px";
-  t.lock.style.marginLeft = "auto";
+  return wrap;
 }
 
 function control(c) {
@@ -221,6 +230,7 @@ function control(c) {
   }
   const row = el("div", "ctl");
   const head = el("div", "head"), code = el("code", null, c.address); code.title = c.effect || c.address;
+  const label = el("b", null, c.label || c.address);
   const out = el("output"), unit = c.unit ? " " + c.unit : "";
   const reset = el("button", "small", "↺"); reset.title = "back to the default " + fmt(c.default, c.step) + unit;
   const input = el("input"); Object.assign(input, {type: "range", min: c.min, max: c.max, step: c.step});
@@ -228,7 +238,7 @@ function control(c) {
   input.onpointerdown = () => dragging = c.key;
   input.onpointerup = input.onpointercancel = () => dragging = null;
   reset.onclick = () => { input.value = c.default; input.oninput(); };
-  head.append(code, out, t.src, reset, t.lock);
+  head.append(label, code, out, t.src, reset, t.lock);
   row.append(head, el("div", "plain", c.plain), input);
   els[c.key] = {input, out, step: c.step, unit, src: t.src, lock: t.lock};
   return row;
@@ -258,9 +268,12 @@ function update(s) {
 
 function header(s, osc, hold) {
   $("title").textContent = s.scene;
-  const cc = s.controls.find(c => c.key === "vj_cam") || {};
-  const shot = (cc.shots || []).find(x => "CAM_" + x.index === s.camera);
-  $("cam").textContent = shot ? shot.index + " " + shot.name : (s.camera || "-");
+  const stop = key => {                // the name of a control's current stop, from the contract
+    const c = s.controls.find(x => x.key === key), v = s.values[key];
+    const st = c && c.stops ? c.stops.find(x => x.wire === Math.round(v)) : null;
+    return st ? st.name : v == null ? "-" : String(v);
+  };
+  $("cam").textContent = (s.path_camera || []).includes("vj_path") ? stop("vj_path") + " · " + stop("vj_target") : (s.camera || "-");
   $("fps").textContent = s.fps;
   $("fpsdot").className = "dot " + (!s.playing ? "bad" : s.fps >= 24 ? "ok" : "warn");
   const now = Date.now(), sy = s.syphon;
