@@ -264,7 +264,7 @@ class Web:
             elif path == "/api/health":
                 self.run_health(body)
             elif path == "/api/hold" and bridge is not None:
-                keys = set(body.get("keys") or [c["key"] for c in controls(scene)])
+                keys = set(body.get("keys") or [c["key"] for c in page_model.page_controls(controls(scene), contract()[0])])
                 bridge.hold = bridge.hold | keys if body.get("on") else bridge.hold - keys
         now = time.time()
         if self.sim.on:

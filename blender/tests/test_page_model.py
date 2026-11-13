@@ -87,6 +87,12 @@ class DescribeTests(unittest.TestCase):
                 self.assertEqual(page["coverage"], {"missing": [], "extra": []})
                 self.assertNotIn("Godot only", [s["title"] for s in page["sections"]])
 
+    def test_hold_all_takes_the_page_controls_only(self):
+        scene = CONTROLS + [{"key": "vj_cam", "min": 0, "max": 11, "step": 1, "default": 0, "trigger": False}]
+        held = [c["key"] for c in pm.page_controls(scene, ROWS)]
+        self.assertEqual(sorted(held), sorted(c["key"] for c in pm.page_state(scene, ROWS, contract.GROUPS)["controls"]))
+        self.assertNotIn("vj_cam", held)
+
     def test_a_missing_control_is_reported_by_address(self):
         page = pm.page_state([c for c in CONTROLS if c["key"] != "vj_fog"], ROWS, contract.GROUPS)
         self.assertEqual(page["coverage"]["missing"], ["/vj/fog"])

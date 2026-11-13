@@ -80,11 +80,16 @@ def coverage(controls, rows):
     return {"missing": sorted(a for k, a in want.items() if k not in have), "extra": sorted(k for k in have if k not in want)}
 
 
-def page_state(controls, rows, groups):
-    """The part of /api/state that describes the controls (the values and the rest come from the scene on every snapshot).
-    A property whose contract row is for Godot only (the scene may still carry it) is left off the page."""
+def page_controls(controls, rows):
+    """The scene's controls the page shows and Hold all holds: all but those whose contract row is for Godot only (the scene may
+    still carry such a property)."""
     godot = {key_of(r["address"]) for r in rows if not r.get("blender")}
-    controls = [c for c in controls if c["key"] not in godot]
+    return [c for c in controls if c["key"] not in godot]
+
+
+def page_state(controls, rows, groups):
+    """The part of /api/state that describes the controls (the values and the rest come from the scene on every snapshot)."""
+    controls = page_controls(controls, rows)
     d = describe(controls, rows, groups)
     have = {c["key"] for c in d}
     camera = [k for k in CAMERA if k in have]
