@@ -65,9 +65,10 @@ class Path:
         self.e0 = fl.tangent(self.uT, fl.sub(self.uB, self.uT))     # the circle starts on the side we come from
         self.uS = self.circle_u(0.0)
 
-    def gs(self, fn, x, span):
-        """The ground under fn(x), averaged over x - span .. x + span: no jitter from the map's texels."""
-        return sum(self.g(fn(x + k * span / 2.0)) for k in (-2, -1, 0, 1, 2)) / 5.0
+    def gs(self, fn, x, back, ahead, n=8):
+        """The highest ground under fn over x - back .. x + ahead (x itself included): the height never dips under the
+        ground below the camera, and rises before a slope ahead."""
+        return max(self.g(fn(x + back * (k / n - 1.0) if k <= n else x + ahead * (k - n) / n)) for k in range(2 * n + 1))
 
     def river(self, d):
         return fl.move(self.u1, self.h1, d)
@@ -92,14 +93,14 @@ class Path:
         ss = fl.smootherstep
         if t < 14.0:
             u, h = self.river(SKIM_SPEED * t)
-            a = self.gs(lambda x: self.river(x)[0], SKIM_SPEED * t, 40.0) + SKIM_AGL
+            a = self.gs(lambda x: self.river(x)[0], SKIM_SPEED * t, 20.0, 80.0) + SKIM_AGL
             f = self.pitched(h, u, -2.0)
             hint = h
         elif t < 38.0:
             e = ss((t - 14.0) / 24.0)
             d = SKIM_SPEED * 14.0 + CLIMB_RUN * e
             u, h = self.river(d)
-            g = self.gs(lambda x: self.river(x)[0], d, 40.0)
+            g = self.gs(lambda x: self.river(x)[0], d, 20.0, 80.0)
             a = g * (1.0 - e) + SKIM_AGL * (ORBIT_ALT / SKIM_AGL) ** e
             f = self.pitched(h, u, -2.0 - 88.0 * e ** 1.3)
             hint = h
@@ -115,7 +116,7 @@ class Path:
             s = (t - 54.0) / 16.0
             e = ss(s)
             u = self.uS
-            g = self.gs(self.circle_u, 0.0, 0.1)
+            g = self.gs(self.circle_u, 0.0, 0.1, 0.1)
             a = g * e + HIGH * (ORBIT_ALT / HIGH) ** (1.0 - e)
             p = fl.add(fl.CENTRE, u, fl.R + a)
             f = fl.slerp(fl.scale(u, -1.0), fl.norm(fl.sub(self.look, p)), ss(e))
@@ -125,7 +126,7 @@ class Path:
             th = CIRCLE_RATE * (t - 70.0)
             u = self.circle_u(th)
             agl = HIGH if t < 80.0 else LOW + (HIGH - LOW) * (1.0 - ss((t - 80.0) / 4.0))
-            a = self.gs(self.circle_u, th, 0.1) + agl
+            a = self.gs(self.circle_u, th, 0.1, 0.2) + agl
             p = fl.add(fl.CENTRE, u, fl.R + a)
             f = fl.norm(fl.sub(self.look, p))
             hint = fl.tangent(u, fl.sub(self.uT, u))
@@ -144,6 +145,8 @@ DN["tt_state"] = st
 
 
 def script():
+    if st.get("hold_t") is not None:
+        return PATH.pose(st["hold_t"])
     t = 0.0 if st["t0"] is None else time.perf_counter() - st["t0"]
     return PATH.pose(t)
 
@@ -168,6 +171,22 @@ def ground_ray(p, f, up):
             return fl.add(p, d, hi), hi
         prev, s = s, s * 1.06
     return None, None
+
+
+def pop(ch, cam):
+    """How far from its parent's lattice the finer side of a level change is drawn when it changes: 1 - the morph
+    factor of its vertex nearest the camera (0: the change is invisible, the vertices sit on the coarse surface).
+    The finer side is a changed node whose parent changed too (a split adds it, a merge removes it); the four
+    nearest by bounds are checked on their 9 x 9 lattice, heights from the clearance map."""
+    p = LOD._state["params"]
+    fine = [k for k in ch if k[1] and (k[0], k[1] - 1, k[2] >> 1, k[3] >> 1) in ch]
+    hr = LOD._state.get("hr")
+    worst = 0.0
+    for k in sorted(fine, key=lambda k: ls.dist_to(k, cam, hr))[:4]:
+        dmin = min(math.dist(cam, fl.add(fl.CENTRE, u, fl.R + FS["map"].ground(u)))
+                   for u in (ls.node_dir(k, x, y, p.n) for x in range(p.n + 1) for y in range(p.n + 1)))
+        worst = max(worst, 1.0 - ls.morph_factor(dmin, k[1], p))
+    return worst
 
 
 def on_draw():
@@ -195,18 +214,19 @@ def on_draw():
         if old and ch:
             hr = L.get("hr")
             near = min(ch, key=lambda k: ls.dist_to(k, cam, hr))
-            st["swaps"].append((round(t, 3), len(ch), round(ls.dist_to(near, cam, hr), 1), near[1]))
+            st["swaps"].append((round(t, 3), len(ch), round(ls.dist_to(near, cam, hr), 1), near[1], round(pop(ch, cam), 3)))
         st["nodes"], st["keys"] = nodes, new
     depths = [k[1] for k in st["keys"]]
-    sel = L.get("sel_cam")
+    sel, shown = L.get("sel_cam"), L.get("shown_cam")
     st["rows"].append((round(t, 3), round(ms, 2), stage_of(t), round(alt - FS["map"].surface(u), 1), round(alt, 1),
                        round(S.get("rt_space", 0.0), 3), len(st["keys"]), min(depths, default=-1), max(depths, default=-1),
-                       len(L.get("near_missing") or ()), bool(LOD.holding()), round(math.dist(cam, sel), 1) if sel else None))
+                       len(L.get("near_missing") or ()), bool(LOD.holding()), round(math.dist(cam, sel), 1) if sel else None,
+                       round(math.dist(cam, shown), 1) if shown else None))
     if st["n"] % 10 == 0 and pose:
         q, dist = ground_ray(pose[0], pose[1], pose[2])
         if q is not None:
             uq = fl.norm(fl.sub(q, fl.CENTRE))
-            depth = next((d for d in range(ls.Params().d_max, -1, -1) if ls.key_at(uq, d) in st["keys"]), None)
+            depth = next((d for d in range(LOD._state["params"].d_max, -1, -1) if ls.key_at(uq, d) in st["keys"]), None)
             if depth is not None:
                 cell = ls.FACE_ARC / (1 << depth) / LOD._state["params"].n
                 st["probe"].append((round(t, 3), stage_of(t), depth, round(dist, 1), round(cell, 1), round(cell / dist * FOCAL_PX, 2)))
@@ -233,6 +253,8 @@ def summary():
         sw = [s for s in st["swaps"] if a <= s[0] < b]
         pr = [p for p in st["probe"] if p[1] == name]
         lag = [r[11] for r in rows if r[11] is not None]
+        slag = [r[12] for r in rows if r[12] is not None]
+        pops = [s[4] for s in sw]
         out[name] = {"frames": len(rows), "median_ms": round(statistics.median(ms), 1) if ms else None,
                      "p95_ms": round(pct(ms, 0.95), 1) if ms else None, "worst_ms": round(max(ms), 1) if ms else None,
                      "over_33ms": round(sum(1 for x in ms if x > 33.3) / len(ms), 3) if ms else None,
@@ -242,6 +264,10 @@ def summary():
                      "lower_third_depth_median": statistics.median([p[2] for p in pr]) if pr else None,
                      "lower_third_dist_median_m": round(statistics.median([p[3] for p in pr])) if pr else None,
                      "lag_m_median": round(statistics.median(lag), 1) if lag else None, "lag_m_max": round(max(lag), 1) if lag else None,
+                     "shown_lag_m_median": round(statistics.median(slag), 1) if slag else None,
+                     "shown_lag_m_p95": round(pct(slag, 0.95), 1) if slag else None,
+                     "shown_lag_m_max": round(max(slag), 1) if slag else None,
+                     "pops_over_0.05": sum(1 for x in pops if x > 0.05), "pop_max": max(pops, default=None),
                      "near_missing_frames": round(sum(1 for r in rows if r[9] > 0) / len(rows), 3) if rows else None,
                      "holding_frames": sum(1 for r in rows if r[10]),
                      "alt_m": [round(min(r[4] for r in rows)), round(max(r[4] for r in rows))] if rows else None,
@@ -258,10 +284,80 @@ def summary():
     return out
 
 
+def overrides():
+    """JOB "lod": lod_stream.Params fields, JOB "consts": lod_scene module constants; returns how to undo them."""
+    p, undo = LOD._state["params"], []
+    for k, v in (JOB.get("lod") or {}).items():
+        undo.append((p, k, getattr(p, k)))
+        setattr(p, k, v)
+    for k, v in (JOB.get("consts") or {}).items():
+        undo.append((LOD, k, getattr(LOD, k)))
+        setattr(LOD, k, v)
+    return undo
+
+
+def settled():
+    L = LOD._state
+    return FS.get("stream") and LOD.live() and not LOD.holding() and L.get("want") is None and not L.get("near_missing")
+
+
+def holes(t):
+    """The view at script time t held until its terrain is settled, then one OpenGL render of the camera view into a
+    file with Sea_Underside (seen only through a hole in the land) as pure green emission; the green share counted.
+    The render is off the Syphon output but the swapped material is drawn there for about one frame."""
+    st["hold_t"] = t
+    t1 = time.perf_counter()
+    while time.perf_counter() - t1 < 30.0 and not settled():
+        yield 0.2
+    yield 1.5
+    ob = S.objects["Sea_Underside"]
+    mod = ob.modifiers[0]
+    ident = next(it.identifier for it in mod.node_group.interface.items_tree
+                 if getattr(it, "in_out", "") == "INPUT" and it.name == "Material")
+    sock = getattr(mod.properties.inputs, ident)
+    old = sock.value
+    m = bpy.data.materials.get("_hole_green") or bpy.data.materials.new("_hole_green")
+    m.use_nodes = True
+    nt = m.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    em, out = nt.nodes.new("ShaderNodeEmission"), nt.nodes.new("ShaderNodeOutputMaterial")
+    em.inputs["Color"].default_value = (0.0, 1.0, 0.0, 1.0)
+    nt.links.new(em.outputs[0], out.inputs["Surface"])
+    path = os.path.join(os.path.dirname(JOB["out"]), "%s_holes_t%04.1f.png" % (JOB.get("name", "run"), t))
+    fp, ff = S.render.filepath, S.render.image_settings.file_format
+    S.render.filepath, S.render.image_settings.file_format = path, "PNG"
+    try:
+        sock.value = m
+        ob.update_tag()
+        for win in bpy.context.window_manager.windows:
+            for area in win.screen.areas:
+                if area.type == "VIEW_3D":
+                    with bpy.context.temp_override(window=win, area=area):
+                        bpy.ops.render.opengl(write_still=True, view_context=True)
+                    break
+    finally:
+        sock.value = old
+        ob.update_tag()
+        S.render.filepath, S.render.image_settings.file_format = fp, ff
+    import numpy as np
+    img = bpy.data.images.load(path)
+    a = np.empty(len(img.pixels), np.float32)
+    img.pixels.foreach_get(a)
+    a = a.reshape(-1, 4)
+    green = (a[:, 1] > 0.8) & (a[:, 0] < 0.25) & (a[:, 2] < 0.25)
+    st.setdefault("holes", []).append({"t": t, "stage": stage_of(t), "green_px": int(green.sum()),
+                                       "green_share": round(float(green.mean()), 6), "file": path,
+                                       "settled": bool(settled())})
+    bpy.data.images.remove(img)
+    st["hold_t"] = None
+
+
 def run():
     load0 = os.getloadavg()[0]
     BR.hold = set()
     defaults()
+    undo = st["undo"] = overrides()
     DN[KEY] = script
     BR.apply({"/vj/blend": [0.0], "/vj/flight": [0.0], "/vj/cam": [float(FC.name[4:])]}, "terrain_test")
     t = time.perf_counter()
@@ -270,19 +366,26 @@ def run():
     yield 3.0
     if JOB.get("flag"):
         open(JOB["flag"], "w").write("go\n")
-    st["t0"] = time.perf_counter()
-    while time.perf_counter() - st["t0"] < DURATION + 0.2:
-        yield 0.25
+    if JOB.get("fly", True):
+        st["t0"] = time.perf_counter()
+        while time.perf_counter() - st["t0"] < DURATION + 0.2:
+            yield 0.25
+    st["t0"] = None
+    for t in JOB.get("holes_at", ()):
+        yield from holes(t)
     DN.pop(KEY, None)
+    for o, k, v in undo:
+        setattr(o, k, v)
     BR.apply({"/vj/cam": [0.0]}, "terrain_test")
     defaults()
     bpy.types.SpaceView3D.draw_handler_remove(st["handle"], "WINDOW")
     st["handle"] = None
     json.dump({"load_start": round(load0, 1), "load_end": round(os.getloadavg()[0], 1), "stages": [list(s) for s in STAGES],
-               "summary": summary(),
+               "job": {k: v for k, v in JOB.items() if k not in ("out", "flag")},
+               "summary": summary() if st["rows"] else None, "holes": st.get("holes"),
                "columns": ["t", "ms", "stage", "agl", "alt", "rt_space", "nodes", "min_depth", "max_depth", "near_missing",
-                           "holding", "lag_m"],
-               "rows": st["rows"], "swaps_columns": ["t", "changed_nodes", "nearest_changed_m", "its_depth"],
+                           "holding", "lag_m", "shown_lag_m"],
+               "rows": st["rows"], "swaps_columns": ["t", "changed_nodes", "nearest_changed_m", "its_depth", "pop"],
                "swaps": st["swaps"], "probe_columns": ["t", "stage", "depth", "dist_m", "cell_m", "cell_px"], "probe": st["probe"]},
               open(JOB["out"], "w"))
     DN["tt_done"] = True
@@ -300,6 +403,9 @@ def tick():
         import traceback
         DN["tt_err"] = traceback.format_exc()
         DN.pop(KEY, None)
+        st["hold_t"] = None
+        for o, k, v in st.get("undo") or ():
+            setattr(o, k, v)
         DN["tt_done"] = True
         return None
 

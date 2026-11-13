@@ -1,6 +1,6 @@
 # Terrain test: can one terrain carry every view?
 
-Question (the user's direction of 2026-11-12): can ONE terrain centred on the camera carry every view from skimming the ground to orbit, including the flights between, at a steady 30 fps? Today there are three terrains (the per-camera sets, the Flight's stream, the globe). This note holds the "before" state: the Flight's stream as it is, flown along one script. Step 4 (cheap tries) and the verdict wait for the next brief.
+Question (the user's direction of 2026-11-12): can ONE terrain centred on the camera carry every view from skimming the ground to orbit, including the flights between, at a steady 30 fps? Today there are three terrains (the per-camera sets, the Flight's stream, the globe). This note holds the "before" state (the Flight's stream as it was, flown along one script), step 4 (cheap tries), the "after" run and the verdict.
 
 ## What exists (2026-11-13)
 
@@ -32,7 +32,7 @@ Video: `docs/video/terrain-test-before.mp4` (90 s, 30 fps, 960x540, 8.0 MB). For
 
 Not measured in this run: holes (the off-output hole test needs one OpenGL render per sample; left for step 4), and frame times on an idle machine.
 
-## Commands
+## Commands (the before run)
 
 ```
 make blender-open SCENE=planet
@@ -46,6 +46,75 @@ DN["tt_job"] = {"out": "/abs/before.json", "flag": "/tmp/tt_go.flag"}; exec(open
 make blender-kill
 ```
 
-## Next (step 4, waits for its brief)
+## Step 4: the script fixed, the cheap tries (2026-11-13)
 
-The cheap tries, each with its number, at most three rebuilds: the near field finer (`d_max` 10 or 11, or a finer node grid; what the 33 ms buy on an idle machine), the shore holes (water following the land's level, or the planet's coarse land under the stream), the level switches hidden (morph range, hysteresis, switching outside the frame), one continuous hand-over to the globe; then the "after" run and video with the same script, and the verdict.
+The script first: the skim dipped to 5.1 m over the ground (the height was the ground averaged over 80 m). It now takes the highest ground from 20 m behind to 80 m ahead: 10.0 m at least on every frame. The log gained the shown lag (camera to where the shown selection was made, `lod_scene` `shown_cam`), a pop per swap (1 minus the morph factor of the nearest finer-side vertex when a level changes: 0 means invisible), and an off-output hole mode (`holes_at`: the view at a script time held until the stream has settled, one OpenGL render with `Sea_Underside` as pure green, green pixels counted; the swapped material is on the Syphon output for about one frame). A job can override `lod_stream.Params` fields (`lod`) and `lod_scene` constants (`consts`).
+
+Every run below is under load (`fps_trustworthy` false throughout); load is given per run. No rebuild: all tries are in `lod_stream.py` and `lod_scene.py`, which load from disk (three Blender restarts).
+
+| Try | Load start/end | Skim median ms | Skim swaps | Skim frames waiting on near nodes | Skim shown lag median (m) | Skim lower-third cell (px) | Skim nodes | Result |
+|---|---|---|---|---|---|---|---|---|
+| baseline, fixed script (d_max 9) | 96 / 89 | 67.6 | 43 | 27 % | 13.1 | 210 | 1830 | |
+| (a) d_max 10 | 120 / 123 | 70.0 | 15 | 30 % | 26.4 | 105 | 2322 | in the after run; not the default (verify_flight fails) |
+| (a) d_max 11 | 126 / 159 | 71.4 | 6 | 39 % | 55.0 | 52 | 2991 | dropped: the near field starves (7 of 33 climb probes 1 to 2 levels short of the detail asked for) |
+| (b) prefetch 1 s ahead, d_max 10 | 146 / 155 | 83.3 | 0 | 38 % | 297 | 200 | 2226 | dropped: the extra selection per update ate the build budget; the shown view stopped following on the skim |
+| (d) land's water level follows its morph | see holes | | | | | | | kept |
+
+- (a) d_max 10 halves the near cell (3.1 m; 105 px of 1920 in the lower third skimming at 10 m, from 210). Cost: 22 to 27 % more nodes on the skim; its frame-time cost can't be separated from the load (70.0 ms at load 120 against 67.6 at load 96). Under higher load the skim's stream stalls (the "after" run below). `verify_flight.py` fails with d_max 10: pops up to 0.25 m (5c: skim, boost, descend; depth 9 merges about 234 m away) and cracks up to 0.013 m (5b: skim, boost; depth 10 about 289 m away), gate 0.01 m. K 9 with M0 0.75 no longer covers the lag's travel against 24 m nodes. So the default stays `Params(d_max=9)`. d_max 10 needs a larger K at the deepest levels (more nodes) or a shorter lag before it can be the default.
+- (b) Stream lag near the ground is not what costs detail: with d_max 9 the shown lag on the skim is 13 m median, 25 m max, and no lower-third probe was short of its wanted level on any stage. The lag of 2 to 5 km happens on the climb and the descent at km heights (0.04 to 0.25 of the height at p95 on the descent). The prefetch made it worse and was removed.
+- (c) Level switches are already hidden in geometry: on the baseline the pop is 0 on every near swap (one swap over 0.05 on the climb, one at 64 km). No change was made. If the video shows popping, it is not the morph's geometry (candidates: shading, or the near nodes waiting).
+- (d) Shore holes. Cause: the land material draws land only down to `SHALLOW` (1 m) under its own water level `pl_w`, and a coarse node's morph lowered dry land beside hillside lakes by tens of metres under that level, so it was cut out. Fix: `lod_scene.MORPH_WATER_LEVEL`. In `Terrain LOD`, `pl_w` moves with the morph's radial shift (mirrored on the mirror copy), so the height over its own water is the unmorphed one. Settled views, the fix switched live on the same stream:
+
+| View (script time) | Height | Green px, fix off | Green px, fix on |
+|---|---|---|---|
+| descent 62 s | 5.4 km | 42,237 / 42,148 | 20 |
+| descent 66 s | 1.5 km | 27 / 0 | 33 / 0 |
+| circle450 75 s | 450 m | 0 | 0 |
+| skim 7 s, climb 20 s, circle60 86 s | | 0 | 0 |
+
+  Renders taken right after a flight, before the stream had settled, varied (up to 17,682 px at 66 s); the settled ones are the numbers. Above about 10 km, 2.5 to 4.5 % of the frame is green with the fix on or off (30 to 58 s): that is the reflection backdrop seen through the sea, which `Sea_Underside` is for, not holes.
+- (e) Globe hand-over: the band is crossed in 20 to 30 drawn frames with 3 to 6 swaps and no pop; no number shows a problem, so it was not touched.
+
+## After: d_max 10 and the water level fix, otherwise show defaults (run of 2026-11-13, `blender/review/out/terrain_test/after.json`)
+
+**Under load, not trustworthy.** Load 144 at the start, 83 at the end (`make status` 175 before Blender opened, 98 after the run), `fps_trustworthy` false. The recording got 1,669 new frames of 2,700 (18.5 fps).
+
+Video: `docs/video/terrain-test-after.mp4` (90 s, 30 fps, 960x540, 8.7 MB). For the user; not judged here.
+
+Before is the baseline with the fixed script (load 96 / 89); the first table above it (load 167 / 118) used the old script.
+
+| Stage | Median ms before / after | p95 ms before / after | Swaps before / after | Pops > 0.05 before / after | Lower-third cell px before / after | Shown lag median / max m, before | after | Frames waiting on near nodes before / after |
+|---|---|---|---|---|---|---|---|---|
+| skim | 67.6 / 77.4 | 82.3 / 94.5 | 43 / 1 | 0 / 1 | 210 / 109 | 13 / 25 | 162 / 425 | 27 % / 42 % |
+| climb | 41.7 / 54.1 | 72.6 / 95.7 | 68 / 34 | 1 / 2 | 25 / 24 | 321 / 2290 | 528 / 4635 | 12 % / 24 % |
+| orbit | 27.2 / 27.9 | 33.0 / 33.1 | 0 / 0 | 0 / 0 | - | 0 / 373 | 0 / 114 | 0 / 0 |
+| cross | 25.2 / 27.7 | 31.5 / 32.2 | 4 / 4 | 1 / 1 | - | 523 / 2044 | 490 / 2030 | 0 / 0 |
+| descent | 33.5 / 45.4 | 70.9 / 91.8 | 36 / 30 | 0 / 0 | 12 / 12 | 346 / 4096 | 384 / 4979 | 4 % / 9 % |
+| circle450 | 46.0 / 55.9 | 65.6 / 73.7 | 25 / 25 | 0 / 0 | 29 / 29 | 11 / 22 | 13 / 29 | 7 % / 12 % |
+| circle60 | 52.0 / 61.6 | 77.2 / 87.8 | 28 / 23 | 0 / 1 | 21 / 21 | 15 / 58 | 17 / 198 | 14 % / 27 % |
+
+- The after run's skim stalled: one swap in 14 s, 7 of 17 lower-third probes one level short of the wanted detail. At load 120 the same settings swapped 15 times. The "before" run of the old script (d_max 9, load 167) stalled the same way (0 swaps). The stream's build throughput under load decides the skim, not d_max alone.
+- Holes on the after run, settled: 0 to 33 px on every view below 10 km.
+- The after run had d_max 10, set as the default at the time; it went back to 9 when `verify_flight.py` failed (above). What is committed: d_max 9 and the water level fix.
+- `make test` green (422 Godot, 22 godot-check, Python suites); `verify_flight.py` with d_max 9: all checks passed.
+
+## Verdict: can one camera-centred terrain carry every view at 30 fps?
+
+Not yet, and not provable on this machine under load. In shape it can: one stream carries every height from 10 m to 64 km with no visible level change (pop 0), no shore holes, and the globe as a shader dissolve over it from 8 to 12 km. What fails is time and detail near the ground:
+
+- Frame time: under load no stage below 1 km reaches 33 ms (skim and circles over 33 ms on 100 % of frames, before and after). The idle number is missing; it decides the question and needs a quiet machine (the user's measurement).
+- Build throughput: the near field depends on the baking timer (GN builders evaluated on the main thread, 8 ms a frame). At 40 m/s and 10 to 15 fps it waits for near nodes on a quarter to two fifths of the frames and stalls under higher load. A prefetch can't help while the budget is spent; it needs baking off the frame (precomputed nodes along the show's paths, or a cheaper builder).
+- Near detail: 6.1 m cells span 210 px at 10 m over the river; d_max 10 (3.1 m, about 105 px) breaks the morph's crack and pop guarantee at speed with K 9, and d_max 11 starves the stream. Detail under 3 m would have to come from the GPU (displacement or normal detail in the shader), not from more nodes.
+- Still separate: the fixed shots show their own per-camera sets, and the globe is its own mesh blended in. "One terrain" today means one stream for the Flight plus a globe skin.
+
+## Commands (step 4 and after)
+
+```
+make blender-open SCENE=planet
+PYTHONPATH=~/.local/lib/python3.13/site-packages python3.13 tools/syphon_record.py --seconds 90 --fps 30 --size 960x540 --vflip --flag /tmp/tt_go.flag --out docs/video/terrain-test-after.mp4 &
+# Blender MCP:
+DN["tt_job"] = {"out": "/abs/after.json", "name": "after", "flag": "/tmp/tt_go.flag", "holes_at": [7, 20, 26, 58, 62, 66, 75, 86]}
+exec(open(bpy.path.abspath("//../review/terrain_test_flight.py")).read())
+# a try: "lod": {"d_max": 11}, "consts": {...}; holes only: "fly": False; wait for DN["tt_done"]
+make blender-kill
+```

@@ -53,6 +53,7 @@ SLOTS = 200                         # slot objects made at the start (a static v
 BLOCKS_MAX = 2000                   # assembled blocks kept (about 0.18 MB each; a block recurs on every pass of a path)
 HOLD_TIME, MIN_FPS, STEP_DOWN = 2.0, 20.0, 0.35     # the margin's speed hold (travel())
 STEP_SHARE = 0.25                   # moving fast, the selection step is this share of the margin's travel term
+MORPH_WATER_LEVEL = True            # the land's water level follows its morph (Terrain LOD; set before start())
 SEL_STEP = 8.0                     # m the camera moves before the next selection (covered by the margin)
 NODE_ATTRS = ("nf", "ni", "nj", "nd", "r0", "r1")
 _state = {"cache": {}, "blocks": {}, "near_missing": set(), "shown": {}, "slots": [], "free": [], "nodes": {},
@@ -376,6 +377,38 @@ def morph_material(src_name):
     else:
         L.new(vd.outputs[0], disp)
     m.displacement_method = "DISPLACEMENT"
+    if MORPH_WATER_LEVEL:
+        # the land's own water level moves with its morph: zw (height over its own water) is the unmorphed one. The
+        # land is drawn only down to SHALLOW under that level, and a coarse node's morph lowered dry land beside a
+        # hillside lake by tens of metres under it: cut out, the Approach's holes (docs/handover/terrain-test.md)
+        rel = N.new("ShaderNodeVectorMath")
+        rel.operation = "SUBTRACT"
+        L.new(geo.outputs["Position"], rel.inputs[0])
+        rel.inputs[1].default_value = CENTRE
+        un = N.new("ShaderNodeVectorMath")
+        un.operation = "NORMALIZE"
+        L.new(rel.outputs["Vector"], un.inputs[0])
+        rad = N.new("ShaderNodeVectorMath")
+        rad.operation = "DOT_PRODUCT"
+        L.new(sc.outputs["Vector"], rad.inputs[0])
+        L.new(un.outputs["Vector"], rad.inputs[1])
+        flip = N.new("ShaderNodeMath")          # the mirror copy's morph is mirrored along the radial: 1 - 2 mirror
+        flip.operation = "MULTIPLY_ADD"
+        L.new(attr("mirror", out_="Fac"), flip.inputs[0])
+        flip.inputs[1].default_value, flip.inputs[2].default_value = -2.0, 1.0
+        shift = N.new("ShaderNodeMath")
+        shift.operation = "MULTIPLY"
+        L.new(rad.outputs["Value"], shift.inputs[0])
+        L.new(flip.outputs[0], shift.inputs[1])
+        for a in [n for n in N if n.type == "ATTRIBUTE" and n.attribute_name == "pl_w"]:
+            for link in list(a.outputs["Fac"].links):
+                to = link.to_socket
+                L.remove(link)
+                lw = N.new("ShaderNodeMath")
+                lw.operation = "ADD"
+                L.new(a.outputs["Fac"], lw.inputs[0])
+                L.new(shift.outputs[0], lw.inputs[1])
+                L.new(lw.outputs[0], to)
     # no night edges on the stream: its blocks are a regular grid, so their real edges read as a lattice (Flight
     # review 2026-11-12); the fixed shots keep the planet's own irregular net
     for wf in [n for n in N if n.type == "WIREFRAME"]:
@@ -609,7 +642,7 @@ def swap(limit=None):
             cache[k] = cache.pop(k)              # recently used
         write_mesh(ob.data, block(b, nodes))
         shown[b] = (ob, nodes)
-    _state["nodes"] = dict(new)
+    _state["nodes"], _state["shown_cam"] = dict(new), _state.get("want_cam")
     _state["live"] = True
     done = len(new) == len(want)
     if done:
@@ -664,7 +697,7 @@ def stage_tick(force=False):
         ob.matrix_world = HIDDEN
     _state["retire"] = _state.get("retire", []) + old
     _state["retire_frame"] = _state["frame"]
-    _state["nodes"] = dict(sg["new"])
+    _state["nodes"], _state["shown_cam"] = dict(sg["new"]), _state.get("want_cam")
     _state["live"] = _state["live"] or not _state["near_missing"]
     if len(sg["new"]) == len(_state["want"]):
         _state["want"] = None
@@ -831,7 +864,7 @@ def update(scene, cam, speed, fps=60.0):
     step = max(SEL_STEP, STEP_SHARE * q)    # fast, a selection every few frames: fewer passing versions of a block
     if last is not None and math.dist(cam, last) < step:
         return 0
-    _state["sel_cam"] = tuple(cam)
+    _state["sel_cam"] = _state["want_cam"] = tuple(cam)       # want_cam: where the wanted selection was made
     p.margin = SEL_STEP + 1.0       # as prewarm(); the travel goes into the look-ahead segment (lod_stream.select)
     vdir = _state.get("vdir")
     ahead = None if not q or vdir is None else tuple(c + v * (q + step) for c, v in zip(cam, vdir))
