@@ -51,14 +51,16 @@ def ctl(name, value):
 
 
 # The controls the music steers. Each gets Takeover: <Name>Prev (its value a frame ago), <Name>Touch (the clock of its last change by hand
-# or MIDI, 0 = never) and <Name>Follow (Follow, or 0 while the touch is younger than Takeover x 60 s). Its Out uses <Name>Follow.
+# or MIDI, 0 = never), <Name>Free (0 while the touch is younger than Takeover x 60 s, else 1) and <Name>Follow (Follow x <Name>Free).
+# Its Out uses <Name>Follow.
 STEERED = ["Level", "Bass", "Beat", "Hue", "Intensity", "Strobe", "GridSpeed", "CamSpeed", "Path", "Target", "Height", "Fog", "FogGlow"]
 
 
 def takeover(name):
     return [("%sPrev" % name, "calc", 0, [ex(name)]),
             ("%sTouch" % name, "calc", 0, [ex("if(Clock > 1 and abs(%s - %sPrev) > 0.0001, Clock, y)" % (name, name))]),
-            ("%sFollow" % name, "calc", 0, [ex("Follow*if(%sTouch > 0 and Clock - %sTouch < Takeover*60, 0, 1)" % (name, name))])]
+            ("%sFree" % name, "calc", 1, [ex("if(%sTouch > 0 and Clock - %sTouch < Takeover*60, 0, 1)" % (name, name))]),
+            ("%sFollow" % name, "calc", 0, [ex("Follow*%sFree" % name)])]
 
 
 GLOBALS = [
@@ -229,8 +231,9 @@ GLOBALS = [
     ("OutCamAuto", "calc", 1, [ex("if(CamAuto > 0.5, 1, 0)")]),
     # 0..4 on the wire as 0..1
     # The Path Camera: path and target step on with the music (Moves), height sinks on builds and rises in breakdowns.
-    ("OutPath", "calc", 0, [ex("if(PathFollow > 0.5, Moves % 4, floor(Path*3.999))")]),
-    ("OutTarget", "calc", 0, [ex("if(TargetFollow > 0.5, (Moves*3) % 7, floor(Target*6.999))")]),
+    # Through a gap in the music path and target keep their last value (y); only a touch (<Name>Free 0) or React 0 hands them to the fader.
+    ("OutPath", "calc", 0, [ex("if(PathFollow > 0.5, Moves % 4, if(PathFree*React > 0.5, y, floor(Path*3.999)))")]),
+    ("OutTarget", "calc", 0, [ex("if(TargetFollow > 0.5, (Moves*3) % 7, if(TargetFree*React > 0.5, y, floor(Target*6.999)))")]),
     ("OutHeight", "calc", 0.3, [ex("min(1, max(0, Height + HeightFollow*Auto*(0.2*Breakdown - 0.2*Build - 0.1*DropEnv)))"), ("Smooth", 0.95, "x")]),
     ("OutTakeover", ("global", "Takeover"), 0.33, []),
     ("OutCamSpeed", "calc", 0.25, [ex("min(1, max(0, CamSpeed*(1 + CamSpeedFollow*Auto*(0.5*Build + 0.8*DropEnv - 0.3*Breakdown))))")]),

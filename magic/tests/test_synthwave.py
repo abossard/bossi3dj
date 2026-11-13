@@ -88,22 +88,23 @@ class ControlTests(unittest.TestCase):
             with self.subTest(gone=gone):
                 self.assertNotIn(gone, self.controls)
 
-    def test_path_and_target_step_with_the_music_or_take_the_control(self):
-        for out, steer, stops in (("OutPath", "PathFollow", 4), ("OutTarget", "TargetFollow", 7)):
+    def test_path_and_target_step_with_the_music_hold_through_a_gap_or_take_the_control(self):
+        cases = [("OutPath", "Path", "Moves % 4", 4), ("OutTarget", "Target", "(Moves*3) % 7", 7)]
+        for out, name, music, stops in cases:
             with self.subTest(out=out):
                 expr = [e for _k, _p, e, _b in mp.modifiers(self.controls[out]) if e][0]
-                self.assertTrue(expr.startswith("if(%s > 0.5, " % steer))
-                self.assertIn("%% %d" % stops, expr)
-                self.assertIn("*%d.999)" % (stops - 1), expr)
+                self.assertEqual(expr, "if(%sFollow > 0.5, %s, if(%sFree*React > 0.5, y, floor(%s*%d.999)))" % (name, music, name, name, stops - 1))
 
     def test_every_steered_control_has_takeover(self):
         """A touched control is the user's for Takeover x 60 s: <Name>Touch keeps the clock of its last change, <Name>Follow is 0 meanwhile."""
         for name in sm.STEERED:
             with self.subTest(control=name):
                 touch = [e for _k, _p, e, _b in mp.modifiers(self.controls[name + "Touch"]) if e][0]
+                free = [e for _k, _p, e, _b in mp.modifiers(self.controls[name + "Free"]) if e][0]
                 follow = [e for _k, _p, e, _b in mp.modifiers(self.controls[name + "Follow"]) if e][0]
                 self.assertEqual(touch, "if(Clock > 1 and abs(%s - %sPrev) > 0.0001, Clock, y)" % (name, name))
-                self.assertEqual(follow, "Follow*if(%sTouch > 0 and Clock - %sTouch < Takeover*60, 0, 1)" % (name, name))
+                self.assertEqual(free, "if(%sTouch > 0 and Clock - %sTouch < Takeover*60, 0, 1)" % (name, name))
+                self.assertEqual(follow, "Follow*%sFree" % name)
 
     def test_every_music_address_reads_its_own_takeover(self):
         outs = dict(sm.OSC_OUT)

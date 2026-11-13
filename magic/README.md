@@ -33,7 +33,7 @@ Controls are unlinked Globals in 0..1, ready for MIDI or OSC learn. Every `/vj/*
 | `Meteor` | momentary pad, fires a shooting star |
 | `Hue`, `HueDrift` | hue offset; hue walk per bar and per drop |
 | `Path`, `Target`, `Height`, `CamSpeed` | the Path Camera: path 0..1 over 4 paths, target 0..1 over 7 targets, height (0.5 about 800 m); with music path and target step on at every drop and every 16 bars (`Moves`), height sinks on builds and rises in breakdowns; speed along the path |
-| `Takeover` | how long a touched control stays yours before the music steers it again, 0..1 = 0..60 s; per steered control `<Name>Touch` keeps the clock of its last change and `<Name>Follow` is 0 meanwhile |
+| `Takeover` | how long a touched control stays yours before the music steers it again, 0..1 = 0..60 s; per steered control `<Name>Touch` keeps the clock of its last change and `<Name>Free` and `<Name>Follow` are 0 meanwhile; through a gap in the music Path and Target keep their last music value |
 | `CamAuto`, `Cam` | Godot only: its director on or off; the shot 0..1 over shots 0..11 |
 | `GridSpeed` | grid scroll speed (`/vj/grid_speed`) |
 | `Sun` `Moon` `Pyramids` `Grid` `Stars` `Water` | scene elements, faded |
