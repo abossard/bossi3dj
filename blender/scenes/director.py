@@ -14,8 +14,8 @@ evaluated matrix, the Flight from flight.Flight) and gives the target's pose to 
 - Ease: quintic smootherstep, so the blend starts and ends without a jolt. The rig's velocity at the start is carried
   by a Hermite term that fades out, so a change of mind mid-blend never kinks; the end follows the target's own
   motion, so a moving shot is met at its speed.
-- The view slerps from the old forward to the new one and, on long hops, bends toward the travel direction
-  mid-way. The lens is log-lerped and widened mid-way on long hops. Up is the radial up with the roll blended, so
+- The view slerps from the old forward to the new one and, on long hops where the ground flows by, bends toward
+  the travel direction while the ground point traverses. The lens is log-lerped and widened mid-way on long hops. Up is the radial up with the roll blended, so
   the horizon stays level.
 - The hit's wide-angle kick and the pulse's accent (energy.accent) go on the rig's pose last, on every shot and
   through blends. The next blend starts from the pose without them, so an accent never carries into a path.
@@ -37,6 +37,8 @@ TURN = math.radians(40.0)           # rad/s: the view's turn at the peak
 LOOK_TRAVEL, TRAVEL_FROM = 0.4, 2000.0   # how far the view bends toward the travel direction, from this distance on
 WIDEN = 0.3                         # the lens widens by up to this share mid-way on long hops
 BEND_FLOW = 0.3                     # rad/s of ground flow at which the bend toward travel is full
+BEND_PEAK = 7.0                     # rad of view turn per rad of bend, per unit of blend time (the traverse ease's slope)
+LENS_RATE = math.log(2.0)           # log units/s: the lens changes no faster than a doubling a second
 CLEAR = 20.0                        # m the path keeps over the terrain between its ends
 PATH_SAMPLES = 32
 
@@ -66,10 +68,11 @@ def peak_for(ua, ub, sa, sb, ca, cb, ground, terrain):
     return max(math.log(hump + H0), math.log(ca + H0), math.log(cb + H0)), hump
 
 
-def duration(a, b, scale, terrain=None):
+def duration(a, b, scale, terrain=None, target_turn=0.0):
     """Blend time for a change from pose a to pose b at /vj/blend scale (0 is a cut): long enough that the ground
     flows past at FLOW at most while traversing, the clearance changes by at most FLOW e-folds a second while rising
-    and descending, and the view turns at TURN at most."""
+    and descending, and the view turns at TURN at most, also while the target's own view turns at target_turn rad/s
+    (a moving shot can turn away from the start during the blend)."""
     ua, ub, sa, sb, ca, cb = ends(a[0], b[0], terrain)
     ground = fl.R * fl.angle(ua, ub)
     peak, hump = peak_for(ua, ub, sa, sb, ca, cb, ground, terrain)
@@ -77,8 +80,18 @@ def duration(a, b, scale, terrain=None):
     climb = max(peak - math.log(ca + H0), peak - math.log(cb + H0))
     over = 1.875 * ground / (TRAVERSE * FLOW * max(high, H0))
     rise = 1.875 * climb / (RISE * FLOW)
-    turn = 1.875 * fl.angle(a[1], b[1]) / TURN
-    return scale * fl.clamp(max(over, rise, turn), DUR_MIN, DUR_MAX)
+    turn = 1.875 * fl.angle(a[1], b[1]) / max(TURN - 1.875 * target_turn, 0.25 * TURN)
+    lens = 1.875 * abs(math.log(b[3] / a[3])) / LENS_RATE
+    d = max(over, rise, turn, lens)
+    turn_bend = BEND_PEAK * LOOK_TRAVEL * 0.5 * math.pi * bend_for(ground, high, d) / TURN     # the bend toward travel turns
+    return scale * fl.clamp(max(d, turn + turn_bend), DUR_MIN, DUR_MAX)                         # on top of the slerp
+
+
+def bend_for(ground, high, d):
+    """How far the view bends toward the travel direction (0..1) on a hop of ground m at peak clearance high m over d s:
+    on long hops while the ground flows by at BEND_FLOW."""
+    flow = 1.875 * ground / (TRAVERSE * max(d, 1e-6)) / max(high, H0)
+    return min(1.0, ground / TRAVEL_FROM) * fl.smootherstep(flow / BEND_FLOW)
 
 
 def streamed(flight, shot, sides, blending):
@@ -104,15 +117,16 @@ def hermite_fade2(s):
 
 
 class Transition:
-    def __init__(self, start, v0, target, scale, terrain=None, a0=(0.0, 0.0, 0.0)):
+    def __init__(self, start, v0, target, scale, terrain=None, a0=(0.0, 0.0, 0.0), target_turn=0.0):
         self.a, self.v0, self.a0 = start, v0, a0
-        self.d = duration(start, target, scale, terrain)
+        self.d = duration(start, target, scale, terrain, target_turn)
         self.t = 0.0
         self.terrain = terrain
         ua, ub, sa, sb, ca, cb = ends(start[0], target[0], terrain)
         self.ground = fl.R * fl.angle(ua, ub)
         self.ra, self.rb = self.roll(start), self.roll(target)
         self.peak = peak_for(ua, ub, sa, sb, ca, cb, self.ground, terrain)[0]
+        self.bend = bend_for(self.ground, math.exp(self.peak) - H0, self.d / scale if scale > 0.0 else 1.0)
 
     @staticmethod
     def roll(pose):
@@ -148,15 +162,13 @@ class Transition:
         sc, dc = min(s / CARRY, 1.0), CARRY * self.d        # carried while the camera is still near its start
         p = fl.add(fl.add(base, self.v0, dc * hermite_fade(sc)), self.a0, dc * dc * hermite_fade2(sc))
         fwd = fl.slerp(self.a[1], target[1], e)
-        bend = 4.0 * e * (1.0 - e) * min(1.0, self.ground / TRAVEL_FROM)
+        eg = ease((s - 0.5 * (1.0 - TRAVERSE)) / TRAVERSE)
+        bend = 4.0 * eg * (1.0 - eg) * self.bend      # only while the ground point traverses: smooth in s, no flip
         if bend > 1e-4:
             travel = fl.sub(self.path(min(s + 0.01, 1.0), target)[0], base)
             radial0 = fl.norm(fl.sub(base, fl.CENTRE))
             travel = fl.sub(travel, fl.scale(radial0, fl.dot(travel, radial0)))     # its level part: it doesn't tip over the apex
-            clear = spherical(base)[1] - (self.terrain.surface(spherical(base)[0]) if self.terrain is not None else 0.0)
-            flow = fl.length(travel) / (0.01 * self.d) / max(clear, H0)
-            bend *= fl.smootherstep(flow / BEND_FLOW)        # only while the ground really flows by: no flip when it stops
-            if fl.length(travel) > 1e-6 and bend > 1e-4:
+            if fl.length(travel) > 1e-6:
                 travel = fl.norm(travel)
                 ahead = fl.clamp((fl.dot(fwd, travel) + 0.2) / 0.7, 0.0, 1.0)     # only toward travel that is ahead
                 fwd = fl.slerp(fwd, travel, LOOK_TRAVEL * bend * ahead * ahead)
@@ -178,9 +190,10 @@ class Director:
         self.tr = None
         self.sides = frozenset()        # the shots a running blend goes between (a change of mind adds one)
 
-    def step(self, dt, shot, target, scale=1.0, terrain=None, drive=None):
+    def step(self, dt, shot, target, scale=1.0, terrain=None, drive=None, target_turn=0.0):
         """shot: the selected shot's id; target: its live pose; drive: an energy.Drive (stepped by the caller) whose
-        kick and pulse go on the result. Returns the rig's pose."""
+        kick and pulse go on the result; target_turn: how fast the target's view turns (rad/s), for a new blend's
+        duration. Returns the rig's pose."""
         if self.pose is None:
             self.shot, self.pose = shot, target
             return en.accent(target, drive) if drive is not None else target
@@ -188,7 +201,7 @@ class Director:
             self.sides = (self.sides if self.tr is not None else frozenset((self.shot,))) | {shot}
             self.shot = shot
             v0 = fl.add(self.vel, self.acc, 0.5 * dt)     # the backward difference is half a frame old
-            self.tr = Transition(self.pose, v0, target, scale, terrain, self.acc) if scale > 0.0 else None
+            self.tr = Transition(self.pose, v0, target, scale, terrain, self.acc, target_turn) if scale > 0.0 else None
         if self.tr is not None:
             self.tr.t += dt
             new = self.tr.pose(target)

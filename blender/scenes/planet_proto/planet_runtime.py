@@ -5,19 +5,10 @@
   runtime is in the file (the planet grafted into the island scene) and runs them;
 - writes rt_space (0 on the ground, 1 from about 12 km up), which turns the sky to space
   and lights the atmosphere rim;
-- on a camera cut shows the camera's precomputed land, water and props set (no rebuild) and
-  copies its baked flamingo flock into the Flamingos mesh; a flight switches to the set
-  nearest the camera as it flies. The cut is handled before the new shot's first frame is
-  evaluated (depsgraph_update_pre), so that frame already has its land, sky frame and aim.
-  Without sets the anchor jumps under the new camera and the LOD is rebuilt once.
-  A camera's "lod" property picks the
-  mode: "surface" (anchor at the camera, horizon culling), "orbit" (anchor at the planet
-  centre: one even level, no culling) or "follow" (anchor on the camera every frame).
-  Scene property pl_lod_step > 0 also moves a surface anchor once the camera has
-  travelled that many metres from it.
-- with the Flight runtime (flight_rt.py) scene.camera is its On-Air rig: the sets, the anchor,
-  the flock and a path shot's sky follow the shot behind the rig (driver_namespace vj_terrain),
-  and while the Flight's streamed terrain is shown the sets' land and water stay hidden.
+- turns the sky frame under the viewer (the On-Air Camera, or a free 3D view);
+- props and the flamingo flock follow the camera: LOD_Anchor moves under it once its ground point is PROPS_STEP from
+  the anchor while it is lower than PROPS_TOP, and the flock is copied from Flock_Birds evaluated there. The land and
+  water are the streamed terrain (flight_rt.py, lod_scene), which follows the camera on its own.
 """
 import math
 import time
@@ -27,38 +18,12 @@ import bpy
 R = 16000.0
 CENTER = (0.0, 0.0, -R)
 ANCHOR = "LOD_Anchor"
-LOD_OBJECTS = ("Planet", "Water", "Props")
 IDLE_BPM, IDLE_DEPTH = 124.0, 0.45
 SKY_FRAME = "Sky_Frame"
-MODES = {   # mode: (anchor at centre, Cull: patches past the horizon at the lowest level, Min Level for Planet, Water)
-    "surface": (False, True, 0, 0),      # water at the land's levels: one level finer, it stood 15 m under the fine
-    "follow": (False, True, 0, 0),       # terrain, above a far coarse land quad (a water quad on a hilltop, CAM_4)
-    "orbit": (True, False, 1, 1),
-}
 FLOCK_ATTRS = ("heading", "fdir", "delay", "phase")
-TERRAIN_KEY = "vj_terrain"      # flight_rt: () -> (the shot whose sets are shown, the streamed terrain replaces them)
-STREAMED = ("Planet.", "Water.")    # the sets' objects the streamed terrain replaces
-_state = {"last": None, "camera": None, "set": None, "streamed": False}
-
-
-def on_air(scene):
-    """The shot camera the sets follow, and whether the Flight's streamed terrain is shown instead of their land and
-    water: scene.camera and False without flight_rt."""
-    f = bpy.app.driver_namespace.get(TERRAIN_KEY)
-    if f is None:
-        return scene.camera, False
-    name, streamed = f()
-    return (scene.objects.get(name) if name else None) or scene.camera, streamed
-
-
-def set_input(ob, name, value):
-    mod = ob.modifiers[0]
-    for it in mod.node_group.interface.items_tree:
-        if getattr(it, "in_out", "") == "INPUT" and it.name == name:
-            sock = getattr(mod.properties.inputs, it.identifier)
-            if sock.value != value:
-                sock.value = value
-                ob.update_tag()
+PROPS_STEP = 600.0      # m the camera's ground point gets from the anchor before props and flock follow
+PROPS_TOP = 3000.0      # m over sea level above which they stay put (too small to see)
+_state = {"last": None}
 
 
 def place_sky(scene, up):
@@ -75,12 +40,13 @@ def place_sky(scene, up):
     frame.matrix_world = Matrix.Translation(Vector(CENTER) + up * R) @ rot
 
 
-def copy_flocks(scene, key):
-    """Copies the set's baked flock spots (mesh Flock.<key>) into the island's Flamingos mesh, whose flight
+def copy_flock(scene):
+    """Copies the flock spots Flock_Birds makes round the anchor into the island's Flamingos mesh, whose flight
     animates them every frame."""
-    src, dst = bpy.data.meshes.get("Flock." + key), scene.objects.get("Flamingos")
-    if src is None or dst is None:
+    src_ob, dst = scene.objects.get("Flock_Birds"), scene.objects.get("Flamingos")
+    if src_ob is None or dst is None:
         return
+    src = src_ob.evaluated_get(bpy.context.evaluated_depsgraph_get()).data
     n = len(src.vertices)
     co = [0.0] * (3 * n)
     src.vertices.foreach_get("co", co)
@@ -90,90 +56,30 @@ def copy_flocks(scene, key):
     out.vertices.foreach_set("co", co)
     vals = [0.0] * n
     for name in FLOCK_ATTRS:
-        src.attributes[name].data.foreach_get("value", vals)
+        if name in src.attributes:
+            src.attributes[name].data.foreach_get("value", vals)
         at = out.attributes.get(name) or out.attributes.new(name, "FLOAT", "POINT")
         at.data.foreach_set("value", vals)
     out.update()
 
 
-def nearest_set(scene, cam):
-    """The camera's precomputed set nearest to it (a flight path has several) and its anchor; None without sets."""
-    keys = list(cam.get("lod_sets", []))
-    anchors = [scene.objects.get("LOD_Anchor." + k) for k in keys]
-    if not keys or None in anchors:
-        return None
-    c = cam.matrix_world.translation
-    return min(zip(keys, anchors), key=lambda ka: (ka[1].location - c).length)
-
-
-def show_lod_set(scene, key):
-    """Shows the set's land, water and props and hides the others: hide_set for the viewport (hide_viewport would
-    re-evaluate them) and visible_camera for renders."""
-    for ob in scene.objects:
-        k = ob.get("lod_set")
-        if k is not None:
-            on = k == key and not (_state["streamed"] and ob.name.startswith(STREAMED))
-            if ob.visible_camera != on:
-                ob.visible_camera = on
-            if ob.hide_get() == on:
-                ob.hide_set(not on)
-    _state["set"] = key
-
-
-def place_anchor(scene, cam):
-    """Puts the LOD anchor where the camera's mode wants it (its land and water set's anchor when the scene has
-    sets); returns True if it moved."""
+def follow_props(scene, c):
+    """Moves LOD_Anchor to the ground point under c (on the sphere of radius R) when it is PROPS_STEP from it and c is
+    under PROPS_TOP; then the props re-scatter there and the flock is copied."""
+    from mathutils import Vector
     anchor = scene.objects.get(ANCHOR)
-    if anchor is None or cam is None:
+    if anchor is None or c is None:
         return False
-    centre, cull, lmin_land, lmin_water = MODES.get(cam.get("lod", "surface"), MODES["surface"])
-    near = nearest_set(scene, cam)
-    if near is not None:
-        target = tuple(near[1].location)
-        if near[0] != _state["set"]:
-            show_lod_set(scene, near[0])
-            copy_flocks(scene, near[0])
-    else:
-        target = CENTER if centre else tuple(cam.matrix_world.translation)
-    place_sky(scene, (0.0, 0.0, 1.0) if centre else [a - b for a, b in zip(target, CENTER)])
-    for name, lmin in zip(LOD_OBJECTS, (lmin_land, lmin_water, 0)):
-        ob = scene.objects.get(name)
-        if ob is not None and name != "Props":
-            set_input(ob, "Cull", cull)
-            set_input(ob, "Min Level", lmin)
-    if tuple(anchor.location) == target:
+    rel = Vector(c) - Vector(CENTER)
+    if rel.length - R > PROPS_TOP:
         return False
-    anchor.location = target
+    g = Vector(CENTER) + rel.normalized() * R
+    a = Vector(CENTER) + (anchor.location - Vector(CENTER)).normalized() * R
+    if (g - a).length < PROPS_STEP:
+        return False
+    anchor.location = g
+    copy_flock(scene)
     return True
-
-
-def update_lod(scene):
-    cam, streamed = on_air(scene)
-    if streamed != _state["streamed"]:
-        _state["streamed"] = streamed
-        if _state["set"] is not None:
-            show_lod_set(scene, _state["set"])
-        if not streamed and cam is not None:      # back from the Flight: the sky frame returns under the fixed shot
-            _state["camera"] = cam
-            place_anchor(scene, cam)
-            return
-    if cam is None:
-        return
-    mode = cam.get("lod", "surface")
-    if cam != _state["camera"] or mode == "follow":
-        _state["camera"] = cam
-        place_anchor(scene, cam)
-        return
-    if "path_period" in cam and len(cam.get("lod_sets", [])) > 1:      # a flight: the set nearest the camera
-        near = nearest_set(scene, cam)
-        if near is not None and near[0] != _state["set"]:
-            place_anchor(scene, cam)
-        return
-    step = scene.get("pl_lod_step", 0.0)
-    anchor = scene.objects.get(ANCHOR)
-    if mode == "surface" and step > 0.0 and anchor is not None:
-        if (cam.matrix_world.translation - anchor.location).length > step:
-            place_anchor(scene, cam)
 
 
 def tick(scene, depsgraph=None):
@@ -263,27 +169,10 @@ def planet_tick(scene):
         scene["rt_fog_k"] = float(scene.camera.get("fog_k", 1.0)) if scene.camera else 1.0             # and strength
     moon_far(scene)
     sun_rel(scene)
-    update_lod(scene)
-    cam = None if _state["streamed"] else on_air(scene)[0]
-    if free or (_state["streamed"] and c is not None):
-        # the free view's own horizon; and the Flight's (its stream is on air): the sky frame stayed under the last
-        # fixed shot, so sky, stars and fog box were thousands of km off (hard bands in the sky, a flat lake at the Hover)
+    if c is not None:
         place_sky(scene, [a - b for a, b in zip(c, CENTER)])
-    elif cam is not None and "path_period" in cam and cam.get("lod", "surface") != "orbit":
-        place_sky(scene, [a - b for a, b in zip(cam.matrix_world.translation, CENTER)])   # flights: the sky's horizon stays level
-
-
-def on_cut(scene, depsgraph=None):
-    """A cut (OSC or the web page sets scene.camera from a timer) is drawn before the next frame change, which
-    showed the new camera with the old camera's land, sky frame, sun and aim for one frame. The frame-change
-    work runs here instead, before that first frame is evaluated."""
-    cam = on_air(scene)[0]
-    if cam is None or cam == _state["camera"]:
-        return
-    planet_tick(scene)
-    for h in list(bpy.app.handlers.frame_change_pre):
-        if getattr(h, "__name__", "") == "synthwave_tick":
-            h(scene)
+        if not free:
+            follow_props(scene, c)
 
 
 def show_camera_view():
@@ -301,23 +190,14 @@ def show_camera_view():
     return None
 
 
-def camera_range():
-    """/vj/cam reaches every CAM_N (the planet adds shots past the island's CAM_6); the web page builds its
-    camera buttons from this range. Runs after the island runtime has set its own range on load."""
-    scene = bpy.context.scene
-    n = max((int(o.name[4:]) for o in scene.objects if o.type == "CAMERA" and o.name[4:].isdigit()), default=0)
-    if "vj_cam" in scene:
-        scene.id_properties_ui("vj_cam").update(min=0.0, max=float(n), soft_min=0.0, soft_max=float(n))
-    return None
-
-
 def install():
-    for handlers, fn in ((bpy.app.handlers.frame_change_pre, tick), (bpy.app.handlers.depsgraph_update_pre, on_cut)):
-        for h in list(handlers):
-            if getattr(h, "__name__", "") == fn.__name__:
-                handlers.remove(h)
-        handlers.append(fn)
-    bpy.app.timers.register(camera_range, first_interval=1.0)
+    for h in list(bpy.app.handlers.depsgraph_update_pre):     # the old cut handler, from a file saved before
+        if getattr(h, "__name__", "") == "on_cut" and getattr(h, "__module__", "") == __name__:
+            bpy.app.handlers.depsgraph_update_pre.remove(h)
+    for h in list(bpy.app.handlers.frame_change_pre):
+        if getattr(h, "__name__", "") == tick.__name__:
+            bpy.app.handlers.frame_change_pre.remove(h)
+    bpy.app.handlers.frame_change_pre.append(tick)
     if not bpy.app.background:
         bpy.app.timers.register(show_camera_view, first_interval=0.5)
 

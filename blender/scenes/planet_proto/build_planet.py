@@ -80,7 +80,7 @@ else:
 DEFAULTS = {   # the island's controls, unchanged, so the OSC bridge and the web page keep working
     "vj_level": 0.5, "vj_bass": 0.0, "vj_beat": 0.0,
     "vj_hue": 0.0, "vj_intensity": 1.0, "vj_strobe": 0.0,
-    "vj_grid_speed": 0.6, "vj_cam": 0.0, "vj_cam_speed": 1.0,
+    "vj_grid_speed": 0.6, "vj_cam_speed": 1.0,
     "vj_sun": 1.0, "vj_moon": 1.0, "vj_pyramids": 1.0,
     "vj_grid": 1.0, "vj_stars": 1.0, "vj_water": 1.0,
     "vj_night": 0.0, "vj_shock": 0.0,
@@ -4041,8 +4041,9 @@ def fog_lights():
     evaluate(was)
     for i, l_ in enumerate(lamps):
         # (off in space, where there is no fog: every lamp turned on in CAM_6, the slowest cut at night, 87 ms)
-        lamp = light("Lamp_Capstone.%03d" % i, "POINT", "LAMP_W*min(max((n - 0.55)/0.3, 0.0), 1.0)*(floor(%d/2**floor(c)) %% 2)*(sp < 0.5)"
-                     .replace("LAMP_W", "%g" % LAMP_W) % seen[i], {"n": "vj_night", "c": "vj_cam", "sp": "rt_space"}, (1.0, 0.72, 0.36), loc=l_)
+        # one camera on paths now: no per-shot mask (the old fixed shots each hid the lamps behind their ridges)
+        lamp = light("Lamp_Capstone.%03d" % i, "POINT", "LAMP_W*min(max((n - 0.55)/0.3, 0.0), 1.0)*(sp < 0.5)"
+                     .replace("LAMP_W", "%g" % LAMP_W), {"n": "vj_night", "sp": "rt_space"}, (1.0, 0.72, 0.36), loc=l_)
         lamp.data.shadow_soft_size = 1.0
     print("PLANET capstone lamps: %d, hidden from %d shot views" % (len(lamps), sum(11 - bin(m_).count("1") for m_ in seen)))
     return made
@@ -4056,73 +4057,50 @@ if GRAFT:
     fog_lights()
 
 
-def bake_points(src, name):
-    """A mesh of src's points and their flight attributes, kept with a fake user (no object uses it)."""
-    me = bpy.data.meshes.new(name)
-    n_ = len(src.vertices)
-    co_ = np.empty(3 * n_)
-    src.vertices.foreach_get("co", co_)
-    me.vertices.add(n_)
-    me.vertices.foreach_set("co", co_)
-    for nm in rtm.FLOCK_ATTRS:
-        vals = np.zeros(n_)
-        if nm in src.attributes:
-            src.attributes[nm].data.foreach_get("value", vals)
-        me.attributes.new(nm, "FLOAT", "POINT").data.foreach_set("value", vals)
-    me.use_fake_user = True
-    return me
+PATH_TARGETS = (("pyramids", 60.0, 20.0), ("lake", 600.0, 0.0), ("river", 150.0, 0.0), ("coast", 800.0, 0.0))   # name, m to frame, m over the ground
 
 
-def lod_sets():
-    """Land, water and props for every camera, evaluated once on load, and its flamingo flock baked into a mesh
-    (Flock.<set>): a cut then only switches which set the camera sees (visible_camera) and copies the flock,
-    instead of a 250-400 ms rebuild under a moved anchor (the props and flock scatter alone cost 30-60 ms per cut).
-    A flight path gets LOD_PATH_SETS anchors along it; the runtime takes the nearest. The originals are removed."""
-    for co in sorted((o for o in S.objects if o.type == "CAMERA" and o.name.startswith("CAM_") and o.name != "CAM_OUT"
-                      and "lod_share" not in o), key=lambda o: o.name):
-        centre, cull, lmin_land, lmin_water = rtm.MODES[co.get("lod", "surface")]
-        if centre:
-            targets = [Vector(CENTER)]
-        elif "path_period" in co:
-            targets = []
-            n_ = co.get("lod_path_sets", LOD_PATH_SETS)
-            for j in range(n_):
-                S["rt_cam_phase"] = co["path_period"] * (j + 0.5) / n_
-                S.update_tag()
-                targets.append(co.evaluated_get(bpy.context.evaluated_depsgraph_get()).matrix_world.translation.copy())
-        else:
-            targets = [co.matrix_world.translation.copy()]
-        keys = []
-        for t in targets:
-            key = "%s.%d" % (co.name, len(keys))
-            a = bpy.data.objects.new("LOD_Anchor." + key, None)
-            c_planet.objects.link(a)
-            a.location = t
-            for src, lmin in ((land_ob, lmin_land), (water_ob, lmin_water), (props_ob, None)):
-                d = src.copy()
-                d.name = "%s.%s" % (src.name, key)
-                c_planet.objects.link(d)
-                d["lod_set"] = key
-                rtm.set_input(d, "Anchor", a)
-                if lmin is not None:
-                    rtm.set_input(d, "Cull", cull)
-                    rtm.set_input(d, "Min Level", lmin)
-            if GRAFT:
-                rtm.set_input(birds_ob, "Anchor", a)
-                bake_points(birds_ob.evaluated_get(bpy.context.evaluated_depsgraph_get()).data, "Flock." + key)
-                print("PLANET flock %s: %d points" % (key, len(bpy.data.meshes["Flock." + key].vertices)))
-            keys.append(key)
-        co["lod_sets"] = keys
-    S["rt_cam_phase"] = 0.0
-    for co in [o for o in S.objects if o.type == "CAMERA" and "lod_share" in o]:
-        co["lod_sets"] = list(S.objects[co["lod_share"]]["lod_sets"])
-    for ob in (land_ob, water_ob, props_ob) + ((birds_ob,) if GRAFT else ()):
+def path_targets():
+    """The Path Camera's fixed targets (docs/handover/path-camera.md): one empty PathTarget.<name> per ground target,
+    on its place, with the size to frame (path_size) and the look point's height over the ground (path_lift). The
+    places are the ones the old fixed shots found: the hero pyramid, CAM_1's river, CAM_7's flamingo lake, CAM_10's
+    coast. The runtime reads their directions; the ground height comes from its clearance map."""
+    places = {"pyramids": H, "river": S.objects["CAM_1_target"].matrix_world.translation.copy(),
+              "lake": S.objects["CAM_7_target"].matrix_world.translation.copy(),
+              "coast": Vector(CENTER) + cpt if len(coast) else c10.location.copy()}     # hydrology points are centre-relative
+    for name, size, lift_ in PATH_TARGETS:
+        em = bpy.data.objects.new("PathTarget." + name, None)
+        em.empty_display_size = 50.0
+        c_cam.objects.link(em)
+        em.location = places[name]
+        em["path_size"], em["path_lift"] = size, lift_
+        print("PLANET path target %s: %s" % (name, tuple(round(c, 1) for c in em.location)))
+
+
+def drop_shots_and_sets():
+    """No fixed shots and no per-camera sets: the Path Camera (flight_rt.py) is the one camera and the streamed terrain
+    (lod_scene) draws land and water at every height. The anchored land and water go (the stream copies their
+    materials Terrain and Sea; PL_Land stays for the edge guard). Props and the flamingo flock keep LOD_Anchor, which
+    the runtime moves under the camera (planet_runtime.follow_props)."""
+    import re
+    for m_ in ("Terrain", "Sea"):
+        bpy.data.materials[m_].use_fake_user = True
+    bpy.data.node_groups["PL_Land"].use_fake_user = True
+    for ob in (land_ob, water_ob):
         bpy.data.objects.remove(ob)
+    for ob in [o for o in S.objects if re.match(r"CAM_\d+(_|$)", o.name)]:
+        bpy.data.objects.remove(ob)
+    for ob in S.objects:
+        if "lod_share" in ob:
+            del ob["lod_share"]
+    if GRAFT:       # evaluated by the runtime when the anchor moves (so not hidden in the view layer); never drawn
+        birds_ob.visible_camera = False
+        birds_ob.hide_render = True
 
 
-lod_sets()
-rtm.place_anchor(S, c0)
-S["pl_lod_step"] = 0.0
+path_targets()
+drop_shots_and_sets()
+anchor.location = H
 S.render.use_border = True          # camera view renders only the camera frame (scene-perf: +50%, same pixels)
 S.render.border_min_x = S.render.border_min_y = 0.0
 S.render.border_max_x = S.render.border_max_y = 1.0
@@ -4155,4 +4133,4 @@ for img_ in bpy.data.images:      # maps next to the scene file by a relative pa
     if img_.source == "FILE" and img_.filepath and os.path.isabs(bpy.path.abspath(img_.filepath)) and not img_.filepath.startswith("//"):
         img_.filepath = bpy.path.relpath(img_.filepath, start=os.path.dirname(OUT))
 bpy.ops.wm.save_as_mainfile(filepath=OUT, compress=True, relative_remap=True)
-print("PLANET saved %s (graft=%s), CAM_0 at %s, river shot: %s" % (OUT, GRAFT, tuple(round(c, 1) for c in c0.location), bool(best)))
+print("PLANET saved %s (graft=%s), river found: %s, coast found: %s" % (OUT, GRAFT, bool(best), bool(len(coast))))

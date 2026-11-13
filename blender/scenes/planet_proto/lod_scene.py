@@ -15,9 +15,9 @@
 - Shown blocks are written into slots: objects that always stay in the depsgraph and are drawn, one block each.
   A changed block rewrites its slot's mesh in place, which re-evaluates only that object; showing or hiding objects
   instead rebuilt the scene's depsgraph relations, 15-20 ms on every change.
-- The stream runs only while flight_rt wants it (the Flight shot on air or one side of a blend): resume() starts the
-  timer, pause() stops it and empties the slots (an empty slot draws nothing); the caches stay. live() says when a
-  resumed stream shows a whole view; until then planet_runtime keeps the planet's own sets on.
+- flight_rt resumes the stream at its start and it runs from then on: resume() starts the timer, pause() stops it and
+  empties the slots (an empty slot draws nothing); the caches stay. live() says when a resumed stream shows a whole
+  view.
 """
 import math
 import time
@@ -410,7 +410,8 @@ def morph_material(src_name):
                 L.new(shift.outputs[0], lw.inputs[1])
                 L.new(lw.outputs[0], to)
     # no night edges on the stream: its blocks are a regular grid, so their real edges read as a lattice (Flight
-    # review 2026-11-12); the fixed shots keep the planet's own irregular net
+    # review 2026-11-12). Since the fixed shots left (path camera, 2026-11-13) the Planet draws no night edges at all;
+    # an irregular stream lattice is open (docs/handover/path-camera.md)
     for wf in [n for n in N if n.type == "WIREFRAME"]:
         for link in list(wf.outputs["Fac"].links):
             sock = link.to_socket

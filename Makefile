@@ -60,7 +60,7 @@ help:
 	@echo "  blender-rebuild   headless: rebuild synthwave_planet.blend from the island scene (no Blender may run)"
 	@echo "  blender-paths     list the external files each .blend points at"
 	@echo "  venv              .venv with numpy and Pillow for the verify scripts"
-	@echo "  verify            pure-model checks of the star system and the Flight camera (needs venv)"
+	@echo "  verify            pure-model checks of the star system, the Director blends, the terrain stream and the Path Camera (needs venv)"
 
 status:
 	@python3 tools/vj_status.py
@@ -251,3 +251,4 @@ venv:
 verify:
 	.venv/bin/python docs/research/synthwave-star-system/verify_star_system.py
 	.venv/bin/python docs/research/synthwave-flight/verify_flight.py
+	.venv/bin/python docs/research/path-camera/verify_paths.py

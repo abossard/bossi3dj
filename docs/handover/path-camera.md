@@ -75,3 +75,52 @@ At most 2 rebuilds: one planned (step 3), one spare.
 3. What may the music change by itself? Recommendation: height and speed all the time (down on builds, up in breakdowns), path and target on drops and every 16 bars.
 4. The targets: one fixed place each (the lake, river and coast nearest the pyramids' valley), or the nearest one to wherever the camera is? Recommendation: fixed places, so a name always shows the same place.
 5. Height range: just over the ground (10 m) to the whole Planet in frame (64 km), on a log fader? Recommendation: yes; the middle of the fader is then about 800 m.
+
+## Phase 2: steps 1 to 4 (2026-11-13)
+
+The user chose option A, a 20 s takeover pause, music on height and speed always and on path and target at drops and every 16 bars, fixed target places and the log height (STATE.md, "Decided by the user").
+
+### What is built
+
+- Step 1, contract (2c370ae): `/vj/path`, `/vj/target`, `/vj/height`, `/vj/takeover`; `/vj/blend` is the fade time, 0 to 60 s; `/vj/flight` and `/vj/boost` are gone; `/vj/cam` and `/vj/cam_auto` are Godot only, so the island scene has no camera control any more. The bridge no longer cuts cameras; an Art-Net index channel splits 0..255 into equal ranges. Group "Camera and Flight" is now "Camera".
+- Step 2, `blender/scenes/path_camera.py` (no bpy): the four paths, the seven targets, the log height glide (0.5 e-folds/s), the phase as the one integrated number, changes as Director blends, a floor of 10 m over the ground. Its check is `docs/research/path-camera/verify_paths.py` in `make verify`: every path with every target at five heights at speed 1 and at the top speed, 420 changes, four frame times, the cut.
+- The Director (`director.py`) changed in two places, found by that check: a blend's duration now budgets the lens change (a doubling a second at most) and the view's bend toward travel on top of its turn; the bend follows the traverse's ease instead of the momentary ground flow, which dropped within one frame on short hops at 64 km (one frame turned 9.5 degrees). A third change came after the run: a new blend also budgets how fast the target's own view turns (orbit moon to orbit planet turned 75.8 deg/s, now 61.6; gate 60 times 36/30). verify_flight passes all checks (the full run before the third change; its blend and energy sections after it), verify_paths passes all checks.
+- Step 3, build: four empties `PathTarget.<name>` (pyramids at the hero pyramid, the river of the old CAM_1, the lake of the old CAM_7, the coast of the old CAM_10); 5.6 km (lake), 13.9 km (river) and 8.5 km (coast) round the Planet from the pyramids. CAM_0 to CAM_10, their targets and paths, the per-camera sets and the anchored land and water are out of the build; the system and proof cameras stay. Props and the flamingo flock keep `LOD_Anchor`, which the runtime moves under the camera. Two rebuilds: the second fixed the coast target (the hydrology's points are centre-relative).
+- Step 4, runtime: `flight_rt.py` drives `CAM_RIG` with the Path Camera and runs the stream all the time; `planet_runtime.py` turns the sky under the viewer and moves the props anchor after 600 m of travel below 3 km.
+
+### The run
+
+`blender/review/path_camera_run.py`, 180 s at show defaults, 15 steps through every path and every target, ground to space; the step changes path, target or height, `/vj/blend` stays at 30 s, so most steps start while the last change still flies. Log: `blender/review/out/path_camera/run.json` (git-ignored). The run flew the Director before its third change. Video: `docs/video/path-camera-run.mp4` (git-ignored, 180 s, 3,896 new frames of 5,400, 14.2 MB), for the user, not judged here.
+
+**Under load, not trustworthy**: load 125 at the start, 134 at the end, `fps_trustworthy` false; frame times say what this machine did under that load.
+
+| Step (path, target, height) | Frames | Median ms | p95 ms | Worst ms | Over 33 ms | Least height over ground (m) | Height over sea (m) | Swaps | Pops over 0.05 | Shown lag median / max (m) | Frames waiting on near nodes | Frames in a blend |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 00 orbit pyramids 0.3 | 296 | 39.4 | 49.7 | 53.7 | 99 % | 138.6 | 255 to 340 | 51 | 0 | 4.8 / 11.3 | 0 % | 0 % |
+| 01 orbit lake 0.3 | 238 | 47.6 | 79.6 | 201.7 | 91 % | 138.6 | 139 to 2754 | 29 | 1 | 262.1 / 2492.0 | 32 % | 93 % |
+| 02 follow lake 0.3 | 227 | 48.9 | 80.4 | 134.6 | 100 % | 138.6 | 139 to 1329 | 24 | 2 | 71.0 / 997.4 | 25 % | 64 % |
+| 03 follow river 0.3 | 283 | 37.1 | 75.5 | 263.9 | 61 % | 162.6 | 418 to 8904 | 43 | 3 | 655.0 / 5877.2 | 13 % | 100 % |
+| 04 rise river 0.5 | 216 | 50.0 | 92.5 | 283.9 | 90 % | 56.3 | 117 to 1972 | 18 | 2 | 129.2 / 6761.7 | 32 % | 85 % |
+| 05 rise coast 0.5 | 319 | 32.3 | 62.5 | 94.7 | 48 % | 56.3 | 117 to 12510 | 47 | 1 | 564.1 / 2549.1 | 3 % | 100 % |
+| 06 vantage coast 0.5 | 328 | 30.2 | 66.6 | 219.4 | 39 % | 800.0 | 806 to 12441 | 28 | 1 | 325.4 / 5146.4 | 6 % | 93 % |
+| 07 vantage moon 0.5 | 239 | 43.6 | 79.2 | 227.9 | 99 % | 800.0 | 806 to 3673 | 24 | 1 | 238.3 / 2508.5 | 14 % | 71 % |
+| 08 orbit moon 0.7 | 247 | 41.7 | 96.2 | 170.2 | 93 % | 813.2 | 1079 to 4738 | 30 | 1 | 255.4 / 15549.4 | 12 % | 46 % |
+| 09 orbit planet 1.0 | 382 | 28.2 | 49.4 | 94.5 | 26 % | 4617.4 | 4642 to 64342 | 19 | 0 | 1296.5 / 8398.8 | 1 % | 16 % |
+| 10 vantage planet 1.0 | 422 | 28.2 | 35.6 | 47.3 | 11 % | 62044.0 | 62152 to 64281 | 5 | 0 | 665.3 / 4094.5 | 0 % | 55 % |
+| 11 vantage sun 0.5 | 276 | 31.1 | 98.5 | 338.4 | 41 % | 825.9 | 1122 to 64000 | 16 | 2 | 205.9 / 44178.3 | 23 % | 34 % |
+| 12 follow sun 0.2 | 301 | 39.8 | 65.1 | 144.8 | 60 % | 78.5 | 115 to 2940 | 27 | 0 | 127.6 / 898.8 | 3 % | 74 % |
+| 13 follow pyramids 0.0 | 252 | 46.7 | 58.2 | 89.3 | 100 % | 66.7 | 139 to 203 | 18 | 0 | 5.1 / 25.9 | 0 % | 18 % |
+| 14 rise pyramids 0.3 | 240 | 47.8 | 63.8 | 170.6 | 100 % | 43.4 | 114 to 205 | 18 | 3 | 5.4 / 83.8 | 0 % | 26 % |
+
+- All 4,266 frames: median 40.0 ms, p95 69.8 ms. In the hand-over band (8 to 12 km), 230 frames: median 29.5 ms, worst 338.4 ms.
+- The least height over the ground is 43.4 m (the map's conservative ground, a 3x3 max with the pyramids stamped in); at height 0 the follow path keeps 66.7 m because its 100 m window takes in the pyramids.
+- Lag: during blends the shown terrain trails the camera by hundreds of metres (up to 44 km on the fall from space in step 11); a third of the frames of steps 01 and 04 waited on near nodes.
+- Pops: 17 level changes in 3 minutes had a visible pop (over 0.05), 13 of them during blends.
+
+### Failed or not verified
+
+- **No night edges on the Planet.** The stream never drew them (its regular grid read as a lattice, Flight review 2026-11-12); they came from the fixed shots' sets, which are gone. The start check fails on that (`edge_guard` line share 0.0006, needs 0.03), everything else in it is green. Fix options: an irregular stream lattice like round 12 (vertex shift in `lod_stream`, then `make verify` for cracks and pops), or accept no edges and retire the guard. The user's call.
+- The flock appears only after the camera's first 600 m below 3 km (the first anchor move copies it); at the start the Flamingos mesh is empty. A one-line fix in `planet_runtime.py`, which is embedded in the .blend, so it needs a rebuild.
+- Capstone lamps have no per-shot mask any more (it was a bit per `/vj/cam`): behind a ridge their glow may show in the night fog. Not looked at.
+- Not measured: holes (the off-output hole test), frame times on an idle machine.
+- Stale after option A, not changed here: `synthwave_check.py` (the self-check's camera cells), `terrain_test_flight.py` and the old `flight_*` review scripts, `bench_fps.py` (CAM_0 cases).

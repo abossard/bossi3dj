@@ -1,28 +1,23 @@
-"""Runtime of the Flight and the blended shots in the planet scene (docs/research/synthwave-flight.md).
+"""Runtime of the Path Camera in the planet scene (docs/handover/path-camera.md, blender/scenes/path_camera.py).
 
 Loaded by synthwave_runtime.py next to star_system.py; start() installs a frame handler that runs before the
 others, so the planet runtime, the star system and the fog all read this frame's view.
 
-- CAM_RIG is always scene.camera, the On-Air Camera. A cut from /vj/cam or the web page sets scene.camera to a shot
-  camera; the depsgraph handler hands the rig back the same moment and the Director flies the rig to that shot
-  (director.py), at /vj/blend times its duration (0: a cut).
-- The Flight is one more shot: the camera CAM_<n> with vj_flight_cam, driven by /vj/flight and /vj/boost through
-  flight.py. Its integrator runs while it is on air or being blended to.
-- The rig carries the blended per-shot numbers (fog_k, fog_clear, fog_dip) that the planet runtime reads from
-  scene.camera.
-- Energy (energy.py): /vj/energy, /vj/hit and the pulse rt_beat drive every camera's move. A fixed shot gets an
-  ellipse round its pose with its aim held (energy.move); shots on a path (path_period) run their path faster: the
-  camera clock rt_cam_phase gains the Drive's rate (and a hit's swoop) on top of /vj/cam_speed. The Flight takes the
-  energy and the hit as speed. The Director puts the kick and the pulse on the rig. rt_energy and rt_kick are written
-  for the recorder.
-- The terrain (director.streamed): the Flight's streamed terrain (lod_scene) only while the Flight shot is asked for or
-  is one side of a running blend; otherwise the stream is paused (no timer, empty slots) and the planet shows its own
-  precomputed sets for the shot on air, as built (planet_runtime reads vj_terrain). A cut into the Flight holds the old
-  shot until the stream's view is staged (lod_scene.holding); the sets stay on until the stream shows a whole view
-  (lod_scene.live), so there is never a frame without ground.
+- CAM_RIG is always scene.camera, the On-Air Camera. Its pose is the Path Camera's: /vj/path and /vj/target pick the
+  path and what it looks at, /vj/height the height over the ground, /vj/cam_speed the speed, /vj/blend the time the
+  longest change takes (0: a cut). A camera set from elsewhere hands scene.camera back to the rig.
+- The targets: the empties PathTarget.<name> of the build (pyramids, lake, river, coast) on the ground of the
+  clearance map; the moon and the sun live from the star system (rt_moon_*, rt_sun_*); the planet.
+- The rig carries the per-pose numbers (fog_k, fog_clear, fog_dip) that the planet runtime reads from scene.camera,
+  and its near clip grows with the clearance.
+- Energy (energy.py): /vj/energy, /vj/hit and the pulse rt_beat; the path runs faster with the Drive's speed, the
+  Director puts the kick and the pulse on the rig. rt_energy and rt_kick are written for the recorder.
+- The terrain: the streamed terrain (lod_scene) runs all the time and follows the rig.
 - The clearance map: ground (conservative: a 3x3 max, pyramids stamped in) and water level over the whole Planet on
-  a cube map, probed once from the planet's own PL_Surface group and cached under ~/Library/Caches. The Flight, the
-  blends and their clearance floors read it.
+  a cube map, probed once from the planet's own PL_Surface group and cached under ~/Library/Caches. The paths, the
+  blends and their floors read it.
+- A test can replace the pose with a function of time (driver_namespace vj_flight_script,
+  blender/review/terrain_test_flight.py); unset by default.
 """
 import math
 import os
@@ -43,30 +38,24 @@ if _old is not None:                    # stops, and every module below comes fr
         _old.stop(bpy.context.scene)
     except Exception as e:              # after a file load its objects are gone; its timer is off by then
         print("flight_rt: old LOD stream not stopped cleanly: %s" % e)
-for _m in ("director", "energy", "flight", "lod_scene", "lod_stream"):
+for _m in ("director", "energy", "flight", "lod_scene", "lod_stream", "path_camera"):
     sys.modules.pop(_m, None)
-import director as dr  # noqa: E402
 import energy as en  # noqa: E402
 import flight as fl  # noqa: E402
 import lod_scene  # noqa: E402
 import lod_stream as ls  # noqa: E402
+import path_camera as pc  # noqa: E402
 
 RIG = "CAM_RIG"
-FLIGHT_KEY = "vj_flight_cam"
-SHOT_KEY = "vj_shot"                # driver_namespace: the shot asked for (scene.camera is the rig), for the page and check
-SCRIPT_KEY = "vj_flight_script"     # driver_namespace: a function () -> pose that replaces the Flight (test flights only)
-TERRAIN_KEY = "vj_terrain"          # driver_namespace: (the shot whose sets the planet shows, the stream is shown instead)
-SHOT_PROPS = {"fog_k": 1.0, "fog_clear": 180.0, "fog_dip": 0.005}
+SHOT_KEY = "vj_shot"                # driver_namespace: () -> "path target", the page's and the check's name of the view
+SCRIPT_KEY = "vj_flight_script"     # driver_namespace: a function () -> pose that replaces the Path Camera (test flights)
+TARGET_PREFIX = "PathTarget."
 MAP_RES = 512                       # texels per cube face side: about 49 m
 PYR_PAD = 25.0                      # m around a pyramid's footprint
 CACHE = os.path.expanduser("~/Library/Caches/swiftvj-flight")
 MOON_R = 11500.0
-SUBJECT = 300.0                     # m down the view: the aim point of a shot that tracks nothing
-CHECK_SEED = 1                      # the Flight's seed after a reset (quiesce), so every check cell flies alike
-CHECK_SUN = (0.0, 0.9038, 0.4280)   # and its sun: the scene's (star_system) follows the camera, so after a reset it is
-                                    # the previous cell's, and the orbit plane and region with it
-_state = {"last": None, "director": None, "flight": None, "shot": None, "map": None, "fix": 0, "lod": False, "stream": False, "lod_ms": [],
-          "every": 1, "n": 0, "drive": None}
+SUN_DIST, SUN_SIZE = 2.0e6, 60000.0     # m: where the sun target is put along the sun's direction, and its size to frame
+_state = {"last": None, "path": None, "map": None, "lod": False, "lod_ms": [], "drive": None, "targets": None, "n": 0}
 
 
 # ---------------------------------------------------------------- the clearance map
@@ -258,37 +247,16 @@ def load_map(scene):
     return ClearanceMap(g, w, find_regions(h, w))
 
 
-# ---------------------------------------------------------------- shots, rig and the frame
-def ensure_cameras(scene):
+# ---------------------------------------------------------------- rig, targets and the frame
+def ensure_rig(scene):
     rig = scene.objects.get(RIG)
     if rig is None:
         cd = bpy.data.cameras.new(RIG)
-        cd.clip_start, cd.clip_end = 1.0, 250000.0
+        cd.clip_start, cd.clip_end = 1.0, pc.CLIP_FAR
         rig = bpy.data.objects.new(RIG, cd)
         scene.collection.objects.link(rig)
-    fc = next((o for o in scene.objects if o.type == "CAMERA" and o.get(FLIGHT_KEY)), None)
-    if fc is None:
-        n = max((int(o.name[4:]) for o in scene.objects if o.type == "CAMERA" and o.name[4:].isdigit()), default=0) + 1
-        cd = bpy.data.cameras.new("CAM_%d" % n)
-        cd.clip_start, cd.clip_end = 1.0, 250000.0
-        fc = bpy.data.objects.new("CAM_%d" % n, cd)
-        fc[FLIGHT_KEY] = 1
-        for k, v in SHOT_PROPS.items():
-            fc[k] = v
-        scene.collection.objects.link(fc)
-        cam_range = scene.id_properties_ui("vj_cam") if "vj_cam" in scene else None
-        if cam_range is not None:
-            cam_range.update(max=float(n), soft_max=float(n))
-    return rig, fc
-
-
-def pose_of(ob, dg):
-    m = ob.evaluated_get(dg).matrix_world
-    r = m.to_3x3().normalized()
-    fwd = tuple(-r.col[2])
-    up = tuple(r.col[1])
-    props = {k: float(ob.get(k, v)) for k, v in SHOT_PROPS.items()}
-    return tuple(m.translation), fwd, up, ob.data.lens, props
+    rig.data.clip_end = pc.CLIP_FAR
+    return rig
 
 
 def place(ob, pose):
@@ -301,67 +269,38 @@ def place(ob, pose):
     if abs(ob.data.lens - lens) > 1e-4:
         ob.data.lens = lens
     for k, v in props.items():
-        ob[k] = v
+        if k == "clip":
+            if abs(ob.data.clip_start - v) > 1e-3:
+                ob.data.clip_start = v
+        else:
+            ob[k] = v
 
 
-def moved_pose(ob, dg, drive):
-    """A fixed shot's live pose with its energy move. Shots on a path move along it (the camera clock); the others
-    get the ellipse round their aim point: the tracked target's distance down the view, or the planet centre's for
-    the orbit views, or SUBJECT. The orbit views keep their lens (it fits the planet)."""
-    pose = pose_of(ob, dg)
-    if "path_period" in ob:
-        return pose
-    p, fwd = pose[0], pose[1]
-    con = next((c for c in ob.constraints if c.type == "TRACK_TO" and c.target is not None), None)
-    orbit = ob.get("lod") == "orbit"
-    if con is not None:
-        subject = fl.dot(fl.sub(tuple(con.target.matrix_world.translation), p), fwd)
-    elif orbit:
-        subject = fl.dot(fl.sub(fl.CENTRE, p), fwd)
-    else:
-        subject = SUBJECT
-    u, h = dr.spherical(p)
-    clear = h - _state["map"].surface(u)
-    seed = (sum(map(ord, ob.name)) % 97) * 0.37          # each shot its own place on its ellipse
-    moved = en.move(pose, max(subject, 20.0), clear, drive, seed, tighten=not orbit)
-    u2, h2 = dr.spherical(moved[0])
-    floor = min(_state["map"].surface(u2) + en.FLOOR, h)    # the move never goes lower than this, nor lifts the shot
-    if h2 < floor:
-        moved = (fl.add(moved[0], u2, floor - h2),) + moved[1:]
-    return moved
+def ground_targets(scene, cmap):
+    """name -> path_camera.Target of the build's PathTarget.<name> empties, on the clearance map's ground."""
+    out = {}
+    for ob in scene.objects:
+        if ob.name.startswith(TARGET_PREFIX):
+            u = fl.norm(fl.sub(tuple(ob.location), fl.CENTRE))
+            out[ob.name[len(TARGET_PREFIX):]] = pc.ground_target(ob.name[len(TARGET_PREFIX):], u, cmap, float(ob.get("path_size", 200.0)),
+                                                                 float(ob.get("path_lift", 0.0)))
+    return out
 
 
-def flight_pose(scene, dt, fc):
-    script = bpy.app.driver_namespace.get(SCRIPT_KEY)
-    if script is not None:      # a scripted test flight (blender/review/terrain_test_flight.py): the pose is its own
-        pose = script()         # function of time; off unless a job sets it, so the show's Flight is unchanged
-        place(fc, pose)
-        _state["flight_pose"] = pose
-        return pose
-    if dt <= 0.0 and _state.get("flight_pose") is not None:     # clocks stopped (the self-check): it holds
-        return _state["flight_pose"]
-    dt = max(dt, 1e-3)
+def live_targets(scene):
+    """The ground targets with the moon, the sun and the planet as they are this frame."""
     s = scene.get
-    sun = (s("rt_sun_x", 0.0), s("rt_sun_y", 1.0), s("rt_sun_z", 0.0))
-    moon = ((s("rt_moon_x", 0.0), s("rt_moon_y", 0.0), s("rt_moon_z", 0.0)), MOON_R * s("vj_moon", 1.0))
-    F = _state["flight"]
-    if F is None:
-        reset = _state.pop("reset", None)       # the seed of a reset Flight (quiesce), None: a fresh one per start
-        F = _state["flight"] = fl.Flight(_state["map"], seed=int(time.time()) % 100000 if reset is None else reset,
-                                         sun=sun if reset is None else CHECK_SUN)
-        if reset is not None:       # settled at the stage asked for: the self-check shows the stage, verify_flight the damping
-            F.f = fl.clamp(s("vj_flight", 0.0), 0.0, 1.0)
-    drive = _state["drive"]
-    p, fwd, up, lens, info = F.step(dt, s("vj_flight", 0.0), s("vj_boost", 0.0), en.level(drive.e), drive.kick, sun,
-                                   moon if moon[1] > 0.0 else None)
-    w = info["w"]
-    props = {"fog_k": fl.mix(w, (1.0, 1.0, 2.0, 1.5)), "fog_clear": fl.mix(w, (180.0, 600.0, 250.0, 150.0)),
-             "fog_dip": math.sqrt(2.0 * max(info["clear"], 5.0) / fl.R)}
-    pose = (p, fwd, up, lens, props)
-    place(fc, pose)
-    scene["rt_flight_stage"] = float(max(range(4), key=lambda k: w[k]))
-    _state["flight_pose"] = pose
-    return pose
+    t = dict(_state["targets"])
+    moon = (s("rt_moon_x", 0.0), s("rt_moon_y", 0.0), s("rt_moon_z", 50000.0))
+    sun = fl.norm((s("rt_sun_x", 0.0), s("rt_sun_y", 1.0), s("rt_sun_z", 0.0)))
+    t["moon"] = pc.Target("moon", "sky", moon, MOON_R * max(s("vj_moon", 1.0), 0.05))
+    t["sun"] = pc.Target("sun", "sky", fl.add(fl.CENTRE, sun, SUN_DIST), SUN_SIZE)
+    t["planet"] = pc.Target("planet", "planet", fl.CENTRE, fl.R)
+    return t
+
+
+def choice(scene, key, names):
+    return names[int(fl.clamp(round(scene.get(key, 0.0)), 0, len(names) - 1))]
 
 
 def frame(scene, depsgraph=None):
@@ -373,96 +312,49 @@ def frame(scene, depsgraph=None):
         dt = rt.peek_dt(now, dt)
     if _state["map"] is None:
         return
-    rig, fc = ensure_cameras(scene)
-    if scene.camera is not None and scene.camera != rig:
-        _state["shot"] = scene.camera
+    rig = ensure_rig(scene)
+    if scene.camera != rig:
         scene.camera = rig
-    shot = _state["shot"] or fc
-    dg = bpy.context.evaluated_depsgraph_get()
-    D = _state["director"]
-    if D is None:
-        D = _state["director"] = dr.Director()
     drive = _state["drive"]
     if drive is None:
         drive = _state["drive"] = en.Drive(scene.get("vj_energy", en.E0))
     drive.step(dt, scene.get("vj_energy", en.E0), scene.get("vj_hit", 0.0), scene.get("rt_beat", 0.0))
     scene["rt_energy"], scene["rt_kick"] = drive.e, drive.kick
-    # the camera clock (synthwave_runtime adds dt * vj_cam_speed after this handler): paths run at the Drive's rate
-    scene["rt_cam_phase"] = scene.get("rt_cam_phase", 0.0) + dt * scene.get("vj_cam_speed", 1.0) * (drive.speed - 1.0)
-    target = flight_pose(scene, dt, fc) if shot == fc else moved_pose(shot, dg, drive)
-    had = D.tr
-    pose = D.step(dt, shot.name, target, scene.get("vj_blend", 1.0), _state["map"], drive)
-    stream = _state["lod"] and dr.streamed(fc.name, shot.name, D.sides, D.tr is not None)
-    if stream != _state["stream"]:
-        _state["stream"] = stream
-        (lod_scene.resume if stream else lod_scene.pause)()
-        _state["lod_shot"] = None                       # the first selection after a resume is staged
-    if stream and D.tr is not None and D.tr is not had:     # a blend began: build the target's blocks ahead
-        lod_scene.prewarm(target[0])
-    up_r = fl.norm(fl.sub(pose[0], fl.CENTRE))         # the clearance floor under the rig during blends
-    u, h = dr.spherical(pose[0])
-    floor = _state["map"].surface(u) + 2.0
-    if h < floor and not shot.get(FLIGHT_KEY) and D.tr is not None:
-        pose = (fl.add(pose[0], up_r, floor - h),) + pose[1:]
-        _state["fix"] += 1
-    scene["rt_blending"] = 1.0 if D.tr is not None else 0.0
+    P = _state["path"]
+    if P is None:
+        P = _state["path"] = pc.PathCamera(live_targets(scene), _state["map"])
+    P.targets = live_targets(scene)
+    path, target = choice(scene, "vj_path", pc.PATHS), choice(scene, "vj_target", pc.TARGETS)
+    _state["view"] = "%s %s" % (path, target)
+    script = bpy.app.driver_namespace.get(SCRIPT_KEY)
+    if script is not None:      # a scripted test flight: the pose is its own function of time
+        pose = script()
+    else:
+        pose = P.step(dt, path, target, scene.get("vj_height", 0.3), scene.get("vj_cam_speed", 1.0) * drive.speed,
+                      scene.get("vj_blend", 30.0), drive)
+    scene["rt_blending"] = 1.0 if P.blending() else 0.0
     _state["n"] += 1
-    if stream and _state["n"] % _state["every"] == 0:   # the terrain follows the rig (lod_scene)
-        t = time.perf_counter()
-        # a hard cut (the jump is no speed) or the first selection after a resume: staged (lod_scene.stage_tick)
-        cut = _state.get("lod_shot") is None or (shot.name != _state["lod_shot"] and D.tr is None)
-        _state["lod_shot"] = shot.name
-        blocks = lod_scene.update(scene, pose[0], 0.0 if cut else fl.length(D.vel), 1.0 / max(dt, 1e-3) / _state["every"])
-        _state["lod_ms"] = (_state["lod_ms"] + [(round((time.perf_counter() - t) * 1000.0, 2), blocks)])[-600:]
-    if not (stream and lod_scene.holding() and D.tr is None):   # a cut shows when its terrain is ready (lod_scene.stage);
-        # a blend flies on: until the staged view flips the planet's sets cover it (vj_terrain)
-        place(rig, pose)
-        _state["on_air"] = shot
-    elif _state.get("on_air") not in (None, shot):     # meanwhile the old shot keeps moving (EN1)
-        old = _state["on_air"]
-        place(rig, flight_pose(scene, dt, fc) if old == fc else moved_pose(old, dg, drive))
-    planet_shot(_state["on_air"], pose[0], D.tr is not None)
-
-
-def planet_shot(on_air, p, blending):
-    """The fixed shot whose sets the planet shows: the one on air; in a blend between two fixed shots the new one once
-    the rig is nearer to it than to the old one; the Flight keeps the last fixed shot (its sets are hidden then)."""
-    old = _state.get("planet_shot")
-    if on_air is None or on_air.get(FLIGHT_KEY) or on_air == old:
-        return
-    if not blending or old is None or (Vector(p) - on_air.matrix_world.translation).length <= (Vector(p) - old.matrix_world.translation).length:
-        _state["planet_shot"] = on_air
-
-
-def terrain():
-    """What the planet shows (vj_terrain): the shot whose precomputed sets, and whether the Flight's stream replaces
-    their land and water."""
-    ps = _state.get("planet_shot")
-    return (ps.name if ps is not None else None), bool(_state["stream"] and lod_scene.live())
+    t = time.perf_counter()
+    # a cut (fade time 0) or the first frame: the jump is no speed, the new view is staged (lod_scene.stage_tick)
+    cut = _state.get("key") is None or ((path, target) != _state["key"] and not P.blending())
+    _state["key"] = (path, target)
+    blocks = lod_scene.update(scene, pose[0], 0.0 if cut else fl.length(P.D.vel), 1.0 / max(dt, 1e-3))
+    _state["lod_ms"] = (_state["lod_ms"] + [(round((time.perf_counter() - t) * 1000.0, 2), blocks)])[-600:]
+    if not (lod_scene.holding() and not P.blending()):     # a cut shows once its terrain is staged; until then the
+        place(rig, pose)                                    # rig holds the last view
 
 
 def on_cut(scene, depsgraph=None):
-    """A cut sets scene.camera to a shot; the rig takes it back before the frame is drawn."""
+    """Another camera set as scene.camera: the rig takes it back before the frame is drawn."""
     rig = scene.objects.get(RIG)
     if rig is not None and scene.camera is not None and scene.camera != rig:
-        _state["shot"] = scene.camera
         scene.camera = rig
 
 
 def quiesce(seed=None):
-    """The self-check's reset, per cell (synthwave_runtime.quiesce): the next frame starts the Drive, the Director
-    and the Flight afresh, so a moving shot shows the same frames for the same controls. The Flight flies `seed`
-    (default CHECK_SEED, or the one set_seed chose for grabs that need another region)."""
-    _state.update(drive=None, director=None, flight=None, flight_pose=None,
-                  reset=_state.get("seed", CHECK_SEED) if seed is None else seed)
-
-
-def set_seed(seed=None):
-    """The seed every later reset Flight flies (None: back to CHECK_SEED)."""
-    if seed is None:
-        _state.pop("seed", None)
-    else:
-        _state["seed"] = int(seed)
+    """The self-check's reset, per cell (synthwave_runtime.quiesce): the next frame starts the Drive and the Path
+    Camera afresh (phase 0, the height on its fader), so the same controls show the same frames."""
+    _state.update(drive=None, path=None)
 
 
 def start():
@@ -471,36 +363,27 @@ def start():
         print("flight_rt: not a planet scene, not started")
         return
     _state["map"] = load_map(scene)
-    rig, fc = ensure_cameras(scene)
-    _state["shot"] = scene.camera if scene.camera not in (None, rig) else fc
+    _state["targets"] = ground_targets(scene, _state["map"])
+    rig = ensure_rig(scene)
     for handlers, fn in ((bpy.app.handlers.frame_change_pre, frame), (bpy.app.handlers.depsgraph_update_pre, on_cut)):
         for h in list(handlers):
             if getattr(h, "__name__", "") == fn.__name__ and getattr(h, "__module__", "") == __name__:
                 handlers.remove(h)
         handlers.insert(0, fn)
     scene.camera = rig
-    bpy.app.driver_namespace[SHOT_KEY] = lambda: _state["shot"].name if _state["shot"] is not None else None
-    _state["planet_shot"] = _state["shot"] if not _state["shot"].get(FLIGHT_KEY) else None
-    bpy.app.driver_namespace[TERRAIN_KEY] = terrain
+    bpy.app.driver_namespace[SHOT_KEY] = lambda: _state.get("view")
     lod_scene.start(scene, _state["map"])
-    _state["stream"] = False
+    lod_scene.resume()
     _state["lod"] = True
-    dg = bpy.context.evaluated_depsgraph_get()
-    for ob in scene.objects:                 # every fixed shot's blocks, queued: built while the stream runs
-        if ob.type == "CAMERA" and ob.name[4:].isdigit() and not ob.get(FLIGHT_KEY) and "path_period" not in ob:
-            lod_scene.prewarm(tuple(ob.evaluated_get(dg).matrix_world.translation))
-    print("flight_rt: started, %d flight regions, Flight shot %s" % (len(_state["map"].cands), fc.name))
+    print("flight_rt: started, Path Camera on %s, targets %s" % (RIG, ", ".join(sorted(_state["targets"]))))
 
 
 def stop():
     bpy.app.driver_namespace.pop(SHOT_KEY, None)
-    bpy.app.driver_namespace.pop(TERRAIN_KEY, None)
     if _state["lod"]:
         lod_scene.stop(bpy.context.scene)
-        _state["lod"] = _state["stream"] = False
+        _state["lod"] = False
     for handlers in (bpy.app.handlers.frame_change_pre, bpy.app.handlers.depsgraph_update_pre):
         for h in list(handlers):
             if getattr(h, "__module__", "") == __name__:
                 handlers.remove(h)
-    if _state["shot"] is not None:
-        bpy.context.scene.camera = _state["shot"]
