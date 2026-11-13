@@ -251,4 +251,4 @@ venv:
 verify:
 	.venv/bin/python docs/research/synthwave-star-system/verify_star_system.py
 	.venv/bin/python docs/research/synthwave-flight/verify_flight.py
-	.venv/bin/python docs/research/path-camera/verify_paths.py
+	.venv/bin/python blender/review/verify_paths.py

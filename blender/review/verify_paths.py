@@ -15,7 +15,7 @@ import os
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "..", "..", "..", "blender", "scenes"))
+sys.path.insert(0, os.path.join(HERE, "..", "scenes"))
 import director as dr  # noqa: E402
 import flight as fl  # noqa: E402
 import path_camera as pc  # noqa: E402

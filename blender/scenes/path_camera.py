@@ -1,6 +1,6 @@
 """The Path Camera: one camera on paths, steered by /vj/path, /vj/target, /vj/height, /vj/cam_speed and /vj/blend.
 
-Pure Python (no bpy), checked by docs/research/path-camera/verify_paths.py (`make verify`). The design is in
+Pure Python (no bpy), checked by blender/review/verify_paths.py (`make verify`). The design is in
 docs/handover/path-camera.md.
 
 - A path type (orbit, follow the land, rise and descend, vantage with a slow push) works with any target. A target

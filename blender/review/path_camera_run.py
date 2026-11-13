@@ -1,6 +1,8 @@
 """The Path Camera run (docs/handover/path-camera.md, step 4): 3 minutes of control changes at show defaults over every
 path and every target, with the terrain test's per-frame log. In the live planet Blender with flight_rt started:
     DN["pc_job"] = {"out": "/abs/run.json", "flag": "/abs/go.flag"}; exec this file; wait for DN["pc_done"].
+Optional JOB "passes": [{"name": "day", "set": {}}, {"name": "night", "set": {"vj_night": 1.0}}] flies the STEPS once per
+pass, each pass from the wire defaults plus its set (default: one "day" pass).
 The job resets the controls to their wire defaults, waits until the stream shows its first view, writes `flag` (a
 recorder started with --flag begins there) and sends the STEPS through the bridge as a desk would (source
 "path_camera_run"): path, target and height change at the listed second; /vj/blend stays at its default, so most
@@ -8,7 +10,9 @@ changes fly and a change can come while the last one still flies. Clocks run, no
 Per drawn frame the log holds: t, draw interval ms, step, height over the ground (clearance map) and over the sea,
 rt_space, shown nodes, their depth range, near nodes still missing, the stream holding a cut, the selection's and the
 shown view's lag (m from the camera), whether a blend runs; every swap with the nearest changed node's distance, depth
-and pop. Every 10th frame the lower third's ground cell on screen (px of 1920). Writes the log and a summary per step."""
+and pop. Every 10th frame the lower third's ground cell on screen (px of 1920) and the capstone lamps: how many shine
+(energy over 1 W) within LAMP_NEAR of the camera with land between (on the clearance map), the case the old per-shot
+mask turned off. Writes the log and a summary per step."""
 import json
 import math
 import os
@@ -32,15 +36,35 @@ STEPS = ((0, "orbit", "pyramids", 0.3), (12, "orbit", "lake", 0.3), (24, "follow
          (96, "orbit", "moon", 0.7), (108, "orbit", "planet", 1.0), (120, "vantage", "planet", 1.0), (132, "vantage", "sun", 0.5),
          (144, "follow", "sun", 0.2), (156, "follow", "pyramids", 0.0), (168, "rise", "pyramids", 0.3))
 DURATION = 180.0
+PASSES = JOB.get("passes") or [{"name": "day", "set": {}}]
+LAMP_NEAR = 3000.0          # m: the old mask's reach (build_planet.fog_lights)
+LAMPS = [o for o in S.objects if o.name.startswith("Lamp_Capstone.")]
 DN["pc_done"] = False
 
 
 def step_of(t):
-    i = max(k for k, s in enumerate(STEPS) if s[0] <= max(t, 0.0))
-    return "%02d %s %s %.1f" % ((i,) + STEPS[i][1:])
+    k = min(int(max(t, 0.0) // DURATION), len(PASSES) - 1)
+    t = t - k * DURATION
+    i = max(j for j, s in enumerate(STEPS) if s[0] <= max(t, 0.0))
+    return "%s %02d %s %s %.1f" % ((PASSES[k]["name"], i) + STEPS[i][1:])
 
 
-st = {"t0": None, "rows": [], "swaps": [], "probe": [], "last": None, "nodes": None, "keys": set(), "handle": None, "n": 0}
+def land_between(a, b, n=32):
+    """Whether the clearance map's ground rises over the straight line a-b somewhere between them."""
+    for k in range(1, n):
+        q = fl.add(a, fl.sub(b, a), k / n)
+        rq = fl.sub(q, fl.CENTRE)
+        if fl.length(rq) - fl.R < FS["map"].ground(fl.norm(rq)):
+            return True
+    return False
+
+
+def hidden_lamps(cam):
+    return sum(1 for o in LAMPS if o.data.energy > 1.0 and math.dist(cam, o.location) < LAMP_NEAR
+               and land_between(cam, tuple(o.location)))
+
+
+st = {"t0": None, "rows": [], "swaps": [], "probe": [], "lamps": [], "last": None, "nodes": None, "keys": set(), "handle": None, "n": 0}
 DN["pc_state"] = st
 
 
@@ -85,7 +109,7 @@ def on_draw():
         return
     now = time.perf_counter()
     t = now - st["t0"]
-    if st["last"] is None or t > DURATION:
+    if st["last"] is None or t > DURATION * len(PASSES):
         st["last"] = now
         return
     ms = (now - st["last"]) * 1000.0
@@ -113,6 +137,7 @@ def on_draw():
                        len(L.get("near_missing") or ()), bool(LOD.holding()), round(math.dist(cam, sel), 1) if sel else None,
                        round(math.dist(cam, shown), 1) if shown else None, bool(S.get("rt_blending", 0.0))))
     if st["n"] % 10 == 0:
+        st["lamps"].append((round(t, 3), step_of(t), hidden_lamps(cam)))
         r = m.to_3x3().normalized()
         lens = RIG.data.lens
         q, dist = ground_ray(cam, tuple(-r.col[2]), tuple(r.col[1]), lens)
@@ -140,8 +165,8 @@ def pct(xs, q):
 
 def summary():
     out = {}
-    for i, (a, *_rest) in enumerate(STEPS):
-        b = STEPS[i + 1][0] if i + 1 < len(STEPS) else DURATION
+    for k_, i, (a, *_rest) in ((k_, i, (s_[0] + k_ * DURATION,) + tuple(s_[1:])) for k_ in range(len(PASSES)) for i, s_ in enumerate(STEPS)):
+        b = (STEPS[i + 1][0] if i + 1 < len(STEPS) else DURATION) + k_ * DURATION
         name = step_of(a)
         rows = [r for r in st["rows"] if r[2] == name]
         ms = [r[1] for r in rows]
@@ -149,6 +174,7 @@ def summary():
         pr = [p for p in st["probe"] if p[1] == name]
         slag = [r[12] for r in rows if r[12] is not None]
         pops = [s[4] for s in sw]
+        lm = [x[2] for x in st["lamps"] if x[1] == name]
         out[name] = {"frames": len(rows), "median_ms": round(statistics.median(ms), 1) if ms else None,
                      "p95_ms": round(pct(ms, 0.95), 1) if ms else None, "worst_ms": round(max(ms), 1) if ms else None,
                      "over_33ms": round(sum(1 for x in ms if x > 33.3) / len(ms), 3) if ms else None,
@@ -163,14 +189,27 @@ def summary():
                      "alt_m": [round(min(r[4] for r in rows)), round(max(r[4] for r in rows))] if rows else None,
                      "edge_px_lower_third_median": round(statistics.median([p[5] for p in pr]), 2) if pr else None,
                      "nodes_median": statistics.median([r[6] for r in rows]) if rows else None,
+                     "lamp_hidden_lit_share": round(sum(1 for x in lm if x) / len(lm), 3) if lm else None,
+                     "lamp_hidden_lit_max": max(lm, default=None),
                      "max_depth_median": statistics.median([r[8] for r in rows]) if rows else None}
     band = [r for r in st["rows"] if pc.BAND[0] <= r[4] <= pc.BAND[1]]
     out["band_8_12km"] = {"frames": len(band), "median_ms": round(statistics.median([r[1] for r in band]), 1) if band else None,
                           "worst_ms": round(max(r[1] for r in band), 1) if band else None}
     ms = [r[1] for r in st["rows"]]
     out["all"] = {"frames": len(ms), "median_ms": round(statistics.median(ms), 1) if ms else None,
-                  "p95_ms": round(pct(ms, 0.95), 1) if ms else None, "agl_min_m": round(min(r[3] for r in st["rows"]), 1) if ms else None}
+                  "p95_ms": round(pct(ms, 0.95), 1) if ms else None, "agl_min_m": round(min(r[3] for r in st["rows"]), 1) if ms else None,
+                  "pops_over_0.05": sum(1 for s in st["swaps"] if s[4] > 0.05)}
+    for k_, ps in enumerate(PASSES):
+        rows = [r for r in st["rows"] if r[2].startswith(ps["name"] + " ")]
+        out["pass " + ps["name"]] = {"frames": len(rows), "median_ms": round(statistics.median([r[1] for r in rows]), 1) if rows else None,
+                                     "pops_over_0.05": sum(1 for s in st["swaps"] if k_ * DURATION <= s[0] < (k_ + 1) * DURATION and s[4] > 0.05)}
     return out
+
+
+def set_pass(ps):
+    defaults()
+    if ps["set"]:
+        BR.apply({"/" + k.replace("_", "/", 1): [float(v)] for k, v in ps["set"].items()}, "path_camera_run")
 
 
 def send(path, target, w):
@@ -181,7 +220,7 @@ def send(path, target, w):
 def run():
     load0 = os.getloadavg()[0]
     BR.hold = set()
-    defaults()
+    set_pass(PASSES[0])
     send(*STEPS[0][1:])
     t = time.perf_counter()
     while time.perf_counter() - t < 60.0 and not (LOD.live() and not LOD.holding()):
@@ -190,11 +229,14 @@ def run():
     if JOB.get("flag"):
         open(JOB["flag"], "w").write("go\n")
     st["t0"] = time.perf_counter()
+    plan = [(s_[0] + k_ * DURATION, k_, s_) for k_ in range(len(PASSES)) for s_ in STEPS]
     nxt = 1
-    while time.perf_counter() - st["t0"] < DURATION + 0.2:
+    while time.perf_counter() - st["t0"] < DURATION * len(PASSES) + 0.2:
         el = time.perf_counter() - st["t0"]
-        if nxt < len(STEPS) and el >= STEPS[nxt][0]:
-            send(*STEPS[nxt][1:])
+        if nxt < len(plan) and el >= plan[nxt][0]:
+            if plan[nxt][1] != plan[nxt - 1][1]:
+                set_pass(PASSES[plan[nxt][1]])
+            send(*plan[nxt][2][1:])
             nxt += 1
         yield 0.05
     st["t0"] = None
@@ -202,6 +244,7 @@ def run():
     bpy.types.SpaceView3D.draw_handler_remove(st["handle"], "WINDOW")
     st["handle"] = None
     json.dump({"load_start": round(load0, 1), "load_end": round(os.getloadavg()[0], 1), "steps": [list(s) for s in STEPS],
+               "passes": PASSES, "lamps": len(LAMPS), "lamp_columns": ["t", "step", "hidden_lit"], "lamp_probe": st["lamps"],
                "summary": summary() if st["rows"] else None,
                "columns": ["t", "ms", "step", "agl", "alt", "rt_space", "nodes", "min_depth", "max_depth", "near_missing",
                            "holding", "lag_m", "shown_lag_m", "blending"],

@@ -75,10 +75,11 @@ def follow_props(scene, c):
         return False
     g = Vector(CENTER) + rel.normalized() * R
     a = Vector(CENTER) + (anchor.location - Vector(CENTER)).normalized() * R
-    if (g - a).length < PROPS_STEP:
+    if (g - a).length < PROPS_STEP and _state.get("flock"):     # the first call copies the flock where the anchor is
         return False
     anchor.location = g
     copy_flock(scene)
+    _state["flock"] = True
     return True
 
 

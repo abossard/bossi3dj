@@ -83,7 +83,7 @@ The user chose option A, a 20 s takeover pause, music on height and speed always
 ### What is built
 
 - Step 1, contract (2c370ae): `/vj/path`, `/vj/target`, `/vj/height`, `/vj/takeover`; `/vj/blend` is the fade time, 0 to 60 s; `/vj/flight` and `/vj/boost` are gone; `/vj/cam` and `/vj/cam_auto` are Godot only, so the island scene has no camera control any more. The bridge no longer cuts cameras; an Art-Net index channel splits 0..255 into equal ranges. Group "Camera and Flight" is now "Camera".
-- Step 2, `blender/scenes/path_camera.py` (no bpy): the four paths, the seven targets, the log height glide (0.5 e-folds/s), the phase as the one integrated number, changes as Director blends, a floor of 10 m over the ground. Its check is `docs/research/path-camera/verify_paths.py` in `make verify`: every path with every target at five heights at speed 1 and at the top speed, 420 changes, four frame times, the cut.
+- Step 2, `blender/scenes/path_camera.py` (no bpy): the four paths, the seven targets, the log height glide (0.5 e-folds/s), the phase as the one integrated number, changes as Director blends, a floor of 10 m over the ground. Its check is `blender/review/verify_paths.py` (moved there in round 2) in `make verify`: every path with every target at five heights at speed 1 and at the top speed, 420 changes, four frame times, the cut.
 - The Director (`director.py`) changed in two places, found by that check: a blend's duration now budgets the lens change (a doubling a second at most) and the view's bend toward travel on top of its turn; the bend follows the traverse's ease instead of the momentary ground flow, which dropped within one frame on short hops at 64 km (one frame turned 9.5 degrees). A third change came after the run: a new blend also budgets how fast the target's own view turns (orbit moon to orbit planet turned 75.8 deg/s, now 61.6; gate 60 times 36/30). verify_flight passes all checks (the full run before the third change; its blend and energy sections after it), verify_paths passes all checks.
 - Step 3, build: four empties `PathTarget.<name>` (pyramids at the hero pyramid, the river of the old CAM_1, the lake of the old CAM_7, the coast of the old CAM_10); 5.6 km (lake), 13.9 km (river) and 8.5 km (coast) round the Planet from the pyramids. CAM_0 to CAM_10, their targets and paths, the per-camera sets and the anchored land and water are out of the build; the system and proof cameras stay. Props and the flamingo flock keep `LOD_Anchor`, which the runtime moves under the camera. Two rebuilds: the second fixed the coast target (the hydrology's points are centre-relative).
 - Step 4, runtime: `flight_rt.py` drives `CAM_RIG` with the Path Camera and runs the stream all the time; `planet_runtime.py` turns the sky under the viewer and moves the props anchor after 600 m of travel below 3 km.
@@ -117,10 +117,97 @@ The user chose option A, a 20 s takeover pause, music on height and speed always
 - Lag: during blends the shown terrain trails the camera by hundreds of metres (up to 44 km on the fall from space in step 11); a third of the frames of steps 01 and 04 waited on near nodes.
 - Pops: 17 level changes in 3 minutes had a visible pop (over 0.05), 13 of them during blends.
 
-### Failed or not verified
+### Failed or not verified (phase 2, see round 2 for what is fixed)
 
 - **No night edges on the Planet.** The stream never drew them (its regular grid read as a lattice, Flight review 2026-11-12); they came from the fixed shots' sets, which are gone. The start check fails on that (`edge_guard` line share 0.0006, needs 0.03), everything else in it is green. Fix options: an irregular stream lattice like round 12 (vertex shift in `lod_stream`, then `make verify` for cracks and pops), or accept no edges and retire the guard. The user's call.
 - The flock appears only after the camera's first 600 m below 3 km (the first anchor move copies it); at the start the Flamingos mesh is empty. A one-line fix in `planet_runtime.py`, which is embedded in the .blend, so it needs a rebuild.
 - Capstone lamps have no per-shot mask any more (it was a bit per `/vj/cam`): behind a ridge their glow may show in the night fog. Not looked at.
 - Not measured: holes (the off-output hole test), frame times on an idle machine.
 - Stale after option A, not changed here: `synthwave_check.py` (the self-check's camera cells), `terrain_test_flight.py` and the old `flight_*` review scripts, `bench_fps.py` (CAM_0 cases).
+
+## Round 2: night edges, flock, live checks, run 2 (2026-11-13)
+
+### What changed
+
+- Night edges on the stream (the user chose "Irregular net"): `lod_stream.jitter()` moves every lattice point up to 0.30 cells sideways, hashed from face, depth and global lattice position, so neighbours of one depth agree; points on the cube's edges stay. The morph target of an even vertex is its parent depth's own shifted point, of an odd one the midpoint of two of those (`morph_targets()`), so a fully morphed node is its parent. `lod_scene.build_group` does the same in geometry nodes (`lattice_dir`; the parent points through a second `PL_Surface` on the even vertices only, as points, about a third more surface evaluations per bake). The `Terrain LOD` material keeps its Wireframe node again.
+- Checks: `verify_flight` 5b/5c (cracks, pops) pass with the shift, new 5f (no triangle folds at any morph, even with a random morph per vertex) passes: the thinnest triangle is 0.029 of its lattice share, so the net has slivers but no folds; in the live scene the baked nodes sit up to 0.30 cells off the lattice, same-depth seams match exactly (299 pairs, 0 m), a fully morphed child's even vertices land on its parent's within 1 micrometre (200 pairs).
+- Flock: `planet_runtime.follow_props` copies the flock on its first call (97 birds at the start). One rebuild (round 2), no spare used.
+- `verify_paths.py` lives in `blender/review/` now; `make verify` runs it from there.
+- New review script: `blender/review/path_edges.py` (night grid 1/0 pairs per pose, for `net_regularity.py`). `path_camera_run.py` takes passes (day, night) and logs capstone lamps hidden behind land.
+
+### Run 2
+
+`path_camera_run.py` with two passes, day (show defaults) then night (`vj_night` 1), the same 15 steps each, 360 s, current Director. Log `blender/review/out/path_camera/run2.json` (git-ignored). Video `docs/video/path-camera-run-2.mp4` (git-ignored, 360 s, 8,279 new frames of 10,860, 166 MB), not judged.
+
+**Under load, not trustworthy**: load 61.7 at the start, 21.0 at the end, `fps_trustworthy` false.
+
+| Step | Frames | Median ms | p95 ms | Worst ms | Over 33 ms | Least height over ground (m) | Height over sea (m) | Swaps | Pops over 0.05 | Shown lag median / max (m) | Waiting on near nodes | In a blend | Hidden lit lamp (share / most) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| day 00 orbit pyramids 0.3 | 258 | 45.5 | 54.7 | 57.1 | 100 % | 138.6 | 148 to 158 | 51 | 0 | 5.0 / 11.6 | 0 % | 0 % | 0 / 0 |
+| day 01 orbit lake 0.3 | 240 | 45.7 | 72.8 | 164.1 | 90 % | 141.8 | 158 to 2317 | 32 | 1 | 181.2 / 1896.6 | 29 % | 83 % | 0 / 0 |
+| day 02 follow lake 0.3 | 271 | 43.6 | 66.5 | 230.3 | 71 % | 138.6 | 139 to 3219 | 31 | 1 | 290.0 / 2458.4 | 26 % | 97 % | 0 / 0 |
+| day 03 follow river 0.3 | 316 | 30.1 | 68.4 | 210.6 | 43 % | 138.6 | 139 to 10326 | 40 | 0 | 734.1 / 3449.2 | 10 % | 100 % | 0 / 0 |
+| day 04 rise river 0.5 | 348 | 27.6 | 61.0 | 198.9 | 27 % | 689.7 | 742 to 4678 | 24 | 2 | 162.5 / 6961.7 | 17 % | 100 % | 0 / 0 |
+| day 05 rise coast 0.5 | 338 | 27.4 | 64.9 | 324.1 | 36 % | 391.4 | 443 to 12404 | 40 | 0 | 776.3 / 10804.7 | 10 % | 100 % | 0 / 0 |
+| day 06 vantage coast 0.5 | 260 | 43.0 | 68.5 | 207.8 | 70 % | 227.6 | 310 to 3501 | 29 | 1 | 360.5 / 11039.5 | 24 % | 97 % | 0 / 0 |
+| day 07 vantage moon 0.5 | 244 | 43.1 | 77.4 | 183.8 | 99 % | 800.0 | 800 to 4019 | 27 | 1 | 247.9 / 2689.8 | 15 % | 71 % | 0 / 0 |
+| day 08 orbit moon 0.7 | 295 | 32.0 | 90.2 | 223.6 | 48 % | 794.3 | 1059 to 4835 | 31 | 1 | 182.7 / 12809.9 | 16 % | 41 % | 0 / 0 |
+| day 09 orbit planet 1.0 | 428 | 26.0 | 47.9 | 75.3 | 13 % | 4526.2 | 4526 to 64448 | 16 | 0 | 1018.5 / 9115.2 | 0 % | 29 % | 0 / 0 |
+| day 10 vantage planet 1.0 | 479 | 25.2 | 28.9 | 38.2 | 1 % | 63519.1 | 64000 to 64568 | 6 | 2 | 717.1 / 8069.2 | 0 % | 76 % | 0 / 0 |
+| day 11 vantage sun 0.5 | 292 | 27.9 | 80.2 | 615.6 | 35 % | 803.0 | 1223 to 64000 | 31 | 1 | 393.5 / 43388.4 | 20 % | 36 % | 0 / 0 |
+| day 12 follow sun 0.2 | 307 | 41.3 | 55.8 | 127.3 | 62 % | 57.7 | 90 to 1431 | 22 | 1 | 53.4 / 339.8 | 2 % | 60 % | 0 / 0 |
+| day 13 follow pyramids 0.0 | 259 | 46.2 | 54.5 | 68.5 | 100 % | 10.0 | 44 to 92 | 17 | 0 | 4.3 / 16.0 | 0 % | 14 % | 0 / 0 |
+| day 14 rise pyramids 0.3 | 254 | 46.1 | 63.3 | 90.7 | 100 % | 10.0 | 44 to 336 | 27 | 0 | 10.2 / 103.1 | 2 % | 69 % | 0 / 0 |
+| night 00 orbit pyramids 0.3 | 244 | 47.5 | 60.1 | 77.8 | 100 % | 129.2 | 151 to 201 | 42 | 1 | 5.6 / 34.4 | 0 % | 13 % | 96 % / 6 |
+| night 01 orbit lake 0.3 | 295 | 32.7 | 68.9 | 222.8 | 48 % | 142.4 | 148 to 3846 | 38 | 1 | 366.7 / 3130.3 | 14 % | 99 % | 21 % / 2 |
+| night 02 follow lake 0.3 | 225 | 50.8 | 79.4 | 177.8 | 100 % | 139.3 | 139 to 3133 | 27 | 1 | 252.1 / 2073.6 | 22 % | 100 % | 22 % / 3 |
+| night 03 follow river 0.3 | 333 | 29.9 | 62.2 | 189.5 | 41 % | 196.4 | 743 to 7992 | 42 | 0 | 443.2 / 5438.4 | 11 % | 100 % | 6 % / 3 |
+| night 04 rise river 0.5 | 247 | 44.2 | 68.1 | 210.6 | 100 % | 261.9 | 324 to 1260 | 30 | 1 | 107.0 / 6064.4 | 9 % | 97 % | 0 / 0 |
+| night 05 rise coast 0.5 | 343 | 29.2 | 62.7 | 80.3 | 37 % | 317.1 | 379 to 12542 | 48 | 0 | 777.5 / 5779.4 | 9 % | 99 % | 0 / 0 |
+| night 06 vantage coast 0.5 | 270 | 40.1 | 67.6 | 200.6 | 84 % | 658.8 | 713 to 4327 | 39 | 0 | 293.9 / 1231.3 | 6 % | 100 % | 7 % / 2 |
+| night 07 vantage moon 0.5 | 311 | 34.9 | 58.0 | 130.4 | 56 % | 801.2 | 803 to 3961 | 35 | 0 | 167.0 / 913.3 | 3 % | 72 % | 7 % / 2 |
+| night 08 orbit moon 0.7 | 286 | 35.3 | 84.4 | 171.9 | 67 % | 803.1 | 1222 to 4926 | 37 | 2 | 143.4 / 9958.3 | 12 % | 46 % | 0 / 0 |
+| night 09 orbit planet 1.0 | 391 | 29.5 | 43.2 | 62.7 | 18 % | 4616.6 | 4617 to 64127 | 22 | 0 | 1149.2 / 5834.5 | 0 % | 11 % | 0 / 0 |
+| night 10 vantage planet 1.0 | 433 | 27.9 | 31.8 | 41.1 | 3 % | 63939.4 | 63987 to 64433 | 2 | 0 | 429.5 / 4040.8 | 0 % | 55 % | 0 / 0 |
+| night 11 vantage sun 0.5 | 251 | 42.6 | 89.3 | 379.9 | 64 % | 810.5 | 1090 to 64057 | 36 | 2 | 913.3 / 38439.2 | 14 % | 21 % | 0 / 0 |
+| night 12 follow sun 0.2 | 275 | 41.1 | 64.0 | 102.0 | 96 % | 67.2 | 148 to 2549 | 35 | 0 | 113.7 / 420.2 | 2 % | 90 % | 29 % / 3 |
+| night 13 follow pyramids 0.0 | 252 | 47.1 | 57.1 | 74.2 | 100 % | 15.9 | 42 to 147 | 16 | 0 | 5.4 / 42.9 | 0 % | 13 % | 100 % / 7 |
+| night 14 rise pyramids 0.3 | 249 | 46.3 | 63.2 | 86.5 | 100 % | 15.8 | 41 to 358 | 27 | 2 | 8.7 / 106.6 | 1 % | 64 % | 100 % / 8 |
+
+- All 8,994 frames: median 37.9 ms, p95 64.7 ms; 8 to 12 km band 357 frames, median 27.6 ms, worst 615.6 ms.
+- Pops over 0.05: day pass 11 (run 1, same steps by day: 17), night pass 10.
+- Least height over ground 10.0 m (the floor) at height 0 by the pyramids.
+
+### Night edges per pose
+
+`path_edges.py`, one cut to each step's pose, clocks frozen, night 1, grid 1 and 0; `net_regularity.py` on the pairs (files in `blender/review/out/path_camera/edges/`). Line share is the frame's share of edge pixels; run is the longest straight line of edge pixels in a tenth-of-frame window (round 12 references: synthetic lattice 275, irregular net 170 to 185, round 11's failed lattice 264).
+
+| Pose | Line share | Run max / median (px) |
+|---|---|---|
+| orbit pyramids 0.3 | 0.140 | 196 / 108 |
+| orbit lake 0.3 | 0.068 | 272 / 202 |
+| follow lake 0.3 | 0.145 | 226 / 154 |
+| follow river 0.3 | 0.211 | 285 / 182 |
+| rise river 0.5 | 0.071 | 130 / 67 |
+| rise coast 0.5 | 0.185 | 295 / 238 |
+| vantage coast 0.5 | 0.064 | 176 / 85 |
+| vantage moon 0.5 | 0.011 | 44 / 40 |
+| orbit moon 0.7 | 0.007 | 73 / 64 |
+| orbit planet, vantage planet, vantage sun | 0.000 to 0.000 | no window with lines |
+| follow sun 0.2 | 0.087 | 231 / 188 |
+| follow pyramids 0.0 | 0.141 | 159 / 83 |
+| rise pyramids 0.3 | 0.228 | 249 / 168 |
+
+## Open items (for a fresh session)
+
+Start: `make status`, then `make blender-open SCENE=planet` (start check must end "start state: ready"). Pure checks: `make verify` (about 15 minutes; `verify_flight.py --lod-only` is the stream part, 2 minutes). Logic: `make test`.
+
+1. **Night edges still read lattice-like in places by the run metric.** Four poses reach a straight run of 272 to 295 px (orbit lake, follow river, rise coast, rise pyramids 249), at line shares two to three times round 12's plains, where chance runs are longer too. Not looked at in pictures. Next: the 15 pairs in `blender/review/out/path_camera/edges/` as contact sheets to `shot-reviewer` against `blender/review/rubric-round12.md`'s net criterion; if it fails, raise `lod_stream.JITTER` toward 0.35 (5f gives the fold margin) or fade the Wireframe by depth. Re-measure:
+   `DN["pe_job"] = {"out": "<abs>/blender/review/out/path_camera/edges", "poses": [[path, target, w], ...]}; exec(open("<abs>/blender/review/path_edges.py").read())` through the Blender MCP, wait for `DN["pe_done"]`, then `.venv/bin/python blender/review/net_regularity.py blender/review/out/path_camera/edges $(jq -r '.[].pair' blender/review/out/path_camera/edges/pe.json)`.
+2. **Capstone lamps without a mask.** 26 lamps (hero pyramids and the sites near the old shots). Near the pyramids at night a lamp within 3 km with land between shines in 96 to 100 % of the run's probes (up to 8 lamps), elsewhere 0 to 29 %. The count uses the clearance map, whose ground is conservative (3x3 max, pyramids stamped in), so it overstates. A fix is a runtime line-of-sight per lamp in `flight_rt` (light colour faded to black while hidden), about 25 lines, against the real surface rather than the map; not done. Also `build_planet.fog_lights` still evaluates 11 views for the dead `seen` mask (build time only).
+3. **Live checks of the others' work** (read-only here, routed by the orchestrator): `python3 tools/blender_page_test.py` fails 3: the page lists `vj_cam` (39 controls of 38; coverage extra `vj_cam`), its sections end with "Godot only", and a foreign Host gets 200 instead of 403. `python3 osc/artnet_live_test.py` fails row c: after an Art-Net touch, OSC 0.75 is not taken right after (right) nor after the 20 s pause (0.502, source artnet), and 4 equal frames then read 1.500.
+4. **Lag and pops in blends**: shown terrain trails the camera by up to 43 km on the fall from space (step 11) and up to 11 km elsewhere in blends; 21 pops in 6 minutes, most in blends.
+5. **Not measured**: holes (the off-output hole test), frame times on an idle machine (both runs under load).
+6. **Stale after option A**: `synthwave_check.py` camera cells, `terrain_test_flight.py`, the `flight_*` review scripts, `bench_fps.py` CAM_0 cases.
+
+Run 2 again: open the scene, start `PYTHONPATH=~/.local/lib/python3.13/site-packages python3.13 tools/syphon_record.py --seconds 362 --fps 30 --size 960x540 --vflip --flag /tmp/pc.flag --out docs/video/path-camera-run-2.mp4 &`, then through the Blender MCP `DN["pc_job"] = {"out": "<abs>/blender/review/out/path_camera/run2.json", "flag": "/tmp/pc.flag", "passes": [{"name": "day", "set": {}}, {"name": "night", "set": {"vj_night": 1.0}}]}; exec(open("<abs>/blender/review/path_camera_run.py").read())`, wait for `DN["pc_done"]`; the table comes from `jq '.summary' run2.json`.

@@ -6,7 +6,7 @@ Pure Python (no bpy), checked by docs/research/synthwave-flight/verify_flight.py
   node, so a node at depth d has cells of FACE_ARC / 2^d / N.
 - Selection by distance: a node splits while the camera is closer to its bounds than range(d + 1) + margin, with
   range(d) = K * size(d). Past the horizon nothing splits, so a free view still sees a whole sphere.
-- Morph: every vertex moves toward its parent's lattice (odd vertices onto the midpoint of their even neighbours,
+- Morph: every vertex moves toward its parent's lattice (even vertices onto the parent's point, odd ones onto the midpoint of their even neighbours,
   along the cell diagonal (0,1)-(1,0) for odd-odd ones, the one Blender's Triangulate splits a grid cell along) by m = smoothstep(M0 * range(d), range(d), distance). A
   node only merges where its vertices are fully morphed, and only splits where they would be, so the surface is the
   same just before and after a change. With K large enough, a fine node's edge against a coarser neighbour is fully
@@ -15,6 +15,12 @@ Pure Python (no bpy), checked by docs/research/synthwave-flight/verify_flight.py
   padding; K 9 and M0 0.75 hold it at 155 m/s with 3 frames of lag (verify_flight.py, check 5).
 - Bounds use each node's own height range (from its parent's grid, padded), not the planet's: loose bounds put a
   coarse neighbour's morph band on a fine edge.
+- Irregular net: every lattice point moves up to JITTER cells sideways in a direction hashed from its face, depth and
+  global lattice position (jitter()), so the real edges at night form an uneven net (round 12's patches did the same).
+  The same point gets the same shift in every node of its depth, so neighbours of one depth agree; its morph target is
+  the parent depth's own shifted point (even points) or the midpoint of two of them (odd points), so a fully morphed
+  node is its parent and a fine edge lies on its coarser neighbour's. Points on the cube's edges stay put (two faces
+  number them differently).
 - Blocks: the nodes are grouped by their ancestor BLOCK_UP depths up into objects, so a split or merge
   re-evaluates the few small objects it touches, not the planet.
 
@@ -27,6 +33,7 @@ R = 16000.0
 CENTRE = (0.0, 0.0, -R)
 FACE_ARC = R * math.pi / 2.0      # m, a cube face's side on the sphere
 H_LO, H_HI = -250.0, 650.0        # m: the surface lies between these heights (node bounds)
+JITTER = 0.30                     # cells a lattice point moves sideways at most (under 0.35 no triangle folds, round 12)
 
 
 class Params:
@@ -82,6 +89,38 @@ def node_ab(key, x, y, n):
 def node_dir(key, x, y, n):
     a, b = node_ab(key, x, y, n)
     return face_dir(key[0], a, b)
+
+
+def jitter(f, d, gx, gy, n):
+    """The sideways shift (cells) of global lattice point (gx, gy) at depth d of face f: uniform over a disc of
+    JITTER cells, from an integer hash, so the same in every node and every run; none on the cube's edges."""
+    m = n << d
+    if gx <= 0 or gy <= 0 or gx >= m or gy >= m:
+        return 0.0, 0.0
+    h = (f * 0x9E3779B1 + d * 0x85EBCA77 + gx * 0xC2B2AE3D + gy * 0x27D4EB2F) & 0xFFFFFFFF
+    vals = []
+    for _ in range(2):
+        h ^= h >> 15
+        h = (h * 0x2C1B3C6D) & 0xFFFFFFFF
+        h ^= h >> 12
+        h = (h * 0x297A2D39) & 0xFFFFFFFF
+        h ^= h >> 15
+        vals.append(h / 4294967296.0)
+    r, a = JITTER * math.sqrt(vals[1]), 2.0 * math.pi * vals[0]
+    return r * math.cos(a), r * math.sin(a)
+
+
+def point_dir(f, d, gx, gy, n):
+    """Unit direction of global lattice point (gx, gy) at depth d of face f, shifted (the drawn vertex)."""
+    jx, jy = jitter(f, d, gx, gy, n)
+    m = float(n << d)
+    return face_dir(f, -1.0 + 2.0 * (gx + jx) / m, -1.0 + 2.0 * (gy + jy) / m)
+
+
+def vertex_dir(key, x, y, n):
+    """The drawn vertex (x, y) of a node: its shifted lattice point."""
+    f, d, i, j = key
+    return point_dir(f, d, i * n + x, j * n + y, n)
 
 
 def key_at(p, d):
@@ -217,18 +256,27 @@ def morph_factor(dist, d, p):
     return smoothstep(p.m0 * rd, rd, dist)
 
 
+def _on_surface(u, height):
+    r = R + height(u)
+    return (CENTRE[0] + u[0] * r, CENTRE[1] + u[1] * r, CENTRE[2] + u[2] * r)
+
+
 def node_grid(key, height, p):
     """The node's (n+1) x (n+1) unmorphed positions, height(dir) in m over R."""
     n = p.n
-    g = []
-    for y in range(n + 1):
-        row = []
-        for x in range(n + 1):
-            u = node_dir(key, x, y, n)
-            r = R + height(u)
-            row.append((CENTRE[0] + u[0] * r, CENTRE[1] + u[1] * r, CENTRE[2] + u[2] * r))
-        g.append(row)
-    return g
+    return [[_on_surface(vertex_dir(key, x, y, n), height) for x in range(n + 1)] for y in range(n + 1)]
+
+
+def morph_targets(key, height, p):
+    """Where each vertex sits fully morphed: an even one on its parent depth's shifted point, an odd one on the
+    midpoint of two of those (parent_target)."""
+    f, d, i, j = key
+    n = p.n
+    if d == 0:
+        return node_grid(key, height, p)
+    ev = [[_on_surface(point_dir(f, d - 1, (i * n + x) // 2, (j * n + y) // 2, n), height) if not (x % 2 or y % 2) else None
+           for x in range(n + 1)] for y in range(n + 1)]
+    return [[parent_target(ev, x, y) for x in range(n + 1)] for y in range(n + 1)]
 
 
 def _mid(a, b):
@@ -247,17 +295,16 @@ def parent_target(g, x, y):
     return _mid(g[y + 1][x - 1], g[y - 1][x + 1])
 
 
-def morphed(key, g, cam, p):
-    """The node's positions as the vertex shader draws them for a camera at cam."""
+def morphed(key, g, tg, cam, p):
+    """The node's positions as the vertex shader draws them for a camera at cam (g its grid, tg its morph targets)."""
     d, n = key[1], p.n
     out = []
     for y in range(n + 1):
         row = []
         for x in range(n + 1):
-            q = g[y][x]
+            q, t = g[y][x], tg[y][x]
             m = morph_factor(_dist(q, cam), d, p)
-            if m > 0.0 and (x % 2 or y % 2):
-                t = parent_target(g, x, y)
+            if m > 0.0:
                 q = (q[0] + (t[0] - q[0]) * m, q[1] + (t[1] - q[1]) * m, q[2] + (t[2] - q[2]) * m)
             row.append(q)
         out.append(row)

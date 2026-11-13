@@ -152,6 +152,24 @@ def cube_dir(t, f, a, b):
     return t.vmath("NORMALIZE", t.vmath("ADD", t.vmath("ADD", n_, t.vmath("SCALE", u_, scale=ta)), t.vmath("SCALE", v_, scale=tb)))
 
 
+def lattice_dir(t, f, d, gx, gy, n):
+    """Unit direction of global lattice point (gx, gy) at depth d of face f, shifted as lod_stream.jitter (uniform
+    over a disc of JITTER cells, hashed from face, depth and point; none on the cube's edges). The hash is
+    Blender's white noise, not lod_stream's: only that it is the same for a point wherever it is evaluated matters."""
+    m = t.math("MULTIPLY", float(n), t.math("POWER", 2.0, d))
+    inner = t.math("MULTIPLY", t.math("MULTIPLY", t.math("GREATER_THAN", gx, 0.5), t.math("LESS_THAN", gx, t.math("SUBTRACT", m, 0.5))),
+                   t.math("MULTIPLY", t.math("GREATER_THAN", gy, 0.5), t.math("LESS_THAN", gy, t.math("SUBTRACT", m, 0.5))))
+    wn = t.node("ShaderNodeTexWhiteNoise", noise_dimensions="4D")
+    t.link(t.comb(gx, gy, d), wn.inputs["Vector"])
+    t.link(f, wn.inputs["W"])
+    u_, v_ = t.sep(wn.outputs["Color"])[:2]
+    rad = t.math("MULTIPLY", t.math("SQRT", v_), t.math("MULTIPLY", inner, ls.JITTER))
+    ang = t.math("MULTIPLY", u_, 2.0 * math.pi)
+    a = t.math("ADD", -1.0, t.math("DIVIDE", t.math("MULTIPLY", t.math("MULTIPLY_ADD", rad, t.math("COSINE", ang), gx), 2.0), m))
+    b = t.math("ADD", -1.0, t.math("DIVIDE", t.math("MULTIPLY", t.math("MULTIPLY_ADD", rad, t.math("SINE", ang), gy), 2.0), m))
+    return cube_dir(t, f, a, b)
+
+
 def rivers_object():
     """Planet_Hydro's river curves as ribbons (Curve to Mesh with a 1 m line profile), baked once into a plain mesh
     object: converting them in every block's evaluation cost 2 of its 7 ms."""
@@ -225,10 +243,11 @@ def build_group(name, n):
     geo = t.store(geo, "fl_y", y)
     x, y = t.read("fl_x"), t.read("fl_y")
     f, i, j, d = t.read("nf"), t.read("ni"), t.read("nj"), t.read("nd")
-    step = t.math("DIVIDE", 2.0, t.math("POWER", 2.0, d))
-    a = t.math("ADD", -1.0, t.math("MULTIPLY", t.math("ADD", i, t.math("DIVIDE", x, float(n))), step))
-    b = t.math("ADD", -1.0, t.math("MULTIPLY", t.math("ADD", j, t.math("DIVIDE", y, float(n))), step))
-    dvec = cube_dir(t, f, a, b)
+    gx, gy = t.math("MULTIPLY_ADD", i, float(n), x), t.math("MULTIPLY_ADD", j, float(n), y)
+    dvec = lattice_dir(t, f, d, gx, gy, n)
+    # the parent depth's own shifted point: an even vertex's morph target (lod_stream.morph_targets)
+    dpar = lattice_dir(t, f, t.math("SUBTRACT", d, 1.0), t.math("FLOOR", t.math("MULTIPLY", gx, 0.5)),
+                       t.math("FLOOR", t.math("MULTIPLY", gy, 0.5)), n)
     hydro = bpy.data.objects["Planet_Hydro"]
     oi = t.node("GeometryNodeObjectInfo", transform_space="ORIGINAL")
     oi.inputs["Object"].default_value = hydro
@@ -236,12 +255,17 @@ def build_group(name, n):
     t.link(oi.outputs["Geometry"], sc.inputs[0])
     ri = t.node("GeometryNodeObjectInfo", transform_space="ORIGINAL")      # the rivers' ribbons, baked once
     ri.inputs["Object"].default_value = rivers_object()
-    sg = t.node("GeometryNodeGroup")
-    sg.node_tree = bpy.data.node_groups["PL_Surface"]
-    t.link(dvec, sg.inputs["Dir"])
-    t.link(sc.outputs["Mesh"], sg.inputs["Hydro"])
-    t.link(ri.outputs["Geometry"], sg.inputs["Rivers"])
-    sg.inputs["River Water"].default_value = 1.0
+
+    def surface(dir_):
+        sg_ = t.node("GeometryNodeGroup")
+        sg_.node_tree = bpy.data.node_groups["PL_Surface"]
+        t.link(dir_, sg_.inputs["Dir"])
+        t.link(sc.outputs["Mesh"], sg_.inputs["Hydro"])
+        t.link(ri.outputs["Geometry"], sg_.inputs["Rivers"])
+        sg_.inputs["River Water"].default_value = 1.0
+        return sg_
+
+    sg = surface(dvec)
     # the surface once, as attributes both branches read: one Capture evaluates its outputs together (a Store per
     # output evaluated PL_Surface again for each, 2.5x the cost)
     cap = t.node("GeometryNodeCaptureAttribute", domain="POINT")
@@ -257,19 +281,41 @@ def build_group(name, n):
     geo = t.store(geo, "pl_flow", cap.outputs["flow"], "FLOAT_VECTOR")
     geo = t.store(geo, "pl_mr", t.comb(t.read("r0"), t.read("r1"), 0.0), "FLOAT_VECTOR")
     ox, oy = t.math("FLOORED_MODULO", x, 2.0), t.math("FLOORED_MODULO", y, 2.0)
+    # the even vertices' parent points: the surface once more, on those vertices only (a quarter of them), as points
+    # ranked in vertex order; fl_rk is each vertex's rank among them
+    even = t.math("COMPARE", t.math("ADD", ox, oy), 0.0, 0.5)
+    acc = t.node("GeometryNodeAccumulateField", data_type="FLOAT", domain="POINT")
+    t.link(even, acc.inputs["Value"])
+    geo = t.store(geo, "fl_rk", acc.outputs["Trailing"])
+    m2p = t.node("GeometryNodeMeshToPoints", mode="VERTICES")
+    t.link(geo, m2p.inputs["Mesh"])
+    t.link(even, m2p.inputs["Selection"])
+    sp = surface(dpar)
+    cap2 = t.node("GeometryNodeCaptureAttribute", domain="POINT")
+    for name in ("h", "w"):
+        cap2.capture_items.new("FLOAT", name)
+    t.link(m2p.outputs["Points"], cap2.inputs["Geometry"])
+    t.link(sp.outputs["Height"], cap2.inputs["h"])
+    t.link(sp.outputs["Water"], cap2.inputs["w"])
+    pts = cap2.outputs["Geometry"]
+    for name in ("h", "w"):
+        pts = t.store(pts, "pp_" + name, t.vmath("ADD", t.vmath("SCALE", dpar, scale=t.math("ADD", cap2.outputs[name], R)),
+                                                 CENTRE), "FLOAT_VECTOR")
     row = float(n + 1)
     idx = t.node("GeometryNodeInputIndex").outputs[0]
     base = t.math("SUBTRACT", idx, t.math("ADD", t.math("MULTIPLY", x, row), y))      # Mesh Grid indices run x-major
     ia = t.math("ADD", base, t.math("ADD", t.math("MULTIPLY", t.math("SUBTRACT", x, ox), row), t.math("ADD", y, oy)))
     ib = t.math("ADD", base, t.math("ADD", t.math("MULTIPLY", t.math("ADD", x, ox), row), t.math("SUBTRACT", y, oy)))
 
-    def placed(level):
-        """The grid at a level (land height or water level) with its morph target: the parent lattice point, the
-        midpoint of (x - ox, y + oy) and (x + ox, y - oy). Triangulate splits every cell along its (0,1)-(1,0)
-        diagonal, so an odd-odd point lies on that diagonal of its parent cell."""
+    def placed(level, parent):
+        """The grid at a level (land height or water level) with its morph target: the midpoint of the parent points
+        of (x - ox, y + oy) and (x + ox, y - oy), an even vertex's own parent point. Triangulate splits every cell
+        along its (0,1)-(1,0) diagonal, so an odd-odd point lies on that diagonal of its parent cell."""
         out = t.setpos(geo, t.vmath("ADD", t.vmath("SCALE", dvec, scale=t.math("ADD", t.read(level), R)), CENTRE))
         p_now = t.node("GeometryNodeInputPosition").outputs[0]
-        mid = t.vmath("SCALE", t.vmath("ADD", t.sample(out, p_now, ia), t.sample(out, p_now, ib)), scale=0.5)
+        rk = t.read("fl_rk")
+        pa, pb = (t.sample(pts, t.read(parent, "FLOAT_VECTOR"), t.sample(out, rk, k, "FLOAT")) for k in (ia, ib))
+        mid = t.vmath("SCALE", t.vmath("ADD", pa, pb), scale=0.5)
         return t.store(out, "pl_morph", t.vmath("SUBTRACT", mid, p_now), "FLOAT_VECTOR")
 
     def material(geo_, sock):
@@ -278,7 +324,7 @@ def build_group(name, n):
         t.link(gi.outputs[sock], sm.inputs["Material"])
         return sm.outputs[0]
 
-    land = placed("fl_h")
+    land = placed("fl_h", "pp_h")
     noise = t.node("ShaderNodeTexWhiteNoise", noise_dimensions="3D")
     t.link(t.vmath("SCALE", t.node("GeometryNodeInputPosition").outputs[0], scale=0.37), noise.inputs["Vector"])
     land = t.store(land, "pl_facet", noise.outputs["Value"], domain="FACE")
@@ -303,7 +349,7 @@ def build_group(name, n):
     ss = t.node("GeometryNodeSetShadeSmooth", domain="FACE")
     t.link(join.outputs[0], ss.inputs["Mesh"])
     land = material(ss.outputs[0], "Land Material")
-    water = placed("pl_w")
+    water = placed("pl_w", "pp_w")
     wet = t.math("MINIMUM", t.math("MAXIMUM", t.math("ADD", t.read("pl_depth"), 1.0), 0.0), 1.0)
     fa = t.node("GeometryNodeFieldOnDomain", domain="FACE", data_type="FLOAT")
     t.link(wet, fa.inputs[0])
@@ -315,7 +361,7 @@ def build_group(name, n):
     t.link(water, both.inputs[0])
     t.link(land, both.inputs[0])
     out = both.outputs[0]
-    for name in ("fl_x", "fl_y", "fl_h") + NODE_ATTRS:        # only what the materials read is baked and uploaded
+    for name in ("fl_x", "fl_y", "fl_h", "fl_rk") + NODE_ATTRS:        # only what the materials read is baked and uploaded
         rm = t.node("GeometryNodeRemoveAttribute")
         rm.inputs["Name"].default_value = name
         t.link(out, rm.inputs["Geometry"])
@@ -409,14 +455,6 @@ def morph_material(src_name):
                 L.new(a.outputs["Fac"], lw.inputs[0])
                 L.new(shift.outputs[0], lw.inputs[1])
                 L.new(lw.outputs[0], to)
-    # no night edges on the stream: its blocks are a regular grid, so their real edges read as a lattice (Flight
-    # review 2026-11-12). Since the fixed shots left (path camera, 2026-11-13) the Planet draws no night edges at all;
-    # an irregular stream lattice is open (docs/handover/path-camera.md)
-    for wf in [n for n in N if n.type == "WIREFRAME"]:
-        for link in list(wf.outputs["Fac"].links):
-            sock = link.to_socket
-            L.remove(link)
-            sock.default_value = 0.0
     return m
 
 

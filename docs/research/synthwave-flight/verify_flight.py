@@ -534,6 +534,17 @@ def grid(key, p):
     return g
 
 
+TARGETS = {}
+
+
+def drawn(key, cam, p):
+    """The node as the vertex shader draws it for a camera at cam."""
+    t = TARGETS.get(key)
+    if t is None:
+        t = TARGETS[key] = ls.morph_targets(key, hfield, p)
+    return ls.morphed(key, grid(key, p), t, cam, p)
+
+
 def hgrid(key, p):
     """The node's heights over R (what the runtime learns when it evaluates a node)."""
     g = HGRIDS.get(key)
@@ -587,7 +598,7 @@ def neighbours(key, leaves_set, p):
 
 
 def edge_points(key, side, p, cam):
-    gm = ls.morphed(key, grid(key, p), cam, p)
+    gm = drawn(key, cam, p)
     n = p.n
     idx = {"s": [(x, 0) for x in range(n + 1)], "n": [(x, n) for x in range(n + 1)],
            "w": [(0, y) for y in range(n + 1)], "e": [(n, y) for y in range(n + 1)]}[side]
@@ -611,11 +622,11 @@ def change_gap(parent, kids, cam, p):
     """The surface jump when parent and its four children swap, for a camera at cam: every child vertex against the
     parent's drawn triangles, and every parent vertex against the children's."""
     n = p.n
-    gp = ls.morphed(parent, grid(parent, p), cam, p)
+    gp = drawn(parent, cam, p)
     worst = 0.0
     for kid in kids:
         ox, oy = kid[2] - 2 * parent[2], kid[3] - 2 * parent[3]
-        gk = ls.morphed(kid, grid(kid, p), cam, p)
+        gk = drawn(kid, cam, p)
         for y in range(n + 1):
             for x in range(n + 1):
                 px, py = (ox * n + x) / 2.0, (oy * n + y) / 2.0
@@ -703,6 +714,38 @@ for kind, secs, speed in () if BLEND_ONLY else (("skim", 6.0 if QUICK else 15.0,
     check("5d %s: changes of more than one depth in a frame, in front of the horizon" % kind, float(st["multi"]), 0.0)
     print("   past the horizon for both cameras (not seen):", st["multi_hidden"])
     check("5e %s: nodes coarser than the camera asks, within 2.5 km" % kind, float(st["coarse"]), 0.0)
+
+
+
+def fold_ratio(key, p, rng):
+    """Smallest triangle area of a node over its unshifted area, at morph 0, 1 and random per-vertex morphs, on the
+    tangent plane at its centre (the irregular net must not fold a triangle at any morph)."""
+    n, g, tg = p.n, grid(key, p), ls.morph_targets(key, hfield, p)
+    c = ls.node_dir(key, n / 2.0, n / 2.0, n)
+    e1 = fl.norm(fl.tangent(c, (0.0, 0.0, 1.0) if abs(c[2]) < 0.9 else (1.0, 0.0, 0.0)))
+    e2 = fl.cross(c, e1)
+    flat = [[ls.node_dir(key, x, y, n) for x in range(n + 1)] for y in range(n + 1)]
+
+    def area(q, a, b, cc):
+        pa, pb, pc_ = ((fl.dot(q[v][u], e1), fl.dot(q[v][u], e2)) for u, v in (a, b, cc))
+        return 0.5 * ((pb[0] - pa[0]) * (pc_[1] - pa[1]) - (pb[1] - pa[1]) * (pc_[0] - pa[0]))
+    tris = [t_ for y in range(n) for x in range(n) for t_ in (((x, y), (x + 1, y), (x, y + 1)), ((x + 1, y), (x + 1, y + 1), (x, y + 1)))]
+    ref = min(abs(area(flat, *t_)) for t_ in tris)
+    sign = 1.0 if area(flat, *tris[0]) > 0 else -1.0
+    worst = 1e9
+    for trial in range(6):
+        ms = [[(0.0 if trial == 0 else 1.0 if trial == 1 else rng.random()) for x in range(n + 1)] for y in range(n + 1)]
+        q = [[fl.add(g[y][x], fl.sub(tg[y][x], g[y][x]), ms[y][x]) for x in range(n + 1)] for y in range(n + 1)]
+        q = [[fl.norm(fl.sub(v, fl.CENTRE)) for v in row] for row in q]
+        worst = min(worst, min(sign * area(q, *t_) for t_ in tris) / ref)
+    return worst
+
+
+rng5 = random.Random(5)
+P5 = ls.Params()
+fold = min(fold_ratio((f_, d_, rng5.randrange(1 << d_), rng5.randrange(1 << d_)), P5, rng5)
+           for f_ in range(6) for d_ in (1, 3, 5, 7, 9) for _ in range(4))
+check("5f irregular net: smallest triangle over its lattice share, any morph (over 0: no fold)", fold, 1e-6, ">=")
 
 print("FAILED: " + ", ".join(fails) if fails else "all checks passed")
 sys.exit(1 if fails else 0)
