@@ -1,6 +1,6 @@
 """Share of strongly green pixels in frames: .venv/bin/python blender/review/green_share.py FRAME...
 A pixel counts when its green is more than 60 (of 255) above both red and blue: no material of the planet is that green;
-the hole test of flight_grabs.py paints the sea's underside pure green (0, 255, 0)."""
+the hole test of path_edges.py paints the sea's underside pure green (0, 255, 0)."""
 import subprocess
 import sys
 

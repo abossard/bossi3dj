@@ -198,16 +198,53 @@ The user chose option A, a 20 s takeover pause, music on height and speed always
 | follow pyramids 0.0 | 0.141 | 159 / 83 |
 | rise pyramids 0.3 | 0.228 | 249 / 168 |
 
+## Round 3: net in pictures, lamps, holes, stale tools (2026-11-13)
+
+### Night net
+
+- First pass (round 2 build), `shot-reviewer` on the 15 pairs against R12-NET: 4 pass, 6 fail (orbit pyramids, follow lake, follow river, rise coast, follow pyramids, rise pyramids: evenly spaced rows of dashed edges), 5 not judged (space, sky).
+- Cause found: the Terrain material fades the edges where a cell is under about 10 px on screen, from `pl_l` (a cell is `PATCH_M / 2^pl_l`). The stream never stored `pl_l`, so every streamed cell counted as 785 m and the fade never acted. `lod_scene.build_group` now stores `pl_l = depth + log2(N) - 5`. No rebuild (`lod_scene` loads from disk); JITTER stays 0.30, `make verify` unchanged.
+- After: start check edge line share 0.097 (was 0.129, bar 0.03). Longest straight run per pose 29 to 155 px (was 130 to 295), line share 0.007 to 0.150.
+- Second pass, same rubric: 6 pass (orbit pyramids, rise coast, vantage coast, vantage moon, follow sun, rise pyramids), 5 fail, 4 not judged (no terrain). Magic (MagicBeta, show.magic) was running and may have sent to 9201 then; the script held only its own six controls.
+- Third pass, every control held against OSC and Art-Net (both run scripts now do this): 3 pass (orbit pyramids, vantage moon, follow sun), 8 fail, 4 not judged. The camera stands a little elsewhere on each run (the paths move with time), so verdicts per pose vary between runs; the net fails R12-NET either way. Longest straight run 43 to 158 px, line share 0.012 to 0.115.
+- What fails: plains and smooth slopes at a distance or a grazing angle, where 1 px dashed edges stack into evenly spaced rows. Not fixed: next candidates are a stronger fade on grazing plains (the `ndv` term of the fade), a coarser spacing on screen, or a wider line; JITTER 0.35 alone is unlikely to break rows of this kind.
+- Pairs and sheets: `blender/review/out/path_camera/edges3/` (second pass), `edges3h/` (held, third pass), `sheet_net_0..2.png` in each.
+
+### Capstone lamps
+
+`flight_rt.lamp_sight`: one lamp per frame, in turn, tested for land between it and the camera within 3 km against the baked surface (`ClearanceMap.land_between`: no 3x3 max, no pyramid stamps, 60 m spared at the lamp); a hidden lamp's colour fades to black over 0.4 s, a farther lamp shines as before. `stop()` puts the colours back. The run's probe now counts a lamp as shining by energy times colour.
+
+Night pass with every control held (`run3_night.json`; a first run while Magic may have steered is `run3_night_magic.json`), share of probes with a lit lamp hidden by the clearance map (max lamps), run 2 then run 3: orbit pyramids 0.96 (6) to 0; orbit lake 0.21 (2) to 0.19 (3); follow lake 0.22 to 0; follow river 0.06 to 0; vantage coast 0.07 to 0; vantage moon 0.07 to 0; follow sun 0.29 to 0; follow pyramids 1.0 (7) to 0.71 (1); rise pyramids 1.0 (8) to 0.44 (5). The rest stay at 0. The probe's map is padded (3x3 max) and has the pyramids stamped in, the runtime test has neither: the remainder is most likely lamps behind a pyramid or a ridge the padding raises (not checked in pictures). Night pass under load (26 to 20): median 45.6 ms against 38.5 ms in run 2, pops 14 against 10; under this load neither difference can be laid on the lamp test.
+
+### Holes
+
+`path_edges.py` with `"holes": true` renders each pose with the sea's underside pure green (off the Syphon output, one frame on it). Green share per pose, second pass then held pass: rise coast 0.0173 / 0.0108, vantage coast 0.0093 / 0.0101, follow sun 0.0131 / 0.0016, orbit lake 0.0004 / 0.0036, vantage sun 0.0008 / 0; the rest under 0.0001. In the second pass the large ones lie from the middle of the frame down (rise coast and vantage coast y 541 to 993 of 1080, follow sun the bottom quarter), with the camera 765 to 1509 m over the ground; not looked at in pictures.
+
+### Live checks of the others' work
+
+Closed: after 98da66a, a2b0c63 and 5680760 the Art-Net live test is 8 of 8 and the page test 24 of 24 live (orchestrator, 2026-11-13).
+
+### Frame times
+
+Not measured: load 25 to 38 when checked, `fps_trustworthy` false.
+
+### Stale tools
+
+- Deleted (each needed a fixed camera or the Flight's camera, nothing used them): `terrain_test_flight.py`, `flight_cracks.py`, `flight_frame_stats.py`, `flight_grabs.py`, `flight_numbers.py`, `flight_repeat.py`, `flight_seams.py`, `flight_trace.py`, `fps_table.py` (per fixed camera), `planet_proto/bench_fps.py` (CAM_0 cases); `flight_rt`'s test-flight hook (`vj_flight_script`), whose one user was `terrain_test_flight.py`.
+- `energy.move` (a fixed shot's move) and its constants, with `verify_flight` 7d to 7g: no scene code called it.
+- `synthwave_check.py`: cells look through named Path Camera views (`VIEWS`: path, target, height) instead of camera numbers; the `vj_cam`, `vj_flight` and `vj_boost` rows are gone (Blender has none of them; the fallback read `vj_cam`'s range and would have failed). Live on 6 changed rows: 5 effect, `vj_flamingos` no effect in all five views (the flock is 700 m off at the nearest in "orbit lake" 0.3, too small at preview size).
+- Left: `readme_assemble.py` (README pictures of the /vj/cam row and its `--flight` option), the round scripts (`round*_jobs.py`, `cut_*`), history.
+
 ## Open items (for a fresh session)
 
 Start: `make status`, then `make blender-open SCENE=planet` (start check must end "start state: ready"). Pure checks: `make verify` (about 15 minutes; `verify_flight.py --lod-only` is the stream part, 2 minutes). Logic: `make test`.
 
-1. **Night edges still read lattice-like in places by the run metric.** Four poses reach a straight run of 272 to 295 px (orbit lake, follow river, rise coast, rise pyramids 249), at line shares two to three times round 12's plains, where chance runs are longer too. Not looked at in pictures. Next: the 15 pairs in `blender/review/out/path_camera/edges/` as contact sheets to `shot-reviewer` against `blender/review/rubric-round12.md`'s net criterion; if it fails, raise `lod_stream.JITTER` toward 0.35 (5f gives the fold margin) or fade the Wireframe by depth. Re-measure:
-   `DN["pe_job"] = {"out": "<abs>/blender/review/out/path_camera/edges", "poses": [[path, target, w], ...]}; exec(open("<abs>/blender/review/path_edges.py").read())` through the Blender MCP, wait for `DN["pe_done"]`, then `.venv/bin/python blender/review/net_regularity.py blender/review/out/path_camera/edges $(jq -r '.[].pair' blender/review/out/path_camera/edges/pe.json)`.
-2. **Capstone lamps without a mask.** 26 lamps (hero pyramids and the sites near the old shots). Near the pyramids at night a lamp within 3 km with land between shines in 96 to 100 % of the run's probes (up to 8 lamps), elsewhere 0 to 29 %. The count uses the clearance map, whose ground is conservative (3x3 max, pyramids stamped in), so it overstates. A fix is a runtime line-of-sight per lamp in `flight_rt` (light colour faded to black while hidden), about 25 lines, against the real surface rather than the map; not done. Also `build_planet.fog_lights` still evaluates 11 views for the dead `seen` mask (build time only).
-3. **Live checks of the others' work** (read-only here, routed by the orchestrator): `python3 tools/blender_page_test.py` fails 3: the page lists `vj_cam` (39 controls of 38; coverage extra `vj_cam`), its sections end with "Godot only", and a foreign Host gets 200 instead of 403. `python3 osc/artnet_live_test.py` fails row c: after an Art-Net touch, OSC 0.75 is not taken right after (right) nor after the 20 s pause (0.502, source artnet), and 4 equal frames then read 1.500.
-4. **Lag and pops in blends**: shown terrain trails the camera by up to 43 km on the fall from space (step 11) and up to 11 km elsewhere in blends; 21 pops in 6 minutes, most in blends.
-5. **Not measured**: holes (the off-output hole test), frame times on an idle machine (both runs under load).
-6. **Stale after option A**: `synthwave_check.py` camera cells, `terrain_test_flight.py`, the `flight_*` review scripts, `bench_fps.py` CAM_0 cases.
+1. **Night net on plains at a distance or a grazing angle** (round 3, held pass: 8 of 11 judged fail R12-NET): see above. The next round (the user's "too fine, strobey") takes this over. Re-measure:
+   `DN["pe_job"] = {"out": "<abs>/blender/review/out/path_camera/edges4", "poses": [[path, target, w], ...], "holes": true}; exec(open("<abs>/blender/review/path_edges.py").read())` through the Blender MCP (poses: `jq -c '[.[].pose]' blender/review/out/path_camera/edges3/pe.json`), wait for `DN["pe_done"]`, then `.venv/bin/python blender/review/net_regularity.py <dir> $(jq -r '.[].pair' <dir>/pe.json)` and the sheets with `blender/review/named_sheet.sh` to `shot-reviewer`.
+2. **Holes** at the coast and toward the sun (1 to 1.7 % of the frame), above: look at `edges3/*_holes.png` and find what shows through.
+3. **Lamps behind pyramids**: the runtime test ignores pyramids; up to 5 lamps near the pyramids may shine behind one. `build_planet.fog_lights` still evaluates 11 views for the dead `seen` mask (build time only).
+4. **Lag and pops in blends**: shown terrain trails the camera by up to 43 km on the fall from space (step 11) and up to 11 km elsewhere in blends; 21 pops in 6 minutes, most in blends. Likely cause: in a blend the camera covers kilometres per second while the stream selects round where it is and bakes new nodes within a per-frame budget, so the fine nodes reach a place after the camera. Cheapest fix: at a blend's start, stage the end pose's terrain as a cut already does (`lod_scene` staging), so the arrival has its nodes; about 30 lines, no rebuild, the cost is bake work in the blend's first seconds (a frame-time bump there). The step-4 prefetch along the velocity was tried and dropped; this one targets the blend's end pose.
+5. **Frame times on an idle machine**: every run so far was under load.
+6. **`vj_flamingos` in the feature check**: no view shows the flock large enough; it needs a view with the flock near, or a flock placed in the view.
 
 Run 2 again: open the scene, start `PYTHONPATH=~/.local/lib/python3.13/site-packages python3.13 tools/syphon_record.py --seconds 362 --fps 30 --size 960x540 --vflip --flag /tmp/pc.flag --out docs/video/path-camera-run-2.mp4 &`, then through the Blender MCP `DN["pc_job"] = {"out": "<abs>/blender/review/out/path_camera/run2.json", "flag": "/tmp/pc.flag", "passes": [{"name": "day", "set": {}}, {"name": "night", "set": {"vj_night": 1.0}}]}; exec(open("<abs>/blender/review/path_camera_run.py").read())`, wait for `DN["pc_done"]`; the table comes from `jq '.summary' run2.json`.

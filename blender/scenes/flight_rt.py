@@ -13,11 +13,10 @@ others, so the planet runtime, the star system and the fog all read this frame's
 - Energy (energy.py): /vj/energy, /vj/hit and the pulse rt_beat; the path runs faster with the Drive's speed, the
   Director puts the kick and the pulse on the rig. rt_energy and rt_kick are written for the recorder.
 - The terrain: the streamed terrain (lod_scene) runs all the time and follows the rig.
+- The capstone lamps: a lamp hidden by land within LAMP_NEAR fades to black (lamp_sight).
 - The clearance map: ground (conservative: a 3x3 max, pyramids stamped in) and water level over the whole Planet on
   a cube map, probed once from the planet's own PL_Surface group and cached under ~/Library/Caches. The paths, the
   blends and their floors read it.
-- A test can replace the pose with a function of time (driver_namespace vj_flight_script,
-  blender/review/terrain_test_flight.py); unset by default.
 """
 import math
 import os
@@ -48,12 +47,12 @@ import path_camera as pc  # noqa: E402
 
 RIG = "CAM_RIG"
 SHOT_KEY = "vj_shot"                # driver_namespace: () -> "path target", the page's and the check's name of the view
-SCRIPT_KEY = "vj_flight_script"     # driver_namespace: a function () -> pose that replaces the Path Camera (test flights)
 TARGET_PREFIX = "PathTarget."
 MAP_RES = 512                       # texels per cube face side: about 49 m
 PYR_PAD = 25.0                      # m around a pyramid's footprint
 CACHE = os.path.expanduser("~/Library/Caches/swiftvj-flight")
 MOON_R = 11500.0
+LAMP_NEAR, LAMP_FADE = 3000.0, 0.4    # m within which land hides a capstone lamp (build_planet.fog_lights), s to fade it
 SUN_DIST, SUN_SIZE = 2.0e6, 60000.0     # m: where the sun target is put along the sun's direction, and its size to frame
 _state = {"last": None, "path": None, "map": None, "lod": False, "lod_ms": [], "drive": None, "targets": None, "n": 0}
 
@@ -145,9 +144,10 @@ def conservative(h):
 class ClearanceMap:
     """flight.Terrain on the baked cube map."""
 
-    def __init__(self, ground, water, cands):
+    def __init__(self, ground, water, cands, raw=None):
         self.n = ground.shape[1]
         self.g, self.w, self.cands = ground, water, cands
+        self.raw = ground if raw is None else raw       # the baked surface itself: no 3x3 max, no pyramids
 
     def _texel(self, u):
         f, a, b = ls.dir_face(u)
@@ -174,6 +174,20 @@ class ClearanceMap:
 
     def candidates(self):
         return self.cands
+
+    def land_between(self, a, b, spare=60.0):
+        """Whether the baked surface (land or water, not the padded ground) rises over the straight line a-b, one
+        sample per texel, except within spare m of b (a lamp's own capstone)."""
+        d = fl.length(fl.sub(b, a))
+        n = max(2, int(d / (fl.R * math.pi / 2.0 / self.n)))
+        for k in range(1, n):
+            if d * (1.0 - k / n) < spare:
+                break
+            rq = fl.sub(fl.add(a, fl.sub(b, a), k / n), fl.CENTRE)
+            u = fl.norm(rq)
+            if fl.length(rq) - fl.R < max(self._bilinear(self.raw, u), self._bilinear(self.w, u)):
+                return True
+        return False
 
 
 def find_regions(h, w, step=8, relief=250.0, reach=2500.0, spacing=3000.0):
@@ -244,7 +258,36 @@ def load_map(scene):
         print("flight_rt: clearance map baked in %.1f s -> %s" % (time.perf_counter() - t, cache))
     g = conservative(h)
     stamp_pyramids(scene, g)
-    return ClearanceMap(g, w, find_regions(h, w))
+    return ClearanceMap(g, w, find_regions(h, w), h)
+
+
+# ---------------------------------------------------------------- capstone lamps
+def lamp_sight(scene, cam, dt):
+    """A capstone lamp's colour fades to black while land stands between it and the camera within LAMP_NEAR: behind a
+    ridge its halo hung in the night fog as an orb (CAM_9). One lamp tested per frame, in turn; farther lamps shine.
+    Per lamp [object, colour, shown 0..1, wanted]; the build's colour is kept on the lamp (lamp_rgb) for a restart."""
+    lamps = _state.get("lamps")
+    if lamps is None:
+        lamps = _state["lamps"] = []
+        for o in scene.objects:
+            if o.name.startswith("Lamp_Capstone."):
+                o["lamp_rgb"] = tuple(o.get("lamp_rgb", o.data.color))
+                lamps.append([o, tuple(o["lamp_rgb"]), 1.0, 1.0])
+                o.data.color = o["lamp_rgb"]
+    if not lamps:
+        return
+    L = lamps[_state["n"] % len(lamps)]
+    p = tuple(L[0].matrix_world.translation)
+    L[3] = 0.0 if math.dist(cam, p) < LAMP_NEAR and _state["map"].land_between(cam, p) else 1.0
+    for L in lamps:
+        if L[2] != L[3]:
+            L[2] = min(max(L[2] + math.copysign(dt / LAMP_FADE, L[3] - L[2]), 0.0), 1.0)
+            L[0].data.color = [c * L[2] for c in L[1]]
+
+
+def lamps_reset():
+    for o, rgb, _, _ in _state.pop("lamps", None) or ():
+        o.data.color = rgb
 
 
 # ---------------------------------------------------------------- rig, targets and the frame
@@ -326,12 +369,8 @@ def frame(scene, depsgraph=None):
     P.targets = live_targets(scene)
     path, target = choice(scene, "vj_path", pc.PATHS), choice(scene, "vj_target", pc.TARGETS)
     _state["view"] = "%s %s" % (path, target)
-    script = bpy.app.driver_namespace.get(SCRIPT_KEY)
-    if script is not None:      # a scripted test flight: the pose is its own function of time
-        pose = script()
-    else:
-        pose = P.step(dt, path, target, scene.get("vj_height", 0.3), scene.get("vj_cam_speed", 1.0) * drive.speed,
-                      scene.get("vj_blend", 30.0), drive)
+    pose = P.step(dt, path, target, scene.get("vj_height", 0.3), scene.get("vj_cam_speed", 1.0) * drive.speed,
+                  scene.get("vj_blend", 30.0), drive)
     scene["rt_blending"] = 1.0 if P.blending() else 0.0
     _state["n"] += 1
     t = time.perf_counter()
@@ -342,6 +381,7 @@ def frame(scene, depsgraph=None):
     _state["lod_ms"] = (_state["lod_ms"] + [(round((time.perf_counter() - t) * 1000.0, 2), blocks)])[-600:]
     if not (lod_scene.holding() and not P.blending()):     # a cut shows once its terrain is staged; until then the
         place(rig, pose)                                    # rig holds the last view
+    lamp_sight(scene, tuple(rig.matrix_world.translation), dt)
 
 
 def on_cut(scene, depsgraph=None):
@@ -380,6 +420,7 @@ def start():
 
 def stop():
     bpy.app.driver_namespace.pop(SHOT_KEY, None)
+    lamps_reset()
     if _state["lod"]:
         lod_scene.stop(bpy.context.scene)
         _state["lod"] = False

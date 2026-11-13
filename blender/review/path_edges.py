@@ -3,7 +3,10 @@ In the live planet Blender with flight_rt started:
     DN["pe_job"] = {"out": "/abs/dir", "poses": [[path, target, height wire], ...]}; exec this file; wait for DN["pe_done"].
 Per pose: a cut there (/vj/blend 0), wait until the stream shows the whole view and 3 s more, freeze the clocks, hold
 night 1 and grid 1, read a Syphon frame, grid 0, read again; writes <i>_<path>_<target>_g1.ppm and _g0.ppm (960x540)
-and pe.json (the poses, the shown depth range, the camera's height over the ground). Puts every control back.
+and pe.json (the poses, the shown depth range, the camera's height over the ground). Holds every control against OSC and Art-Net while it runs; puts every control and hold back.
+With JOB "holes": true, per pose also <i>_<path>_<target>_holes.png: an OpenGL render of the camera view with
+Sea_Underside (seen only through a hole in the land) as pure green, its green share in pe.json. The render is off the
+Syphon output, but the swapped material shows there for about one frame.
 Then:  .venv/bin/python blender/review/net_regularity.py DIR 00_orbit_pyramids_g1:00_orbit_pyramids_g0 ...
 """
 import json
@@ -53,10 +56,50 @@ def frames():
     return DN["syphon_out"].frames
 
 
-def apply(values, hold=True):
-    if hold:
-        BR.hold = BR.hold | set(values)
+def apply(values):
     BR.apply({"/" + k.replace("_", "/", 1): [float(v)] for k, v in values.items()}, "web")
+
+
+def holes(name):
+    """Green share of the camera view with the sea's underside pure green (the hole test)."""
+    ob = S.objects["Sea_Underside"]
+    mod = ob.modifiers[0]
+    ident = next(it.identifier for it in mod.node_group.interface.items_tree
+                 if getattr(it, "in_out", "") == "INPUT" and it.name == "Material")
+    sock = getattr(mod.properties.inputs, ident)
+    old = sock.value
+    m = bpy.data.materials.get("_hole_green") or bpy.data.materials.new("_hole_green")
+    if m.node_tree is None:
+        m.use_nodes = True
+    nt = m.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    em, out = nt.nodes.new("ShaderNodeEmission"), nt.nodes.new("ShaderNodeOutputMaterial")
+    em.inputs["Color"].default_value = (0.0, 1.0, 0.0, 1.0)
+    nt.links.new(em.outputs[0], out.inputs["Surface"])
+    path = os.path.join(JOB["out"], name + "_holes.png")
+    fp, ff = S.render.filepath, S.render.image_settings.file_format
+    S.render.filepath, S.render.image_settings.file_format = path, "PNG"
+    try:
+        sock.value = m
+        ob.update_tag()
+        for win in bpy.context.window_manager.windows:
+            area = next((a for a in win.screen.areas if a.type == "VIEW_3D"), None)
+            if area is not None:
+                with bpy.context.temp_override(window=win, area=area):
+                    bpy.ops.render.opengl(write_still=True, view_context=True)
+                break
+    finally:
+        sock.value = old
+        ob.update_tag()
+        S.render.filepath, S.render.image_settings.file_format = fp, ff
+    img = bpy.data.images.load(path)
+    a = np.empty(len(img.pixels), np.float32)
+    img.pixels.foreach_get(a)
+    bpy.data.images.remove(img)
+    a = a.reshape(-1, 4)
+    green = (a[:, 1] > 0.8) & (a[:, 0] < 0.25) & (a[:, 2] < 0.25)
+    return {"green_px": int(green.sum()), "green_share": round(float(green.mean()), 6)}
 
 
 def run():
@@ -64,6 +107,7 @@ def run():
     saved = {"values": {k: S.get(k) for k in ("vj_night", "vj_grid", "vj_blend", "vj_path", "vj_target", "vj_height")},
              "hold": set(BR.hold)}
     meta = []
+    BR.hold = {k for k in S.keys() if k.startswith("vj_")}     # OSC and Art-Net (Magic, QLC+) cannot move a pose
     try:
         for i, (path, target, w) in enumerate(JOB["poses"]):
             apply({"vj_blend": 0.0, "vj_night": 1.0, "vj_grid": 1.0, "vj_path": pc.PATHS.index(path),
@@ -88,13 +132,14 @@ def run():
                 name = "%02d_%s_%s_g%d" % (i, path, target, int(g))
                 write_ppm(st["got"], os.path.join(JOB["out"], name + ".ppm"))
                 names.append(name)
+            hole = holes("%02d_%s_%s" % (i, path, target)) if JOB.get("holes") else None
             RT.freeze(False)
             cam = tuple(RIG.matrix_world.translation)
             u = fl.norm(fl.sub(cam, fl.CENTRE))
             depths = [k[1] for v in (LOD._state.get("nodes") or {}).values() for k in v]
             meta.append({"pose": [path, target, w], "pair": ":".join(names),
                          "agl_m": round(fl.length(fl.sub(cam, fl.CENTRE)) - fl.R - FS["map"].surface(u), 1),
-                         "depths": [min(depths, default=-1), max(depths, default=-1)], "lens": round(RIG.data.lens, 1)})
+                         "depths": [min(depths, default=-1), max(depths, default=-1)], "lens": round(RIG.data.lens, 1), "holes": hole})
     finally:
         RT.freeze(False)
         for k, v in saved["values"].items():

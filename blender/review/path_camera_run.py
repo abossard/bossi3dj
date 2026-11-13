@@ -11,8 +11,8 @@ Per drawn frame the log holds: t, draw interval ms, step, height over the ground
 rt_space, shown nodes, their depth range, near nodes still missing, the stream holding a cut, the selection's and the
 shown view's lag (m from the camera), whether a blend runs; every swap with the nearest changed node's distance, depth
 and pop. Every 10th frame the lower third's ground cell on screen (px of 1920) and the capstone lamps: how many shine
-(energy over 1 W) within LAMP_NEAR of the camera with land between (on the clearance map), the case the old per-shot
-mask turned off. Writes the log and a summary per step."""
+(energy times colour over 1 W: flight_rt fades a hidden lamp's colour) within LAMP_NEAR of the camera with land between (on the clearance map), the case the old per-shot
+mask turned off. Holds every control against OSC and Art-Net while it runs. Writes the log and a summary per step."""
 import json
 import math
 import os
@@ -60,7 +60,7 @@ def land_between(a, b, n=32):
 
 
 def hidden_lamps(cam):
-    return sum(1 for o in LAMPS if o.data.energy > 1.0 and math.dist(cam, o.location) < LAMP_NEAR
+    return sum(1 for o in LAMPS if o.data.energy * max(o.data.color) > 1.0 and math.dist(cam, o.location) < LAMP_NEAR
                and land_between(cam, tuple(o.location)))
 
 
@@ -90,8 +90,7 @@ def ground_ray(p, f, up, lens):
 
 
 def pop(ch, cam):
-    """1 - the morph factor of the finer side's vertex nearest the camera at a level change (0: invisible), as in
-    terrain_test_flight.py."""
+    """1 - the morph factor of the finer side's vertex nearest the camera at a level change (0: invisible)."""
     p = LOD._state["params"]
     fine = [k for k in ch if k[1] and (k[0], k[1] - 1, k[2] >> 1, k[3] >> 1) in ch]
     hr = LOD._state.get("hr")
@@ -219,7 +218,8 @@ def send(path, target, w):
 
 def run():
     load0 = os.getloadavg()[0]
-    BR.hold = set()
+    hold0 = set(BR.hold)
+    BR.hold = {k for k in S.keys() if k.startswith("vj_")}     # OSC and Art-Net (Magic, QLC+) cannot move the run
     set_pass(PASSES[0])
     send(*STEPS[0][1:])
     t = time.perf_counter()
@@ -241,6 +241,7 @@ def run():
         yield 0.05
     st["t0"] = None
     defaults()
+    BR.hold = hold0
     bpy.types.SpaceView3D.draw_handler_remove(st["handle"], "WINDOW")
     st["handle"] = None
     json.dump({"load_start": round(load0, 1), "load_end": round(os.getloadavg()[0], 1), "steps": [list(s) for s in STEPS],

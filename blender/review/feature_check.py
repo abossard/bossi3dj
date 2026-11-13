@@ -181,7 +181,7 @@ def main():
     ap.add_argument("--only", default="", help="comma separated vj_ keys, default every control")
     ap.add_argument("--out", help="JSON file (default blender/review/out/feature_check_<scene>.json)")
     ap.add_argument("--wait", type=float, default=900.0, help="seconds to wait for a cold start")
-    ap.add_argument("--no-fallback", action="store_true", help="do not look through other cameras when a control shows nothing")
+    ap.add_argument("--no-fallback", action="store_true", help="do not look through other Path Camera views when a control shows nothing")
     ap.add_argument("--no-probe", action="store_true", help="skip the udp 9201 probe")
     args = ap.parse_args()
 

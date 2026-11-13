@@ -280,6 +280,10 @@ def build_group(name, n):
     geo = t.store(geo, "pl_depth", t.math("SUBTRACT", cap.outputs["w"], cap.outputs["h"]))
     geo = t.store(geo, "pl_flow", cap.outputs["flow"], "FLOAT_VECTOR")
     geo = t.store(geo, "pl_mr", t.comb(t.read("r0"), t.read("r1"), 0.0), "FLOAT_VECTOR")
+    # the Terrain material's cell level (PATCH_M / 2^pl_l is a cell's side, build_planet.PATCHES = 32 per face): it
+    # fades the night edges where cells shrink under 10 px. Unset, every streamed cell counted as 785 m and the far
+    # field's edges crowded into evenly spaced dashed rows (path camera round 3, R12-NET)
+    geo = t.store(geo, "pl_l", t.math("ADD", d, math.log2(n) - 5.0))
     ox, oy = t.math("FLOORED_MODULO", x, 2.0), t.math("FLOORED_MODULO", y, 2.0)
     # the even vertices' parent points: the surface once more, on those vertices only (a quarter of them), as points
     # ranked in vertex order; fl_rk is each vertex's rank among them

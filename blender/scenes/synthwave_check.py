@@ -15,9 +15,10 @@ Nothing runs while no check runs: one bpy.app.timers callback exists from start(
 The end (done, aborted, failed) always restores the defaults, releases the holds this check took, puts the
 beat simulator back and lets the clocks run.
 
-PRECONDITIONS is the one table of states a control needs before it shows: the values to set, the cameras to
-look through, clock time to step after the change. A control without a row runs on CAM_0 with defaults. A
-control with no effect on its cameras is tried on the other cameras too, so a wrong camera never reads as dead.
+PRECONDITIONS is the one table of states a control needs before it shows: the values to set, the views to look
+through (VIEWS: a Path Camera path, target and height), clock time to step after the change. A control without a row
+runs on the first view with defaults. A control with no effect in its views is tried in the other views too, so a
+wrong view never reads as dead.
 """
 import json
 import os
@@ -47,11 +48,19 @@ PREVIEW_W, PREVIEW_H = 640, 360
 BMP_HEADER = 54
 PREVIEW_KEY, PREVIEW_WANTED = "syphon_preview", "syphon_preview_wanted"
 SENDER_KEY, BRIDGE_KEY, RUNTIME_KEY = "syphon_out", "vj_osc_bridge", "vj_runtime"
-FALLBACK = True         # look through the other cameras when the listed ones show no effect
+FALLBACK = True         # look through the other views when the listed ones show no effect
+# the Path Camera's views a cell can look through: name -> the camera controls held for it (the first: the wire defaults)
+VIEWS = {
+    "orbit pyramids": {"vj_path": 0.0, "vj_target": 0.0, "vj_height": 0.3},
+    "orbit lake": {"vj_path": 0.0, "vj_target": 1.0, "vj_height": 0.3},
+    "follow river": {"vj_path": 1.0, "vj_target": 2.0, "vj_height": 0.3},
+    "vantage moon": {"vj_path": 3.0, "vj_target": 4.0, "vj_height": 0.5},
+    "orbit planet": {"vj_path": 0.0, "vj_target": 6.0, "vj_height": 1.0},
+}
 
 # key -> what the control needs before it shows. Keys of a row:
 #   set      values held while the control varies
-#   cams     cameras to look through first (default: 0); "flight" is the Flight's shot
+#   views    VIEWS to look through first (default: the first)
 #   advance  s of clock time stepped after the change (speeds, triggers, anything that moves)
 #   then     values set after the first settle (a cut for /vj/blend), before the advance
 #   why      one line for the report
@@ -59,38 +68,34 @@ FALLBACK = True         # look through the other cameras when the listed ones sh
 #   reads    what reads the control besides its own Attribute nodes and drivers: "rt_..." clocks the runtime derives
 #            from it (counted like the control), "py:module.function" for Python readers (named in the report)
 PRECONDITIONS = {
-    "vj_nebula": {"set": {"vj_night": 1.0}, "cams": [10], "why": "the nebula is part of the night sky"},
+    "vj_nebula": {"set": {"vj_night": 1.0}, "views": ["orbit planet"], "why": "the nebula is part of the night sky"},
     "vj_stars": {"set": {"vj_night": 1.0}, "why": "stars show at night"},
-    "vj_moon": {"set": {"vj_night": 1.0}, "cams": [4], "why": "the moon is up at night"},
-    "vj_moon_phase": {"set": {"vj_night": 1.0}, "cams": [3], "reads": ["py:star_system.sync"], "why": "the moon is up at night"},
-    "vj_eclipse": {"set": {"vj_night": 1.0, "vj_moon_phase": 1.0}, "cams": [3], "reads": ["py:star_system.sync"],
+    "vj_moon": {"set": {"vj_night": 1.0}, "views": ["vantage moon"], "why": "the moon is up at night"},
+    "vj_moon_phase": {"set": {"vj_night": 1.0}, "views": ["vantage moon"], "reads": ["py:star_system.sync"], "why": "the moon is up at night"},
+    "vj_eclipse": {"set": {"vj_night": 1.0, "vj_moon_phase": 1.0}, "views": ["vantage moon"], "reads": ["py:star_system.sync"],
                    "why": "lunar eclipse needs a full moon at night"},
     "vj_meteor": {"set": {"vj_night": 1.0}, "advance": 0.4, "reads": ["py:synthwave_runtime.meteors"], "probe": ["rt_met0_a", "rt_met1_a", "rt_met2_a"],
                   "why": "a shooting star is brightest at night and lasts about a second"},
-    "vj_shock": {"cams": [2], "advance": 1.0, "reads": ["py:synthwave_runtime.shockwave"], "probe": ["rt_shock0_a", "rt_shock1_a", "rt_shock2_a", "rt_shock3_a"],
+    "vj_shock": {"advance": 1.0, "reads": ["py:synthwave_runtime.shockwave"], "probe": ["rt_shock0_a", "rt_shock1_a", "rt_shock2_a", "rt_shock3_a"],
                  "why": "the wave needs a second to leave the pyramid"},
     "vj_grid": {"set": {"vj_night": 1.0}, "why": "planet: real mesh edges show from sunset, full at night, none by day"},
     "vj_bass": {"set": {"vj_night": 1.0}, "why": "planet: pulses the real mesh edges, which show only at night"},
     "vj_grid_speed": {"set": {"vj_night": 1.0}, "advance": 1.0,
                       "why": "island only: its night grid scrolls; the planet has no scrolling lines, no effect there is right"},
-    "vj_cam_speed": {"cams": [4], "advance": 1.0, "reads": ["rt_cam_phase"], "why": "only shots on a path move with it"},
+    "vj_cam_speed": {"advance": 1.0, "reads": ["rt_cam_phase"], "why": "the Path Camera runs its path at this speed"},
     "vj_fog_speed": {"set": {"vj_fog": 0.8}, "advance": 1.0, "reads": ["rt_fog_phase"], "why": "wind moves the fog bank"},
     "vj_star_speed": {"set": {"vj_night": 1.0}, "advance": 2.0, "reads": ["py:star_system.sync"], "why": "the stars drift against the sun"},
-    "vj_flamingos": {"cams": [7], "why": "planet: a flock needs water in view: CAM_0 shows none, CAM_1's flock is too small at preview size (0.01 % of the pixels), CAM_7 shows it"},
-    "vj_water": {"cams": [1], "why": "the sea shows from the low river shot"},
+    "vj_flamingos": {"views": ["orbit lake"], "why": "planet: a flock needs water in view"},
+    "vj_water": {"views": ["follow river"], "why": "the water shows by the river"},
     "vj_fog_height": {"set": {"vj_fog": 0.7}, "why": "needs a fog bank"},
     "vj_fog_glow": {"set": {"vj_fog": 1.0, "vj_night": 0.5}, "why": "self-glow of a dense fog bank shows at dusk"},
     "vj_fog_hue": {"set": {"vj_fog": 1.0, "vj_night": 0.5}, "why": "tints a dense fog bank, most at dusk"},
     "vj_fog_noise": {"set": {"vj_fog": 0.7}, "why": "needs a fog bank"},
     "vj_fog_scale": {"set": {"vj_fog": 0.7}, "why": "needs a fog bank"},
     "vj_fog_beat": {"set": {"vj_fog": 0.7, "vj_beat": 1.0}, "why": "the fog pumps with the beat"},
-    "vj_blend": {"set": {"vj_cam": 1.0}, "cams": [1], "then": {"vj_cam": 4.0}, "advance": 0.3, "reads": ["py:flight_rt.frame"],
-                 "why": "shows on a cut, a moment after it"},
-    "vj_boost": {"set": {"vj_flight": 0.66}, "cams": ["flight"], "advance": 2.0, "reads": ["py:flight_rt.frame"],
-                 "why": "the accelerator works while the Flight skims or hovers"},
-    "vj_flight": {"cams": ["flight"], "advance": 2.0, "reads": ["py:flight_rt.frame"],
-                  "why": "a cell starts the Flight settled at the stage (flight_rt.quiesce); verify_flight checks the damping"},
-    "vj_energy": {"advance": 2.0, "reads": ["py:flight_rt.frame"], "why": "every shot moves harder, eased over seconds"},
+    "vj_blend": {"views": ["orbit lake"], "then": {"vj_target": 0.0}, "advance": 0.3, "reads": ["py:flight_rt.frame"],
+                 "why": "shows on a change of target, a moment after it"},
+    "vj_energy": {"advance": 2.0, "reads": ["py:flight_rt.frame"], "why": "the camera moves harder, eased over seconds"},
     "vj_hit": {"advance": 0.5, "reads": ["py:flight_rt.frame"], "why": "a wide-angle kick on the On-Air Camera"},
 }
 
@@ -175,7 +180,7 @@ class Check:
         self.runtime = self.ns.get(RUNTIME_KEY)
         self.bridge = self.ns.get(BRIDGE_KEY)
         self.abort_flag = False
-        self.baselines = {}       # (cam, set, advance, then) -> (frame, floor)
+        self.baselines = {}       # (view, set, advance, then) -> (frame, floor)
         self.noise = (0.0, 0.0, 0.0)   # largest floor measured so far
         self.restore = None
         self.frames_dir = self.opts.get("frames_dir")
@@ -244,7 +249,7 @@ class Check:
                 self.runtime.freeze(False)
                 self.runtime.quiesce()
                 bad = {k: [float(self.scene[k]), v] for k, v in self.defaults.items()
-                       if k in self.scene and abs(float(self.scene[k]) - v) > 1e-6 and k != "vj_cam"}
+                       if k in self.scene and abs(float(self.scene[k]) - v) > 1e-6}
                 self.result["defaults_restored"] = not bad
                 self.result["off_default"] = bad
             except Exception:
@@ -318,10 +323,10 @@ class Check:
 
     # ---- one measurement -----------------------------------------------------------------------------------------
 
-    def state_for(self, pre, cam):
+    def state_for(self, pre, view):
         state = dict(self.defaults)
+        state.update(VIEWS[view])
         state.update(pre.get("set", {}))
-        state["vj_cam"] = float(cam)
         return state
 
     def cell(self, key, value, pre, cam, fire=False):
@@ -349,10 +354,7 @@ class Check:
             self.bridge.pending.clear()
         else:
             yield from self.wait_frames(1)
-            if key == "vj_cam":
-                shot = self.ns["vj_shot"]() if "vj_shot" in self.ns else scene.camera and scene.camera.name     # flight_rt
-                readback = shot == "CAM_%d" % int(round(value))
-            elif key is not None:
+            if key is not None:
                 readback = abs(float(scene[key]) - value) <= 1e-6 * max(1.0, abs(value))
         if pre.get("then"):
             yield from self.settle()
@@ -383,8 +385,6 @@ class Check:
 
     def values_for(self, c):
         lo, hi, d = c["min"], c["max"], c["default"]
-        if c["key"] == "vj_cam":
-            return [float(v) for v in range(int(lo), int(hi) + 1)]
         if c["trigger"]:
             return sorted({min(max(v, lo), hi) for v in (0.5, 1.0, hi) if v >= 0.5})
         return list(dict.fromkeys([lo, d, (lo + hi) / 2.0, hi]))    # the middle too: hue 0 and hue 1 are the same colour
@@ -394,8 +394,8 @@ class Check:
         base, floor = yield from self.baseline(pre, cam)
         cells, frames = [], {"base": base}
         values = self.values_for(c)
-        if not primary and key != "vj_cam" and not trig:
-            values = [values[0], values[-1]]       # other cameras: the two ends only
+        if not primary and not trig:
+            values = [values[0], values[-1]]       # other views: the two ends only
         for v in values:
             frame, ok, settled, probe = yield from self.cell(key, v, pre, cam, fire=trig)
             stat = diff(frame, base)
@@ -412,7 +412,6 @@ class Check:
         return {"cam": cam, "cells": cells, "floor": [round(floor[0], 4), round(floor[1], 6), round(floor[2], 4)]}, frames
 
     def row_for(self, c, attempts, frames, rd, error=None, confirmed=None):
-        is_cam = c["key"] == "vj_cam"
         best = self.best(c, attempts) if attempts else None
         pre = PRECONDITIONS.get(c["key"], {})
         row = {"key": c["key"], "address": "/" + c["key"].replace("_", "/", 1), "min": c["min"], "max": c["max"],
@@ -424,19 +423,10 @@ class Check:
             notes.append(error)
         else:
             judged = self.judged(c, best)
-            if is_cam:      # the default cell is a cut like any other: every camera has to show
-                bad_cam = [x["value"] for x in best["cells"] if not x["readback"]]
-                still = [x["value"] for x in best["cells"] if x["value"] != 0.0 and not x["effect"]]
-                row["verdict"] = "error" if bad_cam else "effect"
-                if bad_cam:
-                    notes.append("no camera cut for vj_cam %s" % bad_cam)
-                if still:
-                    notes.append("looks like CAM_0 at vj_cam %s" % still)
-            else:
-                bad = [x["value"] for x in best["cells"] if not x["readback"]]
-                row["verdict"] = "error" if bad else ("effect" if self.effective(c, [best]) else "no effect")
-                if bad:
-                    notes.append("value %s not read back" % bad)
+            bad = [x["value"] for x in best["cells"] if not x["readback"]]
+            row["verdict"] = "error" if bad else ("effect" if self.effective(c, [best]) else "no effect")
+            if bad:
+                notes.append("value %s not read back" % bad)
             if row["verdict"] == "effect" and confirmed is False:
                 row["verdict"] = "no effect"
                 notes.append("a weak or single-cell first effect did not repeat")
@@ -444,7 +434,7 @@ class Check:
                 notes.append("weak or single-cell, repeated")
             probes = [x["probe"] for a in attempts for x in a["cells"] if x["probe"] is not None]
             if probes and row["verdict"] == "no effect":
-                notes.append("the runtime took the trigger (%s) but no camera tried shows it" % ", ".join(pre["probe"][:1] + ["..."]) if any(probes)
+                notes.append("the runtime took the trigger (%s) but no view tried shows it" % ", ".join(pre["probe"][:1] + ["..."]) if any(probes)
                              else "the runtime never took the trigger (%s stayed 0)" % pre["probe"][0])
             if any(not x["settled"] for x in best["cells"]):
                 notes.append("a frame did not settle")
@@ -459,32 +449,24 @@ class Check:
             try:
                 os.makedirs(self.frames_dir, exist_ok=True)
                 for name, fr in frames.items():
-                    path = os.path.join(self.frames_dir, "%s-cam%s-%s.png" % (c["key"], row["cams_tried"][0] if row["cams_tried"] else "x", name))
+                    view = row["cams_tried"][0].replace(" ", "-") if row["cams_tried"] else "x"
+                    path = os.path.join(self.frames_dir, "%s-%s-%s.png" % (c["key"], view, name))
                     write_png(path, np.rint(fr[::-1, :, ::-1]).astype(np.uint8))      # the BMP is bottom-up BGR
             except OSError as e:
                 row["note"] += "; frames not saved: %s" % e
         return row
 
-    def cam_number(self, x):
-        """A camera number, or "flight": the Flight's shot, which flight_rt adds as the last CAM_n (0 without one)."""
-        if x != "flight":
-            return int(x)
-        fc = next((o for o in self.scene.objects if o.type == "CAMERA" and o.get("vj_flight_cam")), None)
-        return int(fc.name[4:]) if fc is not None else 0
-
     def test(self, c, rd):
         pre = PRECONDITIONS.get(c["key"], {})
-        cams = [self.cam_number(x) for x in pre.get("cams", [0])]
-        if c["key"] == "vj_cam":
-            cams = [0]
+        cams = pre.get("views", [next(iter(VIEWS))])
         attempts, frames, error, confirmed = [], {}, None, None
         try:
             for cam in cams:
                 a, f = yield from self.attempt(c, pre, cam, primary=True)
                 attempts.append(a)
                 frames = frames or f
-            if self.opts.get("fallback", FALLBACK) and c["key"] != "vj_cam":
-                for cam in range(int(self.by_key["vj_cam"]["max"]) + 1):     # other cameras until one shows it strongly
+            if self.opts.get("fallback", FALLBACK):
+                for cam in VIEWS:     # other views until one shows it strongly
                     if self.strength(c, attempts) >= STRONG:
                         break
                     if cam not in cams:
@@ -505,7 +487,7 @@ class Check:
         return self.row_for(c, attempts, frames, rd, error, confirmed)
 
     def judged(self, c, attempt):
-        return [x for x in attempt["cells"] if x["value"] != c["default"] or c["key"] == "vj_cam"]
+        return [x for x in attempt["cells"] if x["value"] != c["default"]]
 
     def shown(self, c, attempt):
         """Cells that clear the floor and read back."""
@@ -513,12 +495,12 @@ class Check:
 
     def effective(self, c, attempts):
         """One cell far above the floor, or two cells above it: a single marginal cell is noise."""
-        return any(len(self.shown(c, a)) >= (1 if c["key"] == "vj_cam" else 2) or any(x["ratio"] >= STRONG for x in self.shown(c, a))
+        return any(len(self.shown(c, a)) >= 2 or any(x["ratio"] >= STRONG for x in self.shown(c, a))
                    for a in attempts)
 
     def lone(self, c, attempt):
-        """One cell shows, the other judged cells stay at the floor (vj_cam judges every cell on its own)."""
-        return c["key"] != "vj_cam" and len(self.shown(c, attempt)) == 1 and len(self.judged(c, attempt)) > 1
+        """One cell shows, the other judged cells stay at the floor."""
+        return len(self.shown(c, attempt)) == 1 and len(self.judged(c, attempt)) > 1
 
     def strength(self, c, attempts):
         return max((x["ratio"] for a in attempts if self.effective(c, [a]) for x in self.shown(c, a)), default=0.0)

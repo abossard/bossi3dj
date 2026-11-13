@@ -317,59 +317,6 @@ for e_ in (0.0, en.E0, 1.0):
     check("7c pulse at energy %.1f: dip and roll (deg, EN5)" % e_, tilt, 1.0 * e_ + 1e-6)
 
 
-# 7d-g every fixed shot's move: never static, faster and tighter with the energy, slower and wider without it,
-# aim held on the subject, clear of the surface. Synthetic shots for each kind of fixed camera.
-def shot(kind):
-    """(pose, subject distance, clearance, tighten) for a kind of fixed shot."""
-    u = fl.norm((0.02, 0.01, 1.0))
-    up = u
-    h = fl.tangent(u, (0.0, 1.0, 0.0))
-    if kind == "sys":
-        p = fl.add(fl.CENTRE, (1.0, 0.0, 0.0), 165000.0)
-        f_ = fl.norm(fl.sub(fl.CENTRE, p))
-        return (p, f_, fl.tangent(f_, (0.0, 0.0, 1.0)), 19.0, {}), 165000.0, 165000.0 - fl.R, False
-    clear, subject, pitch = {"plaza": (3.0, 3000.0, -2.0), "river": (9.0, 150.0, -4.0), "hero": (20.0, 120.0, -8.0),
-                             "moon": (6.0, 2500.0, 25.0), "far": (25.0, 380.0, -3.0)}[kind]
-    p = fl.add(fl.CENTRE, u, fl.R + clear)
-    f_ = fl.norm(fl.add(fl.scale(h, math.cos(math.radians(pitch))), up, math.sin(math.radians(pitch))))
-    return (p, f_, fl.tangent(f_, up), 30.0, {}), subject, clear, True
-
-
-def energy_program(name):
-    return {"zero": lambda t: (0.0, 0.0, 0.0), "default": lambda t: (en.E0, 0.0, 0.0), "full": lambda t: (1.0, 0.0, 0.0),
-            "show": lambda t: (min(t / 20.0, 1.0) if t < 30.0 else 0.1, 1.0 if 24.0 <= t < 24.1 else 0.0,
-                               1.0 if (t % 0.48) < 0.05 else 0.0)}[name]
-
-
-SHOTS = ("plaza", "river", "hero", "moon", "far", "sys")
-stats = {}
-for kind in SHOTS:
-    base, subject, clear, tighten = shot(kind)
-    aim = fl.add(base[0], base[1], subject)
-    for prog in ("zero", "default", "full", "show"):
-        run = drive_run(energy_program(prog), 40.0)
-        D_ = en.Drive()
-        poses = []
-        for r in run:
-            D_.e, D_.kick, D_.beat, D_.phase = r[1], r[2], r[3], r[5]
-            poses.append(en.move(base, subject, clear, D_, 1.3, tighten))
-        steps_ = [fl.length(fl.sub(poses[i + 1][0], poses[i][0])) for i in range(len(poses) - 1)]
-        tag = "%s %s" % (kind, prog)
-        rel = max(subject * en.ORBIT_ANG, en.AMP_MIN) if kind == "sys" else 1.0     # the space view moves in km
-        check("7d EN1 %s: smallest move between frames (mm per m of half width)" % tag, min(steps_) * 1000.0 / rel, 0.2, ">=")
-        check("7f framing %s: aim off the subject (deg)" % tag, max(math.degrees(fl.angle(q[1], fl.norm(fl.sub(aim, q[0])))) for q in poses), 0.01)
-        u_ = fl.norm(fl.sub(base[0], fl.CENTRE))
-        check("7g clearance %s: lowest under the shot's height, past FLOOR over the surface (m)" % tag,
-              max(fl.dot(fl.sub(base[0], q[0]), u_) - (clear - en.FLOOR) for q in poses), 0.0)
-        stats[tag] = (sum(steps_) / len(steps_) * FPS, sum(fl.length(fl.sub(aim, q[0])) for q in poses) / len(poses),
-                      sum(q[3] for q in poses) / len(poses))
-    for a_, b_ in (("full", "default"), ("default", "zero")):
-        check("7e EN2/EN4 %s: speed at %s over %s" % (kind, a_, b_), stats["%s %s" % (kind, a_)][0] / stats["%s %s" % (kind, b_)][0], 1.5, ">=")
-        check("7e EN2/EN4 %s: distance to the subject at %s under %s (m)" % (kind, a_, b_),
-              stats["%s %s" % (kind, a_)][1] - stats["%s %s" % (kind, b_)][1], 0.0)
-        if tighten:
-            check("7e EN2/EN4 %s: lens at %s over %s" % (kind, a_, b_), stats["%s %s" % (kind, a_)][2] / stats["%s %s" % (kind, b_)][2], 1.05, ">=")
-
 # path shots run their path at the Drive's rate: never stopped, and faster with the energy and on a hit
 for e_ in (0.0, en.E0, 1.0):
     run = drive_run(lambda t: (e_, 1.0 if 3.0 <= t < 3.1 else 0.0, 0.0), 6.0)
