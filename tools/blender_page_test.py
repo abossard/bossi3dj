@@ -104,7 +104,10 @@ def main():
     check("Syphon frames advance", state()["syphon"]["frames"] > frames)
 
     check("POST without a JSON type is refused", call("POST", "/api/defaults", headers={"Content-Type": "text/plain"})[0] == 415)
-    check("a foreign Host is refused", call("GET", "/api/state", host="evil.example")[0] == 403)
+    if s["lan"]:
+        check("LAN mode: a foreign Host is served (the phone calls the Mac by its address)", call("GET", "/api/state", host="evil.example")[0] == 200)
+    else:
+        check("a foreign Host is refused", call("GET", "/api/state", host="evil.example")[0] == 403)
     check("unknown path is 404", call("GET", "/nope")[0] == 404)
 
     before = {k: v for k, v in s["values"].items()}

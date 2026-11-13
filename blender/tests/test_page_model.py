@@ -79,6 +79,14 @@ class DescribeTests(unittest.TestCase):
         self.assertEqual(page["sections"][-1], {"title": pm.OTHER, "keys": ["vj_new_thing"]})
         self.assertEqual(page["coverage"]["extra"], ["vj_new_thing"])
 
+    def test_a_godot_only_property_of_the_scene_is_left_off_the_page(self):
+        for key in ("vj_cam", "vj_cam_auto"):
+            with self.subTest(key=key):
+                page = pm.page_state(CONTROLS + [{"key": key, "min": 0, "max": 11, "step": 1, "default": 0, "trigger": False}], ROWS, contract.GROUPS)
+                self.assertNotIn(key, [c["key"] for c in page["controls"]])
+                self.assertEqual(page["coverage"], {"missing": [], "extra": []})
+                self.assertNotIn("Godot only", [s["title"] for s in page["sections"]])
+
     def test_a_missing_control_is_reported_by_address(self):
         page = pm.page_state([c for c in CONTROLS if c["key"] != "vj_fog"], ROWS, contract.GROUPS)
         self.assertEqual(page["coverage"]["missing"], ["/vj/fog"])
