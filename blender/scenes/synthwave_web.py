@@ -89,10 +89,15 @@ def contract():
     return _contract["rows"], _contract["groups"]
 
 
+def scene_kind(scene):
+    """"planet" or "island": the planet scene has a Planet_Centre object."""
+    return "planet" if scene.objects.get("Planet_Centre") else "island"
+
+
 def shots(scene):
-    """The names and sentences of this scene's cameras, from the /vj/cam row of osc/contract.json: the planet scene has a Planet_Centre object."""
+    """The names and sentences of this scene's cameras, from the /vj/cam row of osc/contract.json."""
     row = next((r for r in contract()[0] if r["address"] == "/vj/cam"), None)
-    return [] if row is None else row.get("shots", {}).get("planet" if scene.objects.get("Planet_Centre") else "island", [])
+    return [] if row is None else row.get("shots", {}).get(scene_kind(scene), [])
 
 
 def controls(scene):
@@ -264,7 +269,7 @@ class Web:
             elif path == "/api/health":
                 self.run_health(body)
             elif path == "/api/hold" and bridge is not None:
-                keys = set(body.get("keys") or [c["key"] for c in page_model.page_controls(controls(scene), contract()[0])])
+                keys = set(body.get("keys") or [c["key"] for c in page_model.page_controls(controls(scene), contract()[0], scene_kind(scene))])
                 bridge.hold = bridge.hold | keys if body.get("on") else bridge.hold - keys
         now = time.time()
         if self.sim.on:
@@ -328,7 +333,7 @@ class Web:
             "fps": rate(d0, d1), "scene_fps": rate(f0, f1),   # drawn frames (what Syphon gets) vs frame counter, which skips
             "playing": bool(bpy.context.screen and bpy.context.screen.is_animation_playing),
             "sim": self.sim.state(), "edge_guard": bpy.app.driver_namespace.get("edge_guard"), "lan": self.lan,
-            **page_model.page_state(controls(scene), *contract()),
+            **page_model.page_state(controls(scene), *contract(), scene_kind(scene)),
             "values": {k: float(scene[k]) for k in scene.keys() if k.startswith(PREFIX)
                        and isinstance(scene[k], (int, float))},
         }

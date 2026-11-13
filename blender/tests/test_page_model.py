@@ -23,7 +23,7 @@ class DescribeTests(unittest.TestCase):
 
     def test_every_blender_address_has_a_control(self):
         self.assertEqual(self.page["coverage"], {"missing": [], "extra": []})
-        self.assertEqual(len(self.page["controls"]), len(pm.blender_rows(ROWS)))
+        self.assertEqual(len(self.page["controls"]), len(pm.scene_rows(ROWS, "planet")))
 
     def test_sections_follow_the_manual_groups(self):
         titles = [s["title"] for s in self.page["sections"]]
@@ -31,7 +31,7 @@ class DescribeTests(unittest.TestCase):
 
     def test_each_control_carries_its_sentence_and_address_from_the_contract(self):
         by_key = {c["key"]: c for c in self.page["controls"]}
-        for row in pm.blender_rows(ROWS):
+        for row in pm.scene_rows(ROWS, "planet"):
             with self.subTest(address=row["address"]):
                 c = by_key[pm.key_of(row["address"])]
                 self.assertEqual((c["address"], c["group"], c["plain"]), (row["address"], row["group"], row["plain"]))
@@ -40,7 +40,7 @@ class DescribeTests(unittest.TestCase):
     def test_order_inside_a_group_is_the_contract_order(self):
         for sec in self.page["sections"]:
             with self.subTest(group=sec["title"]):
-                want = [pm.key_of(r["address"]) for r in ROWS if r["group"] == sec["title"] and r.get("blender") and pm.key_of(r["address"]) not in pm.CAMERA]
+                want = [pm.key_of(r["address"]) for r in pm.scene_rows(ROWS, "planet") if r["group"] == sec["title"] and pm.key_of(r["address"]) not in pm.CAMERA]
                 self.assertEqual(sec["keys"], want)
 
     def test_the_path_camera_comes_first_and_only_once(self):
@@ -86,6 +86,16 @@ class DescribeTests(unittest.TestCase):
                 self.assertNotIn(key, [c["key"] for c in page["controls"]])
                 self.assertEqual(page["coverage"], {"missing": [], "extra": []})
                 self.assertNotIn("Godot only", [s["title"] for s in page["sections"]])
+
+    def test_island_only_controls_are_on_the_island_page_only(self):
+        island_only = {"vj_grid", "vj_grid_speed"}
+        for scene, shown in (("planet", False), ("island", True)):
+            with self.subTest(scene=scene):
+                page = pm.page_state(CONTROLS, ROWS, contract.GROUPS, scene)
+                self.assertEqual(island_only <= {c["key"] for c in page["controls"]}, shown)
+                self.assertEqual(page["coverage"], {"missing": [], "extra": []})
+                self.assertEqual(island_only <= {c["key"] for c in pm.page_controls(CONTROLS, ROWS, scene)}, shown)
+                self.assertEqual(page["kind"], scene)
 
     def test_hold_all_takes_the_page_controls_only(self):
         scene = CONTROLS + [{"key": "vj_cam", "min": 0, "max": 11, "step": 1, "default": 0, "trigger": False}]

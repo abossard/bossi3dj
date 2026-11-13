@@ -36,8 +36,8 @@ A whole small planet with a sun, a moon and a star sky. One camera, the Path Cam
 - `/vj/fog` sets how dense the fog bank is. Fog has its own colour, glow, size and wind (`/vj/fog_*`).
 - `/vj/path`, `/vj/target` and `/vj/height` steer the camera; a change flies over in the fade time `/vj/blend` (0 cuts). `/vj/energy` sets how hard the camera moves.
 - A control you touch stays yours for `/vj/takeover` (20 s by default), then the music steers it again.
-- `/vj/grid` shows the real triangle edges of the ground at night as a glowing cyan net. By day there are none.
-- `/vj/level`, `/vj/bass` and `/vj/beat` pulse the sun, the net, the pyramid edges and the water glints with the music. `/vj/hue` turns the whole palette.
+- The ground is a GPU terrain without edges: `/vj/grid` and `/vj/grid_speed` are for the island scene only.
+- `/vj/level`, `/vj/bass` and `/vj/beat` pulse the sun, the pyramid edges and the water glints with the music. `/vj/hue` turns the whole palette.
 
 The full list with ranges is in [osc/CONTROLS.md](osc/CONTROLS.md).
 
@@ -65,9 +65,6 @@ The full list with ranges is in [osc/CONTROLS.md](osc/CONTROLS.md).
 <tr>
 <td width="50%"><img src="docs/images/readme/planet-flight-skim.jpg" alt="Flight, CAM_11: the Flight shot at the Skim stage, over the mountains."><br><sub><b>Flight, <code>CAM_11</code></b>: the Flight shot at the Skim stage skimming over the mountains, one moment of its path.</sub></td>
 <td width="50%"><sub><b>The Path Camera</b> replaces these shots. The Flight became the path "Follow the land" at a low height. Pictures of the Path Camera follow once it is built.</sub></td>
-</tr>
-<tr>
-<td colspan="2"><img src="docs/images/readme/osc/grid-blender.jpg" alt="Night, CAM_0, /vj/grid 0 on the left and 1 on the right"><br><sub><b>Night, <code>CAM_0</code></b>: <code>/vj/night</code> 1, <code>/vj/grid</code> 0 on the left and 1 on the right. The cyan net is the ground's real triangle edges.</sub></td>
 </tr>
 </table>
 
@@ -144,7 +141,7 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 |---|---|---|---|---|
 | `/vj/grid_speed` | Makes the glowing grid on the ground scroll faster. | 0..1, default 0.15 | Blender |  |
 | `/vj/pyramids` | Makes the pyramids rise out of the ground. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/pyramids-blender.jpg" width="360" alt="/vj/pyramids, Blender: low | high"><br><sub>Blender, low | high</sub> |
-| `/vj/grid` | Island scene only: shows the real edges of the low-poly ground as a glowing wireframe; the planet has none. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/grid-blender.jpg" width="360" alt="/vj/grid, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/grid` | Island scene only: shows the real edges of the low-poly ground as a glowing wireframe; the planet has none. | 0..1, default 1 | Blender |  |
 | `/vj/water` | Turns the reflections on the water up or down. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/water-blender.jpg" width="360" alt="/vj/water, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/flamingos` | Makes the flock of flamingos bigger; 0 hides it. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/flamingos-blender.jpg" width="360" alt="/vj/flamingos, Blender: low | high"><br><sub>Blender, low | high</sub> |
 
@@ -229,7 +226,7 @@ Lists every command.
 make blender-open
 ```
 
-Opens the planet in Blender and waits until the start state is ready (runtime, bridge, Syphon, picture, night edges). Then open http://127.0.0.1:9210 to drive it by hand without Magic. Use `SCENE=island` for the older island scene. A lighting desk or QLC+ can drive the planet over Art-Net too: [docs/artnet-qlc.md](docs/artnet-qlc.md).
+Opens the planet in Blender and waits until the start state is ready (runtime, bridge, Syphon, picture). Then open http://127.0.0.1:9210 to drive it by hand without Magic. Use `SCENE=island` for the older island scene. A lighting desk or QLC+ can drive the planet over Art-Net too: [docs/artnet-qlc.md](docs/artnet-qlc.md).
 
 ```bash
 make godot-open

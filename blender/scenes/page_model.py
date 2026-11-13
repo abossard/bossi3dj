@@ -20,6 +20,8 @@ OTHER = "Other"
 # The Path Camera's choices, drawn first on the page in this order: index controls with named stops as buttons, the rest as faders.
 CAMERA = ["vj_path", "vj_target", "vj_height", "vj_blend"]
 NAME_MAX = 40
+# A Blender row whose effect starts with this is read by the island scene only: the planet's page leaves it off (osc/contract.json).
+ISLAND_ONLY = "island scene only"
 HOSTS = {"local": "127.0.0.1", "lan": "0.0.0.0"}
 
 
@@ -34,6 +36,11 @@ def address_of(key):
 
 def blender_rows(rows):
     return [r for r in rows if r.get("blender")]
+
+
+def scene_rows(rows, scene="planet"):
+    """The rows the scene ("planet" or "island") reads: the Blender rows, on the planet without the island-only ones."""
+    return [r for r in blender_rows(rows) if scene != "planet" or not r["blender"].get("effect", "").startswith(ISLAND_ONLY)]
 
 
 def describe(controls, rows, groups):
@@ -73,27 +80,27 @@ def sections(described, skip=()):
     return out
 
 
-def coverage(controls, rows):
-    """The addresses Blender reads that have no control on the page, and the page's properties the contract does not list."""
+def coverage(controls, rows, scene="planet"):
+    """The addresses the scene reads that have no control on the page, and the page's properties the contract does not list."""
     have = {c["key"] for c in controls}
-    want = {key_of(r["address"]): r["address"] for r in blender_rows(rows)}
+    want = {key_of(r["address"]): r["address"] for r in scene_rows(rows, scene)}
     return {"missing": sorted(a for k, a in want.items() if k not in have), "extra": sorted(k for k in have if k not in want)}
 
 
-def page_controls(controls, rows):
-    """The scene's controls the page shows and Hold all holds: all but those whose contract row is for Godot only (the scene may
-    still carry such a property)."""
-    godot = {key_of(r["address"]) for r in rows if not r.get("blender")}
-    return [c for c in controls if c["key"] not in godot]
+def page_controls(controls, rows, scene="planet"):
+    """The scene's controls the page shows and Hold all holds: all but those whose contract row this scene does not read (Godot only,
+    or island only on the planet). The scene may still carry such a property."""
+    other = {key_of(r["address"]) for r in rows} - {key_of(r["address"]) for r in scene_rows(rows, scene)}
+    return [c for c in controls if c["key"] not in other]
 
 
-def page_state(controls, rows, groups):
+def page_state(controls, rows, groups, scene="planet"):
     """The part of /api/state that describes the controls (the values and the rest come from the scene on every snapshot)."""
-    controls = page_controls(controls, rows)
+    controls = page_controls(controls, rows, scene)
     d = describe(controls, rows, groups)
     have = {c["key"] for c in d}
     camera = [k for k in CAMERA if k in have]
-    return {"controls": d, "path_camera": camera, "sections": sections(d, camera), "coverage": coverage(controls, rows)}
+    return {"kind": scene, "controls": d, "path_camera": camera, "sections": sections(d, camera), "coverage": coverage(controls, rows, scene)}
 
 
 # ---------------------------------------------------------------- source badge counts

@@ -40,7 +40,7 @@ Order matters: Blender first, then Magic. Magic sends a value only when it chang
    make blender-open
    ```
 
-   It opens Blender, waits for the scene and prints one line per check: runtime and playback, OSC bridge, night edges, Syphon sender, picture pixels, Syphon grab. Wait for `start state: ready`. A cold start can take minutes (the command waits up to 10 minutes). If it says `NOT ready`, see [When something is wrong](#when-something-is-wrong).
+   It opens Blender, waits for the scene and prints one line per check: runtime and playback, OSC bridge, Syphon sender, picture pixels, Syphon grab. Wait for `start state: ready`. A cold start can take minutes (the command waits up to 10 minutes). If it says `NOT ready`, see [When something is wrong](#when-something-is-wrong).
 
 4. Open the show in Magic.
 
@@ -54,9 +54,7 @@ Order matters: Blender first, then Magic. Magic sends a value only when it chang
 
 ## What you see and how the music moves it
 
-A planet with a sun, a moon, stars, pyramids, water, flamingos and fog, seen by one camera that flies on a path. The loudness, the bass and the beat pulse the sun, the ground net, the pyramid edges and the water glints. Drops and builds in the music lift the brightness, flash the picture, move the camera to a new path and target, lower or raise it, and thicken the fog. Which address does what, with a picture at a low and a high value, is in [All OSC channels](../README.md#all-osc-channels) in the README. That table is made from `osc/contract.json` and is not repeated here.
-
-The ground's net of edges only shows at night (`/vj/night` high) and only while `/vj/grid` is above 0. By day there are no lines, on purpose.
+A planet with a sun, a moon, stars, pyramids, water, flamingos and fog, seen by one camera that flies on a path. The loudness, the bass and the beat pulse the sun, the pyramid edges and the water glints. Drops and builds in the music lift the brightness, flash the picture, move the camera to a new path and target, lower or raise it, and thicken the fog. Which address does what, with a picture at a low and a high value, is in [All OSC channels](../README.md#all-osc-channels) in the README. That table is made from `osc/contract.json` and is not repeated here.
 
 ## Steer by hand
 
@@ -92,7 +90,7 @@ The Globals you reach for during a show:
 
 Open http://127.0.0.1:9210 on the Mac. It works at phone width too, one column.
 
-- The top bar is always visible. It shows the scene, the camera's path and target, the frame rate, whether Syphon frames are advancing, where the values come from (osc, page, sim, held), the Art-Net state (universe, start address, frames per second) and the result of the night-edge check.
+- The top bar is always visible. It shows the scene, the camera's path and target, the frame rate, whether Syphon frames are advancing, where the values come from (osc, page, sim, held) and the Art-Net state (universe, start address, frames per second).
 - **Camera**: one named button per path and per target, the Height and Fade Time faders. Below them **Hold all**, **Release all** and **Reset** (tap twice) to put every control back to its default.
 - **Presets**: type a name and Save to store the current values. A preset button sets those values again. Presets are kept in `blender/local/presets.json` on the Mac, so the phone and the laptop see the same ones. A recalled preset still obeys the hold rule.
 - The sliders are grouped and ordered like the README manual. Each shows its address, a sentence on what you see change, its value in the scene's own units, the source of the last value, a reset to default (the round arrow) and **H**.
@@ -226,7 +224,6 @@ Run `make status` first. It lists what runs, the scene's frame rate, Syphon, the
 | `make blender-open` says "a Blender is already running" | A Blender is open. Two Blenders halve the frame rate and fight for udp 9201. | `make blender-kill`, then `make blender-open`. |
 | `make blender-open` says "a Godot window runs and shares the GPU" | The Godot scene is open and holds the GPU and port 9201. | `make godot-kill`, then `make blender-open`. |
 | The sky is magenta | A star or moon map the scene points at is missing. | `make blender-paths` lists each file and whether it exists. Put the star maps in `blender/scenes/planet_proto/starmaps/`. |
-| No night edges on the ground | By day there are none, on purpose. At night: `/vj/grid` is 0, or the scene opened without its edges. The start check row `night edges` says `missing` and `make blender-open` ends `NOT ready`. | Set `/vj/night` above 0.5 and `/vj/grid` to 1. The scene probes for its edges once at the start and repairs a blank build itself (the check says `repaired`). If the check says `missing`, run `make blender-kill` and `make blender-open` again; if it says `missing` twice, the notes are in [docs/handover/planet-edge-guard.md](handover/planet-edge-guard.md). |
 | A slider snaps back | Magic sends a new value for that control. | Hold it (**H**) or **Hold all**. Set the Global in Magic instead. |
 | The camera goes back to another path or target by itself | Music plays and the Takeover pause has passed since you last touched it. | Touch it again, set `React` 0 in Magic, raise `Takeover`, or hold `vj_path` and `vj_target` (**H**) on the page. |
 | Port 9201 is busy, the bridge row of the start check fails | A second Blender, or the Godot scene, holds udp 9201. | `make status` shows what runs. `lsof -nP -iUDP:9201` names the process. Close the other one. |

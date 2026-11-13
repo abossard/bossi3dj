@@ -98,7 +98,7 @@
     <span class="chip"><span id="sydot" class="dot"></span>Syphon <b id="sy">-</b></span>
     <span class="chip" title="where the values come from: OSC (Magic), this page, the beat simulator; held = this page owns it"><span id="oscdot" class="dot"></span><b id="from">-</b></span>
     <span class="chip" title="Art-Net from a lighting desk or QLC+: universe, DMX start address, frames per second"><span id="adot" class="dot"></span><b id="artnet">-</b></span>
-    <span class="chip" title="night edges of the ground, probed once at the start"><span id="edot" class="dot"></span><b id="edges">-</b></span>
+    <span class="chip" id="edgechip" hidden title="night edges of the island's ground, probed once at the start"><span id="edot" class="dot"></span><b id="edges">-</b></span>
     <span class="chip" id="checkchip" hidden><span class="dot"></span><b id="checkshort"></b></span>
   </div>
 </header>
@@ -293,6 +293,7 @@ function header(s, osc, hold) {
   const art = (s.artnet || {}).chip || {level: "off", text: "Art-Net -"};
   $("artnet").textContent = art.text; $("adot").className = "dot " + (art.level === "off" ? "" : art.level);
   const g = s.edge_guard || {}, st = g.status;
+  $("edgechip").hidden = !st || st === "not_applicable";   // the planet's GPU terrain has no edges and no guard
   $("edges").textContent = !st ? "edges ?" : st === "not_applicable" ? "no edges here" : st === "running" ? "edges checking" :
     st === "present" ? "edges ok" + (g.repaired ? " (repaired)" : "") : "edges " + st.replace("_", " ");
   $("edot").className = "dot " + (!st || st === "not_applicable" ? "" : st === "running" ? "warn" : st === "present" || st === "repaired" ? "ok" : "bad");

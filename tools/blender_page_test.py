@@ -81,9 +81,9 @@ def main():
     check("GET / is the page", status == 200 and b"Synthwave Control" in html and b"/api/state" in html, "%d bytes" % len(html))
     s = state()
     rows = contract.load()
-    want = [page_model.key_of(r["address"]) for r in page_model.blender_rows(rows)]
+    want = [page_model.key_of(r["address"]) for r in page_model.scene_rows(rows, s["kind"])]
     keys = [c["key"] for c in s["controls"]]
-    check("a control for every address Blender reads", sorted(keys) == sorted(want) and s["coverage"] == {"missing": [], "extra": []},
+    check("a control for every address the %s reads" % s["kind"], sorted(keys) == sorted(want) and s["coverage"] == {"missing": [], "extra": []},
           "%d of %d" % (len(keys), len(want)))
     check("sections follow the manual groups", [x["title"] for x in s["sections"]] == [g for g in contract.GROUPS if g != "Godot only"],
           ", ".join(x["title"] for x in s["sections"]))
@@ -92,9 +92,9 @@ def main():
     check("the Path Camera comes first", s["path_camera"] == page_model.CAMERA, json.dumps(s["path_camera"]))
     check("path and target buttons carry the contract names",
           all(len(by_key[k]["stops"]) == by_key[k]["max"] - by_key[k]["min"] + 1 and all(x["name"] for x in by_key[k]["stops"]) for k in ("vj_path", "vj_target")))
-    check("state has scene, Path Camera, fps, Syphon, OSC, night-edge guard",
-          s["scene"] and s["path_camera"] and "fps" in s and s["syphon"] is not None and s["osc"] is not None and (s["edge_guard"] or {}).get("status") in ("present", "repaired", "not_applicable"),
-          json.dumps({"scene": s["scene"], "path": s["values"].get("vj_path"), "target": s["values"].get("vj_target"), "fps": s["fps"], "edges": (s["edge_guard"] or {}).get("status")}))
+    check("state has scene, Path Camera, fps, Syphon, OSC, no failed edge guard",
+          s["scene"] and s["path_camera"] and "fps" in s and s["syphon"] is not None and s["osc"] is not None and (s.get("edge_guard") or {}).get("status") in (None, "present", "repaired", "not_applicable"),
+          json.dumps({"scene": s["scene"], "path": s["values"].get("vj_path"), "target": s["values"].get("vj_target"), "fps": s["fps"], "edges": (s.get("edge_guard") or {}).get("status")}))
     art = (s.get("artnet") or {})
     check("the state has the Art-Net chip", art.get("chip", {}).get("text", "").startswith("Art-Net"), json.dumps(art.get("chip")))
     check("Art-Net listens on 6454 for the bridge's universe", (art.get("state") or {}).get("bound") is True and (art.get("state") or {}).get("port") == 6454,
