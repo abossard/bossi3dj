@@ -3,13 +3,16 @@ writes its three copies that cannot import it:
 
     python3 osc/contract.py sync     rewrite the table in CONTROLS.md, the SCALES block in blender/blender_osc_bridge.py and
                                      the manual for viewers in README.md (between the osc-manual markers)
-    python3 osc/contract.py check    exit 1 when a copy is out of step (tests/test_contract.py does the same)
+    python3 osc/contract.py check    exit 1 when a copy is out of step or a row is malformed (tests/test_contract.py does the same)
     python3 osc/contract.py table    print the table
     python3 osc/contract.py manual   print the README manual
 
 The manual is made from each row's `group` and `plain` fields (one everyday sentence on what a viewer sees change) and
 from the pictures that exist in docs/images/readme/osc/: <name>-blender.jpg and <name>-godot.jpg, name = the address
 without /vj/. A cell without a file stays empty.
+
+Every Blender row says in `blender.scenes` which Blender scenes read it: "planet" (synthwave_planet), "island"
+(synthwave_pyramids). The manual's Scene column shows it when it is not both.
 
 Standard library only. Wire units: a continuous control is 0..1, an index is an integer, a trigger keeps its strength.
 """
@@ -27,6 +30,7 @@ MANUAL_IMAGES = os.path.join("docs", "images", "readme", "osc")      # relative 
 
 TABLE_BEGIN, TABLE_END = "<!-- contract-table:begin -->", "<!-- contract-table:end -->"
 MANUAL_BEGIN, MANUAL_END = "<!-- osc-manual:begin -->", "<!-- osc-manual:end -->"
+BLENDER_SCENES = ("planet", "island")     # blender.scenes: the Blender scenes that read a row (synthwave_planet, synthwave_pyramids)
 GROUPS = ["Light and colour", "Sky, sun and moon", "Ground, water and things on it", "Fog", "Camera", "Triggers", "Godot only"]
 SCALES_BEGIN = "# --- contract:begin (generated from osc/contract.json by `python3 osc/contract.py sync`, do not edit) ---"
 SCALES_END = "# --- contract:end ---"
@@ -35,6 +39,23 @@ SCALES_END = "# --- contract:end ---"
 def load(path=CONTRACT_JSON):
     with open(path) as f:
         return json.load(f)["controls"]
+
+
+def problems(rows=None):
+    """Rows the contract tools cannot trust: a Blender row without `scenes`, or naming a scene that is not in BLENDER_SCENES."""
+    out = []
+    for r in rows or load():
+        b = r.get("blender")
+        if b is None:
+            continue
+        s = b.get("scenes")
+        if not isinstance(s, list) or not s:
+            out.append("%s: blender.scenes missing or empty" % r["address"])
+            continue
+        bad = [x for x in s if x not in BLENDER_SCENES]
+        if bad or len(set(s)) != len(s):
+            out.append("%s: blender.scenes %s, known %s" % (r["address"], s, list(BLENDER_SCENES)))
+    return out
 
 
 def by_address(rows=None):
@@ -106,7 +127,13 @@ def render_scales(rows=None):
 
 
 def _scenes(row):
-    return {(True, True): "both", (True, False): "Blender", (False, True): "Godot"}[(bool(row["blender"]), bool(row["godot"]))]
+    b = row["blender"]
+    blender = None if b is None else "Blender" if set(b["scenes"]) == set(BLENDER_SCENES) else "Blender " + " and ".join(b["scenes"])
+    if blender is None:
+        return "Godot"
+    if row["godot"] is None:
+        return blender
+    return "both" if blender == "Blender" else "Godot, " + blender
 
 
 def _pictures(row, root=ROOT):
@@ -190,6 +217,9 @@ def current_scales(text):
 
 def sync():
     rows = load()
+    bad = problems(rows)
+    if bad:
+        raise SystemExit("contract.json: " + "; ".join(bad))
     for path, begin, end, body, keep in ((CONTROLS_MD, TABLE_BEGIN, TABLE_END, render_table(rows), True),
                                          (BRIDGE_PY, SCALES_BEGIN, SCALES_END, render_scales(rows), False),
                                          (README_MD, MANUAL_BEGIN, MANUAL_END, render_manual(rows), True)):
@@ -226,9 +256,9 @@ def main(argv):
     elif cmd == "manual":
         print(render_manual())
     elif cmd == "check":
-        s = stale()
+        s = problems() + stale()
         for name in s:
-            print("out of step with contract.json:", name)
+            print(name if ":" in name else "out of step with contract.json: " + name)
         return 1 if s else 0
     else:
         print(__doc__)

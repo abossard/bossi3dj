@@ -191,5 +191,45 @@ class ScaleTests(unittest.TestCase):
                     self.assertAlmostEqual(got, want)
 
 
+class BlenderScenesTests(unittest.TestCase):
+    """blender.scenes: which Blender scenes read a row."""
+
+    def row(self, scenes="absent", godot=None):
+        b = {"min": 0, "max": 1, "effect": "x"}
+        if scenes != "absent":
+            b["scenes"] = scenes
+        return {"address": "/vj/x", "blender": b, "godot": godot}
+
+    def test_the_contract_has_no_problems(self):
+        self.assertEqual(contract.problems(ROWS), [])
+
+    def test_problems(self):
+        cases = [("absent", True), (None, True), ([], True), ("planet", True), (["moon"], True), (["planet", "planet"], True),
+                 (["planet"], False), (["island"], False), (["planet", "island"], False), (["island", "planet"], False)]
+        for scenes, bad in cases:
+            with self.subTest(scenes=scenes):
+                self.assertEqual(bool(contract.problems([self.row(scenes)])), bad)
+
+    def test_a_godot_only_row_needs_no_scenes(self):
+        self.assertEqual(contract.problems([{"address": "/vj/x", "blender": None, "godot": {"effect": "x"}}]), [])
+
+    def test_manual_scene_column(self):
+        godot = {"effect": "x"}
+        cases = [(["planet", "island"], None, "Blender"), (["planet"], None, "Blender planet"), (["island"], None, "Blender island"),
+                 (["planet", "island"], godot, "both"), (["planet"], godot, "Godot, Blender planet")]
+        for scenes, g, want in cases:
+            with self.subTest(scenes=scenes, godot=bool(g)):
+                self.assertEqual(contract._scenes(self.row(scenes, g)), want)
+        self.assertEqual(contract._scenes({"blender": None, "godot": godot}), "Godot")
+
+    def test_island_and_planet_only_rows(self):
+        cases = [("/vj/grid", ["island"]), ("/vj/grid_speed", ["island"]), ("/vj/path", ["planet"]), ("/vj/target", ["planet"]),
+                 ("/vj/height", ["planet"]), ("/vj/blend", ["planet"]), ("/vj/fog", ["planet", "island"]), ("/vj/takeover", ["planet", "island"])]
+        rows = contract.by_address(ROWS)
+        for address, want in cases:
+            with self.subTest(address=address):
+                self.assertEqual(rows[address]["blender"]["scenes"], want)
+
+
 if __name__ == "__main__":
     unittest.main()
