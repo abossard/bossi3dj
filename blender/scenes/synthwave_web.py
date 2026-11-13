@@ -90,7 +90,7 @@ def contract():
 
 
 def scene_kind(scene):
-    """"planet" or "island": the planet scene has a Planet_Centre object."""
+    """The scene's name in contract.BLENDER_SCENES, "planet" or "island": the planet scene has a Planet_Centre object."""
     return "planet" if scene.objects.get("Planet_Centre") else "island"
 
 

@@ -87,14 +87,20 @@ class DescribeTests(unittest.TestCase):
                 self.assertEqual(page["coverage"], {"missing": [], "extra": []})
                 self.assertNotIn("Godot only", [s["title"] for s in page["sections"]])
 
-    def test_island_only_controls_are_on_the_island_page_only(self):
-        island_only = {"vj_grid", "vj_grid_speed"}
-        for scene, shown in (("planet", False), ("island", True)):
+    def test_each_scene_shows_the_rows_its_scenes_field_names(self):
+        cases = [("planet", {"vj_path", "vj_target", "vj_height"}, {"vj_grid", "vj_grid_speed"}),
+                 ("island", {"vj_grid", "vj_grid_speed"}, {"vj_path", "vj_target", "vj_height"})]
+        self.assertEqual(sorted(s for s, _i, _o in cases), sorted(contract.BLENDER_SCENES))
+        for scene, shown, hidden in cases:
             with self.subTest(scene=scene):
                 page = pm.page_state(CONTROLS, ROWS, contract.GROUPS, scene)
-                self.assertEqual(island_only <= {c["key"] for c in page["controls"]}, shown)
+                keys = {c["key"] for c in page["controls"]}
+                want = {pm.key_of(r["address"]) for r in ROWS if scene in (r.get("blender") or {}).get("scenes", ())}
+                self.assertEqual(keys, want)
+                self.assertTrue(shown <= keys)
+                self.assertFalse(hidden & keys)
+                self.assertEqual({c["key"] for c in pm.page_controls(CONTROLS, ROWS, scene)}, keys)
                 self.assertEqual(page["coverage"], {"missing": [], "extra": []})
-                self.assertEqual(island_only <= {c["key"] for c in pm.page_controls(CONTROLS, ROWS, scene)}, shown)
                 self.assertEqual(page["kind"], scene)
 
     def test_hold_all_takes_the_page_controls_only(self):

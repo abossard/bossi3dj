@@ -20,8 +20,6 @@ OTHER = "Other"
 # The Path Camera's choices, drawn first on the page in this order: index controls with named stops as buttons, the rest as faders.
 CAMERA = ["vj_path", "vj_target", "vj_height", "vj_blend"]
 NAME_MAX = 40
-# A Blender row whose effect starts with this is read by the island scene only: the planet's page leaves it off (osc/contract.json).
-ISLAND_ONLY = "island scene only"
 HOSTS = {"local": "127.0.0.1", "lan": "0.0.0.0"}
 
 
@@ -39,8 +37,8 @@ def blender_rows(rows):
 
 
 def scene_rows(rows, scene="planet"):
-    """The rows the scene ("planet" or "island") reads: the Blender rows, on the planet without the island-only ones."""
-    return [r for r in blender_rows(rows) if scene != "planet" or not r["blender"].get("effect", "").startswith(ISLAND_ONLY)]
+    """The rows the scene reads: the Blender rows whose blender.scenes (contract.BLENDER_SCENES names) contain `scene`."""
+    return [r for r in blender_rows(rows) if scene in r["blender"].get("scenes", ())]
 
 
 def describe(controls, rows, groups):
@@ -89,7 +87,7 @@ def coverage(controls, rows, scene="planet"):
 
 def page_controls(controls, rows, scene="planet"):
     """The scene's controls the page shows and Hold all holds: all but those whose contract row this scene does not read (Godot only,
-    or island only on the planet). The scene may still carry such a property."""
+    or a row for the other Blender scene). The scene may still carry such a property."""
     other = {key_of(r["address"]) for r in rows} - {key_of(r["address"]) for r in scene_rows(rows, scene)}
     return [c for c in controls if c["key"] not in other]
 
