@@ -38,8 +38,16 @@ def post(path, body):
     urllib.request.urlopen(req, timeout=10).read()
 
 
+def fresh():
+    """/api/state after a new snapshot: the page publishes only while it is polled (PAGE_IDLE 2 s), so the first read after
+    a longer wait is the snapshot from before it."""
+    get("/api/state")
+    time.sleep(0.3)
+    return get("/api/state")
+
+
 def state():
-    s = get("/api/state")
+    s = fresh()
     return s["values"], s["osc"], s["camera"]
 
 
@@ -119,7 +127,7 @@ def main():
     # (d) a trigger rising through 128 fires once: the log has one rise (strength 0.5 or more) and then one fall to 0 for /vj/shock
     t0 = time.time()
     send_frames(["/vj/shock=1"], frames=6)
-    log = get("/api/state")["osc"]["log"]
+    log = fresh()["osc"]["log"]
     args = [m[3][0] for m in log if m[2] == "/vj/shock" and m[0] >= t0]
     row("d trigger fires once on the rise through 128", len([a for a in args if a >= 0.5]) == 1 and args.count(0.0) == 1,
         "/vj/shock in the log: %s" % ", ".join("%.2f" % a for a in args))

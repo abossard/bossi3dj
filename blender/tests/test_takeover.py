@@ -1,12 +1,15 @@
 """Takeover in the bridge: a page or Art-Net touch claims an address, Magic waits for the pause. A fake clock, no Blender.
 Run: python3 -m unittest discover blender/tests"""
 import os
+import socket
 import sys
+import time
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
 sys.path.insert(0, os.path.join(HERE, "..", "..", "osc"))
+import artnet_input  # noqa: E402
 import blender_osc_bridge as bridge  # noqa: E402  (bpy is None outside Blender)
 
 PAUSE = 20.0
@@ -102,6 +105,37 @@ class BridgeTakeoverWiringTests(unittest.TestCase):
         self.now[0] = 25.0
         b.tick()
         self.assertEqual(written, [({"/vj/height": [0.9]}, "web"), ({"/vj/height": [0.1]}, "osc")])
+
+    def test_artnet_touch_resting_frames_do_not_renew_the_claim(self):
+        """Live row c: an Art-Net change claims /vj/fog_glow, Magic's 0.75 waits, frames that repeat the fader during the pause
+        claim nothing, so the pause runs out and Magic's value is written once."""
+        for resting in (0, 1, 5):
+            with self.subTest(resting=resting):
+                b, written = self.make()
+                b.fit = lambda addr, args: args
+                b.record = lambda *a: None
+                out = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                self.addCleanup(out.close)
+                dest = ("127.0.0.1", b.artnet.bound_port())
+                ch = list(bridge.SCALES).index("/vj/fog_glow")
+                base, touch = bytearray(len(bridge.SCALES)), bytearray(len(bridge.SCALES))
+                touch[ch] = 64
+
+                def frames(*fs):
+                    for f in fs:
+                        out.sendto(artnet_input.encode_artdmx(0, bytes(f)), dest)
+                    time.sleep(0.05)
+                    b.tick()
+
+                frames(base, touch)
+                b.apply({"/vj/fog_glow": [1.5]}, "osc")
+                for i in range(resting):
+                    self.now[0] = 2.0 + i
+                    frames(touch)
+                self.now[0] = PAUSE + 1.0
+                b.tick()
+                self.assertEqual([s for _, s in written], ["artnet", "osc"])
+                self.assertEqual(written[-1][0], {"/vj/fog_glow": [1.5]})
 
 
 if __name__ == "__main__":
