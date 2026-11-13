@@ -27,7 +27,7 @@ MANUAL_IMAGES = os.path.join("docs", "images", "readme", "osc")      # relative 
 
 TABLE_BEGIN, TABLE_END = "<!-- contract-table:begin -->", "<!-- contract-table:end -->"
 MANUAL_BEGIN, MANUAL_END = "<!-- osc-manual:begin -->", "<!-- osc-manual:end -->"
-GROUPS = ["Light and colour", "Sky, sun and moon", "Ground, water and things on it", "Fog", "Camera and Flight", "Triggers", "Godot only"]
+GROUPS = ["Light and colour", "Sky, sun and moon", "Ground, water and things on it", "Fog", "Camera", "Triggers", "Godot only"]
 SCALES_BEGIN = "# --- contract:begin (generated from osc/contract.json by `python3 osc/contract.py sync`, do not edit) ---"
 SCALES_END = "# --- contract:end ---"
 
@@ -121,7 +121,7 @@ def _pictures(row, root=ROOT):
     return "<br>".join(out)
 
 
-SHOT_SCENES = [("planet", "Blender, Synthwave Planet"), ("island", "Blender, island scene (`make blender-open SCENE=island`)"), ("godot", "Godot, Colossus")]
+SHOT_SCENES = [("godot", "Godot, Colossus")]
 
 
 def shot_picture(scene, index, root=ROOT):

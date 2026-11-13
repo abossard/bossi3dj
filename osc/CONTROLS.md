@@ -29,9 +29,12 @@ The source of the rows is [contract.json](contract.json). The table below, the b
 | `/vj/intensity` | 0..1, default 0.5 | 0..2, default 1. overall brightness | 0.2..1.8 exposure, default 1. overall exposure |
 | `/vj/strobe` | 0..1, default 0 | flash to white | not used |
 | `/vj/grid_speed` | 0..1, default 0.15 | 0..4 cells/s, default 0.6. island scene only: grid scroll; the planet has no scrolling lines and does not read it | not used |
-| `/vj/cam` | integer 0..11, default 0 | cut to `CAM_N`; in the planet scene `CAM_11` is the Flight shot; N above the last camera of the scene takes the last | pin the director's Nth shot (0-based); N above the last shot takes the last; held only while `/vj/cam_auto` is 0 |
+| `/vj/cam` | integer 0..11, default 0 | not used | pin the director's Nth shot (0-based); N above the last shot takes the last; held only while `/vj/cam_auto` is 0 |
 | `/vj/cam_auto` | integer 0..1, default 1 | not used | 1: the director cuts by itself; 0: it holds the shot `/vj/cam` picks |
-| `/vj/cam_speed` | 0..1, default 0.25 | 0..4, default 1. camera drift and flyover speed | not used |
+| `/vj/cam_speed` | 0..1, default 0.25 | 0..4, default 1. planet scene: speed along the path (orbit, follow, rise and descend, push) | not used |
+| `/vj/path` | integer 0..3, default 0 | planet scene, Path Camera: the path type, any path works with any target; a change flies with `/vj/blend` | not used |
+| `/vj/target` | integer 0..6, default 0 | planet scene, Path Camera: one fixed place per name (the lake, river and coast nearest the pyramids' valley); moon and sun move; a change flies with `/vj/blend` | not used |
+| `/vj/height` | 0..1, default 0.3 | planet scene, Path Camera: height over the ground on a log scale, 10 m at 0, about 140 m at 0.3, 800 m at 0.5, 64 km at 1; the path adapts; it glides | not used |
 | `/vj/sun` | 0..1, default 1 | sun elevation, and size (largest at peak day): 0 sets it below the horizon (night lighting) | not used |
 | `/vj/moon` | 0..1, default 1 | moon size. The Moon is not faded: it rises from below the sea as the sun goes down (`/vj/sun`, `/vj/night`) and sets again by day | not used |
 | `/vj/moon_phase` | 0..1, default 1 | lunar phase: 1 full, 0.5 half, 0 new (crater shadows along the terminator). Planet scene (star system): where the moon sits on its orbit, 0 next to the sun, 1 opposite it, lit by the real sun | not used |
@@ -55,9 +58,8 @@ The source of the rows is [contract.json](contract.json). The table below, the b
 | `/vj/haze` | 0..1, default 1 | distance haze toward the horizon; 0 with `/vj/fog` 0 gives a fog-free view | 0..0.00025 density, default 0.00025. distance haze |
 | `/vj/eclipse` | 0..1, default 0 | planet scene (star system): turns the moon's tilted orbit into line with the sun, a lunar eclipse in the planet's shadow at full moon, a solar eclipse at new moon | not used |
 | `/vj/star_speed` | 0..1, default 0 | 0..10 °/s, default 0. planet scene (star system): drift of the stars against the sun | not used |
-| `/vj/flight` | 0..1, default 0 | planet scene, Flight camera ([plan](../docs/research/synthwave-flight.md)): 0 orbit framing the star system, 0.33 landing approach, 0.66 skim over the mountains, 1 hover over water. Damped: a jump flies, about a minute from end to end | not used |
-| `/vj/boost` | 0..1, default 0 | planet scene, Flight camera: the accelerator while skimming or hovering, a surge forward with a wider view | not used |
-| `/vj/blend` | 0..1, default 0.5 | 0..2, default 1. planet scene: duration scale of shot changes, which fly from the current view to the new shot; 0 cuts | not used |
+| `/vj/blend` | 0..1, default 0.5 | 0..60 s, default 30. planet scene, Path Camera: the longest flight (ground to space across the Planet) takes this long, shorter ones less; 0 cuts | not used |
+| `/vj/takeover` | 0..1, default 0.33 | 0..60 s, default 19.8. a control touched on the scene page or over Art-Net ignores Magic's value for this long after the last touch | not used |
 | `/vj/energy` | 0..1, default 0.3 | planet scene: how hard every camera moves. Eased (up over 1.5 s, down over 4 s). Low: a slow, wide floating glide; high: faster, pushed in, tighter lens, bigger pulse accents. Every shot keeps moving even at 0 | not used |
 | `/vj/hit` | trigger 0..1, default 0 | planet scene: rising edge above 0.5: a surge of speed with a wide-angle kick (lens to 0.7x, back over 2 s), a swoop along the path on moving shots | not used |
 <!-- contract-table:end -->

@@ -12,8 +12,6 @@ Run it inside Blender (Text Editor > Run Script, or
   on the scene: /vj/level -> scene["vj_level"]. Drivers read it as
   ["vj_level"] (Simple Expression, no Python needed);
 - optionally routes addresses to RNA paths through MAPPING below;
-- switches scene.camera on /vj/cam N to the camera named CAM_N, or to the
-  last camera below N when the scene has fewer;
 - after each batch calls scene.update_tag() and redraws 3D views, which
   custom-property writes from Python otherwise skip;
 - answers /lab/ping with /lab/pong so the lab page can show round-trip
@@ -31,7 +29,7 @@ Run it inside Blender (Text Editor > Run Script, or
   a failed bind is reported in artnet_state(), never fatal. docs/artnet-qlc.md.
 
 Re-running the script replaces the previous instance. The scaling functions
-(scale_wire, wire_to_scene, camera_index) need no bpy and are unit tested in
+(scale_wire, wire_to_scene) need no bpy and are unit tested in
 blender/tests/test_bridge_scaling.py.
 """
 import os
@@ -64,11 +62,6 @@ MAPPING = {
     # "/vj/hue":   ("Cube", "rotation_euler", 2),
 }
 
-# /vj/cam N makes the camera object named CAMERA_PREFIX + N the scene camera
-# (drivers cannot set scene.camera).
-CAMERA_ADDRESS = "/vj/cam"
-CAMERA_PREFIX = "CAM_"
-
 # address -> (kind, wire min, wire max, scene min, scene max) for the rows Blender uses.
 # Written from osc/contract.json, so the three copies of the contract cannot drift.
 # --- contract:begin (generated from osc/contract.json by `python3 osc/contract.py sync`, do not edit) ---
@@ -80,8 +73,10 @@ SCALES = {
     '/vj/intensity': ('float', 0, 1, 0, 2),
     '/vj/strobe': ('float', 0, 1, 0, 1),
     '/vj/grid_speed': ('float', 0, 1, 0, 4),
-    '/vj/cam': ('int', 0, 11, None, None),
     '/vj/cam_speed': ('float', 0, 1, 0, 4),
+    '/vj/path': ('int', 0, 3, None, None),
+    '/vj/target': ('int', 0, 6, None, None),
+    '/vj/height': ('float', 0, 1, 0, 1),
     '/vj/sun': ('float', 0, 1, 0, 1),
     '/vj/moon': ('float', 0, 1, 0, 1),
     '/vj/moon_phase': ('float', 0, 1, 0, 1),
@@ -105,9 +100,8 @@ SCALES = {
     '/vj/haze': ('float', 0, 1, 0, 1),
     '/vj/eclipse': ('float', 0, 1, 0, 1),
     '/vj/star_speed': ('float', 0, 1, 0, 10),
-    '/vj/flight': ('float', 0, 1, 0, 1),
-    '/vj/boost': ('float', 0, 1, 0, 1),
-    '/vj/blend': ('float', 0, 1, 0, 2),
+    '/vj/blend': ('float', 0, 1, 0, 60),
+    '/vj/takeover': ('float', 0, 1, 0, 60),
     '/vj/energy': ('float', 0, 1, 0, 1),
     '/vj/hit': ('trigger', 0, 1, None, None),
 }
@@ -207,24 +201,9 @@ def wire_to_scene(address, args):
     return None if scaled is None else [scaled]
 
 
-def camera_index(n, available):
-    """The camera a cut to N takes: N when the scene has it, else the highest one below it, else the lowest."""
-    available = sorted(available)
-    if not available:
-        return None
-    below = [i for i in available if i <= n]
-    return below[-1] if below else available[0]
-
-
 def high(args):
     v = next((a for a in args if isinstance(a, (int, float)) and not isinstance(a, bool)), 0.0)
     return v >= 0.5
-
-
-def scene_shots():
-    """How many shots /vj/cam has in the running scene: its CAM_N cameras, plus the planet's Flight (CAM_11, made at run time)."""
-    n = len([o for o in bpy.data.objects if o.type == "CAMERA" and o.name.startswith(CAMERA_PREFIX) and o.name[len(CAMERA_PREFIX):].isdigit()])
-    return n + (1 if bpy.data.objects.get("Planet_Centre") is not None else 0)
 
 
 class Bridge:
@@ -253,8 +232,7 @@ class Bridge:
         self.triggers = {}        # property name -> is it a trigger
         self.latest_art = {}      # address -> args from Art-Net, latest wins within a tick
         rows = artnet_input.channel_map((a, v[0], v[1], v[2]) for a, v in SCALES.items())
-        shots = scene_shots() if bpy is not None else 12
-        self.artnet = artnet_input.ArtNetInput(artnet_input.DmxDecoder(rows, shots=shots), artnet_host, artnet_port, artnet_enabled)
+        self.artnet = artnet_input.ArtNetInput(artnet_input.DmxDecoder(rows), artnet_host, artnet_port, artnet_enabled)
 
     # One timer callback. Returns the next delay (keeps the timer alive).
     def tick(self):
@@ -360,10 +338,6 @@ class Bridge:
             v = min(v, hi)
         return [v]
 
-    def camera_indices(self):
-        return [int(o.name[len(CAMERA_PREFIX):]) for o in bpy.data.objects
-                if o.type == "CAMERA" and o.name.startswith(CAMERA_PREFIX) and o.name[len(CAMERA_PREFIX):].isdigit()]
-
     def record(self, now, src, addr, args):
         st = self.stats.get(addr)
         if st is None:
@@ -410,11 +384,6 @@ class Bridge:
             scene[prop_name(addr)] = float(v)
             self.source[prop_name(addr)] = source
             self.applied += 1
-            if addr == CAMERA_ADDRESS:
-                n = camera_index(int(round(v)), self.camera_indices())
-                cam = None if n is None else bpy.data.objects.get("%s%d" % (CAMERA_PREFIX, n))
-                if cam is not None and scene.camera != cam:
-                    scene.camera = cam
             route = MAPPING.get(addr)
             if route:
                 ob = bpy.data.objects.get(route[0])

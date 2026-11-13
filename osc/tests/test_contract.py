@@ -80,7 +80,7 @@ class TableTests(unittest.TestCase):
                 self.assertTrue(r["plain"].strip() and r["plain"].endswith("."))
                 self.assertNotIn("|", r["plain"])
 
-    def test_shots_are_listed_gapless_and_the_planet_has_every_camera_the_bridge_cuts_to(self):
+    def test_shots_are_listed_gapless_and_fit_the_wire_range(self):
         cam = contract.by_address(ROWS)["/vj/cam"]
         for scene, shots in cam["shots"].items():
             with self.subTest(scene=scene):
@@ -88,7 +88,7 @@ class TableTests(unittest.TestCase):
                 self.assertEqual(len({s["name"] for s in shots}), len(shots))
                 for s in shots:
                     self.assertTrue(s["name"] and s["shows"].endswith("."))
-        self.assertEqual(len(cam["shots"]["planet"]), int(cam["max"]) + 1)
+        self.assertLessEqual(len(cam["shots"]["godot"]), int(cam["max"]) + 1)
 
     def test_godot_shots_are_the_director_shots(self):
         """godot/colossus/director/shots.gd is the source of the Godot shot names and sentences (wire 0 is Shot value 1)."""
@@ -178,7 +178,7 @@ class ScaleTests(unittest.TestCase):
         cases = [
             ("/vj/level", "blender", 0.5, 0.5), ("/vj/intensity", "blender", 0.5, 1.0), ("/vj/intensity", "blender", 2.0, 2.0),
             ("/vj/intensity", "blender", -1, 0.0), ("/vj/fog_height", "blender", 0.41, 25.19), ("/vj/fog_height", "godot", 1, 95.0),
-            ("/vj/cam", "blender", 3.4, 3), ("/vj/cam", "godot", 99, 11), ("/vj/cam_auto", "godot", 0.2, 0),
+            ("/vj/cam", "blender", 3.4, None), ("/vj/cam", "godot", 99, 11), ("/vj/cam_auto", "godot", 0.2, 0),
             ("/vj/shock", "blender", 1.4, 1.4), ("/vj/shock", "godot", 1.5, 1.5), ("/vj/hue", "godot", 0.5, None),
             ("/vj/cam_auto", "blender", 1, None),
         ]

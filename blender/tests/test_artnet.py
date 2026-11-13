@@ -131,26 +131,22 @@ class TriggerTests(unittest.TestCase):
                 self.assertEqual([a for a, x in d.feed(0, dmx({"/vj/shock": v})) if x > 0], [])
 
 
-class CameraTests(unittest.TestCase):
-    def test_equal_ranges_one_per_shot(self):
-        for shots in (12, 7, 1, 5):
-            with self.subTest(shots=shots):
-                d = decoder(shots=shots)
-                d.feed(0, dmx({"/vj/cam": 0}))
+class IndexTests(unittest.TestCase):
+    def test_equal_ranges_one_per_index(self):
+        for address, n in (("/vj/path", 4), ("/vj/target", 7)):
+            with self.subTest(address=address):
+                d = decoder()
+                d.feed(0, dmx({address: 0}))
                 seen = {}
                 for v in range(256):
-                    d.previous = {ADDR["/vj/cam"]: (v + 1) % 256}      # force a change from any other value
-                    out = dict(d.feed(0, dmx({"/vj/cam": v})))
-                    seen.setdefault(out["/vj/cam"], []).append(v)
-                self.assertEqual(sorted(seen), [float(i) for i in range(shots)])
+                    d.previous = {ADDR[address]: (v + 1) % 256}      # force a change from any other value
+                    out = dict(d.feed(0, dmx({address: v})))
+                    seen.setdefault(out[address], []).append(v)
+                self.assertEqual(sorted(seen), [float(i) for i in range(n)])
                 sizes = {len(v) for v in seen.values()}
                 self.assertLessEqual(max(sizes) - min(sizes), 1)
                 self.assertEqual(seen[0.0][0], 0)
-                self.assertEqual(seen[float(shots - 1)][-1], 255)
-
-    def test_shot_counts_are_the_contract_shots(self):
-        cam = next(r for r in contract.load() if r["address"] == "/vj/cam")
-        self.assertEqual({k: len(v) for k, v in cam["shots"].items() if k != "godot"}, {"planet": 12, "island": 7})
+                self.assertEqual(seen[float(n - 1)][-1], 255)
 
 
 class BridgeWiringTests(unittest.TestCase):

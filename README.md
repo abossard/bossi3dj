@@ -168,58 +168,17 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 </details>
 
 <details>
-<summary><b>Camera and Flight</b> (6)</summary>
+<summary><b>Camera</b> (7)</summary>
 
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
-| `/vj/cam` | Cuts to camera number N; 0 is the first shot. | integer 0..11, default 0 | both | <img src="docs/images/readme/osc/cam-blender.jpg" width="360" alt="/vj/cam, Blender: the shots"><br><sub>Blender, the shots</sub><br><img src="docs/images/readme/osc/cam-godot.jpg" width="360" alt="/vj/cam, Godot: the shots"><br><sub>Godot, the shots</sub> |
 | `/vj/cam_speed` | Makes the camera drift and fly faster or slower. | 0..1, default 0.25 | Blender | <img src="docs/images/readme/osc/cam_speed-blender.jpg" width="360" alt="/vj/cam_speed, Blender: low | high"><br><sub>Blender, low | high</sub> |
-| `/vj/flight` | Steers the flying camera: 0 high orbit, then a landing approach, a skim over the mountains, and at 1 a hover over the water. | 0..1, default 0 | Blender | <img src="docs/images/readme/osc/flight-blender.jpg" width="360" alt="/vj/flight, Blender: low | high"><br><sub>Blender, low | high</sub> |
-| `/vj/boost` | Gives the flying camera a burst of speed with a wider view. | 0..1, default 0 | Blender | <img src="docs/images/readme/osc/boost-blender.jpg" width="360" alt="/vj/boost, Blender: low | high"><br><sub>Blender, low | high</sub> |
-| `/vj/blend` | Makes a camera change fly smoothly to the new shot; 0 cuts at once. | 0..1, default 0.5 | Blender | <img src="docs/images/readme/osc/blend-blender.jpg" width="360" alt="/vj/blend, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/path` | Picks how the camera moves: 0 orbit the target, 1 follow the land, 2 rise and descend, 3 vantage with a slow push. | integer 0..3, default 0 | Blender |  |
+| `/vj/target` | Picks what the camera looks at: 0 pyramids, 1 lake, 2 river, 3 coast, 4 moon, 5 sun, 6 planet. | integer 0..6, default 0 | Blender |  |
+| `/vj/height` | Lifts the camera from just over the ground (0) to space with the whole Planet in frame (1). | 0..1, default 0.3 | Blender |  |
+| `/vj/blend` | How long a change of path or target flies; 0 cuts at once. | 0..1, default 0.5 | Blender | <img src="docs/images/readme/osc/blend-blender.jpg" width="360" alt="/vj/blend, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/takeover` | How long a control you touched stays yours before the music steers it again. | 0..1, default 0.33 | Blender |  |
 | `/vj/energy` | Makes the camera move harder, from a slow wide glide to faster, tighter moves. | 0..1, default 0.3 | Blender | <img src="docs/images/readme/osc/energy-blender.jpg" width="360" alt="/vj/energy, Blender: low | high"><br><sub>Blender, low | high</sub> |
-
-**Cameras for `/vj/cam`**: the number picks the shot.
-
-*Blender, Synthwave Planet*
-
-| Number | Name | What it shows | Picture |
-|---|---|---|---|
-| 0 | Plaza View | A wide view from 70 m up, looking up the plaza toward the pyramids and the sun. It stands still. | <img src="docs/images/readme/osc/cam-planet-0.jpg" width="200" alt="planet, shot 0"> |
-| 1 | River Skim | A low view 9 m over the nearest river, looking downstream along the water. It stands still. | <img src="docs/images/readme/osc/cam-planet-1.jpg" width="200" alt="planet, shot 1"> |
-| 2 | Pyramid Hero | Close and low in front of the pyramids, the main pyramid shot. It stands still. | <img src="docs/images/readme/osc/cam-planet-2.jpg" width="200" alt="planet, shot 2"> |
-| 3 | Moon Watch | Low among the hills, tilted up over the pyramids; at night it follows the moon. It stands still. | <img src="docs/images/readme/osc/cam-planet-3.jpg" width="200" alt="planet, shot 3"> |
-| 4 | Pole Flyover | Flies a loop around the planet's pole over the hills, looking ahead along its path. | <img src="docs/images/readme/osc/cam-planet-4.jpg" width="200" alt="planet, shot 4"> |
-| 5 | Pyramid Orbit | Circles the pyramids above the ground, always looking at them. | <img src="docs/images/readme/osc/cam-planet-5.jpg" width="200" alt="planet, shot 5"> |
-| 6 | Planet Orbit | Circles the whole Planet from space, with the Planet and the moon in frame. | <img src="docs/images/readme/osc/cam-planet-6.jpg" width="200" alt="planet, shot 6"> |
-| 7 | Flamingo Lake | Low over the water next to the pyramids, looking toward the sun, with the flamingo flock on the lake. It stands still. | <img src="docs/images/readme/osc/cam-planet-7.jpg" width="200" alt="planet, shot 7"> |
-| 8 | River Mouth | Looks downstream along a river as it runs into the sea. It stands still. | <img src="docs/images/readme/osc/cam-planet-8.jpg" width="200" alt="planet, shot 8"> |
-| 9 | Far Pyramids | A pyramid group far from the valley with the sun behind it. It stands still and follows the sun. | <img src="docs/images/readme/osc/cam-planet-9.jpg" width="200" alt="planet, shot 9"> |
-| 10 | Coast Pass | A low pass along a coast, out over the water with the sea on one side, looking toward the land. | <img src="docs/images/readme/osc/cam-planet-10.jpg" width="200" alt="planet, shot 10"> |
-| 11 | Flight | The flying camera: /vj/flight carries it from orbit down to the mountains and a hover over the water. | <img src="docs/images/readme/osc/cam-planet-11.jpg" width="200" alt="planet, shot 11"> |
-
-*Blender, island scene (`make blender-open SCENE=island`)*
-
-| Number | Name | What it shows | Picture |
-|---|---|---|---|
-| 0 | Plaza View | A wide view from 70 m up, looking up the plaza toward the pyramids. It stands still. | <img src="docs/images/readme/osc/cam-island-0.jpg" width="200" alt="island, shot 0"> |
-| 1 | Valley Low | A very wide lens 14 m up, looking toward the pyramids from 550 m before them. It stands still. | <img src="docs/images/readme/osc/cam-island-1.jpg" width="200" alt="island, shot 1"> |
-| 2 | Pyramid Hero | Close and low beside the pyramids, looking at the main pyramid. It stands still. | <img src="docs/images/readme/osc/cam-island-2.jpg" width="200" alt="island, shot 2"> |
-| 3 | Moon Watch | Low to the ground, tilted up into the sky over the pyramids' valley. It stands still. | <img src="docs/images/readme/osc/cam-island-3.jpg" width="200" alt="island, shot 3"> |
-| 4 | Flyover | Flies a loop on a path, looking ahead along it. | <img src="docs/images/readme/osc/cam-island-4.jpg" width="200" alt="island, shot 4"> |
-| 5 | Pyramid Orbit | Circles the pyramids on a path, always looking at them. | <img src="docs/images/readme/osc/cam-island-5.jpg" width="200" alt="island, shot 5"> |
-| 6 | Wide Orbit | Circles on a wide path, looking at a point just north of the pyramids. | <img src="docs/images/readme/osc/cam-island-6.jpg" width="200" alt="island, shot 6"> |
-
-*Godot, Colossus*
-
-| Number | Name | What it shows | Picture |
-|---|---|---|---|
-| 0 | Scale Wide | A telephoto view from behind the Wanderer that shows the Colossus towering over him; used on the Approach and at the start of the Fall. | <img src="docs/images/readme/osc/cam-godot-0.jpg" width="200" alt="godot, shot 0"> |
-| 1 | Low Hero | A low camera beside the Wanderer on the plain, looking up at the Colossus; used on the Approach and now and then on the Climb. | <img src="docs/images/readme/osc/cam-godot-1.jpg" width="200" alt="godot, shot 1"> |
-| 2 | Over Shoulder | Looks from the Colossus's surface past the Wanderer up the Grab Path; used on the Climb. | <img src="docs/images/readme/osc/cam-godot-2.jpg" width="200" alt="godot, shot 2"> |
-| 3 | Close Grip | Close on the Wanderer's hands at a Grab Point; used on the Climb, cut to at every Shake, and on the Fall. | <img src="docs/images/readme/osc/cam-godot-3.jpg" width="200" alt="godot, shot 3"> |
-| 4 | Aerial | Circles the Colossus from above; cut to at a drop. | <img src="docs/images/readme/osc/cam-godot-4.jpg" width="200" alt="godot, shot 4"> |
-
 
 </details>
 
@@ -235,11 +194,25 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 </details>
 
 <details>
-<summary><b>Godot only</b> (1)</summary>
+<summary><b>Godot only</b> (2)</summary>
 
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
+| `/vj/cam` | Cuts to camera number N; 0 is the first shot. | integer 0..11, default 0 | Godot | <img src="docs/images/readme/osc/cam-godot.jpg" width="360" alt="/vj/cam, Godot: the shots"><br><sub>Godot, the shots</sub> |
 | `/vj/cam_auto` | 1 lets the scene's director cut between shots by itself, 0 holds the shot that `/vj/cam` picks. | integer 0..1, default 1 | Godot |  |
+
+**Cameras for `/vj/cam`**: the number picks the shot.
+
+*Godot, Colossus*
+
+| Number | Name | What it shows | Picture |
+|---|---|---|---|
+| 0 | Scale Wide | A telephoto view from behind the Wanderer that shows the Colossus towering over him; used on the Approach and at the start of the Fall. | <img src="docs/images/readme/osc/cam-godot-0.jpg" width="200" alt="godot, shot 0"> |
+| 1 | Low Hero | A low camera beside the Wanderer on the plain, looking up at the Colossus; used on the Approach and now and then on the Climb. | <img src="docs/images/readme/osc/cam-godot-1.jpg" width="200" alt="godot, shot 1"> |
+| 2 | Over Shoulder | Looks from the Colossus's surface past the Wanderer up the Grab Path; used on the Climb. | <img src="docs/images/readme/osc/cam-godot-2.jpg" width="200" alt="godot, shot 2"> |
+| 3 | Close Grip | Close on the Wanderer's hands at a Grab Point; used on the Climb, cut to at every Shake, and on the Fall. | <img src="docs/images/readme/osc/cam-godot-3.jpg" width="200" alt="godot, shot 3"> |
+| 4 | Aerial | Circles the Colossus from above; cut to at a drop. | <img src="docs/images/readme/osc/cam-godot-4.jpg" width="200" alt="godot, shot 4"> |
+
 
 </details>
 <!-- osc-manual:end -->

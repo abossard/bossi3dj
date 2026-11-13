@@ -5,9 +5,9 @@ A DMX desk or QLC+ sends one frame of up to 512 channels a few times a second, a
 in contract order, starting at the DMX start address (default 1) of one universe (default 0). This module turns a frame
 into (address, wire value) pairs for exactly the channels that changed, so a resting fader never fights Magic or the page:
 
-- the first frame after a start (or after the universe, address or shot count changes) is the baseline and applies nothing;
+- the first frame after a start (or after the universe or address changes) is the baseline and applies nothing;
 - a float channel maps 0..255 linearly onto the row's wire range;
-- /vj/cam splits 0..255 into equal ranges, one per shot of the running scene (12 on the planet, 7 on the island);
+- an index channel (/vj/path, /vj/target) splits 0..255 into equal ranges, one per index of the row's wire range;
 - a trigger fires when its channel rises through TRIGGER_AT (128); the strength grows from 0.5 at 128 to the row's
   wire maximum at 255; when the channel falls below 128 the trigger gets 0 again, so the next rise is a new edge.
 
@@ -53,32 +53,29 @@ def channel_map(rows):
 
 
 class DmxDecoder:
-    """Frames to changes. channels: channel_map(). shots: how many shots the running scene has (the /vj/cam ranges)."""
+    """Frames to changes. channels: channel_map()."""
 
-    CAMERA = "/vj/cam"
-
-    def __init__(self, channels, shots=12, universe=0, address=1):
+    def __init__(self, channels, universe=0, address=1):
         self.channels = list(channels)
-        self.shots, self.universe, self.address = shots, universe, address
+        self.universe, self.address = universe, address
         self.previous = None            # the frame the next one is compared with; None: the next frame is the baseline
         self.frames = 0                 # frames of our universe
         self.other = 0                  # frames of other universes
         self.changes = 0
 
-    def configure(self, universe=None, address=None, shots=None):
+    def configure(self, universe=None, address=None):
         """Changes a setting; the next frame becomes the baseline again."""
         if universe is not None:
             self.universe = int(universe)
         if address is not None:
             self.address = min(max(int(address), 1), 512)
-        if shots is not None:
-            self.shots = max(int(shots), 1)
         self.previous = None
 
     def wire(self, row, v):
         address, kind, lo, hi = row
-        if address == self.CAMERA:
-            return float(min(v * self.shots // 256, self.shots - 1))
+        if kind == "int":
+            n = int(hi - lo) + 1
+            return lo + float(min(v * n // 256, n - 1))
         return lo + v / 255.0 * (hi - lo)
 
     def feed(self, universe, dmx):
@@ -176,7 +173,7 @@ class ArtNetInput:
     def state(self):
         d = self.decoder
         return {"enabled": self.enabled, "bound": self.sock is not None, "port": self.bound_port(), "error": self.error,
-                "universe": d.universe, "address": d.address, "channels": len(d.channels), "shots": d.shots,
+                "universe": d.universe, "address": d.address, "channels": len(d.channels),
                 "packets": self.packets, "malformed": self.malformed, "frames": d.frames, "other_universe": d.other,
                 "changes": d.changes, "last_src": "%s:%d" % self.last_src[:2] if self.last_src else None}
 

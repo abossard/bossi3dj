@@ -15,10 +15,10 @@ class ScaleWireTests(unittest.TestCase):
         cases = [
             ("/vj/level", 0.5, 0.5), ("/vj/level", 1.7, 1.0), ("/vj/level", -0.2, 0.0),
             ("/vj/intensity", 0.0, 0.0), ("/vj/intensity", 0.5, 1.0), ("/vj/intensity", 1.0, 2.0),
-            ("/vj/grid_speed", 0.15, 0.6), ("/vj/cam_speed", 0.25, 1.0), ("/vj/blend", 0.5, 1.0),
+            ("/vj/grid_speed", 0.15, 0.6), ("/vj/cam_speed", 0.25, 1.0), ("/vj/blend", 0.5, 30.0), ("/vj/takeover", 0.33, 19.8), ("/vj/height", 0.3, 0.3),
             ("/vj/fog_height", 0.41, 25.19), ("/vj/fog_scale", 0.25, 257.5), ("/vj/fog_speed", 0.25, 10.0),
             ("/vj/fog_glow", 0.3, 0.6), ("/vj/star_speed", 1.0, 10.0),
-            ("/vj/cam", 3.0, 3.0), ("/vj/cam", 3.4, 3.0), ("/vj/cam", 3.6, 4.0), ("/vj/cam", 42, 11.0), ("/vj/cam", -1, 0.0),
+            ("/vj/path", 2.0, 2.0), ("/vj/path", 2.4, 2.0), ("/vj/path", 2.6, 3.0), ("/vj/path", 42, 3.0), ("/vj/target", -1, 0.0), ("/vj/target", 6, 6.0),
             ("/vj/shock", 0.0, 0.0), ("/vj/shock", 0.6, 0.6), ("/vj/shock", 1.4, 1.4), ("/vj/meteor", 1.0, 1.0), ("/vj/hit", 1.0, 1.0),
         ]
         for address, wire, want in cases:
@@ -26,7 +26,7 @@ class ScaleWireTests(unittest.TestCase):
                 self.assertAlmostEqual(bridge.scale_wire(address, wire), want, places=6)
 
     def test_addresses_that_are_not_blender_rows_are_ignored(self):
-        for address in ("/vj/cam_auto", "/vj/unknown", "/audio/beat/onbeat", "/lab/ping", "vj/level", ""):
+        for address in ("/vj/cam", "/vj/cam_auto", "/vj/flight", "/vj/boost", "/vj/unknown", "/audio/beat/onbeat", "/lab/ping", "vj/level", ""):
             with self.subTest(address=address):
                 self.assertIsNone(bridge.scale_wire(address, 0.5))
                 self.assertIsNone(bridge.wire_to_scene(address, [0.5]))
@@ -54,16 +54,6 @@ class ScaleWireTests(unittest.TestCase):
 
     def test_every_blender_row_is_in_scales(self):
         self.assertEqual(set(bridge.SCALES), {r["address"] for r in contract.load() if r["blender"]})
-
-
-class CameraIndexTests(unittest.TestCase):
-    def test_cut_takes_the_highest_camera_not_above_n(self):
-        cases = [
-            (3, range(7), 3), (9, range(7), 6), (10, range(11), 10), (4, [0, 2, 5], 2), (0, [1, 2], 1), (2, [], None), (0, [0], 0),
-        ]
-        for n, available, want in cases:
-            with self.subTest(n=n, available=list(available)):
-                self.assertEqual(bridge.camera_index(n, available), want)
 
 
 if __name__ == "__main__":
