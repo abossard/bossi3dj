@@ -144,7 +144,7 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 |---|---|---|---|---|
 | `/vj/grid_speed` | Makes the glowing grid on the ground scroll faster. | 0..1, default 0.15 | Blender |  |
 | `/vj/pyramids` | Makes the pyramids rise out of the ground. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/pyramids-blender.jpg" width="360" alt="/vj/pyramids, Blender: low | high"><br><sub>Blender, low | high</sub> |
-| `/vj/grid` | Shows the real triangle edges of the ground as a glowing net at night; by day there is none. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/grid-blender.jpg" width="360" alt="/vj/grid, Blender: low | high"><br><sub>Blender, low | high</sub> |
+| `/vj/grid` | Island scene only: shows the real edges of the low-poly ground as a glowing wireframe; the planet has none. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/grid-blender.jpg" width="360" alt="/vj/grid, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/water` | Turns the reflections on the water up or down. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/water-blender.jpg" width="360" alt="/vj/water, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/flamingos` | Makes the flock of flamingos bigger; 0 hides it. | 0..1, default 1 | Blender | <img src="docs/images/readme/osc/flamingos-blender.jpg" width="360" alt="/vj/flamingos, Blender: low | high"><br><sub>Blender, low | high</sub> |
 

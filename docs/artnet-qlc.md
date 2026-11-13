@@ -47,7 +47,7 @@ What is verified in the workspace file: its structure (Creator, Engine with fixt
 | 13 | Moon Size (`/vj/moon`) | Makes the moon bigger or smaller. | 0..255 = 0..1 |
 | 14 | Moon Phase (`/vj/moon_phase`) | Changes the shape of the moon from new through half to full. | 0..255 = 0..1; ranges: New 0 to 64, Half 65 to 191, Full 192 to 255 |
 | 15 | Pyramids (`/vj/pyramids`) | Makes the pyramids rise out of the ground. | 0..255 = 0..1 |
-| 16 | Mesh Edges (`/vj/grid`) | Shows the real triangle edges of the ground as a glowing net at night; by day there is none. | 0..255 = 0..1 |
+| 16 | Mesh Edges (`/vj/grid`) | Island scene only: shows the real edges of the low-poly ground as a glowing wireframe; the planet has none. | 0..255 = 0..1 |
 | 17 | Stars (`/vj/stars`) | Fades the stars in or out. | 0..255 = 0..1 |
 | 18 | Water Reflection (`/vj/water`) | Turns the reflections on the water up or down. | 0..255 = 0..1 |
 | 19 | Night (`/vj/night`) | Turns day into night: 0 is day, a quarter is sunset, half is twilight, 1 is night. | 0..255 = 0..1; ranges: Day 0 to 32, Sunset 33 to 96, Twilight 97 to 191, Night 192 to 255 |

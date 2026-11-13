@@ -84,7 +84,7 @@
  </Channel>
  <Channel Name="Mesh Edges (/vj/grid)" Default="255">
   <Group Byte="0">Effect</Group>
-  <Capability Min="0" Max="255">Shows the real triangle edges of the ground as a glowing net at night; by day there is none.</Capability>
+  <Capability Min="0" Max="255">Island scene only: shows the real edges of the low-poly ground as a glowing wireframe; the planet has none.</Capability>
  </Channel>
  <Channel Name="Stars (/vj/stars)" Default="255">
   <Group Byte="0">Effect</Group>
