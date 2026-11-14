@@ -2150,10 +2150,12 @@ def pyr_build(T):
     col = T.mix(cap, T.scale(col, T.mrange(ph["Twilight"], 0.0, 1.0, 1.0, 0.45)), capc)
     col = T.mix(ph["Night"], col, T.mix(cap, T.scale(col, 0.04), capc))
     # neon edges: the island's wireframe-modifier tubes, here the Wireframe node on the same faces
+    # 2.5 px and steady (round 16): at 1.6 px with 7 x rt_beat the edges read as a dotted fringe flashing on the beat;
+    # flicker A/B (review/pyramid_edges.py) showed no cost either way, the reviewer the thicker steady edge cleaner
     wf = T.node("ShaderNodeWireframe", use_pixel_size=True)
-    wf.inputs["Size"].default_value = 1.6
+    wf.inputs["Size"].default_value = 2.5
     ecol = T.ramp(zl, [(0.0, (0.05, 0.85, 1.0)), (1.0, (1.0, 0.25, 0.95))])
-    glow = T.addf(T.addf(T.addf(2.6, T.mul(ph["Night"], 1.8)), T.mul(ph["Twilight"], 1.0)), T.mul(T.attr("rt_beat"), 7.0))
+    glow = T.addf(T.addf(2.6, T.mul(ph["Night"], 1.8)), T.mul(ph["Twilight"], 1.0))
     glow = T.mul(glow, T.mrange(ph["Night"], 0.0, 1.0, 1.0, 0.08))     # a slight glow at night, like the wires: white and cyan
     # outlines were too bright (CAM_2)
     col = T.mix(wf.outputs["Fac"], col, T.scale(ecol, glow))

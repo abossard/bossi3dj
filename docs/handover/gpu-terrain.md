@@ -96,22 +96,41 @@ The user's answers: near detail from noise in the shader, ground detail for the 
 - Holes: none at any of the 15 steps (a second held run with a green test mid-step, `run_holes.json`).
 - The 60 s with Magic and music: skipped (the user, 2026-11-14; Magic sent nothing to 9201).
 
+## Round 16 (2026-11-14): the open items, measured
+
+Tools (live planet Blender, every control held at the show defaults unless said): `blender/review/flicker.py` (cases; new: `noise` and `normal` terrain probes, `energy` constants, `log` per frame with altitude and frame thirds, A/B cases that switch a probe every 8 frames on the same flight so both sides see the same seconds), `blender/review/pyramid_edges.py` (edge variants, flicker runs per variant, frame grabs), `blender/review/river_check.py` (still camera, pulse off, water change with and without flow). Rubric `blender/review/rubric-round16.md`. Outputs in `blender/review/out/round16/` (git-ignored). Load 20 to 350 throughout (others' builds): frame times untrusted, flicker numbers are per frame and hold.
+
+**1. Steady flicker split** (mean luminance change per frame, 0..255; toggles = share of pixels that step up and back):
+- Camera motion is the largest share: still against moving at the show defaults 0.96 against 1.6 to 1.9 (follow pyramids), 0.28 against 2.0 to 2.7 (follow sun). It is the shot itself, not a fault.
+- Beat pulse: on a still camera it is nearly all that is left (0.70 against 0.02 at the lake, 0.43 against 0.04, 0.15 against 0.005). Of it the lens push (`energy.BEAT_LENS` 0.02) is 55 % (lens 0: 0.32) and 74 % of its toggles; the dip and roll 20 % (tilt 0: 0.56); the rest the brightness flashes. A slower attack (0.15 s) and both at half changed nothing much.
+- Terrain: near noise off, A/B on the same seconds: the lowest pyramid shot 1.01 to 0.60, the others 5 to 7 % (A/A control within 5 %), no toggles either way: the relief's own texture passing by, not a strobe. Smooth against flat normals: within the noise.
+- Pyramids (lowered with `/vj/pyramids` 0, A/B): orbit pyramids 0.3: 1.59 to 1.30, toggles 0.0039 to 0.0027. Their edges, stripes, the edges' beat and 2.5 px edges each: no difference over the A/A control, moving or held.
+- The run's steady 9.2 at "follow sun" was the tail of the fall from 64 km (blend flag off, the height still gliding), not a steady shot.
+- Fix: `BEAT_LENS` 0 (`energy.py`): the lens no longer pushes on the beat (the hit's lens, the dip and roll and the flashes stay). A/B on the same seconds, moving: follow lake 1.27 to 0.52 (toggles 0.00085 to 0.00018), follow pyramids 0.0 2.88 to 2.27 (toggles 0.0033 to 0.0020), orbit pyramids no change (1.60 to 1.56). 0.005 instead of 0: only part of it.
+
+**2. Descent spikes** (vantage planet 1.0 to follow sun 0.2, logged per frame):
+- Fault: the globe hand-over band (8 to 12 km) was crossed in 3 to 4 frames by a blend (only the rise path kept `BAND_RATE`); the far skin took the pixels over at once: 45 and 29 in two frames, evenly over the whole frame. Fix in `path_camera.py`: `banded` holds the eye's height to `BAND_RATE` (0.3 e-folds/s) inside the band during a blend, and lets it catch up at `BAND_CATCH` (3 e-folds/s) outside it; cuts and live shots pass. After: 8 to 12 km mean 3.15 over 37 frames, max 11.8 (before 26.4 over 4 frames, max 45.6). `make test`, `make verify` green.
+- Not a fault: 800 to 250 m: 12 to 17 a frame with toggles 5 to 12 %, top third first; the blend falls about 1 e-fold of height per second there over detailed ground. Held at that height the picture is clean (0.15 with the pulse, 0.005 without, fog on or off). Fog A/B in the fall: 2.50 against 2.09 below 800 m, no toggle difference.
+
+**3. Rivers** (`river_check.py`, shots follow river 0.0 and 0.15, orbit river 0.3; reviewer set R):
+- The orbit shot shows a river, 60 to 200 px wide, one continuous band (R16-RIVER-WHOLE holds). The follow shots show only a lake shore or no water.
+- The flow does not show: it moves 0.002 % of the pixels (R16-FLOW fails). Two causes: GT_Flow has flow only on one-texel lines (2.5 % of texels within 1 km of the river target), while the drawn river is several texels wide; and the ripples barely show at these heights (water change 0.04 to 0.06 on a still camera with or without flow).
+- Rivers under 25 m: the three shots show none missing, but they cannot show what the 12 m map never had; no number for it.
+- A regional water map (4096^2 over 16 km round the valley, about 4 m a texel): bake about 40 s more on the first open (the 8192x4096 map takes about 80 s), cached; 64 MB more as RGBA float, about 16 MB of flow; in the shaders a second lookup with a switch at its edge (land: 5 lookups for height and slope, water: 1), estimated 1 to 2 ms on the GPU, unmeasured. Not built.
+
+**4. Pyramid neon edges**: share of the flicker not measurable apart from the pyramids as a whole (above). Built: steady (no `rt_beat` term) and 2.5 px (`build_planet.pyr_build`, rebuilt). Reviewer (set P): orbit 0.3 clean in both; orbit 0.15 the far ridge dashed in both, the new edge marginally cleaner; follow 0.0 too small to judge.
+
+**5. Idle frame times**: skipped, `make status` said load 68 to 129, `fps_trustworthy` false. For the user, on an idle machine with nothing else on the GPU: `make status` (fps_trustworthy true), `make blender-open SCENE=planet`, then in a session through the Blender MCP: `DN["fl_job"] = {"out": "<abs>/blender/review/out/idle.json", "frames": 300, "cases": [{"name": "defaults"}]}; exec(open("<abs>/blender/review/flicker.py").read())`; the row's `draw_ms_median` is the frame time.
+
+**6. Recording**: `docs/video/gpu-terrain-round16.mp4` (90 s, unheld, Magic steering, 1920x1080, 1709 new frames, git-ignored), with the new lens and the band fix live, the new edges set live before the rebuild. Flicker 2.63 mean, p95 5.25, toggles 0.0043, 26 spikes; by 15 s stage 1.71, 3.26, 4.01 (one frame of 32), 2.05, 1.46, 3.37. Magic held one shot (148 to 340 m, no blends). Draw interval median 52 ms at load 82 to 113 (untrusted).
+
 ## Open items (for a fresh session)
 
-Start: `make status`, `make blender-open` (start check "ready"; the first open after a rebuild bakes the map, about 80 s). Logic `make test`, models `make verify`. Runs: `DN["pc_job"] = {"out": "<abs>/blender/review/out/gpu_terrain/<name>.json", "passes": [{"name": "day"}], "holes_at": [...]}; exec(open("<abs>/blender/review/path_camera_run.py").read())` through the Blender MCP; the terrain test the same way with `DN["tt_job"]` and `terrain_test_flight.py`; recordings with `tools/syphon_record.py --flag`.
+1. **River flow**: spread the flow from its one-texel lines over the drawn water in the bake (dilate within the water mask), and make the ripples readable at 100 m to 1 km; then `river_check.py` again. The regional water map: the user's call (cost above).
+2. **The pyramids' far ridge** reads dashed at orbit 0.15 (grazing faces under the Wireframe node); a silhouette-aware edge or a geometric edge would be next.
+3. **The fall's lower part** (800 to 250 m, about 1 e-fold/s): if the user sees it as a strobe, slow the blend's height near the ground like the band.
+4. **Idle frame times**: the command under 5.
+5. The page and its test still read `edge_guard` (`not_applicable`) and the contract still has `/vj/grid`: B9 and B11.
+6. Reviewer note: a hole-like opening at a mountain peak in the follow pyramids 0.0 frame (about x 1060, y 212); unchecked.
 
-1. **Flicker on the run (6.5) against the test flight (1 to 2 on the circles).** Split by frame: blending frames (63 % of the run) 8.35 mean, steady frames 3.4. The blends fly between targets kilometres apart, so most of it is the move itself. The steady 3.4 is still above the test flight's circles: the run runs at the default camera speed with the idle beat pulse (lens push, dip and roll, `energy.accent`), the test flight held a slow script with the pulse off. Not split further: measure steady frames with `flicker.py` at the run's poses, pulse on and off, to tell the terrain's share from the camera's.
-2. **Descent spikes**: the fall from 64 km at about 6 km/s; per altitude band no worse than the stream (above). Open only if the user sees a jump at the globe hand-over in the video.
-3. **River flow and narrow rivers**: flow is in the map (GT_Flow, 0.25 % of texels, unit vectors) and feeds the Sea's `pl_flow`; not checked by eye that the water moves. Rivers under about 25 m wide are not drawn (12 m map); a finer water map round the show's region (4096^2 over 16 km, about 4 m) is the cheapest next step.
-4. **Idle frame times**: every number here is under load (up to 230). The user's measurement on an idle machine, with nothing else on the GPU.
-5. **The Magic run**: 60 s unheld with Magic and music, as a second file `docs/video/gpu-terrain-magic.mp4`: `"passes": [{"name": "music", "hold": false, "seconds": 60}]`, once OSC arrives on 9201.
-6. **The pyramids' neon edges** (Pyramid material's Wireframe node, beat-pulsed): a dotted, glittery fringe; the user's call.
-7. **The page and its test** still read `edge_guard` (the runtime reports `not_applicable`) and the contract still has `/vj/grid`: B9 and B11.
-
-## Open questions for the user
-
-1. Near detail: is the 12 m map's smooth near ground enough, or should the grid show real detail under 3 m (a regional map round the show's places, or PL_Surface's fine noise in the shader)?
-2. Whole planet or the show's region: the prototype's map frame is good within about 16 km of the valley; flying anywhere needs a cube-map grid.
-3. Site lights and flowing rivers: rebuild them for the GPU terrain (map channels), or let them go?
-4. Faceted or smooth shading of the relief (True Normal per triangle against map-gradient normals)?
-5. When the stream goes: everything listed under "What breaks or goes", in one change.
+The five questions of the GPU terrain test were answered "Yes, all five" (2026-11-14) and built in 25322af.

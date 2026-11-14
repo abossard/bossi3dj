@@ -268,6 +268,7 @@ class NB:
             nz.inputs["Detail"].default_value = 1.0
             self.feed(nz.inputs["Vector"], p)
             term = self.math("MULTIPLY", self.math("SUBTRACT", nz.outputs["Fac"], 0.5), 2.0 * amp)
+            term.node.label = "gt_noise_amp"        # review/flicker.py scales it
             out = term if out is None else self.math("ADD", out, term)
         near = self.math("SUBTRACT", 1.0, self.smooth(self.vmath("DISTANCE", p, self.cam()), *NOISE_NEAR))
         dry = self.smooth(self.math("SUBTRACT", h, w), *NOISE_DRY)

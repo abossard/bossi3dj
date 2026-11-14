@@ -21,7 +21,9 @@ HIT_LENS = 0.7                             # the lens at the kick's peak, times 
 HIT_SURGE = 3.0                            # extra rate at the kick's peak: a swoop along the move or the path
 HIT_KEEP = 4                               # hits whose kicks overlap
 BEAT_ATTACK, BEAT_RELEASE = 0.06, 0.25     # s
-BEAT_LENS = 0.02                           # lens push at a full pulse and full energy
+BEAT_LENS = 0.0                            # lens push at a full pulse and full energy. Was 0.02: the push moved every
+# pixel on every beat, 55 % of the pulse's frame change on a held camera and 59 % of a moving one's at the lake
+# (round 16, review/flicker.py A/B); the dip and roll and the flashes stay
 BEAT_TILT = math.radians(1.0)              # the dip and roll together at a full pulse and full energy
 PERIOD = 20.0                              # s per roll cycle at rate 1
 

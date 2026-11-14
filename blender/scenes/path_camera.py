@@ -36,6 +36,7 @@ SKY_MIN = math.radians(4.0)         # a body is looked at no lower than this ove
 TURN = math.radians(6.0)            # rad/s: orbit and follow turn round their home no faster at /vj/cam_speed 1
 RISE_SHARE = 0.8                    # rise and descend: the climb's share of the flow (the sway takes the rest)
 BAND_RATE = 0.3                     # e-folds/s at most through the hand-over band: a crossing takes over 1 s
+BAND_CATCH = 3.0                    # e-folds/s at most while a held eye catches up with the blend outside the band
 PLANET_HALF = math.radians(32.0)    # the planet target's half field near the ground
 PUSH_PERIOD = 80.0                 # s at /vj/cam_speed 1: the vantage pushes in over half of it, out over the other
 RISE_DEPTH = 0.75                   # rise and descend: the share of the log height span it travels down from the top
@@ -245,6 +246,7 @@ class PathCamera:
         self.lh = None                      # log of the gliding height
         self.D = dr.Director()
         self.key = None
+        self.le = None                      # log of the eye's height over the sea, as last given out
 
     def target(self, name):
         return self.targets.get(name) or self.targets[HOME]
@@ -267,13 +269,30 @@ class PathCamera:
         self.phase += r * dt
         target_pose = self.live(path, target_name, h)
         turn = 0.0
-        if (path, target_name) != self.D.shot:      # a change: how fast the new view turns by itself, for the blend's length
+        changed = (path, target_name) != self.D.shot
+        if changed:      # a change: how fast the new view turns by itself, for the blend's length
             later = pose(path, t, self.targets[HOME], self.phase + r * 0.5, h, self.terrain)
             turn = fl.angle(target_pose[1], later[1]) / 0.5
         out = self.D.step(dt, (path, target_name), target_pose, blend_s / dr.DUR_MAX, self.terrain, drive, turn)
         if self.D.blending():
             out = self.floored(out)
-        return out
+        return self.banded(out, dt, changed and not self.D.blending())
+
+    def banded(self, pose_, dt, cut=False):
+        """A blend crosses the hand-over band at BAND_RATE at most, like the rise: a fall from space took it in 3 to 4
+        frames, and the far skin's trade of the pixels changed the whole frame at once (round 16: 45 of 255 in a
+        frame at 11 km). Outside the band the held eye catches up at BAND_CATCH; a cut and the live shots pass."""
+        u, hp = dr.spherical(pose_[0])
+        want = math.log(max(hp, 1.0))
+        if self.le is None or not self.D.blending() and abs(want - self.le) < 1e-3 or cut:
+            self.le = want
+            return pose_
+        lo, hi = math.log(BAND[0] * 0.85), math.log(BAND[1] * 1.15)
+        cap = (BAND_RATE if lo <= self.le <= hi else BAND_CATCH) * dt
+        self.le += fl.clamp(want - self.le, -cap, cap)
+        if abs(want - self.le) < 1e-3:
+            return pose_
+        return (fl.add(fl.CENTRE, u, fl.R + math.exp(self.le)),) + tuple(pose_[1:])
 
     def floored(self, pose_):
         """A blend pose kept H_MIN over the ground under it."""
