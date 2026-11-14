@@ -68,7 +68,7 @@ def render(root=None):
 
 PAD_TEXT = {"/vj/meteor": "Nothing: the Meteor pad fires one.", "/vj/hit": "Nothing: the Hit pad fires one.",
             "/vj/cam_auto": "Nothing. Godot only: CamAuto 1 lets Godot's director cut, 0 holds the shot Cam picks.",
-            "/vj/cam": "Nothing. Godot only: the shot while CamAuto is 0.",
+            "/vj/cam": "Nothing: the camera Cam picks. The island scene cuts to it, Godot while CamAuto is 0; the planet ignores it.",
             "/vj/takeover": "Nothing: how long a control you touched stays yours, here and in the scene."}
 
 

@@ -8,7 +8,7 @@ Generators and tooling for `.magic` files. The skill `.claude/skills/magic-proje
 
 ## Show project
 
-`projects/show.magic` (`show_magic.py`, `python3 magic/show_magic.py`) is the synthwave project with two Syphon sources, `CAM_OUT - Blender` and `COLOSSUS_OUT - Godot`, in the Program scene. A `Mix` module crossfades them with the Global `SceneMix` (0 Blender only, 1 Godot only) and the effects run on the mix. Its senders go straight to the scene on udp 9201, which Blender's bridge and the Godot Colossus Scene both listen on (one runs at a time). `--syphon-godot` sets another server name. `Cam` and `CamAuto` are for Godot only (`/vj/cam`, `/vj/cam_auto`); Blender's Path Camera takes `Path`, `Target` and `Height`. Magic publishes its own mixed picture as Syphon `MAGIC_OUT - Magic` (1920x1080, `--syphon-out` renames it), which `magicproj.py grab --server MAGIC_OUT` reads and another app can take. The handbook's table of what Magic sends and why is made from this project: `python3 magic/magic_manual.py sync`.
+`projects/show.magic` (`show_magic.py`, `python3 magic/show_magic.py`) is the synthwave project with two Syphon sources, `CAM_OUT - Blender` and `COLOSSUS_OUT - Godot`, in the Program scene. A `Mix` module crossfades them with the Global `SceneMix` (0 Blender only, 1 Godot only) and the effects run on the mix. Its senders go straight to the scene on udp 9201, which Blender's bridge and the Godot Colossus Scene both listen on (one runs at a time). `--syphon-godot` sets another server name. `Cam` (`/vj/cam`) picks the camera of the island scene and of Godot, `CamAuto` (`/vj/cam_auto`) is for Godot only; the planet's Path Camera takes `Path`, `Target` and `Height`. Magic publishes its own mixed picture as Syphon `MAGIC_OUT - Magic` (1920x1080, `--syphon-out` renames it), which `magicproj.py grab --server MAGIC_OUT` reads and another app can take. The handbook's table of what Magic sends and why is made from this project: `python3 magic/magic_manual.py sync`.
 
 Scenes:
 - **Master**: Program behind Blackout, the Monitor overlay, and OSC Out.
@@ -60,7 +60,7 @@ OSC out (latest value of each Global; ranges and meaning per scene are in [osc/C
 |---|---|
 | `/vj/level` `/vj/bass` `/vj/beat` | `OutLevel` `OutBass` `OutBeat` |
 | `/vj/hue` `/vj/intensity` `/vj/strobe` | `OutHue` `OutIntensity` `OutStrobe` |
-| `/vj/grid_speed` `/vj/cam` `/vj/cam_auto` `/vj/cam_speed` | `OutGridSpeed` `OutCam` `OutCamAuto` `OutCamSpeed`; `OutCam` is a whole number from `Cam`, for Godot |
+| `/vj/grid_speed` `/vj/cam` `/vj/cam_auto` `/vj/cam_speed` | `OutGridSpeed` `OutCam` `OutCamAuto` `OutCamSpeed`; `OutCam` is a whole number from `Cam`, for the island and Godot |
 | `/vj/path` `/vj/target` `/vj/height` `/vj/takeover` | `OutPath` `OutTarget` (whole numbers) `OutHeight` `OutTakeover` |
 | `/vj/sun` `/vj/moon` `/vj/pyramids` `/vj/grid` `/vj/stars` `/vj/water` | `OutSun` … `OutWater` |
 | `/vj/night` `/vj/nebula` `/vj/shock` | `OutNight` `OutNebula` `OutShock`: a 50 ms pulse at the wave's strength on heavy kicks (at most every 0.9 s, every 0.35 s while a drop is fresh; 0.6 rising to 1.5), on each drop (1.5) and on the pad |

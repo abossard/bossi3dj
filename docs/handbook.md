@@ -148,7 +148,7 @@ One camera, the Path Camera, shows the planet. Where it goes is three choices: a
 
 With music, Magic steps path and target on at every drop and every 16 bars, and lowers the camera on builds and drops and lifts it in breakdowns. Touch one of them, in Magic or on the page, and it is yours for the Takeover pause; then the music takes it back with a flight.
 
-In Magic set `Path`, `Target` and `Height`. On the page tap a path or a target button and move the Height fader. `/vj/cam` and `/vj/cam_auto` are for the Godot scene only; Blender ignores them.
+In Magic set `Path`, `Target` and `Height`. On the page tap a path or a target button and move the Height fader. The planet ignores `/vj/cam` (the island scene's camera number) and `/vj/cam_auto` (Godot only).
 
 ## What Magic sends and why
 
@@ -166,7 +166,7 @@ The table is generated from the project (`python3 magic/magic_manual.py sync`) a
 | `/vj/intensity` | `Intensity` | 0.5 | follows | Lifts on drops and builds, dips in breakdowns (Auto 1). |
 | `/vj/strobe` | `Strobe` | 0 | follows | Flashes on the beat during a drop and on snare rolls in a build (Auto 1); Strobe adds a flash on every beat. |
 | `/vj/grid_speed` | `GridSpeed` | 0.15 | follows | Faster with energy, drops and builds, slower in breakdowns. |
-| `/vj/cam` | `Cam` | 0 | no | Nothing. Godot only: the shot while CamAuto is 0. |
+| `/vj/cam` | `Cam` | 0 | no | Nothing: the camera Cam picks. The island scene cuts to it, Godot while CamAuto is 0; the planet ignores it. |
 | `/vj/cam_auto` | `CamAuto` | 1 | no | Nothing. Godot only: CamAuto 1 lets Godot's director cut, 0 holds the shot Cam picks. |
 | `/vj/cam_speed` | `CamSpeed` | 0.25 | follows | Faster on builds and drops, slower in breakdowns (Auto 1). |
 | `/vj/path` | `Path` | 0 | follows | Steps to the next path on every drop and every 16 bars. |
