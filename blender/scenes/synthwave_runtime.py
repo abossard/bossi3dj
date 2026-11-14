@@ -38,7 +38,7 @@ import bpy
 DEFAULTS = {
     "vj_level": 0.5, "vj_bass": 0.0, "vj_beat": 0.0,
     "vj_hue": 0.0, "vj_intensity": 1.0, "vj_strobe": 0.0,
-    "vj_grid_speed": 0.6, "vj_cam_speed": 1.0, "vj_path": 0.0, "vj_target": 0.0, "vj_height": 0.3,
+    "vj_grid_speed": 0.6, "vj_cam": 0.0, "vj_cam_speed": 1.0, "vj_path": 0.0, "vj_target": 0.0, "vj_height": 0.3,
     "vj_sun": 1.0, "vj_moon": 1.0, "vj_pyramids": 1.0,
     "vj_grid": 1.0, "vj_stars": 1.0, "vj_water": 1.0,
     "vj_night": 0.0, "vj_shock": 0.0,
@@ -50,7 +50,7 @@ DEFAULTS = {
 }
 # (min, max, step) where it is not 0..1; stored on the props as UI data, so the web page and Blender's own UI share them.
 RANGES = {
-    "vj_intensity": (0.0, 2.0, 0.01), "vj_grid_speed": (0.0, 4.0, 0.01), "vj_path": (0.0, 3.0, 1.0), "vj_target": (0.0, 6.0, 1.0),
+    "vj_intensity": (0.0, 2.0, 0.01), "vj_grid_speed": (0.0, 4.0, 0.01), "vj_cam": (0.0, 6.0, 1.0), "vj_path": (0.0, 3.0, 1.0), "vj_target": (0.0, 6.0, 1.0),
     "vj_cam_speed": (0.0, 4.0, 0.01), "vj_shock": (0.0, 1.5, 0.01), "vj_fog_height": (1.0, 60.0, 1.0),
     "vj_fog_glow": (0.0, 2.0, 0.01), "vj_fog_scale": (10.0, 1000.0, 1.0), "vj_fog_speed": (0.0, 40.0, 0.1),
     "vj_star_speed": (0.0, 10.0, 0.1), "vj_blend": (0.0, 60.0, 0.1), "vj_takeover": (0.0, 60.0, 0.1),

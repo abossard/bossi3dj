@@ -37,6 +37,10 @@
   <Group Byte="0">Speed</Group>
   <Capability Min="0" Max="255" Preset="SlowToFast">Makes the glowing grid on the ground scroll faster.</Capability>
  </Channel>
+ <Channel Name="Camera (/vj/cam)" Default="0">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="255">Cuts to camera number N; 0 is the first shot.</Capability>
+ </Channel>
  <Channel Name="Camera Speed (/vj/cam_speed)" Default="64">
   <Group Byte="0">Speed</Group>
   <Capability Min="0" Max="255" Preset="SlowToFast">Makes the camera drift and fly faster or slower.</Capability>
@@ -191,37 +195,38 @@
   <Channel Number="4">Brightness (/vj/intensity)</Channel>
   <Channel Number="5">Strobe (/vj/strobe)</Channel>
   <Channel Number="6">Grid Speed (/vj/grid_speed)</Channel>
-  <Channel Number="7">Camera Speed (/vj/cam_speed)</Channel>
-  <Channel Number="8">Path (/vj/path)</Channel>
-  <Channel Number="9">Target (/vj/target)</Channel>
-  <Channel Number="10">Height (/vj/height)</Channel>
-  <Channel Number="11">Sun Height (/vj/sun)</Channel>
-  <Channel Number="12">Moon Size (/vj/moon)</Channel>
-  <Channel Number="13">Moon Phase (/vj/moon_phase)</Channel>
-  <Channel Number="14">Pyramids (/vj/pyramids)</Channel>
-  <Channel Number="15">Mesh Edges (/vj/grid)</Channel>
-  <Channel Number="16">Stars (/vj/stars)</Channel>
-  <Channel Number="17">Water Reflection (/vj/water)</Channel>
-  <Channel Number="18">Night (/vj/night)</Channel>
-  <Channel Number="19">Nebula (/vj/nebula)</Channel>
-  <Channel Number="20">Shock (/vj/shock)</Channel>
-  <Channel Number="21">Meteor (/vj/meteor)</Channel>
-  <Channel Number="22">Flamingos (/vj/flamingos)</Channel>
-  <Channel Number="23">Fog (/vj/fog)</Channel>
-  <Channel Number="24">Fog Height (/vj/fog_height)</Channel>
-  <Channel Number="25">Fog Glow (/vj/fog_glow)</Channel>
-  <Channel Number="26">Fog Hue (/vj/fog_hue)</Channel>
-  <Channel Number="27">Fog Patches (/vj/fog_noise)</Channel>
-  <Channel Number="28">Fog Size (/vj/fog_scale)</Channel>
-  <Channel Number="29">Fog Wind (/vj/fog_speed)</Channel>
-  <Channel Number="30">Fog Pump (/vj/fog_beat)</Channel>
-  <Channel Number="31">Haze (/vj/haze)</Channel>
-  <Channel Number="32">Eclipse (/vj/eclipse)</Channel>
-  <Channel Number="33">Star Drift (/vj/star_speed)</Channel>
-  <Channel Number="34">Fade Time (/vj/blend)</Channel>
-  <Channel Number="35">Takeover Pause (/vj/takeover)</Channel>
-  <Channel Number="36">Camera Energy (/vj/energy)</Channel>
-  <Channel Number="37">Hit (/vj/hit)</Channel>
+  <Channel Number="7">Camera (/vj/cam)</Channel>
+  <Channel Number="8">Camera Speed (/vj/cam_speed)</Channel>
+  <Channel Number="9">Path (/vj/path)</Channel>
+  <Channel Number="10">Target (/vj/target)</Channel>
+  <Channel Number="11">Height (/vj/height)</Channel>
+  <Channel Number="12">Sun Height (/vj/sun)</Channel>
+  <Channel Number="13">Moon Size (/vj/moon)</Channel>
+  <Channel Number="14">Moon Phase (/vj/moon_phase)</Channel>
+  <Channel Number="15">Pyramids (/vj/pyramids)</Channel>
+  <Channel Number="16">Mesh Edges (/vj/grid)</Channel>
+  <Channel Number="17">Stars (/vj/stars)</Channel>
+  <Channel Number="18">Water Reflection (/vj/water)</Channel>
+  <Channel Number="19">Night (/vj/night)</Channel>
+  <Channel Number="20">Nebula (/vj/nebula)</Channel>
+  <Channel Number="21">Shock (/vj/shock)</Channel>
+  <Channel Number="22">Meteor (/vj/meteor)</Channel>
+  <Channel Number="23">Flamingos (/vj/flamingos)</Channel>
+  <Channel Number="24">Fog (/vj/fog)</Channel>
+  <Channel Number="25">Fog Height (/vj/fog_height)</Channel>
+  <Channel Number="26">Fog Glow (/vj/fog_glow)</Channel>
+  <Channel Number="27">Fog Hue (/vj/fog_hue)</Channel>
+  <Channel Number="28">Fog Patches (/vj/fog_noise)</Channel>
+  <Channel Number="29">Fog Size (/vj/fog_scale)</Channel>
+  <Channel Number="30">Fog Wind (/vj/fog_speed)</Channel>
+  <Channel Number="31">Fog Pump (/vj/fog_beat)</Channel>
+  <Channel Number="32">Haze (/vj/haze)</Channel>
+  <Channel Number="33">Eclipse (/vj/eclipse)</Channel>
+  <Channel Number="34">Star Drift (/vj/star_speed)</Channel>
+  <Channel Number="35">Fade Time (/vj/blend)</Channel>
+  <Channel Number="36">Takeover Pause (/vj/takeover)</Channel>
+  <Channel Number="37">Camera Energy (/vj/energy)</Channel>
+  <Channel Number="38">Hit (/vj/hit)</Channel>
  </Mode>
  <Physical>
   <Bulb Type="" Lumens="0" ColourTemperature="0"/>

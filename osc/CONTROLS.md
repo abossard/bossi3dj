@@ -29,7 +29,7 @@ The source of the rows is [contract.json](contract.json). The table below, the b
 | `/vj/intensity` | 0..1, default 0.5 | 0..2, default 1. overall brightness | 0.2..1.8 exposure, default 1. overall exposure |
 | `/vj/strobe` | 0..1, default 0 | flash to white | not used |
 | `/vj/grid_speed` | 0..1, default 0.15 | 0..4 cells/s, default 0.6. island scene only: grid scroll; the planet has no scrolling lines and does not read it | not used |
-| `/vj/cam` | integer 0..11, default 0 | not used | pin the director's Nth shot (0-based); N above the last shot takes the last; held only while `/vj/cam_auto` is 0 |
+| `/vj/cam` | integer 0..11, default 0 | island scene only: cuts to the camera CAM_N (7 cameras, CAM_0 to CAM_6); N above the last camera takes the last; the planet has the Path Camera and does not read it | pin the director's Nth shot (0-based); N above the last shot takes the last; held only while `/vj/cam_auto` is 0 |
 | `/vj/cam_auto` | integer 0..1, default 1 | not used | 1: the director cuts by itself; 0: it holds the shot `/vj/cam` picks |
 | `/vj/cam_speed` | 0..1, default 0.25 | 0..4, default 1. planet scene: speed along the path (orbit, follow, rise and descend, push) | not used |
 | `/vj/path` | integer 0..3, default 0 | planet scene, Path Camera: the path type, any path works with any target; a change flies with `/vj/blend` | not used |

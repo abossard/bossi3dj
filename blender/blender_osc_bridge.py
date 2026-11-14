@@ -12,6 +12,8 @@ Run it inside Blender (Text Editor > Run Script, or
   on the scene: /vj/level -> scene["vj_level"]. Drivers read it as
   ["vj_level"] (Simple Expression, no Python needed);
 - optionally routes addresses to RNA paths through MAPPING below;
+- in the island scene, switches scene.camera on /vj/cam N to the camera named CAM_N, or to the
+  last camera below N when the scene has fewer; the planet (it has Planet_Centre) ignores /vj/cam;
 - after each batch calls scene.update_tag() and redraws 3D views, which
   custom-property writes from Python otherwise skip;
 - answers /lab/ping with /lab/pong so the lab page can show round-trip
@@ -33,7 +35,7 @@ Run it inside Blender (Text Editor > Run Script, or
   default) has passed with no touch; then Magic's kept value is applied. Triggers are events and always pass.
 
 Re-running the script replaces the previous instance. The scaling functions
-(scale_wire, wire_to_scene) need no bpy and are unit tested in
+(scale_wire, wire_to_scene, camera_index) need no bpy and are unit tested in
 blender/tests/test_bridge_scaling.py.
 """
 import os
@@ -66,6 +68,12 @@ MAPPING = {
     # "/vj/hue":   ("Cube", "rotation_euler", 2),
 }
 
+# /vj/cam N makes the camera object named CAMERA_PREFIX + N the island's scene camera (drivers cannot set scene.camera).
+# The planet steers its one Path Camera itself and ignores the address (contract: blender.scenes ["island"]).
+CAMERA_ADDRESS = "/vj/cam"
+CAMERA_PREFIX = "CAM_"
+PLANET_OBJECT = "Planet_Centre"
+
 # address -> (kind, wire min, wire max, scene min, scene max) for the rows Blender uses.
 # Written from osc/contract.json, so the three copies of the contract cannot drift.
 # --- contract:begin (generated from osc/contract.json by `python3 osc/contract.py sync`, do not edit) ---
@@ -77,6 +85,7 @@ SCALES = {
     '/vj/intensity': ('float', 0, 1, 0, 2),
     '/vj/strobe': ('float', 0, 1, 0, 1),
     '/vj/grid_speed': ('float', 0, 1, 0, 4),
+    '/vj/cam': ('int', 0, 11, None, None),
     '/vj/cam_speed': ('float', 0, 1, 0, 4),
     '/vj/path': ('int', 0, 3, None, None),
     '/vj/target': ('int', 0, 6, None, None),
@@ -245,6 +254,15 @@ class Takeover:
     def state(self, now, pause):
         """address -> seconds until the music steers it again."""
         return {a: round(max(pause - (now - t), 0.0), 1) for a, t in self.touched.items()}
+
+
+def camera_index(n, available):
+    """The camera a cut to N takes: N when the scene has it, else the highest one below it, else the lowest."""
+    available = sorted(available)
+    if not available:
+        return None
+    below = [i for i in available if i <= n]
+    return below[-1] if below else available[0]
 
 
 def high(args):
@@ -419,6 +437,20 @@ class Bridge:
             args, source = self.pending.pop(addr)
             self.apply({addr: args}, source)
 
+    def is_planet(self):
+        return bpy.data.objects.get(PLANET_OBJECT) is not None
+
+    def camera_indices(self):
+        return [int(o.name[len(CAMERA_PREFIX):]) for o in bpy.data.objects
+                if o.type == "CAMERA" and o.name.startswith(CAMERA_PREFIX) and o.name[len(CAMERA_PREFIX):].isdigit()]
+
+    def cut(self, scene, n):
+        """The island's cut: scene.camera to CAM_N, or the camera camera_index() picks when the scene has no CAM_N."""
+        i = camera_index(n, self.camera_indices())
+        cam = None if i is None else bpy.data.objects.get("%s%d" % (CAMERA_PREFIX, i))
+        if cam is not None and scene.camera != cam:
+            scene.camera = cam
+
     def takeover_pause(self):
         try:
             return float(bpy.context.scene.get("vj_takeover", TAKEOVER_DEFAULT))
@@ -441,6 +473,9 @@ class Bridge:
             if v is None:
                 continue
             k = prop_name(addr)
+            if addr == CAMERA_ADDRESS and self.is_planet():
+                self.ignored += 1
+                continue
             if self.is_trigger(k):
                 if v >= 0.5 > scene.get(k, 0.0):
                     self.raised[k] = (scene.frame_current, time.time())
@@ -450,6 +485,8 @@ class Bridge:
             scene[prop_name(addr)] = float(v)
             self.source[prop_name(addr)] = source
             self.applied += 1
+            if addr == CAMERA_ADDRESS:
+                self.cut(scene, int(round(v)))
             route = MAPPING.get(addr)
             if route:
                 ob = bpy.data.objects.get(route[0])

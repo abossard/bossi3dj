@@ -165,10 +165,11 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 </details>
 
 <details>
-<summary><b>Camera</b> (7)</summary>
+<summary><b>Camera</b> (8)</summary>
 
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
+| `/vj/cam` | Cuts to camera number N; 0 is the first shot. | integer 0..11, default 0 | Godot, Blender island | <img src="docs/images/readme/osc/cam-blender.jpg" width="360" alt="/vj/cam, Blender: the shots"><br><sub>Blender, the shots</sub><br><img src="docs/images/readme/osc/cam-godot.jpg" width="360" alt="/vj/cam, Godot: the shots"><br><sub>Godot, the shots</sub> |
 | `/vj/cam_speed` | Makes the camera drift and fly faster or slower. | 0..1, default 0.25 | Blender | <img src="docs/images/readme/osc/cam_speed-blender.jpg" width="360" alt="/vj/cam_speed, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/path` | Picks how the camera moves: 0 orbit the target, 1 follow the land, 2 rise and descend, 3 vantage with a slow push. | integer 0..3, default 0 | Blender planet |  |
 | `/vj/target` | Picks what the camera looks at: 0 pyramids, 1 lake, 2 river, 3 coast, 4 moon, 5 sun, 6 planet. | integer 0..6, default 0 | Blender planet |  |
@@ -176,6 +177,19 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 | `/vj/blend` | How long a change of path or target flies; 0 cuts at once. | 0..1, default 0.5 | Blender planet | <img src="docs/images/readme/osc/blend-blender.jpg" width="360" alt="/vj/blend, Blender: low | high"><br><sub>Blender, low | high</sub> |
 | `/vj/takeover` | How long a control you touched stays yours before the music steers it again. | 0..1, default 0.33 | Blender |  |
 | `/vj/energy` | Makes the camera move harder, from a slow wide glide to faster, tighter moves. | 0..1, default 0.3 | Blender planet | <img src="docs/images/readme/osc/energy-blender.jpg" width="360" alt="/vj/energy, Blender: low | high"><br><sub>Blender, low | high</sub> |
+
+**Cameras for `/vj/cam`**: the number picks the shot.
+
+*Godot, Colossus*
+
+| Number | Name | What it shows | Picture |
+|---|---|---|---|
+| 0 | Scale Wide | A telephoto view from behind the Wanderer that shows the Colossus towering over him; used on the Approach and at the start of the Fall. | <img src="docs/images/readme/osc/cam-godot-0.jpg" width="200" alt="godot, shot 0"> |
+| 1 | Low Hero | A low camera beside the Wanderer on the plain, looking up at the Colossus; used on the Approach and now and then on the Climb. | <img src="docs/images/readme/osc/cam-godot-1.jpg" width="200" alt="godot, shot 1"> |
+| 2 | Over Shoulder | Looks from the Colossus's surface past the Wanderer up the Grab Path; used on the Climb. | <img src="docs/images/readme/osc/cam-godot-2.jpg" width="200" alt="godot, shot 2"> |
+| 3 | Close Grip | Close on the Wanderer's hands at a Grab Point; used on the Climb, cut to at every Shake, and on the Fall. | <img src="docs/images/readme/osc/cam-godot-3.jpg" width="200" alt="godot, shot 3"> |
+| 4 | Aerial | Circles the Colossus from above; cut to at a drop. | <img src="docs/images/readme/osc/cam-godot-4.jpg" width="200" alt="godot, shot 4"> |
+
 
 </details>
 
@@ -191,25 +205,11 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 </details>
 
 <details>
-<summary><b>Godot only</b> (2)</summary>
+<summary><b>Godot only</b> (1)</summary>
 
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
-| `/vj/cam` | Cuts to camera number N; 0 is the first shot. | integer 0..11, default 0 | Godot | <img src="docs/images/readme/osc/cam-godot.jpg" width="360" alt="/vj/cam, Godot: the shots"><br><sub>Godot, the shots</sub> |
 | `/vj/cam_auto` | 1 lets the scene's director cut between shots by itself, 0 holds the shot that `/vj/cam` picks. | integer 0..1, default 1 | Godot |  |
-
-**Cameras for `/vj/cam`**: the number picks the shot.
-
-*Godot, Colossus*
-
-| Number | Name | What it shows | Picture |
-|---|---|---|---|
-| 0 | Scale Wide | A telephoto view from behind the Wanderer that shows the Colossus towering over him; used on the Approach and at the start of the Fall. | <img src="docs/images/readme/osc/cam-godot-0.jpg" width="200" alt="godot, shot 0"> |
-| 1 | Low Hero | A low camera beside the Wanderer on the plain, looking up at the Colossus; used on the Approach and now and then on the Climb. | <img src="docs/images/readme/osc/cam-godot-1.jpg" width="200" alt="godot, shot 1"> |
-| 2 | Over Shoulder | Looks from the Colossus's surface past the Wanderer up the Grab Path; used on the Climb. | <img src="docs/images/readme/osc/cam-godot-2.jpg" width="200" alt="godot, shot 2"> |
-| 3 | Close Grip | Close on the Wanderer's hands at a Grab Point; used on the Climb, cut to at every Shake, and on the Fall. | <img src="docs/images/readme/osc/cam-godot-3.jpg" width="200" alt="godot, shot 3"> |
-| 4 | Aerial | Circles the Colossus from above; cut to at a drop. | <img src="docs/images/readme/osc/cam-godot-4.jpg" width="200" alt="godot, shot 4"> |
-
 
 </details>
 <!-- osc-manual:end -->

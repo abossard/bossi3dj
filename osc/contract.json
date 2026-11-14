@@ -37,7 +37,7 @@
      "blender": {"scenes": ["island"], "min": 0, "max": 4, "unit": "cells/s", "effect": "island scene only: grid scroll; the planet has no scrolling lines and does not read it"},
      "godot": null},
     {"address": "/vj/cam", "kind": "int", "min": 0, "max": 11, "default": 0,
-     "group": "Godot only", "plain": "Cuts to camera number N; 0 is the first shot.",
+     "group": "Camera", "plain": "Cuts to camera number N; 0 is the first shot.",
      "label": "Camera",
      "shots": {"godot": [
         {"index": 0, "name": "Scale Wide", "shows": "A telephoto view from behind the Wanderer that shows the Colossus towering over him; used on the Approach and at the start of the Fall."},
@@ -45,7 +45,7 @@
         {"index": 2, "name": "Over Shoulder", "shows": "Looks from the Colossus's surface past the Wanderer up the Grab Path; used on the Climb."},
         {"index": 3, "name": "Close Grip", "shows": "Close on the Wanderer's hands at a Grab Point; used on the Climb, cut to at every Shake, and on the Fall."},
         {"index": 4, "name": "Aerial", "shows": "Circles the Colossus from above; cut to at a drop."}]},
-     "blender": null,
+     "blender": {"scenes": ["island"], "effect": "island scene only: cuts to the camera CAM_N (7 cameras, CAM_0 to CAM_6); N above the last camera takes the last; the planet has the Path Camera and does not read it"},
      "godot": {"effect": "pin the director's Nth shot (0-based); N above the last shot takes the last; held only while `/vj/cam_auto` is 0"}},
     {"address": "/vj/cam_auto", "kind": "int", "min": 0, "max": 1, "default": 1,
      "group": "Godot only", "plain": "1 lets the scene's director cut between shots by itself, 0 holds the shot that `/vj/cam` picks.",

@@ -39,37 +39,38 @@ What is verified in the workspace file: its structure (Creator, Engine with fixt
 | 5 | Brightness (`/vj/intensity`) | Makes the whole picture brighter or darker. | 0..255 = 0..1 |
 | 6 | Strobe (`/vj/strobe`) | Flashes the picture to white; higher means a stronger flash. | 0..255 = 0..1 |
 | 7 | Grid Speed (`/vj/grid_speed`) | Makes the glowing grid on the ground scroll faster. | 0..255 = 0..1 |
-| 8 | Camera Speed (`/vj/cam_speed`) | Makes the camera drift and fly faster or slower. | 0..255 = 0..1 |
-| 9 | Path (`/vj/path`) | Picks how the camera moves: 0 orbit the target, 1 follow the land, 2 rise and descend, 3 vantage with a slow push. | split into 4 equal ranges, one per index; ranges: Orbit 0 to 63, Follow the land 64 to 127, Rise and descend 128 to 191, Vantage 192 to 255 |
-| 10 | Target (`/vj/target`) | Picks what the camera looks at: 0 pyramids, 1 lake, 2 river, 3 coast, 4 moon, 5 sun, 6 planet. | split into 7 equal ranges, one per index; ranges: Pyramids 0 to 36, Lake 37 to 73, River 74 to 109, Coast 110 to 146, Moon 147 to 182, Sun 183 to 219, Planet 220 to 255 |
-| 11 | Height (`/vj/height`) | Lifts the camera from just over the ground (0) to space with the whole Planet in frame (1). | 0..255 = 0..1; ranges: Ground 0 to 64, 800 m 65 to 191, Space 192 to 255 |
-| 12 | Sun Height (`/vj/sun`) | Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon. | 0..255 = 0..1 |
-| 13 | Moon Size (`/vj/moon`) | Makes the moon bigger or smaller. | 0..255 = 0..1 |
-| 14 | Moon Phase (`/vj/moon_phase`) | Changes the shape of the moon from new through half to full. | 0..255 = 0..1; ranges: New 0 to 64, Half 65 to 191, Full 192 to 255 |
-| 15 | Pyramids (`/vj/pyramids`) | Makes the pyramids rise out of the ground. | 0..255 = 0..1 |
-| 16 | Mesh Edges (`/vj/grid`) | Island scene only: shows the real edges of the low-poly ground as a glowing wireframe; the planet has none. | 0..255 = 0..1 |
-| 17 | Stars (`/vj/stars`) | Fades the stars in or out. | 0..255 = 0..1 |
-| 18 | Water Reflection (`/vj/water`) | Turns the reflections on the water up or down. | 0..255 = 0..1 |
-| 19 | Night (`/vj/night`) | Turns day into night: 0 is day, a quarter is sunset, half is twilight, 1 is night. | 0..255 = 0..1; ranges: Day 0 to 32, Sunset 33 to 96, Twilight 97 to 191, Night 192 to 255 |
-| 20 | Nebula (`/vj/nebula`) | Fades in the coloured cloud in the night sky. | 0..255 = 0..1 |
-| 21 | Shock (`/vj/shock`) | A shock wave runs over the land once; in Godot the giant shakes while the Wanderer is on it. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1.5 at 255, back below 128 re-arms |
-| 22 | Meteor (`/vj/meteor`) | A shooting star crosses the sky. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1 at 255, back below 128 re-arms |
-| 23 | Flamingos (`/vj/flamingos`) | Makes the flock of flamingos bigger; 0 hides it. | 0..255 = 0..1 |
-| 24 | Fog (`/vj/fog`) | More fog near the ground; at 1 it is dense autumn fog. | 0..255 = 0..1 |
-| 25 | Fog Height (`/vj/fog_height`) | Makes the fog bank taller or lower. | 0..255 = 0..1 |
-| 26 | Fog Glow (`/vj/fog_glow`) | Makes the fog glow by itself. | 0..255 = 0..1 |
-| 27 | Fog Hue (`/vj/fog_hue`) | Tints the fog pink, violet or cyan. | 0..255 = 0..1; ranges: Pink 0 to 42, Violet 43 to 126, Cyan 127 to 211, Pink again 212 to 255 |
-| 28 | Fog Patches (`/vj/fog_noise`) | Makes the fog patchier. | 0..255 = 0..1 |
-| 29 | Fog Size (`/vj/fog_scale`) | Makes the fog clouds bigger or smaller. | 0..255 = 0..1 |
-| 30 | Fog Wind (`/vj/fog_speed`) | Makes the wind push the fog along faster. | 0..255 = 0..1 |
-| 31 | Fog Pump (`/vj/fog_beat`) | Makes the fog pump with the beat. | 0..255 = 0..1 |
-| 32 | Haze (`/vj/haze`) | Adds or removes the soft haze toward the horizon. | 0..255 = 0..1 |
-| 33 | Eclipse (`/vj/eclipse`) | Lines the moon up with the sun and the planet for an eclipse. | 0..255 = 0..1 |
-| 34 | Star Drift (`/vj/star_speed`) | Makes the stars drift across the sky. | 0..255 = 0..1 |
-| 35 | Fade Time (`/vj/blend`) | How long a change of path or target flies; 0 cuts at once. | 0..255 = 0..1 |
-| 36 | Takeover Pause (`/vj/takeover`) | How long a control you touched stays yours before the music steers it again. | 0..255 = 0..1 |
-| 37 | Camera Energy (`/vj/energy`) | Makes the camera move harder, from a slow wide glide to faster, tighter moves. | 0..255 = 0..1 |
-| 38 | Hit (`/vj/hit`) | A quick surge of speed with a wide-angle kick on the camera. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1 at 255, back below 128 re-arms |
+| 8 | Camera (`/vj/cam`) | Cuts to camera number N; 0 is the first shot. | split into 12 equal ranges, one per index |
+| 9 | Camera Speed (`/vj/cam_speed`) | Makes the camera drift and fly faster or slower. | 0..255 = 0..1 |
+| 10 | Path (`/vj/path`) | Picks how the camera moves: 0 orbit the target, 1 follow the land, 2 rise and descend, 3 vantage with a slow push. | split into 4 equal ranges, one per index; ranges: Orbit 0 to 63, Follow the land 64 to 127, Rise and descend 128 to 191, Vantage 192 to 255 |
+| 11 | Target (`/vj/target`) | Picks what the camera looks at: 0 pyramids, 1 lake, 2 river, 3 coast, 4 moon, 5 sun, 6 planet. | split into 7 equal ranges, one per index; ranges: Pyramids 0 to 36, Lake 37 to 73, River 74 to 109, Coast 110 to 146, Moon 147 to 182, Sun 183 to 219, Planet 220 to 255 |
+| 12 | Height (`/vj/height`) | Lifts the camera from just over the ground (0) to space with the whole Planet in frame (1). | 0..255 = 0..1; ranges: Ground 0 to 64, 800 m 65 to 191, Space 192 to 255 |
+| 13 | Sun Height (`/vj/sun`) | Lifts the sun up the sky and makes it bigger; 0 sinks it below the horizon. | 0..255 = 0..1 |
+| 14 | Moon Size (`/vj/moon`) | Makes the moon bigger or smaller. | 0..255 = 0..1 |
+| 15 | Moon Phase (`/vj/moon_phase`) | Changes the shape of the moon from new through half to full. | 0..255 = 0..1; ranges: New 0 to 64, Half 65 to 191, Full 192 to 255 |
+| 16 | Pyramids (`/vj/pyramids`) | Makes the pyramids rise out of the ground. | 0..255 = 0..1 |
+| 17 | Mesh Edges (`/vj/grid`) | Island scene only: shows the real edges of the low-poly ground as a glowing wireframe; the planet has none. | 0..255 = 0..1 |
+| 18 | Stars (`/vj/stars`) | Fades the stars in or out. | 0..255 = 0..1 |
+| 19 | Water Reflection (`/vj/water`) | Turns the reflections on the water up or down. | 0..255 = 0..1 |
+| 20 | Night (`/vj/night`) | Turns day into night: 0 is day, a quarter is sunset, half is twilight, 1 is night. | 0..255 = 0..1; ranges: Day 0 to 32, Sunset 33 to 96, Twilight 97 to 191, Night 192 to 255 |
+| 21 | Nebula (`/vj/nebula`) | Fades in the coloured cloud in the night sky. | 0..255 = 0..1 |
+| 22 | Shock (`/vj/shock`) | A shock wave runs over the land once; in Godot the giant shakes while the Wanderer is on it. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1.5 at 255, back below 128 re-arms |
+| 23 | Meteor (`/vj/meteor`) | A shooting star crosses the sky. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1 at 255, back below 128 re-arms |
+| 24 | Flamingos (`/vj/flamingos`) | Makes the flock of flamingos bigger; 0 hides it. | 0..255 = 0..1 |
+| 25 | Fog (`/vj/fog`) | More fog near the ground; at 1 it is dense autumn fog. | 0..255 = 0..1 |
+| 26 | Fog Height (`/vj/fog_height`) | Makes the fog bank taller or lower. | 0..255 = 0..1 |
+| 27 | Fog Glow (`/vj/fog_glow`) | Makes the fog glow by itself. | 0..255 = 0..1 |
+| 28 | Fog Hue (`/vj/fog_hue`) | Tints the fog pink, violet or cyan. | 0..255 = 0..1; ranges: Pink 0 to 42, Violet 43 to 126, Cyan 127 to 211, Pink again 212 to 255 |
+| 29 | Fog Patches (`/vj/fog_noise`) | Makes the fog patchier. | 0..255 = 0..1 |
+| 30 | Fog Size (`/vj/fog_scale`) | Makes the fog clouds bigger or smaller. | 0..255 = 0..1 |
+| 31 | Fog Wind (`/vj/fog_speed`) | Makes the wind push the fog along faster. | 0..255 = 0..1 |
+| 32 | Fog Pump (`/vj/fog_beat`) | Makes the fog pump with the beat. | 0..255 = 0..1 |
+| 33 | Haze (`/vj/haze`) | Adds or removes the soft haze toward the horizon. | 0..255 = 0..1 |
+| 34 | Eclipse (`/vj/eclipse`) | Lines the moon up with the sun and the planet for an eclipse. | 0..255 = 0..1 |
+| 35 | Star Drift (`/vj/star_speed`) | Makes the stars drift across the sky. | 0..255 = 0..1 |
+| 36 | Fade Time (`/vj/blend`) | How long a change of path or target flies; 0 cuts at once. | 0..255 = 0..1 |
+| 37 | Takeover Pause (`/vj/takeover`) | How long a control you touched stays yours before the music steers it again. | 0..255 = 0..1 |
+| 38 | Camera Energy (`/vj/energy`) | Makes the camera move harder, from a slow wide glide to faster, tighter moves. | 0..255 = 0..1 |
+| 39 | Hit (`/vj/hit`) | A quick surge of speed with a wide-angle kick on the camera. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1 at 255, back below 128 re-arms |
 <!-- artnet-channels:end -->
 
 ## What QLC+ offers and what we use
