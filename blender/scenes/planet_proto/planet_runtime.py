@@ -8,7 +8,7 @@
 - turns the sky frame under the viewer (the On-Air Camera, or a free 3D view);
 - props and the flamingo flock follow the camera: LOD_Anchor moves under it once its ground point is PROPS_STEP from
   the anchor while it is lower than PROPS_TOP, and the flock is copied from Flock_Birds evaluated there. The land and
-  water are the streamed terrain (flight_rt.py, lod_scene), which follows the camera on its own.
+  water are the GPU terrain (flight_rt.py, gpu_terrain), which follows the camera on its own.
 """
 import math
 import time

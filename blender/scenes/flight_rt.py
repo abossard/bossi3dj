@@ -12,7 +12,8 @@ others, so the planet runtime, the star system and the fog all read this frame's
   and its near clip grows with the clearance.
 - Energy (energy.py): /vj/energy, /vj/hit and the pulse rt_beat; the path runs faster with the Drive's speed, the
   Director puts the kick and the pulse on the rig. rt_energy and rt_kick are written for the recorder.
-- The terrain: the streamed terrain (lod_scene) runs all the time and follows the rig.
+- The terrain: the GPU terrain (gpu_terrain: a grid round the rig, displaced in the material from the Planet's height
+  map), the only one; above about 10 km the globe takes the Planet over.
 - The capstone lamps: a lamp hidden by land within LAMP_NEAR fades to black (lamp_sight).
 - The clearance map: ground (conservative: a 3x3 max, pyramids stamped in) and water level over the whole Planet on
   a cube map, probed once from the planet's own PL_Surface group and cached under ~/Library/Caches. The paths, the
@@ -31,18 +32,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 for _p in (HERE, os.path.join(HERE, "planet_proto")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
-_old = sys.modules.get("lod_scene")     # loaded again (the runtime run again, a file load): the old terrain stream
-if _old is not None:                    # stops, and every module below comes fresh from its file
-    try:
-        _old.stop(bpy.context.scene)
-    except Exception as e:              # after a file load its objects are gone; its timer is off by then
-        print("flight_rt: old LOD stream not stopped cleanly: %s" % e)
-for _m in ("director", "energy", "flight", "lod_scene", "lod_stream", "path_camera"):
+for _m in ("director", "energy", "flight", "gpu_terrain", "path_camera"):     # loaded again: every module fresh
     sys.modules.pop(_m, None)
 import energy as en  # noqa: E402
 import flight as fl  # noqa: E402
-import lod_scene  # noqa: E402
-import lod_stream as ls  # noqa: E402
+import gpu_terrain  # noqa: E402
 import path_camera as pc  # noqa: E402
 
 RIG = "CAM_RIG"
@@ -54,7 +48,28 @@ CACHE = os.path.expanduser("~/Library/Caches/swiftvj-flight")
 MOON_R = 11500.0
 LAMP_NEAR, LAMP_FADE = 3000.0, 0.4    # m within which land hides a capstone lamp (build_planet.fog_lights), s to fade it
 SUN_DIST, SUN_SIZE = 2.0e6, 60000.0     # m: where the sun target is put along the sun's direction, and its size to frame
-_state = {"last": None, "path": None, "map": None, "lod": False, "lod_ms": [], "drive": None, "targets": None, "n": 0}
+_state = {"last": None, "path": None, "map": None, "terrain": False, "drive": None, "targets": None, "n": 0}
+
+
+# ---------------------------------------------------------------- the cube sphere (the clearance map's faces)
+def _unit(k):
+    return tuple(1.0 if i == k else 0.0 for i in range(3))
+
+
+FACES = []
+for _f in range(6):
+    _axis, _s = _f % 3, (1.0 if _f < 3 else -1.0)
+    FACES.append((tuple(_s * c for c in _unit(_axis)), _unit((_axis + 1) % 3), tuple(_s * c for c in _unit((_axis + 2) % 3))))
+
+
+def dir_face(p):
+    """The face and equal-angle coordinates of a unit direction."""
+    best = max(range(6), key=lambda f: sum(FACES[f][0][k] * p[k] for k in range(3)))
+    n, u, v = FACES[best]
+    dn = sum(n[k] * p[k] for k in range(3))
+    a = math.atan(sum(u[k] * p[k] for k in range(3)) / dn) * 4.0 / math.pi
+    b = math.atan(sum(v[k] * p[k] for k in range(3)) / dn) * 4.0 / math.pi
+    return best, a, b
 
 
 # ---------------------------------------------------------------- the clearance map
@@ -62,13 +77,14 @@ def face_dirs(f, n):
     """Unit directions of the texel centres of cube face f, (n, n, 3), row = b, column = a."""
     t = -1.0 + (np.arange(n) + 0.5) * 2.0 / n
     a, b = np.meshgrid(t, t)
-    nrm, u, v = (np.array(x) for x in ls.FACES[f])
+    nrm, u, v = (np.array(x) for x in FACES[f])
     d = nrm[None, None, :] + np.tan(a * np.pi / 4.0)[..., None] * u + np.tan(b * np.pi / 4.0)[..., None] * v
     return d / np.linalg.norm(d, axis=-1, keepdims=True)
 
 
 def probe_group(hydro):
-    """A GN tree that moves each point to the Planet's surface along its own direction and stores its water level."""
+    """A GN tree that stores per point (a unit direction) the Planet's surface height (fl_h), its water level (fl_w)
+    and the rivers' flow (fl_f, for gpu_terrain)."""
     g = bpy.data.node_groups.new("FLT_Probe", "GeometryNodeTree")
     g.interface.new_socket("Geometry", in_out="INPUT", socket_type="NodeSocketGeometry")
     g.interface.new_socket("Geometry", in_out="OUTPUT", socket_type="NodeSocketGeometry")
@@ -101,7 +117,12 @@ def probe_group(hydro):
     sw.inputs["Name"].default_value = "fl_w"
     L.new(sh.outputs[0], sw.inputs["Geometry"])
     L.new(sg.outputs["Water"], sw.inputs["Value"])
-    L.new(sw.outputs[0], go.inputs[0])
+    sf = N.new("GeometryNodeStoreNamedAttribute")
+    sf.data_type = "FLOAT_VECTOR"
+    sf.inputs["Name"].default_value = "fl_f"
+    L.new(sw.outputs[0], sf.inputs["Geometry"])
+    L.new(sg.outputs["Flow"], sf.inputs["Value"])
+    L.new(sf.outputs[0], go.inputs[0])
     return g
 
 
@@ -150,7 +171,7 @@ class ClearanceMap:
         self.raw = ground if raw is None else raw       # the baked surface itself: no 3x3 max, no pyramids
 
     def _texel(self, u):
-        f, a, b = ls.dir_face(u)
+        f, a, b = dir_face(u)
         x = (a + 1.0) * 0.5 * self.n - 0.5
         y = (b + 1.0) * 0.5 * self.n - 0.5
         x0, y0 = min(max(int(math.floor(x)), 0), self.n - 2), min(max(int(math.floor(y)), 0), self.n - 2)
@@ -235,7 +256,7 @@ def stamp_pyramids(scene, g):
         mid = sum(corners, Vector()) / 8.0
         rad = max((c - mid).length for c in corners) + PYR_PAD
         u = tuple((mid - centre).normalized())
-        f, a, b = ls.dir_face(u)
+        f, a, b = dir_face(u)
         cx, cy = (a + 1.0) * 0.5 * n, (b + 1.0) * 0.5 * n
         r = rad / (fl.R * math.pi / 2.0 / n) + 1.0
         y0, y1 = max(0, int(cy - r)), min(n, int(cy + r) + 1)
@@ -373,14 +394,8 @@ def frame(scene, depsgraph=None):
                   scene.get("vj_blend", 30.0), drive)
     scene["rt_blending"] = 1.0 if P.blending() else 0.0
     _state["n"] += 1
-    t = time.perf_counter()
-    # a cut (fade time 0) or the first frame: the jump is no speed, the new view is staged (lod_scene.stage_tick)
-    cut = _state.get("key") is None or ((path, target) != _state["key"] and not P.blending())
-    _state["key"] = (path, target)
-    blocks = lod_scene.update(scene, pose[0], 0.0 if cut else fl.length(P.D.vel), 1.0 / max(dt, 1e-3))
-    _state["lod_ms"] = (_state["lod_ms"] + [(round((time.perf_counter() - t) * 1000.0, 2), blocks)])[-600:]
-    if not (lod_scene.holding() and not P.blending()):     # a cut shows once its terrain is staged; until then the
-        place(rig, pose)                                    # rig holds the last view
+    place(rig, pose)
+    gpu_terrain.follow(scene, pose[0])
     lamp_sight(scene, tuple(rig.matrix_world.translation), dt)
 
 
@@ -412,18 +427,17 @@ def start():
         handlers.insert(0, fn)
     scene.camera = rig
     bpy.app.driver_namespace[SHOT_KEY] = lambda: _state.get("view")
-    lod_scene.start(scene, _state["map"])
-    lod_scene.resume()
-    _state["lod"] = True
+    gpu_terrain.start(scene, probe_group)
+    _state["terrain"] = True
     print("flight_rt: started, Path Camera on %s, targets %s" % (RIG, ", ".join(sorted(_state["targets"]))))
 
 
 def stop():
     bpy.app.driver_namespace.pop(SHOT_KEY, None)
     lamps_reset()
-    if _state["lod"]:
-        lod_scene.stop(bpy.context.scene)
-        _state["lod"] = False
+    if _state["terrain"]:
+        gpu_terrain.stop(bpy.context.scene)
+        _state["terrain"] = False
     for handlers in (bpy.app.handlers.frame_change_pre, bpy.app.handlers.depsgraph_update_pre):
         for h in list(handlers):
             if getattr(h, "__module__", "") == __name__:

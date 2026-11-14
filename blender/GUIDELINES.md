@@ -40,7 +40,9 @@ What each control does is in [README.md](README.md). The pass rules for images a
 | MCP call returns nothing | the add-on wants `result` to be a dict | always assign a dict to `result` |
 | A sheet shows banding or a grid | montage scaling | sheets are for triage; judge fine detail on the full-size frame |
 | Texture looks washed out | float TIFF or EXR loaded as sRGB | set the colour space when loading data maps |
-| Lines on the ground that are not the drawn mesh's edges (a shader lattice, a projected grid, a proxy mesh's edges) | user, 2026-11-11: no dummy wireframe, ever | lines only as the real edges of the drawn mesh, from sunset, or none |
+| Lines on the ground | user, 2026-11-11: no dummy wireframe, ever; 2026-11-13: no wireframe at all | the planet draws no edges (GPU terrain, 2026-11-14) |
+| A terrain built from a generated float image comes out flat or blank | setting an image's colour space after writing its pixels regenerates a generated image | set the colour space first (`images.new(..., is_data=True)`), then the pixels, then `update()` and `pack()` |
+| Displaced land lit as one flat colour | displacement keeps the mesh's own normals; the Terrain shades from the Geometry node's Normal | give the shader a normal from the height map's slope (gpu_terrain.surface) |
 
 ## Measuring fps
 

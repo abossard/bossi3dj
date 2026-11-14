@@ -4,8 +4,7 @@
     python3 blender/review/start_check.py [--wait SECONDS]
 
 Waits for the page (http 9210), then checks, one line each: runtime and bridge up, bridge on udp 9201, camera view in
-Rendered shading, playing, night edges on the terrain (blender/scenes/edge_guard.py probes once after the start and repairs
-a blank build), values on their defaults (all through blender/review/health.py, GET /api/health: its
+Rendered shading, playing, the GPU terrain shown with its height map, values on their defaults (all through blender/review/health.py, GET /api/health: its
 `problems` list is empty), Syphon frames moving, and pixels: mean and variance of the scene's preview frame (the same
 composite the Syphon texture holds) and mean colour and lit share of one frame grabbed from `CAM_OUT - Blender`
 (`magicproj.py grab`, the way Magic would get it). A black or flat frame fails. Exit 0: all ok, 1: something failed,
@@ -69,16 +68,14 @@ def wait_page(limit):
 
 
 def wait_started(limit):
-    """health.py clean, playing, the Syphon frame counter moving and the night-edge guard done: the runtime, view and sender
-    finish a few seconds after the page, and the first draws wait for the shader compile (the guard waits for a picture)."""
+    """health.py clean, playing and the Syphon frame counter moving: the runtime, view and sender finish a few seconds
+    after the page (the terrain's height map loads or bakes first), and the first draws wait for the shader compile."""
     t0, last = time.time(), None
     while True:
         h, s = json.loads(get("/api/health")), json.loads(get("/api/state"))
         frames = (s.get("syphon") or {}).get("frames")
         moving = frames is not None and last is not None and frames > last
-        guarding = (h.get("edge_guard") or {}).get("status") == "running"
-        others = [x for x in h.get("problems", ["no health"]) if not x.startswith("no night edges")]    # the edge row reports its own
-        if (not others and s["playing"] and moving and not guarding) or time.time() - t0 > limit:
+        if (not h.get("problems", ["no health"]) and s["playing"] and moving) or time.time() - t0 > limit:
             return h, s
         last = frames
         time.sleep(3.0)
@@ -104,13 +101,11 @@ def main():
     row("health.py", "problems" in health and not health["problems"], "; ".join(health.get("problems") or [health.get("error", "clean")]))
     row("runtime and playback", state["playing"] and "synthwave_tick" in health.get("tick_handlers", []), "playing %s, handlers %s" % (state["playing"], health.get("tick_handlers")))
     row("bridge", (state.get("osc") or {}).get("port") == BRIDGE_PORT, "udp %s" % (state.get("osc") or {}).get("port"))
-    guard = health.get("edge_guard")
-    if guard is None or guard.get("status") == "not_applicable":
-        row("night edges", True, "no terrain edges in this scene")
+    terrain = health.get("terrain")
+    if terrain is None:
+        row("terrain", True, "no planet in this scene")
     else:
-        row("night edges", guard.get("status") in ("present", "repaired"),
-            "%s, line share %s (needs %s), probe %s ms%s" % (guard.get("status"), guard.get("shares"), guard.get("min_share"), guard.get("probe_ms"),
-                                                              ", repaired by re-evaluating the land" if guard.get("repaired") else "") + (", %s" % guard["note"] if guard.get("note") else ""))
+        row("terrain", terrain["shown"], "GPU terrain %s" % terrain)
     f0 = state["syphon"]["frames"] if state.get("syphon") else None
     time.sleep(2.0)
     f1 = (json.loads(get("/api/state")).get("syphon") or {}).get("frames")

@@ -1824,23 +1824,8 @@ def terrain_build(T):
     # not into their mean glow, so the far floor stays a dark silhouette (a flat grey-violet plane at 0.03 to 0.05 read
     # as a slab, CAM_0 at night)
     col = T.mix(ph["Night"], col, (0.0015, 0.0, 0.006))
-    # the only lines on the planet: the real edges of the drawn ground mesh (Wireframe node, pixel size), from sunset to
-    # night (vj_night 0.25 to 0.5), strength vj_grid, pulsed by bass and beat. No lattice of any kind (user, 2026-11-11:
-    # "I NVER want to see ANY dummy wireframe"); the 24 m terrain lattice and its scroll were one. Only on dry land and
-    # not on the mirror copy, and faded where a cell's smaller side is under about 10 px on screen, where the edges
-    # crowd into a solid fill. The globe draws no edges: its sphere is a proxy under shaded relief
-    cam = T.node("ShaderNodeCameraData")
-    wf = T.node("ShaderNodeWireframe", use_pixel_size=True)
-    wf.inputs["Size"].default_value = 1.0
-    cell_px = T.math("DIVIDE", T.math("DIVIDE", PATCH_M, T.math("POWER", 2.0, T.gattr("pl_l"))),
-                     T.mul(cam.outputs["View Distance"], 0.0011))
-    # the smaller side of a cell on screen: its size in pixels, foreshortened by the view's slant (ndv). Faded by
-    # distance alone, the far ground's edges crowded into a cyan web over 29% of CAM_0 at night (round 10)
-    dense = T.mrange(T.mul(cell_px, ndv), 4.0, 10.0, 0.0, 1.0)
-    edge = T.mul(T.mul(wf.outputs["Fac"], dense), T.mul(T.smooth(zw, 0.3, 2.0), T.sub(1.0, mir)))
-    pulse = T.addf(1.0, T.addf(T.mul(T.attr("rt_beat"), 1.6), T.mul(T.attr("vj_bass"), 1.2)))
-    edge = T.mul(T.mul(edge, pulse), T.mul(T.smooth(T.attr("vj_night"), 0.25, 0.5), T.attr("vj_grid")))
-    col = T.mix(T.math("MINIMUM", T.mul(edge, 0.7), 1.0), col, (0.05, 0.75, 1.0))
+    # no lines on the planet: the night edges went with the streamed terrain (user, 2026-11-13: "lets ditch the
+    # wireframe"); the GPU terrain (gpu_terrain.py) draws this material on a displaced grid
     # the shallow bed fades into what the sea reflects where the bed ends (1 m down): cut off there, its edge drew a
     # bowl's lip across the sea (CAM_7) and pale polygon blotches over sandbanks (CAM_10)
     # and flats under 0.5 m above it read as wet (with their mirror copies): sandbanks just above the sea showed as
@@ -4078,10 +4063,10 @@ def path_targets():
 
 
 def drop_shots_and_sets():
-    """No fixed shots and no per-camera sets: the Path Camera (flight_rt.py) is the one camera and the streamed terrain
-    (lod_scene) draws land and water at every height. The anchored land and water go (the stream copies their
-    materials Terrain and Sea; PL_Land stays for the edge guard). Props and the flamingo flock keep LOD_Anchor, which
-    the runtime moves under the camera (planet_runtime.follow_props)."""
+    """No fixed shots and no per-camera sets: the Path Camera (flight_rt.py) is the one camera and the GPU terrain
+    (gpu_terrain.py) draws land and water at every height. The anchored land and water go (the GPU terrain copies their
+    materials Terrain and Sea). Props and the flamingo flock keep LOD_Anchor, which the runtime moves under the camera
+    (planet_runtime.follow_props)."""
     import re
     for m_ in ("Terrain", "Sea"):
         bpy.data.materials[m_].use_fake_user = True

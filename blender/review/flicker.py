@@ -9,8 +9,7 @@ against OSC and Art-Net (Magic, QLC+), false leaves them to Magic. "pulse" false
 Syphon frames are read (luminance, 1920x1080).
 Per case: per pair of frames the mean absolute luminance difference (0..255), its mean and 95th percentile over the
 case; the toggle share: pixels that move by more than TOGGLE one way and then back the other way over three frames
-(a strobe, not a motion), mean over the case; whether the stream swapped blocks between the two frames of a pair,
-and the mean difference on pairs with and without a swap; the draw interval. Load and fps_trustworthy are the
+(a strobe, not a motion), mean over the case; the draw interval. Load and fps_trustworthy are the
 caller's (make status).
 """
 import json
@@ -27,20 +26,14 @@ BR = DN["vj_osc_bridge"]
 TOGGLE = 16                 # of 255: a pixel's step up or down that counts toward a toggle
 TICK = next(h for h in bpy.app.handlers.frame_change_pre if h.__name__ == "synthwave_tick")
 RT_G = TICK.__globals__
-FRAME = next(h for h in bpy.app.handlers.frame_change_pre if h.__name__ == "frame" and h.__module__ == "flight_rt")
-LOD = FRAME.__globals__["lod_scene"]
 DN["fl_done"] = False
-st = {"want": False, "got": [], "n": 0, "last": -1, "pulse": True, "swaps": [], "t": []}
+st = {"want": False, "got": [], "n": 0, "last": -1, "pulse": True, "t": []}
 
 
 def no_pulse(scene, depsgraph=None):
     if not st["pulse"]:
         RT_G["_state"]["changed"] = time.perf_counter()
         RT_G["_state"]["idle"] = 0.0
-
-
-def shown_key():
-    return hash(tuple(sorted((b, n) for b, (_, n) in LOD._state.get("shown", {}).items())))
 
 
 def draw():
@@ -53,24 +46,18 @@ def draw():
         a = np.clip(a * 255.0, 0, 255).astype(np.uint8)
     lum = (a[..., 0].astype(np.uint16) * 54 + a[..., 1].astype(np.uint16) * 183 + a[..., 2].astype(np.uint16) * 19) >> 8
     st["got"].append(lum.astype(np.uint8))
-    st["swaps"].append(shown_key())
     st["t"].append(time.perf_counter())
 
 
-def numbers(frames, keys, ts):
+def numbers(frames, ts):
     f = [x.astype(np.int16) for x in frames]
     d = [f[i + 1] - f[i] for i in range(len(f) - 1)]
     mad = [float(np.abs(x).mean()) for x in d]
     tog = [float(((d[i] > TOGGLE) & (d[i + 1] < -TOGGLE) | (d[i] < -TOGGLE) & (d[i + 1] > TOGGLE)).mean())
            for i in range(len(d) - 1)]
-    sw = [keys[i + 1] != keys[i] for i in range(len(keys) - 1)]
-    on = [m for m, s in zip(mad, sw) if s]
-    off = [m for m, s in zip(mad, sw) if not s]
     iv = [(ts[i + 1] - ts[i]) * 1000.0 for i in range(len(ts) - 1)]
     return {"pairs": len(d), "mad_mean": round(float(np.mean(mad)), 3), "mad_p95": round(float(np.percentile(mad, 95)), 3),
             "toggle_share": round(float(np.mean(tog)), 5), "toggle_p95": round(float(np.percentile(tog, 95)), 5),
-            "swap_pairs": len(on), "mad_swap": round(float(np.mean(on)), 3) if on else None,
-            "mad_no_swap": round(float(np.mean(off)), 3) if off else None,
             "draw_ms_median": round(float(np.median(iv)), 1)}
 
 
@@ -93,14 +80,12 @@ def run():
             t = time.perf_counter()
             while time.perf_counter() - t < JOB.get("settle", 4.0):
                 yield 0.1
-            while not (LOD.live() and not LOD.holding()) and time.perf_counter() - t < 60.0:
-                yield 0.2
-            st["got"], st["swaps"], st["t"], st["want"] = [], [], [], True
+            st["got"], st["t"], st["want"] = [], [], True
             while len(st["got"]) < JOB.get("frames", 90):
                 yield 0.005
             st["want"] = False
             row = {"case": case, "load": round(os.getloadavg()[0], 1)}
-            row.update(numbers(st["got"], st["swaps"], st["t"]))
+            row.update(numbers(st["got"], st["t"]))
             rows.append(row)
             st["got"] = []
     finally:

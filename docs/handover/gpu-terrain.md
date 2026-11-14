@@ -75,6 +75,19 @@ What the frames show (`shot-reviewer`, 6 frames of the recording at 7, 26, 41, 5
 
 Recording: `docs/video/gpu-terrain-test.mp4` (the GPU flight, supersampled, 1920x1080, 92 s; git-ignored).
 
+## Built (2026-11-14)
+
+The user's answers: near detail from noise in the shader, ground detail for the show's region and the globe for space, river flow rebuilt and site lights dropped, smooth shading, the stream removed in one change.
+
+- The GPU terrain is the only terrain: `flight_rt` starts `gpu_terrain` (loaded from disk, map baked on the first open after a rebuild, about 80 s with the flow, then cached) and feeds it the camera every frame. Gone: `lod_scene`, `lod_stream`, the night edges in the Terrain material (the scene's only `/vj/grid` reader), `edge_guard` and its test, the stream's review tools (`path_edges`, `net_regularity`, `edge_probe`, `edge_stability`, `line_motion`, `cut_trace`) and `verify_flight`'s section 5. The page still reads `edge_guard`: the runtime reports `not_applicable` until the page's chip goes (B11). The start check has a terrain row instead of the night-edge row.
+- Faults of the test, fixed and checked by `shot-reviewer` on the same flight seconds:
+  - blocky cells and terraces: gone. Heights split into a 16 m coarse part and a fine rest (the half-float GPU texture kept 0.25 to 0.5 m steps), cubic map reads, two noise octaves (22 m / 1.4 m, 6 m / 0.45 m) within 120 m of the camera and off the water, smooth normals from the map's slope and the noise's;
+  - stretched cliff triangles: reduced to smooth streaks (the map's 12 m remains the limit on cliffs);
+  - the rectangle in the sea: gone. The see-through water drew the one-cell overlap of two rings twice; each ring now cuts away the pixels the finer ring draws (a transparent mix at the output). A first try that sank the overlapped ring added more outlines.
+- The descent's flicker spikes are not the globe hand-over: per altitude band the GPU terrain flickers as much as or less than the stream (8 to 12 km: 17.5 against 21.7); the large changes come from falling at about 6 km/s, and the spike count is relative to a lower median.
+- River flow: the probe stores PL_Surface's flow; image GT_Flow (half resolution) feeds the Sea's `pl_flow`. Rivers narrower than about two map texels (25 m) are not drawn: a finer regional water map would be the next step, not done.
+- Found and left: the pyramids' own neon edges (a Wireframe node in the Pyramid material, 1.6 px, beat-pulsed) read as a dotted, glittery fringe; the user's call whether they go with the terrain's edges.
+
 ## Open questions for the user
 
 1. Near detail: is the 12 m map's smooth near ground enough, or should the grid show real detail under 3 m (a regional map round the show's places, or PL_Surface's fine noise in the shader)?

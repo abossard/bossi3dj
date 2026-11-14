@@ -1,12 +1,10 @@
 """The terrain test flight (docs/handover/terrain-test.md, gpu-terrain.md): 90 s along one script, a pure function of
 time, flown by the On-Air Camera (CAM_RIG) over the terrain, with a per-frame log. In the live planet Blender with
 flight_rt started:
-    DN["tt_job"] = {"out": "/abs/run.json", "flag": "/abs/go.flag", "terrain": "stream" | "gpu"}; exec this file;
+    DN["tt_job"] = {"out": "/abs/run.json", "flag": "/abs/go.flag", "holes_at": [s, ...]}; exec this file;
     wait for DN["tt_done"].
-The job holds every control at the runtime's defaults against OSC and Art-Net (Magic, QLC+), puts the terrain asked
-for on air (gpu: gpu_terrain.switch, loaded in driver_namespace["gpu_terrain"]), replaces the Path Camera's step with
-the script, waits until the terrain shows its first view, writes `flag` (a recorder started with --flag begins there)
-and flies:
+The job holds every control at the runtime's defaults against OSC and Art-Net (Magic, QLC+), replaces the Path
+Camera's step with the script, writes `flag` (a recorder started with --flag begins there) and flies:
   skim        0-14 s   10 m over the ground from the river target (PathTarget.river) toward the pyramids at 40 m/s
   climb      14-38 s   on along the river, up to 64 km (log height), the view turning down to the planet
   orbit      38-44 s   held at 64 km, the whole planet in frame
@@ -15,11 +13,8 @@ and flies:
   circle450  70-80 s   round the pyramids at 450 m radius, 450 m up, looking at them
   circle60   80-90 s   the same circle, down to 60 m within 4 s
 Clocks run. Then the Path Camera, the stream and the holds are put back. Per drawn frame the log holds: t, draw
-interval ms, stage, height over the ground and over the sea, rt_space, shown nodes, their depth range, near nodes still
-missing, the stream holding a cut, the stream's lag (metres from the camera to where its selection was made), and
-every swap of the shown set with the nearest changed node's distance and depth (a level change in the near field).
-Every 10th frame: the depth of the shown node on the ground under the lower third of the view and the on-screen length
-of one of its cells (px of 1920; on the GPU grid, the ring's cell at that distance). Per drawn frame also the flicker:
+interval ms, stage, height over the ground and over the sea, rt_space. Every 10th frame: the GPU grid's ring under
+the lower third of the view and the on-screen length of one of its cells (px of 1920). Per drawn frame also the flicker:
 the mean absolute luminance difference to the frame before (0..255, every 4th pixel of the Syphon output) and the share
 of pixels that step over 16 and back over three frames. Writes the log and a summary per stage to `out`."""
 import json
@@ -37,11 +32,8 @@ JOB = DN["tt_job"]
 BR = DN["vj_osc_bridge"]
 FRAME = next(h for h in bpy.app.handlers.frame_change_pre if h.__name__ == "frame" and h.__module__ == "flight_rt")
 G = FRAME.__globals__
-FS, LOD, fl = G["_state"], G["lod_scene"], G["fl"]
-ls = LOD.ls
+FS, GT, fl = G["_state"], G["gpu_terrain"], G["fl"]
 RIG = S.objects[G["RIG"]]
-GT = DN.get("gpu_terrain")
-GPU = JOB.get("terrain", "stream") == "gpu"
 TOGGLE = 16
 STAGES = (("skim", 0.0, 14.0), ("climb", 14.0, 38.0), ("orbit", 38.0, 44.0), ("cross", 44.0, 54.0),
           ("descent", 54.0, 70.0), ("circle450", 70.0, 80.0), ("circle60", 80.0, 90.0))
@@ -148,7 +140,7 @@ pyr = [o.matrix_world.translation for o in S.objects if o.name.startswith("Pyram
 target = tuple(sum(v[k] for v in pyr) / len(pyr) for k in range(3))
 river = tuple(S.objects["PathTarget.river"].matrix_world.translation)
 PATH = Path(FS["map"].surface, river, fl.sub(target, river), target)
-st = {"t0": None, "rows": [], "swaps": [], "probe": [], "last": None, "nodes": None, "keys": set(), "handle": None, "n": 0,
+st = {"t0": None, "rows": [], "probe": [], "last": None, "handle": None, "n": 0,
       "lum": [], "flick": [], "sy": -1}
 DN["tt_state"] = st
 
@@ -180,22 +172,6 @@ def ground_ray(p, f, up):
             return fl.add(p, d, hi), hi
         prev, s = s, s * 1.06
     return None, None
-
-
-def pop(ch, cam):
-    """How far from its parent's lattice the finer side of a level change is drawn when it changes: 1 - the morph
-    factor of its vertex nearest the camera (0: the change is invisible, the vertices sit on the coarse surface).
-    The finer side is a changed node whose parent changed too (a split adds it, a merge removes it); the four
-    nearest by bounds are checked on their 9 x 9 lattice, heights from the clearance map."""
-    p = LOD._state["params"]
-    fine = [k for k in ch if k[1] and (k[0], k[1] - 1, k[2] >> 1, k[3] >> 1) in ch]
-    hr = LOD._state.get("hr")
-    worst = 0.0
-    for k in sorted(fine, key=lambda k: ls.dist_to(k, cam, hr))[:4]:
-        dmin = min(math.dist(cam, fl.add(fl.CENTRE, u, fl.R + FS["map"].ground(u)))
-                   for u in (ls.node_dir(k, x, y, p.n) for x in range(p.n + 1) for y in range(p.n + 1)))
-        worst = max(worst, 1.0 - ls.morph_factor(dmin, k[1], p))
-    return worst
 
 
 def flicker(t):
@@ -244,34 +220,13 @@ def on_draw():
     flicker(t)
     u = fl.norm(fl.sub(cam, fl.CENTRE))
     alt = fl.length(fl.sub(cam, fl.CENTRE)) - fl.R
-    L = LOD._state
-    nodes = L.get("nodes") or {}
-    if nodes is not st["nodes"]:            # a swap or a staged flip: which nodes changed, how near the nearest
-        old = st["keys"]
-        new = {k for v in nodes.values() for k in v}
-        ch = old ^ new
-        if old and ch:
-            hr = L.get("hr")
-            near = min(ch, key=lambda k: ls.dist_to(k, cam, hr))
-            st["swaps"].append((round(t, 3), len(ch), round(ls.dist_to(near, cam, hr), 1), near[1], round(pop(ch, cam), 3)))
-        st["nodes"], st["keys"] = nodes, new
-    depths = [k[1] for k in st["keys"]]
-    sel, shown = L.get("sel_cam"), L.get("shown_cam")
     st["rows"].append((round(t, 3), round(ms, 2), stage_of(t), round(alt - FS["map"].surface(u), 1), round(alt, 1),
-                       round(S.get("rt_space", 0.0), 3), len(st["keys"]), min(depths, default=-1), max(depths, default=-1),
-                       len(L.get("near_missing") or ()), bool(LOD.holding()), round(math.dist(cam, sel), 1) if sel else None,
-                       round(math.dist(cam, shown), 1) if shown else None))
-    if st["n"] % 10 == 0 and pose:
+                       round(S.get("rt_space", 0.0), 3)))
+    if st["n"] % 10 == 0:
         q, dist = ground_ray(pose[0], pose[1], pose[2])
-        if q is not None and GPU:
+        if q is not None:
             cell, lv = gpu_cell(fl.R * fl.angle(fl.norm(fl.sub(q, fl.CENTRE)), u))
             st["probe"].append((round(t, 3), stage_of(t), lv, round(dist, 1), round(cell, 1), round(cell / dist * FOCAL_PX, 2)))
-        elif q is not None:
-            uq = fl.norm(fl.sub(q, fl.CENTRE))
-            depth = next((d for d in range(LOD._state["params"].d_max, -1, -1) if ls.key_at(uq, d) in st["keys"]), None)
-            if depth is not None:
-                cell = ls.FACE_ARC / (1 << depth) / LOD._state["params"].n
-                st["probe"].append((round(t, 3), stage_of(t), depth, round(dist, 1), round(cell, 1), round(cell / dist * FOCAL_PX, 2)))
 
 
 TICK = next(h for h in bpy.app.handlers.frame_change_pre if h.__name__ == "synthwave_tick")
@@ -292,62 +247,27 @@ def summary():
     for name, a, b in STAGES:
         rows = [r for r in st["rows"] if r[2] == name]
         ms = [r[1] for r in rows]
-        sw = [s for s in st["swaps"] if a <= s[0] < b]
         pr = [p for p in st["probe"] if p[1] == name]
-        lag = [r[11] for r in rows if r[11] is not None]
-        slag = [r[12] for r in rows if r[12] is not None]
-        pops = [s[4] for s in sw]
         fk = [f for f in st["flick"] if f[1] == name]
         fm = [f[2] for f in fk]
         ft = [f[3] for f in fk if f[3] is not None]
         out[name] = {"frames": len(rows), "median_ms": round(statistics.median(ms), 1) if ms else None,
                      "p95_ms": round(pct(ms, 0.95), 1) if ms else None, "worst_ms": round(max(ms), 1) if ms else None,
                      "over_33ms": round(sum(1 for x in ms if x > 33.3) / len(ms), 3) if ms else None,
-                     "swaps": len(sw), "near_level_changes_1500m": sum(1 for s in sw if s[2] < 1500.0),
-                     "near_level_changes_300m": sum(1 for s in sw if s[2] < 300.0),
-                     "edge_px_lower_third_median": round(statistics.median([p[5] for p in pr]), 2) if pr else None,
-                     "lower_third_depth_median": statistics.median([p[2] for p in pr]) if pr else None,
+                     "cell_px_lower_third_median": round(statistics.median([p[5] for p in pr]), 2) if pr else None,
+                     "lower_third_ring_median": statistics.median([p[2] for p in pr]) if pr else None,
                      "lower_third_dist_median_m": round(statistics.median([p[3] for p in pr])) if pr else None,
-                     "lag_m_median": round(statistics.median(lag), 1) if lag else None, "lag_m_max": round(max(lag), 1) if lag else None,
-                     "shown_lag_m_median": round(statistics.median(slag), 1) if slag else None,
-                     "shown_lag_m_p95": round(pct(slag, 0.95), 1) if slag else None,
-                     "shown_lag_m_max": round(max(slag), 1) if slag else None,
-                     "pops_over_0.05": sum(1 for x in pops if x > 0.05), "pop_max": max(pops, default=None),
                      "flicker_mean": round(statistics.mean(fm), 3) if fm else None,
                      "flicker_p95": round(pct(fm, 0.95), 3) if fm else None,
                      "flicker_spikes": sum(1 for x in fm if fm and x > 3.0 * statistics.median(fm) + 1.0),
                      "toggle_share": round(statistics.mean(ft), 5) if ft else None,
-                     "near_missing_frames": round(sum(1 for r in rows if r[9] > 0) / len(rows), 3) if rows else None,
-                     "holding_frames": sum(1 for r in rows if r[10]),
                      "alt_m": [round(min(r[4] for r in rows)), round(max(r[4] for r in rows))] if rows else None,
-                     "agl_min_m": round(min(r[3] for r in rows), 1) if rows else None,
-                     "nodes_median": statistics.median([r[6] for r in rows]) if rows else None,
-                     "max_depth_median": statistics.median([r[8] for r in rows]) if rows else None}
+                     "agl_min_m": round(min(r[3] for r in rows), 1) if rows else None}
     band = [r for r in st["rows"] if 8000.0 <= r[4] <= 12000.0]       # build_planet GLOBE_BAND: the globe takes over
     out["globe_band_8_12km"] = {"frames": len(band), "t": [[r[0] for r in band][:1], [r[0] for r in band][-1:]],
                                 "median_ms": round(statistics.median([r[1] for r in band]), 1) if band else None,
-                                "worst_ms": round(max(r[1] for r in band), 1) if band else None,
-                                "nodes": [min((r[6] for r in band), default=None), max((r[6] for r in band), default=None)],
-                                "max_depth": [min((r[8] for r in band), default=None), max((r[8] for r in band), default=None)],
-                                "swaps": sum(1 for s in st["swaps"] if any(abs(s[0] - r[0]) < 1e-6 for r in band))}
+                                "worst_ms": round(max(r[1] for r in band), 1) if band else None}
     return out
-
-
-def overrides():
-    """JOB "lod": lod_stream.Params fields, JOB "consts": lod_scene module constants; returns how to undo them."""
-    p, undo = LOD._state["params"], []
-    for k, v in (JOB.get("lod") or {}).items():
-        undo.append((p, k, getattr(p, k)))
-        setattr(p, k, v)
-    for k, v in (JOB.get("consts") or {}).items():
-        undo.append((LOD, k, getattr(LOD, k)))
-        setattr(LOD, k, v)
-    return undo
-
-
-def settled():
-    L = LOD._state
-    return GPU or (LOD.live() and not LOD.holding() and L.get("want") is None and not L.get("near_missing"))
 
 
 def holes(t):
@@ -356,8 +276,6 @@ def holes(t):
     The render is off the Syphon output but the swapped material is drawn there for about one frame."""
     st["hold_t"] = t
     t1 = time.perf_counter()
-    while time.perf_counter() - t1 < 30.0 and not settled():
-        yield 0.2
     yield 1.5
     ob = S.objects["Sea_Underside"]
     mod = ob.modifiers[0]
@@ -397,7 +315,7 @@ def holes(t):
     green = (a[:, 1] > 0.8) & (a[:, 0] < 0.25) & (a[:, 2] < 0.25)
     st.setdefault("holes", []).append({"t": t, "stage": stage_of(t), "green_px": int(green.sum()),
                                        "green_share": round(float(green.mean()), 6), "file": path,
-                                       "settled": bool(settled())})
+                                       })
     bpy.data.images.remove(img)
     st["hold_t"] = None
 
@@ -406,8 +324,6 @@ def put_back():
     P = FS.get("path")
     if P is not None and "step" in P.__dict__:
         del P.step
-    if GPU and GT is not None:
-        GT.switch(False)
     BR.hold = st.get("hold0", set())
 
 
@@ -417,13 +333,7 @@ def run():
     BR.hold = {k for k in S.keys() if k.startswith("vj_")}
     defaults()
     BR.apply({"/vj/blend": [0.0]}, "terrain_test")
-    undo = st["undo"] = overrides()
-    if GPU:
-        GT.switch(True)
     FS["path"].step = lambda *a, **k: script()       # the Path Camera's pose is the script's
-    t = time.perf_counter()
-    while time.perf_counter() - t < 60.0 and not (GPU or (LOD.live() and not LOD.holding())):
-        yield 0.2
     yield 3.0
     if JOB.get("flag"):
         open(JOB["flag"], "w").write("go\n")
@@ -434,19 +344,15 @@ def run():
     st["t0"] = None
     for t in JOB.get("holes_at", ()):
         yield from holes(t)
-    for o, k, v in undo:
-        setattr(o, k, v)
     put_back()
     bpy.types.SpaceView3D.draw_handler_remove(st["handle"], "WINDOW")
     st["handle"] = None
     json.dump({"load_start": round(load0, 1), "load_end": round(os.getloadavg()[0], 1), "stages": [list(s) for s in STAGES],
                "job": {k: v for k, v in JOB.items() if k not in ("out", "flag")},
                "summary": summary() if st["rows"] else None, "holes": st.get("holes"),
-               "columns": ["t", "ms", "stage", "agl", "alt", "rt_space", "nodes", "min_depth", "max_depth", "near_missing",
-                           "holding", "lag_m", "shown_lag_m"],
+               "columns": ["t", "ms", "stage", "agl", "alt", "rt_space"],
                "flicker_columns": ["t", "stage", "mean_diff", "toggle_share"], "flicker": st["flick"],
-               "rows": st["rows"], "swaps_columns": ["t", "changed_nodes", "nearest_changed_m", "its_depth", "pop"],
-               "swaps": st["swaps"], "probe_columns": ["t", "stage", "depth", "dist_m", "cell_m", "cell_px"], "probe": st["probe"]},
+               "rows": st["rows"], "probe_columns": ["t", "stage", "ring", "dist_m", "cell_m", "cell_px"], "probe": st["probe"]},
               open(JOB["out"], "w"))
     DN["tt_done"] = True
 
@@ -464,8 +370,6 @@ def tick():
         DN["tt_err"] = traceback.format_exc()
         st["hold_t"] = None
         put_back()
-        for o, k, v in st.get("undo") or ():
-            setattr(o, k, v)
         DN["tt_done"] = True
         return None
 

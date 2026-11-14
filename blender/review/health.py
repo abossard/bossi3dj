@@ -62,6 +62,15 @@ def stale_texts():
     return out
 
 
+def terrain():
+    """The GPU terrain on a planet scene: its land and water grids shown, its height map loaded (None elsewhere)."""
+    if S.objects.get("Planet_Hydro") is None:
+        return None
+    land, water, img = S.objects.get("GT_Land"), S.objects.get("GT_Water"), bpy.data.images.get("GT_Map")
+    shown = all(o is not None and not o.hide_viewport for o in (land, water)) and img is not None and img.has_data
+    return {"shown": bool(shown), "map": list(img.size) if img is not None else None}
+
+
 def health():
     bridge, sender = DN.get("vj_osc_bridge"), DN.get("syphon_out")
     h = {
@@ -78,7 +87,7 @@ def health():
         "off_default": off_default(),
         "long_drivers": long_drivers(),
         "stale_texts": stale_texts(),
-        "edge_guard": DN.get("edge_guard"),
+        "terrain": terrain(),
     }
     p = []
     if not any(v["perspective"] == "CAMERA" for v in h["views"]):
@@ -99,8 +108,8 @@ def health():
         p.append("driver expressions at the 256-character limit")
     if h["stale_texts"]:
         p.append("embedded text differs from its file (Blender runs the embedded copy): %s" % ", ".join(h["stale_texts"]))
-    if (h["edge_guard"] or {}).get("status") in ("missing", "error"):
-        p.append("no night edges on the terrain (edge_guard %s)" % h["edge_guard"])
+    if h["terrain"] is not None and not h["terrain"]["shown"]:
+        p.append("the GPU terrain is not shown (flight_rt did not start it: %s)" % h["terrain"])
     if h["off_default"]:
         p.append("vj_* values differ from defaults: reset before saving the .blend")
     h["problems"] = p

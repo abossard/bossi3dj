@@ -21,8 +21,6 @@ file load when Blender allows Auto Run Python Scripts. It then:
 - starts flight_rt.py (planet scenes only, it checks): the On-Air Camera, the
   Director's cuts and blends (/vj/blend), the Flight (/vj/flight, /vj/boost) and
   the energy on every shot (/vj/energy, /vj/hit). It runs on these clocks too.
-- starts edge_guard.py (planet scenes only, it checks): once, when the first frame has a picture, it probes whether
-  the Terrain draws its night edges and repairs a blank build; the result is in the start state (health.py).
 
 The feature check (synthwave_check.py, started from the page) drives the clocks through
 driver_namespace["vj_runtime"]: freeze() stops them, advance(s) steps them a fixed
@@ -61,7 +59,6 @@ TRIGGERS = ("vj_shock", "vj_meteor", "vj_hit")   # rising edge above 0.5 fires; 
 WEB_FILE = "//synthwave_web.py"
 STAR_SYSTEM_FILE = "//star_system.py"   # one sun, moon and star sky for every camera (planet scenes only)
 DAY_WORLD_FILE = "//day_world.py"   # swaps in a world without the night layers while they have no weight
-EDGE_GUARD_FILE = "//edge_guard.py"   # probes the planet's night edges once after the start, repairs a blank build (planet scenes only)
 FLIGHT_FILE = "//flight_rt.py"   # the Flight, the Director's cuts and blends, the energy on every shot (planet scenes only)
 PYRAMIDS = "Pyramids"   # collection whose objects ride the shockwaves
 METEORS = 3
@@ -381,7 +378,8 @@ def main():
     _state["flight_rt"] = start_sibling(FLIGHT_FILE, "Flight")
     if not bpy.app.background:
         start_sibling(WEB_FILE, "web control page")
-        _state["edge_guard"] = start_sibling(EDGE_GUARD_FILE, "edge guard")
+        # the terrain draws no edges (GPU terrain, 2026-11-14); the page's edge chip reads this until it goes
+        bpy.app.driver_namespace["edge_guard"] = {"status": "not_applicable"}
         bpy.app.timers.register(_play, first_interval=0.5)
 
 

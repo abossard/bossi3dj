@@ -1,4 +1,4 @@
-"""Numerical checks for the Flight, the blends and the LOD stream (docs/research/synthwave-flight.md).
+"""Numerical checks for the Flight, the blends and the energy (docs/research/synthwave-flight.md).
 
 Plain Python, no Blender: python3 verify_flight.py [--quick]. Exit code 1 on any FAIL.
 The terrain is synthetic (a continent with a coast, a mountain massif with passes, a lake and a pyramid on the
@@ -12,13 +12,10 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "blender", "scenes"))
 import flight as fl  # noqa: E402
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "blender", "scenes", "planet_proto"))
-import lod_stream as ls  # noqa: E402
 import director as dr  # noqa: E402
 import energy as en  # noqa: E402
 
 QUICK = "--quick" in sys.argv
-LOD_ONLY = "--lod-only" in sys.argv     # sections 1, 2, 5 and 6 only
 BLEND_ONLY = "--blend-only" in sys.argv     # sections 1, 2 and 6 only
 ENERGY_ONLY = "--energy-only" in sys.argv   # sections 1, 2 and 7 only
 FPS = 60.0
@@ -27,7 +24,7 @@ fails = []
 
 
 def check(name, value, tol, op="<="):
-    if (LOD_ONLY or BLEND_ONLY) and name[0] in "347" or BLEND_ONLY and name[0] == "5" or ENERGY_ONLY and name[0] in "3456":
+    if BLEND_ONLY and name[0] in "347" or ENERGY_ONLY and name[0] in "346":
         return
     ok = value <= tol if op == "<=" else value >= tol
     print("%-64s %12.4g  (%s %g)  %s" % (name, value, op, tol, "ok" if ok else "FAIL"))
@@ -142,7 +139,7 @@ worst = {"floor": 0.0, "clear": 1e9, "turn": 0.0, "turn_acc": 0.0, "acc_low": 0.
          "horizon": -1e9, "moon": 1e9, "arrive": 0.0, "hover_gap": 0.0}
 regions = set()
 where = {}
-for seed in ([] if LOD_ONLY or BLEND_ONLY or ENERGY_ONLY else SEEDS):
+for seed in ([] if BLEND_ONLY or ENERGY_ONLY else SEEDS):
     for name in PROGRAMS:
         rng = random.Random(seed * 101 + len(name))
         prog = program(name, rng)
@@ -239,7 +236,7 @@ def hover_jump(region, seed, hold, dt=DT):
 
 
 KEYS_SKIM = fl.KEYS[fl.SKIM]
-if not (LOD_ONLY or BLEND_ONLY or ENERGY_ONLY):
+if not (BLEND_ONLY or ENERGY_ONLY):
     regions_ = (("the sea", T.far), ("water on one side", T.mtn))
     for label, region in regions_:
         for dt in (DT, 0.054, 0.1):     # the live frame time is 50 to 100 ms under load: the arrival must not depend on it
@@ -252,7 +249,7 @@ if not (LOD_ONLY or BLEND_ONLY or ENERGY_ONLY):
 
 check("4a FL4: orbit frames planet and moon (deg past the frame edge)", worst["orbit_fit"], 0.0)
 check("4b FL4: horizon inside the frame below orbit (deg past 0.9 of the edge)", worst["horizon"], 0.0)
-if not (LOD_ONLY or BLEND_ONLY or ENERGY_ONLY):
+if not (BLEND_ONLY or ENERGY_ONLY):
     print("   worst at", where)
     check("4c seeds: distinct regions visited", float(len(regions)), 1.0, ">=")
 
@@ -461,238 +458,6 @@ if ENERGY_ONLY:
     print("FAILED: " + ", ".join(fails) if fails else "all checks passed")
     sys.exit(1 if fails else 0)
 
-
-# 5. LOD stream
-WAVES = [((0.83, 0.31, 0.46), 2000.0, 200.0), ((-0.27, 0.91, 0.31), 600.0, 80.0), ((0.52, -0.44, 0.73), 150.0, 25.0),
-         ((-0.61, -0.25, 0.75), 40.0, 6.0)]
-
-
-def hfield(u):
-    return 120.0 + sum(a * math.sin(fl.dot(fl.norm(w), u) * fl.R * 2.0 * math.pi / lam) for w, lam, a in WAVES)
-
-
-GRIDS, HGRIDS = {}, {}
-
-
-def grid(key, p):
-    g = GRIDS.get(key)
-    if g is None:
-        g = GRIDS[key] = ls.node_grid(key, hfield, p)
-    return g
-
-
-TARGETS = {}
-
-
-def drawn(key, cam, p):
-    """The node as the vertex shader draws it for a camera at cam."""
-    t = TARGETS.get(key)
-    if t is None:
-        t = TARGETS[key] = ls.morph_targets(key, hfield, p)
-    return ls.morphed(key, grid(key, p), t, cam, p)
-
-
-def hgrid(key, p):
-    """The node's heights over R (what the runtime learns when it evaluates a node)."""
-    g = HGRIDS.get(key)
-    if g is None:
-        g = HGRIDS[key] = [[fl.length(fl.sub(q, fl.CENTRE)) - fl.R for q in row] for row in grid(key, p)]
-    return g
-
-
-def make_hr(p):
-    def hr(key):
-        if key[1] == 0:
-            return None
-        par = (key[0], key[1] - 1, key[2] // 2, key[3] // 2)
-        return ls.child_range(hgrid(par, p), key, p.n, 2.0 + 0.1 * p.size(key[1]))
-    return hr
-
-
-def lod_path(kind, seconds):
-    """Camera positions at 60 fps: skim (85 m/s, 50 m over the field), descend (3 km to 50 m in 20 s, 150 m/s), hover
-    (6 m/s at 8 m)."""
-    u = fl.norm((0.1, 0.05, 1.0))
-    h = fl.tangent(u, (1.0, 0.0, 0.0))
-    out = []
-    for i in range(int(seconds * FPS)):
-        t = i * DT
-        if kind == "skim":
-            v, alt = 85.0, 50.0
-        elif kind == "boost":
-            v, alt = 85.0 + fl.BOOST_SPEED, 45.0
-        elif kind == "descend":
-            v, alt = 150.0, 3000.0 * (50.0 / 3000.0) ** min(t / 20.0, 1.0)
-        else:
-            v, alt = 6.0, 8.0
-        h = fl.rot(u, 0.05 * math.sin(0.3 * t) * DT, h)
-        u, h = fl.move(u, h, v * DT)
-        out.append((fl.add(fl.CENTRE, u, fl.R + max(hfield(u), 0.0) + alt), v))
-    return out
-
-
-def neighbours(key, leaves_set, p):
-    """(edge, neighbour leaf) for each of the 4 edges: the leaf just across each edge midpoint."""
-    out = []
-    for ex, ey, side in ((0.5, -0.02, "s"), (0.5, 1.02, "n"), (-0.02, 0.5, "w"), (1.02, 0.5, "e")):
-        q = ls.node_dir(key, ex * p.n, ey * p.n, p.n)
-        for d in range(min(key[1] + 3, p.d_max), -1, -1):
-            k = ls.key_at(q, d)
-            if k in leaves_set:
-                out.append((side, k))
-                break
-    return out
-
-
-def edge_points(key, side, p, cam):
-    gm = drawn(key, cam, p)
-    n = p.n
-    idx = {"s": [(x, 0) for x in range(n + 1)], "n": [(x, n) for x in range(n + 1)],
-           "w": [(0, y) for y in range(n + 1)], "e": [(n, y) for y in range(n + 1)]}[side]
-    return [gm[y][x] for x, y in idx]
-
-
-def polyline_gap(pts, line):
-    """Largest distance from pts to the polyline line."""
-    worst = 0.0
-    for q in pts:
-        best = 1e18
-        for a, b in zip(line, line[1:]):
-            ab = fl.sub(b, a)
-            t = min(max(fl.dot(fl.sub(q, a), ab) / max(fl.dot(ab, ab), 1e-12), 0.0), 1.0)
-            best = min(best, fl.length(fl.sub(q, fl.add(a, ab, t))))
-        worst = max(worst, best)
-    return worst
-
-
-def change_gap(parent, kids, cam, p):
-    """The surface jump when parent and its four children swap, for a camera at cam: every child vertex against the
-    parent's drawn triangles, and every parent vertex against the children's."""
-    n = p.n
-    gp = drawn(parent, cam, p)
-    worst = 0.0
-    for kid in kids:
-        ox, oy = kid[2] - 2 * parent[2], kid[3] - 2 * parent[3]
-        gk = drawn(kid, cam, p)
-        for y in range(n + 1):
-            for x in range(n + 1):
-                px, py = (ox * n + x) / 2.0, (oy * n + y) / 2.0
-                worst = max(worst, fl.length(fl.sub(gk[y][x], ls.on_mesh(gp, px, py))))
-    return worst
-
-
-def run_lod(kind, seconds, p, lag):
-    path = lod_path(kind, seconds)
-    hr = make_hr(p)
-    hist, prev, sel_cam = [], None, None
-    st = {"balance": 0, "crack": 0.0, "pop": 0.0, "multi": 0, "multi_hidden": 0, "coarse": 0, "blocks_s": 0.0, "verts_s": 0.0,
-          "leaves": 0, "verts": 0, "live_blocks": 0}
-    changed_blocks = verts_eval = 0
-    for i, (cam, v) in enumerate(path):
-        hist.append(cam)
-        cand = hist[max(0, len(hist) - 1 - lag)]
-        p.margin = SEL_STEP + 1.0           # the runtime's: SEL_STEP, and the travel as the look-ahead segment
-        if prev is None or fl.length(fl.sub(cand, sel_cam)) >= SEL_STEP:   # selects again after SEL_STEP metres
-            sel_cam = cand
-            step = fl.sub(cand, hist[max(0, len(hist) - 2 - lag)])     # the last frame's travel
-            leaves = set(ls.select(sel_cam, p, hr, fl.add(cand, step, lag + 1.0)))
-        else:
-            leaves = prev
-        if prev is not None:
-            added, removed = leaves - prev, prev - leaves
-            blocks = {ls.block_of(k, p) for k in added | removed}
-            changed_blocks += len(blocks)
-            for b in blocks:
-                verts_eval += sum(1 for k in leaves if ls.block_of(k, p) == b) * (p.n + 1) ** 2
-            for k in added:
-                par = (k[0], k[1] - 1, k[2] // 2, k[3] // 2)
-                top = par if par in removed else k if ls.children(k)[0] in removed else None
-                if top is None:
-                    # the cull lets a face jump depths where it crosses the horizon (the look-ahead camera bobs with
-                    # the terrain); a node past the horizon for both cameras is not seen
-                    hidden = ls.past_horizon(k, sel_cam) and ls.past_horizon(k, prev_cam)
-                    st["multi_hidden" if hidden else "multi"] += 1
-                elif not (ls.past_horizon(top, sel_cam) or ls.past_horizon(top, prev_cam)):   # a cull change is past the horizon
-                    gap = change_gap(top, ls.children(top), cam, p)
-                    if gap > st["pop"]:
-                        st["pop"], st["pop_at"] = gap, (top[1], round(ls.dist_to(top, cam, hr)), "split" if top in removed else "merge")
-        prev, prev_cam = leaves, sel_cam
-        if i % 60 == 30:
-            near = [k for k in leaves if ls.dist_to(k, cam, hr) < 2500.0]
-            for k in near:
-                for side, nb in neighbours(k, leaves, p):
-                    st["balance"] = max(st["balance"], abs(nb[1] - k[1]))
-                    if nb[1] < k[1]:            # coarser neighbour: our edge must lie on its edge
-                        opp = {"s": "n", "n": "s", "w": "e", "e": "w"}[side]
-                        if nb[0] == k[0]:
-                            gap = polyline_gap(edge_points(k, side, p, cam), edge_points(nb, opp, p, cam))
-                            if gap > st["crack"]:
-                                st["crack"], st["crack_at"] = gap, (k[1], round(ls.dist_to(k, cam, hr)), round(ls.dist_to(nb, cam, hr)))
-            want = set(ls.select(cam, Params0(p), hr))
-            for k in near:
-                c = ls.bounds(k)[2]
-                if ls.key_at(c, k[1]) == k and any(ls.key_at(c, k[1] + 1) == w[:2] + w[2:] for w in want if w[1] > k[1]):
-                    st["coarse"] += 1
-    st["blocks_s"] = changed_blocks / seconds
-    st["verts_s"] = verts_eval / seconds
-    st["leaves"] = len(prev)
-    st["verts"] = len(prev) * (p.n + 1) ** 2
-    st["live_blocks"] = len({ls.block_of(k, p) for k in prev})
-    return st
-
-
-def Params0(p):
-    return ls.Params(p.n, p.k, p.m0, p.d_max, 0.0, p.block_up, p.cull)
-
-
-LAG = 3                                   # frames between the camera's move and the drawn selection
-SEL_STEP = 8.0                            # m between selections, as lod_scene.SEL_STEP
-for kind, secs, speed in () if BLEND_ONLY else (("skim", 6.0 if QUICK else 15.0, 85.0), ("boost", 4.0 if QUICK else 10.0, 85.0 + fl.BOOST_SPEED),
-                          ("descend", 8.0 if QUICK else 20.0, 150.0), ("hover", 4.0, 6.0)):
-    P = ls.Params(margin=speed * (LAG + 1) * DT + 1.0)
-    st = run_lod(kind, secs, P, LAG)
-    print("5  %-8s leaves %d, vertices %d, live blocks %d, changed blocks %.1f/s, vertices re-evaluated %.0f/s"
-          % (kind, st["leaves"], st["verts"], st["live_blocks"], st["blocks_s"], st["verts_s"]))
-    check("5a %s: restricted quadtree (largest depth step across an edge)" % kind, float(st["balance"]), 1.0)
-    check("5b %s: cracks against a coarser neighbour (m)" % kind, st["crack"], 0.01)
-    print("   worst crack (depth, distance m, neighbour distance m):", st.get("crack_at"))
-    check("5c %s: pop at a split or merge in view (m)" % kind, st["pop"], 0.01)
-    print("   worst pop (depth, distance m, kind):", st.get("pop_at"))
-    check("5d %s: changes of more than one depth in a frame, in front of the horizon" % kind, float(st["multi"]), 0.0)
-    print("   past the horizon for both cameras (not seen):", st["multi_hidden"])
-    check("5e %s: nodes coarser than the camera asks, within 2.5 km" % kind, float(st["coarse"]), 0.0)
-
-
-
-def fold_ratio(key, p, rng):
-    """Smallest triangle area of a node over its unshifted area, at morph 0, 1 and random per-vertex morphs, on the
-    tangent plane at its centre (the irregular net must not fold a triangle at any morph)."""
-    n, g, tg = p.n, grid(key, p), ls.morph_targets(key, hfield, p)
-    c = ls.node_dir(key, n / 2.0, n / 2.0, n)
-    e1 = fl.norm(fl.tangent(c, (0.0, 0.0, 1.0) if abs(c[2]) < 0.9 else (1.0, 0.0, 0.0)))
-    e2 = fl.cross(c, e1)
-    flat = [[ls.node_dir(key, x, y, n) for x in range(n + 1)] for y in range(n + 1)]
-
-    def area(q, a, b, cc):
-        pa, pb, pc_ = ((fl.dot(q[v][u], e1), fl.dot(q[v][u], e2)) for u, v in (a, b, cc))
-        return 0.5 * ((pb[0] - pa[0]) * (pc_[1] - pa[1]) - (pb[1] - pa[1]) * (pc_[0] - pa[0]))
-    tris = [t_ for y in range(n) for x in range(n) for t_ in (((x, y), (x + 1, y), (x, y + 1)), ((x + 1, y), (x + 1, y + 1), (x, y + 1)))]
-    ref = min(abs(area(flat, *t_)) for t_ in tris)
-    sign = 1.0 if area(flat, *tris[0]) > 0 else -1.0
-    worst = 1e9
-    for trial in range(6):
-        ms = [[(0.0 if trial == 0 else 1.0 if trial == 1 else rng.random()) for x in range(n + 1)] for y in range(n + 1)]
-        q = [[fl.add(g[y][x], fl.sub(tg[y][x], g[y][x]), ms[y][x]) for x in range(n + 1)] for y in range(n + 1)]
-        q = [[fl.norm(fl.sub(v, fl.CENTRE)) for v in row] for row in q]
-        worst = min(worst, min(sign * area(q, *t_) for t_ in tris) / ref)
-    return worst
-
-
-rng5 = random.Random(5)
-P5 = ls.Params()
-fold = min(fold_ratio((f_, d_, rng5.randrange(1 << d_), rng5.randrange(1 << d_)), P5, rng5)
-           for f_ in range(6) for d_ in (1, 3, 5, 7, 9) for _ in range(4))
-check("5f irregular net: smallest triangle over its lattice share, any morph (over 0: no fold)", fold, 1e-6, ">=")
 
 print("FAILED: " + ", ".join(fails) if fails else "all checks passed")
 sys.exit(1 if fails else 0)
