@@ -88,6 +88,26 @@ The user's answers: near detail from noise in the shader, ground detail for the 
 - River flow: the probe stores PL_Surface's flow; image GT_Flow (half resolution) feeds the Sea's `pl_flow`. Rivers narrower than about two map texels (25 m) are not drawn: a finer regional water map would be the next step, not done.
 - Found and left: the pyramids' own neon edges (a Wireframe node in the Pyramid material, 1.6 px, beat-pulsed) read as a dotted, glittery fringe; the user's call whether they go with the terrain's edges.
 
+## The run (2026-11-14)
+
+`blender/review/path_camera_run.py`, one held day pass (3 min, every path and target, show defaults, every control held), recorded to `docs/video/gpu-terrain-run.mp4` (1920x1080, 3936 new frames in 183 s, git-ignored). Load 226 to 228 (others' dotnet and clang builds): frame times untrusted.
+
+- Median 41.3 ms, p95 66.2 ms; flicker mean 6.5 (0..255), toggles 0.015; lower-third cell about 38 px; least height over the ground 10 m.
+- Holes: none at any of the 15 steps (a second held run with a green test mid-step, `run_holes.json`).
+- The 60 s with Magic and music: skipped (the user, 2026-11-14; Magic sent nothing to 9201).
+
+## Open items (for a fresh session)
+
+Start: `make status`, `make blender-open` (start check "ready"; the first open after a rebuild bakes the map, about 80 s). Logic `make test`, models `make verify`. Runs: `DN["pc_job"] = {"out": "<abs>/blender/review/out/gpu_terrain/<name>.json", "passes": [{"name": "day"}], "holes_at": [...]}; exec(open("<abs>/blender/review/path_camera_run.py").read())` through the Blender MCP; the terrain test the same way with `DN["tt_job"]` and `terrain_test_flight.py`; recordings with `tools/syphon_record.py --flag`.
+
+1. **Flicker on the run (6.5) against the test flight (1 to 2 on the circles).** Split by frame: blending frames (63 % of the run) 8.35 mean, steady frames 3.4. The blends fly between targets kilometres apart, so most of it is the move itself. The steady 3.4 is still above the test flight's circles: the run runs at the default camera speed with the idle beat pulse (lens push, dip and roll, `energy.accent`), the test flight held a slow script with the pulse off. Not split further: measure steady frames with `flicker.py` at the run's poses, pulse on and off, to tell the terrain's share from the camera's.
+2. **Descent spikes**: the fall from 64 km at about 6 km/s; per altitude band no worse than the stream (above). Open only if the user sees a jump at the globe hand-over in the video.
+3. **River flow and narrow rivers**: flow is in the map (GT_Flow, 0.25 % of texels, unit vectors) and feeds the Sea's `pl_flow`; not checked by eye that the water moves. Rivers under about 25 m wide are not drawn (12 m map); a finer water map round the show's region (4096^2 over 16 km, about 4 m) is the cheapest next step.
+4. **Idle frame times**: every number here is under load (up to 230). The user's measurement on an idle machine, with nothing else on the GPU.
+5. **The Magic run**: 60 s unheld with Magic and music, as a second file `docs/video/gpu-terrain-magic.mp4`: `"passes": [{"name": "music", "hold": false, "seconds": 60}]`, once OSC arrives on 9201.
+6. **The pyramids' neon edges** (Pyramid material's Wireframe node, beat-pulsed): a dotted, glittery fringe; the user's call.
+7. **The page and its test** still read `edge_guard` (the runtime reports `not_applicable`) and the contract still has `/vj/grid`: B9 and B11.
+
 ## Open questions for the user
 
 1. Near detail: is the 12 m map's smooth near ground enough, or should the grid show real detail under 3 m (a regional map round the show's places, or PL_Surface's fine noise in the shader)?
