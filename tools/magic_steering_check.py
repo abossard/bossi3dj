@@ -79,7 +79,8 @@ def touch(base, key):
     c = next(x for x in s["controls"] if x["key"] == key)
     pause = s["values"].get("vj_takeover", 20.0)
     now_v = s["values"][key]
-    mine = c["min"] + (0.1 if now_v - c["min"] > (c["max"] - c["min"]) / 2 else 0.9) * (c["max"] - c["min"])
+    far = 0.1 if now_v - c["min"] > (c["max"] - c["min"]) / 2 else 0.9
+    mine = round(c["min"] + far * (c["max"] - c["min"])) if c.get("stops") else c["min"] + far * (c["max"] - c["min"])   # a path or target: a stop
     n0 = s["n"].get(address(key), 0)
     call(base, "/api/set", {key: mine})
     t0 = time.time()
@@ -93,7 +94,7 @@ def touch(base, key):
         if dt < pause - 1 and abs(v - mine) > 1e-6:
             held = False
             print("       t=%5.1f s  value %.3f (%s) during the pause" % (dt, v, last["source"].get(key)))
-        if dt >= pause and back_at is None and abs(v - mine) > 1e-6 and last["source"].get(key) == "osc":
+        if dt >= pause and back_at is None and last["source"].get(key) == "osc":   # Magic's value may equal the page's
             back_at = dt
     sent = last["n"].get(address(key), 0) - n0
     print("%s held for the pause" % ("ok  " if held else "FAIL"))
