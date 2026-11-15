@@ -80,41 +80,105 @@ _Avoid_: Star rotation, sky spin
 
 ## Robot Scene
 
+**Robot Scene**:
+The VJ scene in which a pre-rendered Android fights to the music, with live Blender layers around it.
+_Avoid_: Robot show, android scene
+
 **Android**:
-The humanoid fighting machine at the centre of the Robot Scene.
+The humanoid fighting machine at the centre of the Robot Scene; one rig, one design.
 _Avoid_: Robot, mech, bot, fighter
 
+**Move**:
+One named action of the Android, such as a jab, a duck or a recoil, independent of camera.
+_Avoid_: Animation, action, attack
+
 **Clip**:
-One pre-rendered move of the Android from one camera, a whole number of beats long, with its Mattes. Kinds: idle, move, hit, finisher.
+One Move rendered from one Angle, a whole number of beats long, with its Passes and Clip Data.
 _Avoid_: Video, footage, loop, take
 
-**Clip Library**:
-Every Clip rendered for the Robot Scene, grouped by kind and Intensity Tier.
-_Avoid_: Footage pool, video bank
+**Key Pose**:
+A pose in which Clips start and end, so any Clip may follow any Clip that ends in the same Key Pose.
+_Avoid_: Hub pose, transition pose, Pose Key
 
-**Matte**:
-A pre-rendered pass that tells Magic where something is in a Clip's frame: the Android's coverage, depth, or an object id.
-_Avoid_: Mask (Magic's module name), alpha, cutout
-
-**Pose Key**:
-A pose shared by the end of one Clip and the start of the next, so a cut between them is continuous.
-_Avoid_: Hub pose, transition pose
+**Clip Graph**:
+The graph of Clips joined by Key Poses that Magic walks to pick the next Clip.
+_Avoid_: State machine, move tree, playlist
 
 **Cut Point**:
-A beat inside a Clip where Magic may switch to another Clip that starts on the same Pose Key.
+A beat inside a Clip where Magic may switch to another Clip or Angle.
 _Avoid_: Cue, marker, switch point
 
 **Intensity Tier**:
-One of the energy levels a Clip belongs to (calm, fight, peak); Magic picks Clips from the tier the music is in.
+One of three energy levels a Clip belongs to (calm, build, drop); Magic picks from the tier the music is in.
 _Avoid_: Level, energy bucket, mode
 
+**Angle**:
+One of the views every Move is rendered from with the same timing.
+_Avoid_: View, cam, shot
+
+**Shot Camera**:
+The Blender camera that renders one Angle.
+_Avoid_: CAM_N, On-Air Camera
+
+**Camera Track**:
+The per-frame export of a Shot Camera that Live Layers replay so their parallax matches.
+_Avoid_: Camera path, camera export
+
+**Pass**:
+One rendered image layer of a Clip; Light Pass, Matte, Depth Pass, Normal Pass and Shadow Pass are kinds.
+_Avoid_: AOV, render layer, channel
+
+**Light Pass**:
+A Pass lit by one light only, so Magic can mix lights after the render.
+_Avoid_: Light layer, light group
+
+**Matte**:
+A Pass that says where the Android covers the frame.
+_Avoid_: Mask (Magic's module), alpha, cutout
+
+**Depth Pass**:
+A Pass with the distance of every pixel, so Live Layers sit in front of or behind the Android.
+_Avoid_: Z buffer, Z pass
+
+**Normal Pass**:
+A Pass with the surface direction of every pixel, for Relight.
+_Avoid_: Normal map
+
+**Shadow Pass**:
+The Android's shadow and contact shade on the ground, to lay over a Live World.
+_Avoid_: Contact shadow, AO pass
+
+**Clip Data**:
+Per-frame screen positions and depths of the Android's head, eyes, hands and feet, plus its Hits.
+_Avoid_: Metadata, tracking data
+
+**Hit**:
+An impact event in Clip Data: frame, point and strength. Not the music trigger `/vj/hit`.
+_Avoid_: Impact, strike, hit point
+
+**Clip Library**:
+Every Clip rendered for the Robot Scene.
+_Avoid_: Footage pool, video bank
+
+**Manifest**:
+The JSON that lists every Clip with its Move, Angle, beats, Key Poses, Passes and files.
+_Avoid_: Index, catalog, metadata file
+
 **Render Package**:
-The Blender output a Magic generator reads: the Clip files, their Mattes and a manifest of lengths, Cut Points, Pose Keys and camera paths.
+The folder Blender writes: the Clip Library, its Clip Data and the Manifest.
 _Avoid_: Export, bundle, output file
 
 **Live Layer**:
-Something Blender draws live over Syphon on top of the Clips (sparks, HUD, lights, particles), placed with the Clip's Mattes and camera path.
+Anything Blender draws live that Magic puts on top of or behind the Clip.
 _Avoid_: Overlay, live stuff, FX layer
+
+**Live World**:
+A Live Layer that is the whole surroundings behind the Android, drawn live and reacting to the music.
+_Avoid_: Live background, environment
+
+**Relight**:
+Changing a Clip's lighting in Magic by mixing Light Passes or shading the Normal Pass.
+_Avoid_: Recolour, relighting, regrade
 
 ## Relationships
 
@@ -122,6 +186,6 @@ _Avoid_: Overlay, live stuff, FX layer
 - The **Wanderer** holds at most one **Grab Point** per hand
 - **Shake** can happen in any **Phase** in which the **Wanderer** is on the **Colossus**
 - Each **Reset** brings the next **Colossus** and returns the **Wanderer** to the **Shrine**
-- A **Clip** starts and ends on a **Pose Key**; a **Cut Point** joins **Clips** that share one
-- The **Render Package** carries the **Clip Library**; each **Clip** brings its **Mattes**
-- A **Live Layer** follows the camera path of the **Clip** on air
+- A **Clip** is one **Move** from one **Angle**; it starts and ends in a **Key Pose**, and the **Clip Graph** joins **Clips** that share one
+- The **Render Package** holds the **Clip Library**, its **Clip Data** and the **Manifest**; each **Clip** brings its **Passes**
+- A **Live Layer** replays the **Camera Track** of the **Clip** on air and places effects at its **Hits**
