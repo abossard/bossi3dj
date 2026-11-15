@@ -13,6 +13,8 @@ import tempfile
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(HERE, "..", "..", "package", "fixture", "manifest.json")) as _f:
+    FIXTURE_DATA = json.load(_f)
 sys.path.insert(0, os.path.join(HERE, ".."))
 sys.path.insert(0, os.path.join(HERE, "..", "..", "..", "magic"))
 import clip_graph as cg  # noqa: E402
@@ -250,7 +252,7 @@ class ProjectTests(unittest.TestCase):
             root, out, pkg = generated(tmp)
             m = mf.load(os.path.join(pkg, "manifest.json"))
             files = [iv.get("value") for iv in root.iter("InputValue") if iv.get("name") == "File"]
-            expect = [c["passes"][k] for k in ("shadow", "beauty") for mv in m.moves for a in m.angle_ids
+            expect = [c["passes"][k] for k in ("shadow", "beauty") for a in m.angle_ids for mv in m.moves
                       for c in [m.clips[m.clip_index(mv.name, a)]]]
             self.assertEqual(files, expect)
 
@@ -308,13 +310,85 @@ def snapshot(root):
 
 
 VIDEO = ("VideoFile", [], ["Goto Start<-StartPulse", "Speed<-SpeedRatio"])
+
+
+def pass_layers(*hides):
+    """Per Angle the Move InputSelector and its Transparency, then the Null that draws them all."""
+    out = []
+    for h in hides:
+        out += [VIDEO] * 4 + [("InputSelector", ["VideoFile"] * 4, ["Input #<-Move"]), ("Transparency", ["InputSelector"], ["Amount<-%s" % h])]
+    return out + [("Null", ["Transparency"] * len(hides), [])]
+
+
 SNAPSHOT = {
-    "Robot": [("SyphonClient", [], [])] + [VIDEO] * 8 + [("InputSelector", ["VideoFile"] * 8, ["Input #<-Sel"]),
-                                                            ("Blend", ["SyphonClient", "InputSelector"], [])] + [VIDEO] * 8
-    + [("InputSelector", ["VideoFile"] * 8, ["Input #<-Sel"]), ("Mask", ["InputSelector", "InputSelector"], []),
+    "Robot": [("SyphonClient", [], [])] + pass_layers("HideAngle0", "HideAngle1") + [("Blend", ["SyphonClient", "Null"], [])]
+    + pass_layers("HideAngle0", "HideAngle1") + [("Mask", ["Null", "Null"], []),
        ("Transparency", ["Mask", "Blend"], []), ("OSC Out", [], []), ("InputSelector", ["Mask", "Transparency"], ["Input #<-LiveOn"])],
     "OSC Out": [("OSCSender", [], ["Value<-OutClip"]), ("OSCSender", [], ["Value<-OutFrame"]), ("OSCSender", [], ["Value<-OutAngle"])],
 }
+
+
+def with_angles(n):
+    d = json.loads(json.dumps(FIXTURE_DATA))
+    base = [c for c in d["clips"] if c["angle"] == "front"]
+    d["angles"] = [{"id": "a%d" % i, "camera": "CAM_%d" % i} for i in range(n)]
+    d["clips"] = [dict(c, id="%s__a%d" % (c["move"], i), angle="a%d" % i) for c in base for i in range(n)]
+    assert mf.validate(d) == [], mf.validate(d)
+    return mf.Manifest(d)
+
+
+class AllAnglesPlayTests(unittest.TestCase):
+    """A VideoFile that is not drawn does not advance, so every Angle's layer is drawn all the time and the off-air ones are transparent."""
+
+    def project(self, n):
+        return rm.build(with_angles(n), osc_in=19407).build()
+
+    def test_every_angle_has_a_layer_with_its_own_transparency_and_all_files_share_the_pulse(self):
+        for n in (1, 2, 3):
+            with self.subTest(angles=n):
+                root = self.project(n)
+                names = mp.global_names(root)
+                scene = next(sc for sc in mp.scenes(root) if sc.get("name") == "Robot")
+                nodes = mp.scene_nodes(scene)[1:]
+                links = lambda node: {iv.get("name"): names.get(iv.get("feature")) for iv in mp.params(node)
+                                      if iv.get("linked") == "1" and iv.get("layerID") == str(mp.GLOBAL_LAYER)}
+                videos = [x for x in nodes if x.get("pluginName") == "VideoFile"]
+                self.assertEqual(len(videos), 2 * n * 4)
+                self.assertEqual({links(v)["Goto Start"] for v in videos}, {"StartPulse"})
+                self.assertEqual({links(v)["Speed"] for v in videos}, {"SpeedRatio"})
+                amounts = [links(x).get("Amount") for x in nodes if x.get("pluginName") == "Transparency"]
+                self.assertEqual(sorted(a for a in amounts if a), sorted(["HideAngle%d" % i for i in range(n)] * 2))
+                selectors = [links(x).get("Input #") for x in nodes if x.get("pluginName") == "InputSelector"]
+                self.assertEqual(selectors.count("Move"), 2 * n)
+
+    def test_the_off_air_angles_are_hidden_and_the_on_air_one_is_not(self):
+        energies = [0.1] * 6 + [0.4] * 10 + [0.9] * 8 + [0.4, 0.1] * 6
+        for n in (1, 2, 3):
+            with self.subTest(angles=n):
+                m = with_angles(n)
+                run = Run(m, energies, cut_rate=1.0)
+                walk = cg.ClipGraph(m, cut_rate=1.0).walk(energies)
+                cuts = 0
+                for beat in range(1, len(energies) + 1):
+                    v = run.settled(beat)
+                    on = m.angle_ids.index(walk[beat - 1].angle)
+                    self.assertEqual([v["HideAngle%d" % i] for i in range(n)], [0 if i == on else 1 for i in range(n)], "beat %d" % beat)
+                    cuts += beat > 1 and walk[beat - 1].angle != walk[beat - 2].angle
+                self.assertEqual(cuts > 0, n > 1)
+
+    def test_all_angles_start_a_move_together(self):
+        """One StartPulse, two frames long, restarts every Angle's VideoFile; the Angle only changes which layer is visible."""
+        for n in (2, 3):
+            with self.subTest(angles=n):
+                m = with_angles(n)
+                run = Run(m, [0.4] * 24, seed=2, cut_rate=1.0)
+                pulses = [i for i, v in enumerate(run.frames) if v["StartPulse"] > 0.5]
+                self.assertEqual(len(pulses) % 2, 0)
+                for i in pulses[::2]:
+                    self.assertGreater(run.frames[i + 1]["StartPulse"], 0.5)
+                changes = [i for i in range(1, len(run.frames)) if run.frames[i]["MoveStart"] != run.frames[i - 1]["MoveStart"]]
+                self.assertEqual(sorted(set(changes) & set(pulses)), changes)
+
 
 if __name__ == "__main__":
     unittest.main()

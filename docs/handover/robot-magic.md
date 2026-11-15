@@ -5,7 +5,7 @@ Branch `integration/presentable`. Code in `robot/magic/`, fixture in `robot/pack
 ## Commands
 
 ```
-python3 -m unittest discover robot/magic/tests                       # 45 tests, no ffmpeg or Magic needed
+python3 -m unittest discover robot/magic/tests                       # 48 tests, no ffmpeg or Magic needed
 python3 robot/magic/fixture.py [--media]                             # manifest, Clip Data, Camera Tracks; --media: ffmpeg placeholder Clips (57 MB, git-ignored)
 python3 robot/magic/manifest.py robot/package/fixture/manifest.json  # validate
 python3 robot/magic/robot_magic.py robot/package/fixture/manifest.json   # -> robot/package/fixture/robot.magic (git-ignored)
@@ -67,5 +67,13 @@ Open:
 - Fixture: the old `idle` Move is the guard Idle Clip (`idle: true`). Its media is a still card with a disc that breathes once per Clip, first and last frame equal.
 - Looping: every VideoFile stays on `Looping 1`. An Idle Clip needs it. A Move Clip keeps it as the fallback: `Looping 0` goes black after the last frame (measured), and a pulse that arrives a few frames late would show black. The cost is a replay of the Move from frame 0 in that gap, in its `key_in` pose.
 - Live proof (`python3 robot/magic/idle_check.py --cut-rate 0`, OSC clock on 19406, counter Clips, 30 Hz Syphon samples, no black sample): idle until beat 16.12, jab_cross from beat 16.19 (0.09 s after the bar line, first level frame 0), idle again from beat 20.13 (0.06 s after the bar line, Move ended at level 228), idle until beat 32.11, jab_cross from 32.17 (0.08 s). In the idle from beat 20.5 to 31.5: 3 loop seams, largest step between samples 8.4 levels, longest flat run 0.07 s, so no black or stuck frame at the loop point.
-- Found: with Angle cuts on (`--cut-rate 1`), the other Angle's Clip is at frame 0 at the cut, not in step with the one cut from (cut at beat 22 of an idle: 132 to 23, at beat 18 of a Move: frame 29 to 0). A VideoFile the InputSelector is not drawing does not advance in this project, which differs from the answer in the list above. Not changed: it needs a decision (cut Angles only at a Clip start, or draw all Angles at Transparency 1).
+- Found: with Angle cuts on and one VideoFile selected per pass, the other Angle's Clip was at frame 0 at the cut (idle at beat 22: level 132 to 23; Move at beat 18: frame 29 to 0). A VideoFile the InputSelector is not drawing does not advance in this project. Fixed by all Angles playing, below.
 - The card levels come back through a `v^2 / 255` curve here (Mask path); `idle_check.py` decodes them.
+
+## All Angles play (2026-11-16)
+
+- User decision "keep all angles playing". Per pass, every Angle has its own InputSelector over the Moves (`Input #` follows `Move`), a Transparency whose Amount follows `HideAngle<i>` (0 while Angle i is on air, else 1), and a Null that draws them all. A drawn VideoFile advances, so the Angles stay in step and a cut lands on the same frame. The one StartPulse restarts every VideoFile, so all Angles of a Move start together.
+- Tests: the generated project has the layers, the pulse and `Move` links for 1, 2 and 3 Angles; the simulator checks `HideAngle<i>` against the model's Angle for 1, 2 and 3 Angles over a walk with cuts; the pulse stays two frames at each Move change for 2 and 3 Angles.
+- Live proof (`python3 robot/magic/idle_check.py --cut-rate 1`, same counter Clips): 14 cuts inside a Clip, 12 of them inside an Idle Clip. Steps across a cut: 3.2 to 5.1 levels (0.8 to 1.3 frames) at 11 of them, up to 9.4 levels (2.3 frames, at an idle loop seam) at the worst; the largest step between samples elsewhere is 16 levels, so no cut stands out, where the old design stepped 109. No black sample, 3 loop seams in the idle from beat 20.5 to 31.5, Move starts at frame 0, switches 0.06 to 0.08 s after the bar line.
+- Shadow Pass: while `LiveOn` is 0 the gate does not draw the Shadow layers, so they do not advance; they are in step again from the next Move start after the live layer appears.
+- Decode cost (2 Angles of ProRes 4444 1080p against 1): not measured yet. At the time of writing `make status` showed two Blender processes, load 153 and `fps_trustworthy` false.

@@ -121,7 +121,29 @@ def analyse(rows, t0_beat):
                  % (len(seams), [round(idle_rows[i][1], 1) for i in seams], jumps, flat))
     seam_ok = len(seams) >= 2 and jumps <= 30 and flat <= 0.25
     lines.append("seamless loop: %s" % seam_ok)
-    return lines, ok and seam_ok
+    cut_lines, cut_ok = cuts(rows)
+    return lines + cut_lines, ok and seam_ok and cut_ok
+
+
+def cuts(rows):
+    """Angle cuts (red flips) inside one Clip: the counter step across a cut against the steps between samples elsewhere in the Clips.
+    The counter moves 4 levels per frame, a sample every 33 ms against a 33 ms frame, so normal steps scatter by about a frame; a cut onto
+    an Angle that had not advanced would step by tens of levels (109 before every Angle was drawn)."""
+    found, normal = [], []
+    for i in range(1, len(rows) - 1):
+        (_t0, g0, r0, b0), (t1, g1, r1, b1) = rows[i], rows[i + 1]
+        same = classify(g0, r0, b0) == classify(g1, r1, b1) != "?"
+        if same and abs(r1 - r0) > 60:
+            found.append((t1 / SPB, classify(g1, r1, b1), g0, g1, g1 - g0))
+        elif same and abs(g1 - g0) < 60:
+            normal.append(abs(g1 - g0))
+    lines = ["Angle cuts inside a Clip: %d (%d inside an Idle Clip); steps between samples without a cut: median %.1f, largest %.1f levels"
+             % (len(found), sum(1 for c in found if c[1] == "idle"), sorted(normal)[len(normal) // 2], max(normal))]
+    lines += ["  beat %5.2f %-9s level %6.1f to %6.1f, step %+5.1f (%.1f frames)" % (b, k, g0, g1, d, abs(d) / 4) for b, k, g0, g1, d in found]
+    worst = max([abs(d) for _b, _k, _g0, _g1, d in found] or [0])
+    ok = len(found) >= 4 and sum(1 for c in found if c[1] == "idle") >= 2 and worst <= max(normal) + 1
+    lines.append("every cut steps no more than the largest step elsewhere (worst cut step %.1f levels): %s" % (worst, ok))
+    return lines, ok
 
 
 def rows_after(rows, t):

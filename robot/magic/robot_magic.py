@@ -31,6 +31,7 @@ OUTPUT_SERVER = "Main Server"
 LIVE_GATE = "LiveOn"                       # 0 draws the Android alone, 1 composites the Live World
 LIVE_ADDRESS = "/vj/live_layer"            # int from Blender's live layer, toggles 0/1 at 2 Hz while ROBOT_LIVE draws
 OSC_IN_PORT = 9202                         # Magic's OSC input, 127.0.0.1
+HIDE_ANGLE = "HideAngle"                   # HideAngle<i>: 1 while Angle i is off air, the Transparency of its layer
 LIVE_TIMEOUT = 1.5                         # seconds without a toggle until LiveOn falls back to 0
 BLEND_MULTIPLY = 3                         # Blend Mode values, modules.md
 
@@ -135,6 +136,7 @@ def graph_globals(m, seed=0, tier_build=0.25, tier_drop=0.55, cut_rate=1.0):
         ("Angle", 0, "calc", [ex("if(BeatEv3 > 0.5 and (%s) and AngleH < CutRate, (Angle + 1 + floor(AngleH2*%d)) %% %d, y)"
                                  % (cut_here, A - 1, A) if A > 1 else "0")]),
         ("Sel", 0, "calc", [ex("Move*%d + Angle" % A)]),
+    ] + [(HIDE_ANGLE + str(a), 1, "calc", [ex("if(Angle == %d, 0, 1)" % a)]) for a in range(A)] + [
         ("StartPulse", 0, "calc", [ex("max(Wrap, WrapPrev)")]),
         ("SpeedRatio", 1, "calc", [ex("BPM/%s" % num(m.bpm))]),
         ("OutClip", 0, "calc", [ex(table("Sel", [m.clip_index(mv.name, a) for mv in m.moves for a in m.angle_ids]))]),
@@ -169,14 +171,19 @@ def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=No
     robot, osc = b.scene("Robot"), b.scene("OSC Out")
 
     def clip_files(kind):
-        nodes = []
-        for mv in m.moves:
-            for a in m.angle_ids:
-                path = m.path(m.clips[m.clip_index(mv.name, a)]["passes"][kind])
+        """Every Angle's InputSelector over the Moves, each drawn all the time (Transparency 0 on air, 1 off air), so the Angles advance in
+        step and a cut lands on the same frame: a VideoFile that is not drawn does not advance (idle_check.py)."""
+        layers = []
+        for a, angle in enumerate(m.angle_ids):
+            nodes = []
+            for mv in m.moves:
+                path = m.path(m.clips[m.clip_index(mv.name, angle)]["passes"][kind])
                 path = os.path.relpath(path, project_dir) if project_dir else os.path.abspath(path)
                 nodes.append(robot.node("VideoFile", {"File": path, "Speed": ("global:SpeedRatio", [], 1), "Goto Start": ("global:StartPulse", [], 0),
                                                       "Looping": 1}))   # Looping 0 draws black after the last frame (restart_check.py); 1 replays instead
-        return robot.node("InputSelector", {"Input #": ("global:Sel", [], 0)}, inputs=nodes)
+            moves = robot.node("InputSelector", {"Input #": ("global:Move", [], 0)}, inputs=nodes)
+            layers.append(robot.node("Transparency", {"Amount": ("global:%s%d" % (HIDE_ANGLE, a), [], 1)}, inputs=[moves]))
+        return robot.node("Null", inputs=layers)
 
     world = robot.node("SyphonClient", {"Server": live})
     shadow = clip_files("shadow")
