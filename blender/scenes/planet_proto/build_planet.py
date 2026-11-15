@@ -1915,6 +1915,8 @@ def wave_height(T, P, t, sea, vdist):
 
 
 RIPPLE_TILT = 0.5              # ripple normal tilt at vj_water 1
+RIVER_BANDS = 0.45             # the ripple bands' low end on flowing water (the sea's: 0.85 to 1 by Fresnel): at 0.85 the
+#                                flow moved 0.005 to 1 % of a river shot's pixels over 2 s, unseen (review/river_check.py)
 WATER_HAZE = (900.0, 7000.0)   # m, the water hazes toward the horizon sky between these distances
 
 
@@ -1977,7 +1979,8 @@ def water_shader(m):
     inc = geo.outputs["Incoming"]
     ndv = T.math("MAXIMUM", T.dot(N, inc), 0.0)
     fres = T.math("POWER", T.math("SUBTRACT", 1.0, ndv), 4.0)
-    bands = T.mrange(hh, 0.38, 0.62, T.mrange(fres, 0.0, 0.5, 1.0, 0.85), 1.0)    # softer: the mirrored banks broke into pink
+    river = T.smooth(T.vmath("LENGTH", T.gattr("pl_flow", "Vector")), 0.05, 0.5)
+    bands = T.mrange(hh, 0.38, 0.62, T.fmix(river, T.mrange(fres, 0.0, 0.5, 1.0, 0.85), RIVER_BANDS), 1.0)    # softer: the mirrored banks broke into pink
     # blotches on the river (CAM_1 by day)
     # at least 0.3, not 0.5: half the pastel sky over every metre of sea left it a washed-out grey-blue with no depth
     # (CAM_10 by day)

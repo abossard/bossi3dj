@@ -5,7 +5,11 @@ puts on the Planet, from a height map of the Planet's own surface. Started and f
   the pyramids' valley lies on its equator: W x W/2 texels (12.3 m at the valley), cached under
   ~/Library/Caches/swiftvj-flight. Image GT_Map: land height and water level (m over R), each as a coarse part (whole
   multiples of 16 m) and a fine rest, so the GPU's half floats keep them to about a centimetre (one float went up as a
-  half and terraced the slopes). Image GT_Flow: the rivers' flow, half the resolution.
+  half and terraced the slopes). Image GT_Flow: the rivers' flow, half the resolution, spread from the river's centre
+  line over its whole water (FLOW_SPREAD); its alpha is the pads' contact.
+- The regional map (GT_Region, GT_RegionFlow): the same at REGION_M a texel over REGION, the box of the camera targets
+  with a margin, so rivers under 25 m that the 12 m map never had are drawn. The shaders read both and blend to the
+  regional one over REGION_EDGE inside its border.
 - The grid: a geometry clipmap in the map's longitude and latitude. LEVELS square rings of N x N cells, CELL_M at the
   centre and twice as large per ring. Ring l is snapped to two of its cells round the camera, so every vertex sits on a
   fixed point of its ring's lattice: nothing swims. Over a ring's outer band (MORPH) its height blends to the next
@@ -41,7 +45,45 @@ NOISE = ((22.0, 1.4), (6.0, 0.45))     # (wavelength m, amplitude m) of the near
 NOISE_NEAR = (60.0, 120.0)  # m from the camera over which the detail fades out (ring 0's blend starts at 134 m)
 NOISE_DRY = (0.5, 3.0)      # m of land over its water level over which the detail fades in
 LAND, WATER = "GT_Land", "GT_Water"
+REGION_ON = False           # bake and draw the regional map. Off (2026-11-15): it drew no new rivers (the planet's are
+#                             50 to 100 m wide; 0.006 km² more inland water, none under 25 m), cost about 7.5 ms a frame
+#                             under load and drew stripes on the land at its blend (review/water_map_check.py, river_check.py)
+REGION = ((-10200.0, 4600.0), (-14000.0, 10000.0))    # m along the map's longitude and latitude at R: the box of the
+#                                                       camera targets (pyramids, lake, river, coast) and 2 km round it
+REGION_M = 4.0              # m a texel of the regional map (at its equator)
+REGION_EDGE = 300.0         # m inside the regional map's border over which the shaders blend from the 12 m map to it
+FLOW_SPREAD = 150.0         # m: the flow, stored on the river's centre line, is spread this far over the water round it
+CACHE_V = "gt2"             # cache file prefix: gt2 holds the spread flow
 _state = {"axes": None}
+
+
+def grid(region=False):
+    """A map's texel lattice: (lam0, dlam, cols, phi0, dphi, rows, wrap), texel centres at lam0 + (x + 0.5) dlam."""
+    if not region:
+        return (-math.pi, 2.0 * math.pi / W, W, -math.pi / 2.0, math.pi / (W // 2), W // 2, True)
+    (l0, l1), (p0, p1) = REGION
+    d = REGION_M / fl.R
+    cols, rows = int(round((l1 - l0) / REGION_M)), int(round((p1 - p0) / REGION_M))
+    return (l0 / fl.R, d, cols, p0 / fl.R, d, rows, False)
+
+
+def spread(f, wet, reach):
+    """f (rows, cols, 3) with the flow on the river's centre line: every wet texel within reach (texels) of it takes the
+    mean of its flowing neighbours, ring by ring outward. Dry texels and texels already flowing keep theirs."""
+    f = f.copy()
+    have = np.abs(f).sum(-1) > 1e-6
+    for _ in range(int(reach)):
+        need = wet & ~have
+        acc, cnt = np.zeros_like(f), np.zeros(have.shape, np.float32)
+        for ax, sh in ((0, 1), (0, -1), (1, 1), (1, -1)):
+            acc += np.roll(f * have[..., None], sh, ax)
+            cnt += np.roll(have, sh, ax)
+        fill = need & (cnt > 0)
+        if not fill.any():
+            break
+        f[fill] = acc[fill] / cnt[fill][:, None]
+        have |= fill
+    return f
 
 
 def axes(scene):
@@ -53,21 +95,23 @@ def axes(scene):
     return np.array([x, y, z])
 
 
-def bake(scene, probe_group, w=W):
-    """(h, wl, flow): (w/2, w) float32 land height and water level, (w/4, w/2, 3) float16 flow."""
-    rows = w // 2
+def bake(scene, probe_group, region=False):
+    """(h, wl, flow) on grid(region): (rows, cols) float32 land height and water level, (rows/2, cols/2, 3) float16 flow
+    spread over the water. Cached per .blend file and grid."""
+    lam0, dl, cols, phi0, dp, rows, _ = grid(region)
     path = bpy.data.filepath
-    key = "gt-%s-%d-%d.npz" % (os.path.splitext(os.path.basename(path))[0], int(os.path.getmtime(path)) if path else 0, w)
+    key = "%s-%s-%d-%s.npz" % (CACHE_V, os.path.splitext(os.path.basename(path))[0], int(os.path.getmtime(path)) if path else 0,
+                                "region%dx%d" % (cols, rows) if region else str(cols))
     cache = os.path.join(CACHE, key)
     if os.path.exists(cache):
         d = np.load(cache)
         if "f" in d:
             return d["h"], d["w"], d["f"]
     A = axes(scene)
-    lam = -math.pi + (np.arange(w) + 0.5) * 2.0 * math.pi / w
-    h_out = np.empty((rows, w), np.float32)
-    w_out = np.empty((rows, w), np.float32)
-    f_out = np.empty((rows, w, 3), np.float32)
+    lam = lam0 + (np.arange(cols) + 0.5) * dl
+    h_out = np.empty((rows, cols), np.float32)
+    w_out = np.empty((rows, cols), np.float32)
+    f_out = np.empty((rows, cols, 3), np.float32)
     g = probe_group(bpy.data.objects["Planet_Hydro"])
     me = bpy.data.meshes.new("GT_Probe")
     ob = bpy.data.objects.new("GT_Probe", me)
@@ -75,11 +119,11 @@ def bake(scene, probe_group, w=W):
     ob.hide_render = True
     ob.modifiers.new("probe", "NODES").node_group = g
     t0 = time.perf_counter()
-    step = max(1, (1 << 21) // w)        # rows per chunk: about 2 M points
+    step = max(1, (1 << 21) // cols)        # rows per chunk: about 2 M points
     try:
         for r0 in range(0, rows, step):
             r1 = min(rows, r0 + step)
-            phi = -math.pi / 2.0 + (np.arange(r0, r1) + 0.5) * math.pi / rows
+            phi = phi0 + (np.arange(r0, r1) + 0.5) * dp
             L, P = np.meshgrid(lam, phi)
             loc = np.stack([np.cos(P) * np.cos(L), np.cos(P) * np.sin(L), np.sin(P)], -1).reshape(-1, 3)
             d = loc @ A
@@ -94,18 +138,29 @@ def bake(scene, probe_group, w=W):
             ev.attributes["fl_h"].data.foreach_get("value", hh)
             ev.attributes["fl_w"].data.foreach_get("value", ww)
             ev.attributes["fl_f"].data.foreach_get("vector", ff)
-            h_out[r0:r1] = hh.reshape(r1 - r0, w)
-            w_out[r0:r1] = ww.reshape(r1 - r0, w)
-            f_out[r0:r1] = ff.reshape(r1 - r0, w, 3)
+            h_out[r0:r1] = hh.reshape(r1 - r0, cols)
+            w_out[r0:r1] = ww.reshape(r1 - r0, cols)
+            f_out[r0:r1] = ff.reshape(r1 - r0, cols, 3)
     finally:
         bpy.data.objects.remove(ob)
         bpy.data.meshes.remove(me)
         bpy.data.node_groups.remove(g)
-    f_half = (0.25 * (f_out[0::2, 0::2] + f_out[1::2, 0::2] + f_out[0::2, 1::2] + f_out[1::2, 1::2])).astype(np.float16)
+    t1 = time.perf_counter()
+    f_half = half(f_out)
+    wet = half((w_out - h_out)[..., None])[..., 0] > 0.0
+    f_half = spread(f_half, wet, FLOW_SPREAD / (2.0 * dp * fl.R)).astype(np.float16)
     os.makedirs(CACHE, exist_ok=True)
     np.savez_compressed(cache, h=h_out, w=w_out, f=f_half)
-    print("gpu_terrain: map %dx%d baked in %.1f s -> %s" % (w, rows, time.perf_counter() - t0, cache))
+    print("gpu_terrain: %s %dx%d baked in %.1f s, flow spread in %.1f s -> %s" % (
+        "region" if region else "map", cols, rows, t1 - t0, time.perf_counter() - t1, cache))
     return h_out, w_out, f_half
+
+
+def half(x):
+    """x (rows, cols, k) at half the resolution: the mean of each 2 x 2 block (odd edges dropped)."""
+    r, c = x.shape[0] // 2 * 2, x.shape[1] // 2 * 2
+    x = x[:r, :c]
+    return 0.25 * (x[0::2, 0::2] + x[1::2, 0::2] + x[0::2, 1::2] + x[1::2, 1::2])
 
 
 def image(name, px):
@@ -228,17 +283,46 @@ class NB:
         v = self.math("ADD", self.math("DIVIDE", phi, math.pi), 0.5)
         return self.vec(u, v, 0.0)
 
-    def tex(self, img, lam, phi):
-        tx = self.node("ShaderNodeTexImage", image=img, interpolation="Cubic", extension="REPEAT")
-        self.feed(tx.inputs["Vector"], self.uv(lam, phi))
+    def tex(self, img, lam, phi, region=False):
+        tx = self.node("ShaderNodeTexImage", image=img, interpolation="Cubic", extension="EXTEND" if region else "REPEAT")
+        if region:
+            lam0, dl, cols, phi0, dp, rows, _ = grid(True)
+            uv = self.vec(self.math("DIVIDE", self.math("SUBTRACT", lam, lam0), cols * dl),
+                          self.math("DIVIDE", self.math("SUBTRACT", phi, phi0), rows * dp), 0.0)
+        else:
+            uv = self.uv(lam, phi)
+        self.feed(tx.inputs["Vector"], uv)
         return tx
 
-    def lookup(self, img, lam, phi):
-        """(land height, water level) of the map at longitude lam, latitude phi."""
-        tx = self.tex(img, lam, phi)
+    def region_k(self, lam, phi):
+        """1 inside the regional map, falling to 0 over REGION_EDGE to its border."""
+        lam0, dl, cols, phi0, dp, rows, _ = grid(True)
+        e = [self.math("SUBTRACT", lam, lam0), self.math("SUBTRACT", lam0 + cols * dl, lam),
+             self.math("SUBTRACT", phi, phi0), self.math("SUBTRACT", phi0 + rows * dp, phi)]
+        m = self.math("MINIMUM", self.math("MINIMUM", e[0], e[1]), self.math("MINIMUM", e[2], e[3]))
+        return self.smooth(m, 0.0, REGION_EDGE / fl.R)
+
+    def pair(self, M, key, lam, phi):
+        """(colour, alpha) of map M[key] at lam, phi, blended to the regional M["r" + key] inside the region."""
+        tx = self.tex(M[key], lam, phi)
+        col, al = tx.outputs["Color"], tx.outputs["Alpha"]
+        if M.get("r" + key) is None:
+            return col, al
+        rx = self.tex(M["r" + key], lam, phi, region=True)
+        k = self.region_k(lam, phi)
+        mix = self.node("ShaderNodeMix", data_type="VECTOR", clamp_factor=False)
+        ins = {s.identifier: s for s in mix.inputs}
+        self.feed(ins["Factor_Float"], k)
+        self.feed(ins["A_Vector"], col)
+        self.feed(ins["B_Vector"], rx.outputs["Color"])
+        return {s.identifier: s for s in mix.outputs}["Result_Vector"], self.lerp(al, rx.outputs["Alpha"], k)
+
+    def lookup(self, M, lam, phi):
+        """(land height, water level) of the maps at longitude lam, latitude phi."""
+        col, al = self.pair(M, "map", lam, phi)
         sp = self.node("ShaderNodeSeparateColor")
-        self.feed(sp.inputs[0], tx.outputs["Color"])
-        return self.math("ADD", sp.outputs[0], sp.outputs[1]), self.math("ADD", sp.outputs[2], tx.outputs["Alpha"])
+        self.feed(sp.inputs[0], col)
+        return self.math("ADD", sp.outputs[0], sp.outputs[1]), self.math("ADD", sp.outputs[2], al)
 
     def frame_vec(self, A, lx, ly, lz):
         out = None
@@ -278,7 +362,7 @@ class NB:
         return self.math("MULTIPLY", out, self.math("MULTIPLY", near, dry))
 
 
-def displacement(nb, img, flow, A, water):
+def displacement(nb, M, A, water):
     """Vector Displacement (object space) that puts a clipmap vertex on the Planet."""
     lv, i, j = nb.attr("gt_l"), nb.attr("gt_i"), nb.attr("gt_j")
     lc, pc = nb.attr("rt_gt_lam", "VIEW_LAYER"), nb.attr("rt_gt_phi", "VIEW_LAYER")
@@ -291,14 +375,14 @@ def displacement(nb, img, flow, A, water):
         return nb.math("MULTIPLY_ADD", ii, step, bl), nb.math("MULTIPLY_ADD", jj, step, bp)
 
     lam, phi = at(i, j)
-    h, w = nb.lookup(img, lam, phi)
+    h, w = nb.lookup(M, lam, phi)
     # the next ring's lattice: the even vertices round this one, bilinear
     i0 = nb.math("MULTIPLY", nb.math("FLOOR", nb.math("MULTIPLY", i, 0.5)), 2.0)
     j0 = nb.math("MULTIPLY", nb.math("FLOOR", nb.math("MULTIPLY", j, 0.5)), 2.0)
     fx = nb.math("MULTIPLY", nb.math("SUBTRACT", i, i0), 0.5)
     fy = nb.math("MULTIPLY", nb.math("SUBTRACT", j, j0), 0.5)
     i1, j1 = nb.math("ADD", i0, 2.0), nb.math("ADD", j0, 2.0)
-    cs = [nb.lookup(img, *at(a, b)) for a, b in ((i0, j0), (i1, j0), (i0, j1), (i1, j1))]
+    cs = [nb.lookup(M, *at(a, b)) for a, b in ((i0, j0), (i1, j0), (i0, j1), (i1, j1))]
 
     def bil(k):
         return nb.lerp(nb.lerp(cs[0][k], cs[1][k], fx), nb.lerp(cs[2][k], cs[3][k], fx), fy)
@@ -313,7 +397,7 @@ def displacement(nb, img, flow, A, water):
         hv = nb.lerp(nb.math("SUBTRACT", hland, 2.0), wl, wet)
     else:
         p0 = nb.vmath("ADD", tuple(fl.CENTRE), nb.vmath("SCALE", d, scale=nb.math("ADD", hland, fl.R)))
-        hv = nb.math("ADD", hland, nb.detail(p0, hland, w, nb.tex(flow, lam, phi).outputs["Alpha"]))
+        hv = nb.math("ADD", hland, nb.detail(p0, hland, w, nb.pair(M, "flow", lam, phi)[1]))
     pos = nb.vmath("ADD", tuple(fl.CENTRE), nb.vmath("SCALE", d, scale=nb.math("ADD", hv, fl.R)))
     geo = nb.node("ShaderNodeNewGeometry")         # the object sits at the origin, unrotated: object space = world
     vd = nb.node("ShaderNodeVectorDisplacement", space="OBJECT")
@@ -323,18 +407,20 @@ def displacement(nb, img, flow, A, water):
     return vd.outputs[0]
 
 
-def surface(nb, img, flow, A):
+def surface(nb, M, A):
     """Per pixel: the map's height and water level, the flow, and the land's normal from the map's slope and the
     near noise's."""
     geo = nb.node("ShaderNodeNewGeometry")
     up = nb.vmath("NORMALIZE", nb.vmath("SUBTRACT", geo.outputs["Position"], tuple(fl.CENTRE)))
     lam, phi = nb.map_coords(A, up)
-    h, w = nb.lookup(img, lam, phi)
-    ftx = nb.tex(flow, lam, phi)
-    dl = 2.0 * math.pi / W          # one texel
-    hx = nb.math("SUBTRACT", nb.lookup(img, nb.math("ADD", lam, dl), phi)[0], nb.lookup(img, nb.math("SUBTRACT", lam, dl), phi)[0])
-    hy = nb.math("SUBTRACT", nb.lookup(img, lam, nb.math("ADD", phi, dl))[0], nb.lookup(img, lam, nb.math("SUBTRACT", phi, dl))[0])
-    span = 2.0 * dl * fl.R
+    h, w = nb.lookup(M, lam, phi)
+    fcol, fal = nb.pair(M, "flow", lam, phi)
+    dl = 2.0 * math.pi / W          # one texel, of the regional map inside it
+    if M.get("rmap") is not None:
+        dl = nb.lerp(dl, REGION_M / fl.R, nb.region_k(lam, phi))
+    hx = nb.math("SUBTRACT", nb.lookup(M, nb.math("ADD", lam, dl), phi)[0], nb.lookup(M, nb.math("SUBTRACT", lam, dl), phi)[0])
+    hy = nb.math("SUBTRACT", nb.lookup(M, lam, nb.math("ADD", phi, dl))[0], nb.lookup(M, lam, nb.math("SUBTRACT", phi, dl))[0])
+    span = nb.math("MULTIPLY", dl, 2.0 * fl.R)
     gx = nb.math("DIVIDE", hx, nb.math("MULTIPLY", span, nb.math("MAXIMUM", nb.math("COSINE", phi), 0.05)))
     gy = nb.math("DIVIDE", hy, span)
     east = nb.frame_vec(A, nb.math("MULTIPLY", nb.math("SINE", lam), -1.0), nb.math("COSINE", lam), 0.0)
@@ -344,15 +430,15 @@ def surface(nb, img, flow, A):
     p = geo.outputs["Position"]
 
     def dnoise(axis):
-        pa = nb.detail(nb.vmath("ADD", p, nb.vmath("SCALE", axis, scale=eps)), h, w, ftx.outputs["Alpha"])
-        pb = nb.detail(nb.vmath("SUBTRACT", p, nb.vmath("SCALE", axis, scale=eps)), h, w, ftx.outputs["Alpha"])
+        pa = nb.detail(nb.vmath("ADD", p, nb.vmath("SCALE", axis, scale=eps)), h, w, fal)
+        pb = nb.detail(nb.vmath("SUBTRACT", p, nb.vmath("SCALE", axis, scale=eps)), h, w, fal)
         return nb.math("DIVIDE", nb.math("SUBTRACT", pa, pb), 2.0 * eps)
 
     gx = nb.math("ADD", gx, dnoise(east))
     gy = nb.math("ADD", gy, dnoise(north))
     n = nb.vmath("NORMALIZE", nb.vmath("SUBTRACT", nb.vmath("SUBTRACT", up, nb.vmath("SCALE", east, scale=gx)),
                                        nb.vmath("SCALE", north, scale=gy)))
-    return {"h": h, "w": w, "flow": ftx.outputs["Color"], "normal": n, "contact": ftx.outputs["Alpha"]}
+    return {"h": h, "w": w, "flow": fcol, "normal": n, "contact": fal}
 
 
 def covered(nb, A):
@@ -371,7 +457,7 @@ def covered(nb, A):
     return nb.math("MULTIPLY", nb.math("MULTIPLY", inside(lam, lc), inside(phi, pc)), nb.math("GREATER_THAN", lv, 0.5))
 
 
-def material(src, name, img, flow, A, water):
+def material(src, name, M, A, water):
     old = bpy.data.materials.get(name)
     if old is not None:
         bpy.data.materials.remove(old)
@@ -382,7 +468,7 @@ def material(src, name, img, flow, A, water):
     out = next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL" and n.is_active_output)
     for lk in list(out.inputs["Displacement"].links):
         nt.links.remove(lk)
-    nt.links.new(displacement(nb, img, flow, A, water), out.inputs["Displacement"])
+    nt.links.new(displacement(nb, M, A, water), out.inputs["Displacement"])
     m.displacement_method = "DISPLACEMENT"
     # the overlap: a pixel the finer ring draws is cut from this one
     shader = out.inputs["Surface"].links[0].from_socket
@@ -391,7 +477,7 @@ def material(src, name, img, flow, A, water):
     nt.links.new(shader, mix.inputs[1])
     nt.links.new(nb.node("ShaderNodeBsdfTransparent").outputs[0], mix.inputs[2])
     nt.links.new(mix.outputs[0], out.inputs["Surface"])
-    sf = surface(nb, img, flow, A)
+    sf = surface(nb, M, A)
     given = {"pl_w": sf["w"], "pl_depth": nb.math("SUBTRACT", sf["w"], sf["h"]), "pl_flow": sf["flow"]}
     for n in [n for n in nt.nodes if n.type == "ATTRIBUTE" and n.attribute_type == "GEOMETRY" and not n.attribute_name.startswith("gt_")]:
         for o in n.outputs:
@@ -441,19 +527,21 @@ def site_base(vs, up):
     return vs[order[4:8]] if len(vs) > 5 else vs[order[:4]]
 
 
-def pads(scene, h, A):
+def pads(scene, h, A, g=None):
     """(h, contact): h with a level pad under every site pyramid (Planet_Sites' instances): the sites are placed at the land height
     under their centre, and across a base of up to 115 m the land rose or fell by tens of metres, so a pyramid floated
     on one side and was cut by the slope on the other (round 17, review/pyramid_ground.py). Like a real pyramid's
     levelled bedrock, the pad holds the base's height and blends into the land over PAD_EDGE. contact (same shape as h)
-    is 1 under a base and falls to 0 at CONTACT x its half side past it: the land's shade at the pyramid's foot."""
+    is 1 under a base and falls to 0 at CONTACT x its half side past it: the land's shade at the pyramid's foot.
+    g: the map's grid() (default the 12 m map's)."""
+    gl0, gdl, _, gp0, gdp, _, wrap = g or grid()
     ob = scene.objects.get("Planet_Sites")
     contact = np.zeros(h.shape, np.float32)
     if ob is None:
         return h, contact
     h0, h = h, h.copy()
     kmax = np.zeros(h.shape, np.float32)       # where pads overlap (a group's pyramids), the nearer footprint wins
-    rows, w = h.shape
+    rows, cols = h.shape
     C = np.array(fl.CENTRE, float)
     dg = bpy.context.evaluated_depsgraph_get()
     for inst in dg.object_instances:
@@ -476,14 +564,18 @@ def pads(scene, h, A):
         rad = half * math.sqrt(2.0) + PAD_EDGE[1]
         c = A @ up
         lam0, phi0 = math.atan2(c[1], c[0]), math.asin(max(-1.0, min(1.0, c[2])))
-        x0 = (lam0 + math.pi) / (2.0 * math.pi) * w - 0.5
-        y0 = (phi0 + math.pi / 2.0) / math.pi * rows - 0.5
-        rx = rad / (fl.R * max(math.cos(phi0), 0.05)) / (2.0 * math.pi / w) + 2
-        ry = rad / fl.R / (math.pi / rows) + 2
+        x0 = (lam0 - gl0) / gdl - 0.5
+        y0 = (phi0 - gp0) / gdp - 0.5
+        rx = rad / (fl.R * max(math.cos(phi0), 0.05)) / gdl + 2
+        ry = rad / fl.R / gdp + 2
         xs = np.arange(int(x0 - rx), int(x0 + rx) + 2)
+        if not wrap:
+            xs = xs[(xs >= 0) & (xs < cols)]
         ys = np.arange(max(int(y0 - ry), 0), min(int(y0 + ry) + 2, rows))
-        L = -math.pi + (xs + 0.5) * 2.0 * math.pi / w
-        P = -math.pi / 2.0 + (ys + 0.5) * math.pi / rows
+        if not len(xs) or not len(ys):
+            continue
+        L = gl0 + (xs + 0.5) * gdl
+        P = gp0 + (ys + 0.5) * gdp
         LL, PP = np.meshgrid(L, P)
         d = np.stack([np.cos(PP) * np.cos(LL), np.cos(PP) * np.sin(LL), np.sin(PP)], -1) @ A
         q = d * fl.R - up * fl.R
@@ -492,7 +584,7 @@ def pads(scene, h, A):
         out = np.maximum(np.abs(u), np.abs(v)) - half
         k = 1.0 - np.clip((out - PAD_EDGE[0]) / (PAD_EDGE[1] - PAD_EDGE[0]), 0.0, 1.0)
         k = k * k * (3.0 - 2.0 * k)
-        xi = xs % w
+        xi = xs % cols
         ix = np.ix_(ys, xi)
         win = k > kmax[ix]
         h[ix] = np.where(win, h0[ix] + (level - h0[ix]) * k, h[ix])
@@ -502,21 +594,29 @@ def pads(scene, h, A):
     return h, contact
 
 
-def start(scene, probe_group):
-    t = time.perf_counter()
-    A = _state["axes"] = axes(scene)
-    h, wl, f = bake(scene, probe_group)
-    h, contact = pads(scene, h, A)
-    _state["h_padded"] = h
+def maps(scene, probe_group, region):
+    """(GT_Map-style RGBA, flow RGBA with the pads' contact in alpha, padded h) of the 12 m map or the regional one."""
+    h, wl, f = bake(scene, probe_group, region)
+    h, contact = pads(scene, h, _state["axes"], grid(region))
     hc, hf = split(h)
     wc, wf = split(wl)
-    img = image("GT_Map", np.stack([hc, hf, wc, wf], -1))
-    c2 = 0.25 * (contact[0::2, 0::2] + contact[1::2, 0::2] + contact[0::2, 1::2] + contact[1::2, 1::2])
-    flow = image("GT_Flow", np.concatenate([f.astype(np.float32), c2[..., None]], -1))      # alpha: the pads' contact
+    c2 = half(contact[..., None])
+    return np.stack([hc, hf, wc, wf], -1), np.concatenate([f.astype(np.float32), c2], -1), h
+
+
+def start(scene, probe_group, region=None):
+    region = REGION_ON if region is None else region
+    t = time.perf_counter()
+    A = _state["axes"] = axes(scene)
+    px, fpx, _state["h_padded"] = maps(scene, probe_group, False)
+    M = {"map": image("GT_Map", px), "flow": image("GT_Flow", fpx)}
+    if region:
+        px, fpx, _state["h_region"] = maps(scene, probe_group, True)
+        M["rmap"], M["rflow"] = image("GT_Region", px), image("GT_RegionFlow", fpx)
     land, water = make_mesh(LAND), make_mesh(WATER)
     for ob, src, name, wet in ((land, "Terrain", "Terrain GPU", False), (water, "Sea", "Sea GPU", True)):
         ob.data.materials.clear()
-        ob.data.materials.append(material(src, name, img, flow, A, wet))
+        ob.data.materials.append(material(src, name, M, A, wet))
         ob.hide_viewport = ob.hide_render = False
     follow(scene, scene.camera.matrix_world.translation if scene.camera else fl.add(fl.CENTRE, (0.0, 0.0, 1.0), fl.R))
     print("gpu_terrain: started in %.1f s" % (time.perf_counter() - t))

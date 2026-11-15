@@ -186,3 +186,38 @@ Set M (the recording): R17-MOTION pass, no jump, jitter, strobe or loss of conta
 4. **Ring 5** (96 m cells, 6 to 12 km): 6 pyramids float past the foundation, buried p95 21.5 %.
 5. **Idle frame times**: not measured, `make status` load 40 to 87, `fps_trustworthy` false; the command under round 16's point 5.
 6. Others' items unchanged: river flow (1), the fall below 800 m (3), B9 and B11's page and contract leftovers (5).
+
+## Regional water map and river flow (2026-11-15)
+
+The user: "yes regional water map". Rubric `blender/review/rubric-water-map.md`.
+
+**Built** (`gpu_terrain.py`):
+- The bake runs per grid (`grid()`, `bake(region=)`); caches are now `gt2-*` (the old `gt-*` hold unspread flow).
+- **Flow spread**: GT_Flow's flow sits on the river's centre line. `spread()` hands it ring by ring to the wet texels round it, up to FLOW_SPREAD (150 m). Wet texels carrying flow: 73 % of the inland water in the region's box (round 16: one-texel lines).
+- **River ripple bands** (`build_planet.water_shader`, RIVER_BANDS 0.45): on flowing water the ripple bands reach down to 0.45 of the reflection (sea: 0.85 to 1). Rebuilt.
+- **Regional map**: GT_Region and GT_RegionFlow, 4 m texels over REGION. That is the box of the four camera targets plus 2 km (14.8 x 24 km, 3700 x 6000; the river target lies 14 km from the pyramids, outside a 16 km square). Pads on it too, and the shaders blend to it over REGION_EDGE. **Off** (`REGION_ON = False`): it neither bakes nor draws.
+
+**Why off** (numbers first):
+- Rivers: the planet's rivers are 50 to 100 m wide. Inland water over the box is 0.229 km² at 4 m against 0.225 km² at 12 m. The 12 m map misses 0.006 km², none of it in channels under 25 m (`blender/review/water_map_check.py`, width histograms in `blender/review/out/water/water_map*.json`).
+- Cost under load (load 22 to 30, `fps_trustworthy` false), median frame interval on the same five pinned poses: 71.4 ms off, 78.9 ms on (+7.5 ms, about 10 %).
+- Bake about 45 s on the first open; cache 126 MB. CPU images 444 MB as float32 (22.2 M + 5.5 M texels); on the GPU about 220 MB at half floats (estimated).
+- Reviewer: C (region on) drew ripple bands and bright stripes on the land at two of five poses (RW-SEAM and RW-COHERENT fail).
+
+**Cold open** with the new caches (12 m map rebaked with the spread, region off): 91 s to the start state ready; Blender RSS 4.0 GB just after (a warm open: 1.8 GB).
+
+**river_check.py** now holds a shot's camera at a recorded pose (`"pose"`, after flight_rt's frame), saves the last frame and the span over the capture, and logs the draw interval.
+- Its flow numbers are not repeatable: one pose gave 0.004 % and 37 % in two runs of the same build. The span counted sky and land as well.
+- The first capture after a `start()` caught EEVEE still compiling (100 % change): wait for a warm frame.
+- Use the reviewer's frames, not these numbers, for the flow.
+
+**Reviewer** (5 pinned poses x A before / B spread and bands / C plus region, first and last frame 3.5 s apart, `blender/review/out/water/rev_*`):
+- Two of the poses (follow river 0.0 and 0.15) show no river, only a lake at the edge.
+- On the three river poses B reads best: the river gains a ripple grain that matches the sea (A's river is flat). RW-RIVER passes on orbit 0.15.
+- B also shows a checker dither on banks and shores in some frames that A lacks. It may come from the day cycle: one pose went from dusk to day within the capture, since the day cycle isn't frozen.
+- RW-RIPPLE fails in every build: the flow's motion is not readable within 3.5 s.
+
+### Open items
+1. River flow readable in motion (RW-RIPPLE): at 2.6 m/s the ripples drift 9 m in 3.5 s, but the grain is faint. Next: a river-only ripple scale and contrast, judged on a recording, not on stills.
+2. B's checker dither on banks and shores: check it with the day cycle frozen.
+3. `river_check.py` poses that see the river (the follow poses don't), and freezing the day cycle during a capture.
+4. The swiftvj-flight cache keeps every old bake (1.7 GB+); nothing prunes it.
