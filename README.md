@@ -205,13 +205,14 @@ Any OSC sender can drive a scene: send one float per message to udp 127.0.0.1:92
 </details>
 
 <details>
-<summary><b>Robot</b> (3)</summary>
+<summary><b>Robot</b> (4)</summary>
 
 | Address | What you see | Wire | Scene | Picture |
 |---|---|---|---|---|
 | `/vj/clip` | Which Clip is on air, as its index in the Robot Scene's Manifest. | integer 0..255, default 0 | Blender robot |  |
 | `/vj/clip_frame` | The frame of the Clip on air, counted by Magic from the Clip's start. | integer 0..4095, default 0 | Blender robot |  |
 | `/vj/angle` | Which Angle is on air, as its index in the Manifest. | integer 0..7, default 0 | Blender robot |  |
+| `/vj/live_layer` | The Robot's live Blender layer says it is drawing, so Magic shows it over the Clips; when it stops, Magic shows the Clips alone. | integer 0..1, default 0 | sent by Blender robot to Magic |  |
 
 </details>
 

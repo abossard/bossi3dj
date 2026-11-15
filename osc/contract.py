@@ -11,6 +11,10 @@ The manual is made from each row's `group` and `plain` fields (one everyday sent
 from the pictures that exist in docs/images/readme/osc/: <name>-blender.jpg and <name>-godot.jpg, name = the address
 without /vj/. A cell without a file stays empty.
 
+A row's `direction` says who sends it: "to_scene" (the default, Magic sends and the scenes read) or "to_magic" (a scene sends
+and Magic reads, on udp MAGIC_PORT). Only "to_scene" rows are inputs: the bridge's SCALES, the QLC+ fixture and the scene
+pages leave the others out.
+
 Every Blender row says in `blender.scenes` which Blender scenes read it: "planet" (synthwave_planet), "island"
 (synthwave_pyramids), "robot" (the live Robot scene, robot/). The manual's Scene column names the scenes unless they are the planet and the island.
 
@@ -31,6 +35,8 @@ MANUAL_IMAGES = os.path.join("docs", "images", "readme", "osc")      # relative 
 TABLE_BEGIN, TABLE_END = "<!-- contract-table:begin -->", "<!-- contract-table:end -->"
 MANUAL_BEGIN, MANUAL_END = "<!-- osc-manual:begin -->", "<!-- osc-manual:end -->"
 BLENDER_SCENES = ("planet", "island", "robot")     # blender.scenes: the Blender scenes that read a row (synthwave_planet, synthwave_pyramids, the live Robot scene)
+DIRECTIONS = ("to_scene", "to_magic")             # direction: who sends the row; absent means "to_scene"
+MAGIC_PORT = 9202                                  # Magic's OSC input, where a "to_magic" row is sent
 SYNTHWAVE_SCENES = ("planet", "island")            # the synthwave show's scenes (synthwave_runtime.py); the manual calls a row of both "Blender"
 GROUPS = ["Light and colour", "Sky, sun and moon", "Ground, water and things on it", "Fog", "Camera", "Triggers", "Robot", "Godot only"]
 SCALES_BEGIN = "# --- contract:begin (generated from osc/contract.json by `python3 osc/contract.py sync`, do not edit) ---"
@@ -42,10 +48,22 @@ def load(path=CONTRACT_JSON):
         return json.load(f)["controls"]
 
 
+def direction(row):
+    return row.get("direction", "to_scene")
+
+
+def inputs(rows=None):
+    """The rows a scene reads: direction "to_scene"."""
+    return [r for r in (rows or load()) if direction(r) == "to_scene"]
+
+
 def problems(rows=None):
-    """Rows the contract tools cannot trust: a Blender row without `scenes`, or naming a scene that is not in BLENDER_SCENES."""
+    """Rows the contract tools cannot trust: an unknown direction, a Blender row without `scenes`, or naming a scene that is
+    not in BLENDER_SCENES."""
     out = []
     for r in rows or load():
+        if direction(r) not in DIRECTIONS:
+            out.append("%s: direction %r, known %s" % (r["address"], r.get("direction"), list(DIRECTIONS)))
         b = r.get("blender")
         if b is None:
             continue
@@ -66,9 +84,9 @@ def by_address(rows=None):
 def scene_value(row, who, wire):
     """The value `who` ("blender" or "godot") works with for a wire value. Floats scale linearly
     onto the scene range, an index rounds to an integer inside the wire range, a trigger passes through.
-    None when the scene does not use the address."""
+    None when the scene does not use the address or sends it (direction "to_magic")."""
     scene = row.get(who)
-    if scene is None:
+    if scene is None or direction(row) != "to_scene":
         return None
     if row["kind"] == "trigger":
         return float(wire)
@@ -115,9 +133,9 @@ def render_table(rows=None):
 
 
 def render_scales(rows=None):
-    """The SCALES dict the bridge embeds: address -> (kind, wire min, wire max, scene min, scene max), Blender rows only."""
+    """The SCALES dict the bridge embeds: address -> (kind, wire min, wire max, scene min, scene max), Blender input rows only."""
     out = [SCALES_BEGIN, "SCALES = {"]
-    for r in rows or load():
+    for r in inputs(rows):
         b = r.get("blender")
         if b is None:
             continue
@@ -132,6 +150,8 @@ def _scenes(row):
     blender = None if b is None else "Blender" if set(b["scenes"]) == set(SYNTHWAVE_SCENES) else "Blender " + " and ".join(b["scenes"])
     if blender is None:
         return "Godot"
+    if direction(row) == "to_magic":
+        return "sent by %s to Magic" % blender
     if row["godot"] is None:
         return blender
     return "both" if blender == "Blender" else "Godot, " + blender

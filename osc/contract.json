@@ -250,6 +250,11 @@
      "group": "Robot", "plain": "Which Angle is on air, as its index in the Manifest.",
      "label": "Angle",
      "blender": {"scenes": ["robot"], "effect": "robot scene only: the Angle on air, the index into the Manifest's `angles` list; the scene replays that Angle's Camera Track; the planet and the island do not read it"},
+     "godot": null},
+    {"address": "/vj/live_layer", "kind": "int", "min": 0, "max": 1, "default": 0, "direction": "to_magic",
+     "group": "Robot", "plain": "The Robot's live Blender layer says it is drawing, so Magic shows it over the Clips; when it stops, Magic shows the Clips alone.",
+     "label": "Live Layer",
+     "blender": {"scenes": ["robot"], "effect": "sent by the robot scene to Magic (udp 127.0.0.1:9202): 2 Hz while `ROBOT_LIVE` draws, the value toggling 0/1 on each beat so every beat is a change; silence means the Live Layer stopped. No scene reads it"},
      "godot": null}
   ]
 }

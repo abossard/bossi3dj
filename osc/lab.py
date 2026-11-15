@@ -471,7 +471,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
         elif path == "/api/contract":
-            self._json(contract.load())
+            self._json(contract.inputs())
         elif path == "/api/state":
             self._json(self.lab.snapshot())
         elif path == "/api/events":

@@ -1,6 +1,6 @@
 # The `/vj/*` control contract
 
-One row per address. Magic sends them (generator `magic/synthwave_magic.py`, one float32 per datagram, only on change), both scenes listen on udp 9201 (Blender bridge, Godot Colossus Scene; only one runs at a time). The optional debug relay `osc/lab.py` (udp 9200) forwards to it.
+One row per address. Magic sends them (generator `magic/synthwave_magic.py`, one float32 per datagram, only on change), both scenes listen on udp 9201 (Blender bridge, Godot Colossus Scene; only one runs at a time). The optional debug relay `osc/lab.py` (udp 9200) forwards to it. A row with `"direction": "to_magic"` goes the other way: a scene sends it to Magic's OSC input on udp 9202, and no scene reads it.
 
 The source of the rows is [contract.json](contract.json). The table below, the bridge's `SCALES` block and the lab page are made from it (`python3 osc/contract.py sync`); `osc/tests/test_contract.py` fails when a copy drifts. Change the row first, then the Magic generator, then each scene. A scene that ignores an address says "not used".
 
@@ -65,6 +65,7 @@ The source of the rows is [contract.json](contract.json). The table below, the b
 | `/vj/clip` | integer 0..255, default 0 | robot scene only: the Clip on air, the index into the Manifest's `clips` list; its Clip Data places the Live Layers; the planet and the island do not read it | not used |
 | `/vj/clip_frame` | integer 0..4095, default 0 | robot scene only: the frame of the Clip on air, counted by Magic from the Clip's start; the Live Layers and the Camera Track follow it; the planet and the island do not read it | not used |
 | `/vj/angle` | integer 0..7, default 0 | robot scene only: the Angle on air, the index into the Manifest's `angles` list; the scene replays that Angle's Camera Track; the planet and the island do not read it | not used |
+| `/vj/live_layer` | integer 0..1, default 0 | sent by the robot scene to Magic (udp 127.0.0.1:9202): 2 Hz while `ROBOT_LIVE` draws, the value toggling 0/1 on each beat so every beat is a change; silence means the Live Layer stopped. No scene reads it | not used |
 <!-- contract-table:end -->
 
 ## Driving a scene without Magic

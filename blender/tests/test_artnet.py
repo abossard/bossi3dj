@@ -50,7 +50,7 @@ class PacketTests(unittest.TestCase):
 
 class ChannelMapTests(unittest.TestCase):
     def test_one_channel_per_scales_row_in_contract_order(self):
-        rows = [r["address"] for r in contract.load() if r["blender"]]
+        rows = [r["address"] for r in contract.inputs() if r["blender"]]
         self.assertEqual([c[0] for c in ROWS], rows)
         self.assertEqual(len(ROWS), len(bridge.SCALES))
 

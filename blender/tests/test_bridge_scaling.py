@@ -55,7 +55,7 @@ class ScaleWireTests(unittest.TestCase):
                         self.assertAlmostEqual(got, want, places=6)
 
     def test_every_blender_row_is_in_scales(self):
-        self.assertEqual(set(bridge.SCALES), {r["address"] for r in contract.load() if r["blender"]})
+        self.assertEqual(set(bridge.SCALES), {r["address"] for r in contract.inputs() if r["blender"]})
 
 
 class CameraIndexTests(unittest.TestCase):

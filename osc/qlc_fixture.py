@@ -34,7 +34,7 @@ TRIGGER_AT = 128
 
 
 def blender_rows(rows=None):
-    return [r for r in (rows or contract.load()) if r.get("blender")]
+    return [r for r in contract.inputs(rows) if r.get("blender")]
 
 
 def index_ranges(n):

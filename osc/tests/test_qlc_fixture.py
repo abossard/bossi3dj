@@ -122,6 +122,7 @@ class FixtureFormatTests(unittest.TestCase):
         names = [c.get("Name") for c in parsed().findall(NS + "Channel")]
         self.assertEqual(names, [qf.channel_name(r) for r in ROWS])
         self.assertEqual([r["address"] for r in ROWS], list(bridge.SCALES))
+        self.assertEqual([r["address"] for r in ROWS], [r["address"] for r in contract.load() if r["blender"] and contract.direction(r) == "to_scene"])
         for r in ROWS:
             self.assertEqual(qf.channel_name(r), "%s (%s)" % (r["label"], r["address"]))
         self.assertEqual(len(set(names)), len(names))

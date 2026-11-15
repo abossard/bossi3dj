@@ -13,7 +13,7 @@ import contract  # noqa: E402
 import lab  # noqa: E402
 import sweep  # noqa: E402
 
-ROWS = contract.load()
+ROWS = contract.inputs()
 BY = contract.by_address(ROWS)
 
 

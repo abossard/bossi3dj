@@ -91,13 +91,13 @@ class DescribeTests(unittest.TestCase):
     def test_each_scene_shows_the_rows_its_scenes_field_names(self):
         cases = [("planet", {"vj_path", "vj_target", "vj_height"}, {"vj_grid", "vj_grid_speed"}),
                  ("island", {"vj_grid", "vj_grid_speed"}, {"vj_path", "vj_target", "vj_height"}),
-                 ("robot", {"vj_clip", "vj_clip_frame", "vj_angle"}, {"vj_path", "vj_grid"})]
+                 ("robot", {"vj_clip", "vj_clip_frame", "vj_angle"}, {"vj_path", "vj_grid", "vj_live_layer"})]
         self.assertEqual(sorted(s for s, _i, _o in cases), sorted(contract.BLENDER_SCENES))
         for scene, shown, hidden in cases:
             with self.subTest(scene=scene):
                 page = pm.page_state(CONTROLS, ROWS, contract.GROUPS, scene)
                 keys = {c["key"] for c in page["controls"]}
-                want = {pm.key_of(r["address"]) for r in ROWS if scene in (r.get("blender") or {}).get("scenes", ())}
+                want = {pm.key_of(r["address"]) for r in ROWS if scene in (r.get("blender") or {}).get("scenes", ()) and contract.direction(r) == "to_scene"}
                 self.assertEqual(keys, want)
                 self.assertTrue(shown <= keys)
                 self.assertFalse(hidden & keys)

@@ -33,7 +33,8 @@ def address_of(key):
 
 
 def blender_rows(rows):
-    return [r for r in rows if r.get("blender")]
+    """The Blender rows a scene reads: a "to_magic" row (contract.py `direction`) is sent by a scene, not a control."""
+    return [r for r in rows if r.get("blender") and r.get("direction", "to_scene") == "to_scene"]
 
 
 def scene_rows(rows, scene="planet"):

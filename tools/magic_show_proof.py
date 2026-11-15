@@ -53,7 +53,7 @@ def state():
 def cmd_osc(a):
     s = state()
     seen = (s.get("osc") or {}).get("addresses", {})
-    rows = contract.load()
+    rows = contract.inputs()
     missing = []
     for r in rows:
         st = seen.get(r["address"])

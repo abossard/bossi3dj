@@ -90,7 +90,7 @@ def main(argv=None):
     ap.add_argument("--dry-run", action="store_true", help="print the walk, send nothing, wait for nothing")
     a = ap.parse_args(argv)
     host, port = parse_target(a.target, a.host)
-    rows = [r for r in contract.load() if not a.only or re.search(a.only, r["address"])]
+    rows = [r for r in contract.inputs() if not a.only or re.search(a.only, r["address"])]
     if not rows:
         ap.error("no address matches %r" % a.only)
     steps = plan(rows, a.seconds, a.strength)

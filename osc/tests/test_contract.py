@@ -232,5 +232,40 @@ class BlenderScenesTests(unittest.TestCase):
                 self.assertEqual(rows[address]["blender"]["scenes"], want)
 
 
+class DirectionTests(unittest.TestCase):
+    """direction: who sends a row. Absent is "to_scene"; a "to_magic" row is no input of any scene."""
+
+    def row(self, direction="absent"):
+        r = {"address": "/vj/x", "kind": "int", "min": 0, "max": 1, "default": 0, "group": "Robot", "plain": "x", "label": "X",
+             "blender": {"scenes": ["robot"], "effect": "x"}, "godot": None}
+        if direction != "absent":
+            r["direction"] = direction
+        return r
+
+    def test_direction_and_problems(self):
+        cases = [("absent", "to_scene", False), ("to_scene", "to_scene", False), ("to_magic", "to_magic", False), ("from_magic", "from_magic", True)]
+        for given, want, bad in cases:
+            with self.subTest(direction=given):
+                self.assertEqual(contract.direction(self.row(given)), want)
+                self.assertEqual(bool(contract.problems([self.row(given)])), bad)
+
+    def test_only_scene_bound_rows_are_inputs_and_bridge_scales(self):
+        cases = [("absent", True), ("to_scene", True), ("to_magic", False)]
+        for given, is_input in cases:
+            with self.subTest(direction=given):
+                rows = [self.row(given)]
+                self.assertEqual(contract.inputs(rows) == rows, is_input)
+                self.assertEqual("'/vj/x'" in contract.render_scales(rows), is_input)
+
+    def test_manual_names_the_sender(self):
+        cases = [("absent", "Blender robot"), ("to_magic", "sent by Blender robot to Magic")]
+        for given, want in cases:
+            with self.subTest(direction=given):
+                self.assertEqual(contract._scenes(self.row(given)), want)
+
+    def test_the_rows_sent_to_magic(self):
+        self.assertEqual([r["address"] for r in ROWS if contract.direction(r) == "to_magic"], ["/vj/live_layer"])
+
+
 if __name__ == "__main__":
     unittest.main()
