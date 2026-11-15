@@ -180,7 +180,7 @@ Set M (the recording): R17-MOTION pass, no jump, jitter, strobe or loss of conta
 
 ### Open items and questions
 
-1. **The idle pulse's strength**: decided by the user (2026-11-15, "Stronger idle pulse"), built in round 18.
+1. **The idle pulse's strength**: decided by the user (2026-11-15): keep about 10 % on the pyramids, no change.
 2. **Holes on mountain ridges** (open item 6): see-through patches and a pale ring at peaks, not the ring cut. Next suspects: the map's cubic lookup overshooting at peaks, the slope normal at a peak.
 3. **Far small base edges** read dashed (two in the final set): the base edge lies along the ground at a grazing angle.
 4. **Ring 5** (96 m cells, 6 to 12 km): 6 pyramids float past the foundation, buried p95 21.5 %.
