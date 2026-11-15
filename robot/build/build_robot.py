@@ -150,7 +150,7 @@ def _mesh_box(name, w, l, d, taper=1.0):
 
 def _mesh_sphere(name, r, scale=(1, 1, 1)):
     bm = bmesh.new()
-    bmesh.ops.create_uvsphere(bm, u_segments=24, v_segments=16, radius=r)
+    bmesh.ops.create_uvsphere(bm, u_segments=48, v_segments=32, radius=r)
     for v in bm.verts:
         v.co = Vector((v.co.x * scale[0], v.co.y * scale[1], v.co.z * scale[2]))
     me = bpy.data.meshes.new(name)
@@ -202,7 +202,7 @@ def build_parts(coll, arm, mats):
     at = lambda frame, x, y, z: Matrix.Translation((x, y, z)) @ frame  # noqa: E731
     P = lambda *a, **k: _add_part(coll, arm, *a, **k)  # noqa: E731
     P("pelvis", "hips", _mesh_box("pelvis", 0.32, 0.16, 0.22, 1.1), at(UP, 0, 0, 0.99), gun)
-    P("abdomen", "spine", _mesh_cylinder("abdomen", 0.10, 0.26), Matrix.Translation((0, 0, 1.22)), gun, bevel=0.006)
+    P("abdomen", "spine", _mesh_cylinder("abdomen", 0.10, 0.32), Matrix.Translation((0, 0, 1.22)), gun, bevel=0.006)
     P("ab_plate", "spine", _mesh_box("ab_plate", 0.20, 0.14, 0.06), at(UP, 0, -0.08, 1.22), steel)
     P("chest", "chest", _mesh_box("chest", 0.34, 0.30, 0.26, 1.35), at(UP, 0, 0, 1.48), steel, bevel=0.02)
     P("back_pack", "chest", _mesh_box("back_pack", 0.24, 0.22, 0.10), at(UP, 0, 0.16, 1.47), gun)
@@ -248,8 +248,6 @@ def build_points(coll, arm):
 
 def _material(name, base, metallic, rough, rough_noise=0.0, emission=None, strength=0.0):
     mat = bpy.data.materials.new(name)
-    if hasattr(mat, "use_nodes"):
-        mat.use_nodes = True
     nt = mat.node_tree
     bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
     bsdf.inputs["Base Color"].default_value = (*base, 1.0)
@@ -269,9 +267,9 @@ def _material(name, base, metallic, rough, rough_noise=0.0, emission=None, stren
 
 
 def build_materials():
-    return {"steel": _material("steel", (0.80, 0.82, 0.85), 1.0, 0.12, rough_noise=0.12),
+    return {"steel": _material("steel", (0.80, 0.82, 0.85), 1.0, 0.06, rough_noise=0.08),
             "gunmetal": _material("gunmetal", (0.12, 0.13, 0.14), 1.0, 0.35),
-            "visor": _material("visor", (0.02, 0.02, 0.02), 0.0, 0.3, emission=(1.0, 0.62, 0.22), strength=25.0),
+            "visor": _material("visor", (0.02, 0.02, 0.02), 0.0, 0.3, emission=(1.0, 0.42, 0.06), strength=5.0),
             "floor": _material("floor_plate", (0.06, 0.055, 0.05), 0.8, 0.45, rough_noise=0.2),
             "wall": _material("wall", (0.05, 0.045, 0.04), 0.0, 0.8),
             "iron": _material("iron", (0.10, 0.09, 0.08), 0.9, 0.5),
@@ -284,6 +282,7 @@ def _set_object(coll, name, me, world, mat, camera=False):
     me.materials.append(mat)
     obj.matrix_world = world
     obj.visible_camera = camera     # the beauty Pass holds the Android only; the set lights and mirrors it
+    obj.visible_shadow = False      # the Shadow Pass holds the Android's shadow only
     obj["robot_set"] = True
     return obj
 
@@ -291,11 +290,12 @@ def _set_object(coll, name, me, world, mat, camera=False):
 def build_set(coll, mats):
     """The foundry hall around the Android. The Live World (robot/live/) shows it; the Clips only reflect it."""
     T = Matrix.Translation
-    for name, y0, y1 in (("floor_front", -20.0, 2.9), ("floor_back", 4.1, 20.0)):
-        me = _mesh_box(name, 40.0, y1 - y0, 0.02)
-        floor = _set_object(coll, name, me, T((0, (y0 + y1) / 2, -0.01)),
-                            mats["floor"], camera=True)
-        floor.is_shadow_catcher = True
+    # the Shadow Pass comes from one unbroken 12 m catcher around the Android: a floor edge at the channel and the
+    # far set both left streaks in it; the hall floor below it only mirrors in the steel
+    catcher = _set_object(coll, "floor_catcher", _mesh_box("floor_catcher", 12.0, 12.0, 0.02), T((0, -0.5, -0.01)),
+                          mats["floor"], camera=True)
+    catcher.is_shadow_catcher = True
+    _set_object(coll, "floor", _mesh_box("floor", 40.0, 40.0, 0.02), T((0, 0, -0.03)), mats["floor"])
     _set_object(coll, "channel_melt", _mesh_box("channel_melt", 30.0, 1.2, 0.02), T((0, 3.5, -0.12)), mats["molten"])
     for y in (2.9, 4.1):
         _set_object(coll, "channel_wall", _mesh_box("channel_wall", 30.0, 0.06, 0.14), T((0, y, -0.07)), mats["iron"])
@@ -335,8 +335,10 @@ def build_lights(coll):
                spot_size=math.radians(70), spot_blend=0.5, shadow_soft_size=0.4)
     _light(coll, "sodium_key", "SPOT", (3.0, -3.5, 5.0), 4000.0, SODIUM, target=(0, 0, 1.3),
            spot_size=math.radians(40), spot_blend=0.3, shadow_soft_size=0.3)
-    _light(coll, "molten_glow", "AREA", (0, 3.5, 0.0), 3000.0, MOLTEN, target=(0, 3.5, 5.0),
+    _light(coll, "molten_glow", "AREA", (0, 3.5, 0.15), 3000.0, MOLTEN, target=(0, 3.5, 5.0),
            shape="RECTANGLE", size=28.0, size_y=1.0)
+    _light(coll, "steel_strip", "AREA", (-2.5, -4.0, 4.5), 800.0, (0.85, 0.90, 1.0), target=(0, 0, 1.4),
+           shape="RECTANGLE", size=8.0, size_y=0.6)
     _light(coll, "roof_rim", "AREA", (0, 6.0, 9.0), 1500.0, (0.55, 0.70, 1.0), target=(0, 0, 1.4), size=6.0)
 
 
@@ -364,7 +366,7 @@ def bake_moves(arm):
             apply_pose(arm, pose)
             for ch, (bone, kind) in CHANNEL_BONES.items():
                 arm.pose.bones[bone].keyframe_insert("location" if kind == "loc" else "rotation_euler", frame=f)
-    arm.animation_data.action = bpy.data.actions["move.idle"]
+    arm.animation_data.action = bpy.data.actions["move." + next(iter(moves.MOVES))]
 
 
 # ---------- render settings ----------
@@ -380,6 +382,10 @@ def setup_render(scene):
     scene.cycles.device = "GPU"
     scene.cycles.samples, scene.cycles.adaptive_threshold = 128, 0.02
     scene.cycles.use_denoising = True
+    c = scene.cycles
+    c.max_bounces, c.diffuse_bounces, c.glossy_bounces, c.transmission_bounces, c.volume_bounces = 6, 2, 3, 0, 0
+    c.caustics_reflective = c.caustics_refractive = False
+    c.sample_clamp_indirect = 3.0
     scene.view_settings.view_transform = "AgX"
     vl = scene.view_layers[0]
     vl.use_pass_z = True
@@ -407,12 +413,16 @@ def _setup_passes(scene):
     link(inv.outputs[0], sa.inputs["Alpha"])
     shadow = n.new("CompositorNodeOutputFile")
     shadow.name = "shadow"
+    shadow.format.media_type = "IMAGE"
     shadow.format.file_format, shadow.format.color_mode, shadow.format.color_depth = "PNG", "RGBA", "16"
+    shadow.file_name = ""
     shadow.file_output_items.new("RGBA", "####")
     link(sa.outputs[0], shadow.inputs[0])
     depth = n.new("CompositorNodeOutputFile")
     depth.name = "depth"
+    depth.format.media_type = "IMAGE"
     depth.format.file_format, depth.format.color_mode, depth.format.color_depth = "OPEN_EXR", "BW", "16"
+    depth.file_name = ""
     depth.file_output_items.new("FLOAT", "####")
     link(rl.outputs["Depth"], depth.inputs[0])
 
@@ -506,7 +516,8 @@ def manifest():
     for clip_id, move, angle, _cam in clip_list():
         m = moves.MOVES[move]
         clips.append({"id": clip_id, "move": move, "angle": angle, "beats": moves.BEATS,
-                      "frames": moves.clip_frames(), "key_in": m.key_in, "key_out": m.key_out, "tier": m.tier,
+                      "frames": moves.clip_frames(), "key_in": m.key_in, "key_out": m.key_out,
+                      "tier": m.tier, "idle": m.idle,
                       "cut_points": moves.cut_points(m),
                       "passes": {p: "%s/%s.mov" % (p, clip_id) for p in ("beauty", "shadow", "depth")},
                       "clip_data": "clip_data/%s.json" % clip_id, "camera_track": "camera/%s.json" % angle})
@@ -567,7 +578,8 @@ def _min_z(obj, dg):
 
 
 def check():
-    """Per Move: IK reach error of hands and feet, sole height of planted feet, lowest point of the Android,
+    """Per Move: how far punches reach past the arm (by design), the gap between shin and planted ankle,
+    sole height of planted feet, lowest point of the Android,
     and the Key Pose match of the first and last frame (Clip Data points, metres)."""
     scene = bpy.context.scene
     arm, pts = _arm(), _points()
@@ -577,21 +589,23 @@ def check():
     for name, move in moves.MOVES.items():
         _use_move(scene, name)
         seq = moves.frames(move)
-        reach, sole, lowest, ends = 0.0, 0.0, 1e9, []
+        reach, sole, ankle, lowest, ends = 0.0, 0.0, 0.0, 1e9, []
         for f in range(len(seq)):
             scene.frame_set(f)
             dg = bpy.context.evaluated_depsgraph_get()
             pb = arm.pose.bones
-            for owner, target, _pole in IK_CHAINS:
+            for owner, target, _pole in IK_CHAINS[:2]:
                 reach = max(reach, (pb[owner].tail - pb[target].head).length)
             for s, ch in ((".L", "foot_l"), (".R", "foot_r")):
                 if seq[f][ch][2] <= moves.ANKLE_Z + 1e-6 and seq[f][ch + "_rot"][0] == 0.0:
                     sole = max(sole, abs(min(_min_z(o, dg) for o in feet[s])))
+                    ankle = max(ankle, (pb["shin" + s].tail - pb["foot_ik" + s].head).length)
             lowest = min(lowest, min(_min_z(o, dg) for o in parts))
             if f in (0, len(seq) - 1):
                 ends.append({p: pts[p].matrix_world.translation.copy() for p in POINTS})
         key_match = max((ends[0][p] - ends[1][p]).length for p in POINTS)
-        report[name] = {"ik_reach_error_m": round(reach, 4), "planted_sole_error_m": round(sole, 4),
+        report[name] = {"hand_overreach_m": round(reach, 4), "planted_ankle_gap_m": round(ankle, 4),
+                        "planted_sole_error_m": round(sole, 4),
                         "lowest_point_m": round(lowest, 4), "key_pose_end_gap_m": round(key_match, 5)}
     return report
 
@@ -606,7 +620,8 @@ def _load_pixels(path):
 
 
 def check_renders(package):
-    """Per rendered Clip: Key Pose match (mean abs pixel difference of first and last beauty frame) and flicker
+    """Per rendered Clip: Key Pose match (mean abs pixel difference of last and first beauty frame, the loop step of
+    an Idle Clip), the steps out of the first and into the last frame, and flicker
     (frame-to-frame mean difference; spikes are frames above 3x the median)."""
     import numpy as np
     out = {}
@@ -627,6 +642,7 @@ def check_renders(package):
             prev = px
         med = float(np.median(diffs))
         out[clip_id] = {"frames": len(files), "key_pose_end_diff": round(float(np.mean(np.abs(prev - first))), 5),
+                        "seam_neighbours": [round(diffs[0], 5), round(diffs[-1], 5)],
                         "frame_diff_median": round(med, 5), "frame_diff_max": round(max(diffs), 5),
                         "spikes": [i + 1 for i, d in enumerate(diffs) if d > 3 * med and d > 0.005]}
     return out

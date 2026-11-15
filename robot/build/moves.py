@@ -11,6 +11,7 @@ Clip's first and last frame both show its Key Pose. Between keys every channel e
 
     python3 -m unittest discover robot/build/tests
 """
+import math
 from collections import namedtuple
 
 BPM = 124
@@ -18,7 +19,8 @@ FPS = 30
 BEATS = 4
 ANKLE_Z = 0.10
 
-Move = namedtuple("Move", "name tier key_in key_out keys hits")
+Move = namedtuple("Move", "name tier key_in key_out keys hits idle waves", defaults=(False, ()))
+Wave = namedtuple("Wave", "channel axis amplitude harmonic")
 Key = namedtuple("Key", "beat pose")
 Hit = namedtuple("Hit", "beat limb strength")
 
@@ -57,16 +59,15 @@ def is_rotation(channel):
 BOB = pose(GUARD, hips=(0.0, 0.02, 0.895), hand_l=(0.15, -0.42, 1.49), hand_r=(-0.10, -0.20, 1.51))
 
 
-def _idle():
-    def sway(side):
-        return pose(GUARD, hips=(0.02 * side, 0.02, 0.88), hips_rot=(0.0, -25.0 + 3.0 * side, 0.0),
-                    chest_rot=(8.0, 0.0, -2.0 * side), head_rot=(-6.0, 22.0, 0.0),
-                    hand_l=(0.16, -0.41, 1.47), hand_r=(-0.09, -0.19, 1.49))
-
-    keys = [Key(0, GUARD)]
-    for beat in range(BEATS):
-        keys += [Key(beat + 0.5, sway(1 if beat % 2 == 0 else -1)), Key(beat + 1, GUARD)]
-    return Move("idle", "calm", "guard", "guard", keys, [])
+def _idle_guard():
+    """The guard's Idle Clip: breathing and small servo moves. Each wave is a (1 - cos) term over the whole Clip, so
+    it starts and ends at the guard with zero speed and the identical first and last frames loop without a seam."""
+    waves = (Wave("hips", 2, -0.02, 2), Wave("chest_rot", 0, 2.5, 2),            # breathing, twice per loop
+             Wave("hand_l", 2, -0.015, 2), Wave("hand_r", 2, -0.012, 2),
+             Wave("hips", 0, 0.015, 1), Wave("hips_rot", 1, 2.0, 1),              # weight shift
+             Wave("head_rot", 1, 6.0, 1), Wave("head_rot", 0, -2.0, 3),           # servo glances
+             Wave("hand_l", 1, 0.015, 1), Wave("hand_r", 0, 0.01, 3))
+    return Move("idle_guard", "calm", "guard", "guard", [Key(0, GUARD), Key(BEATS, GUARD)], [], True, waves)
 
 
 def _jab_cross():
@@ -118,7 +119,7 @@ def _take_hit():
     return Move("take_hit", "build", "guard", "guard", keys, [Hit(1.0, "head", 1.0)])
 
 
-MOVES = {m.name: m for m in (_idle(), _jab_cross(), _front_kick(), _take_hit())}
+MOVES = {m.name: m for m in (_idle_guard(), _jab_cross(), _front_kick(), _take_hit())}
 
 
 def frames_per_beat(bpm=BPM, fps=FPS):
@@ -146,6 +147,17 @@ def _key_frames(move, bpm, fps):
 
 def sample(move, frame, bpm=BPM, fps=FPS):
     """The Pose of `move` at `frame` (0-based)."""
+    pose = _sample_keys(move, frame, bpm, fps)
+    if move.waves:
+        t = frame / (clip_frames(BEATS, bpm, fps) - 1)
+        for w in move.waves:
+            v = list(pose[w.channel])
+            v[w.axis] += w.amplitude * 0.5 * (1.0 - math.cos(2.0 * math.pi * w.harmonic * t))
+            pose[w.channel] = tuple(v)
+    return pose
+
+
+def _sample_keys(move, frame, bpm, fps):
     kf = _key_frames(move, bpm, fps)
     if frame <= kf[0]:
         return dict(move.keys[0].pose)

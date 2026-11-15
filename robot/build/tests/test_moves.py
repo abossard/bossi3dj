@@ -11,7 +11,7 @@ STEP_LIMIT_DEG = 20.0   # per frame at 30 fps
 STEP_LIMIT_M = 0.25     # per frame at 30 fps, about 7.5 m/s: a fast kick
 
 HITS = {
-    "idle": [],
+    "idle_guard": [],
     "jab_cross": [{"f": 15, "limb": "hand_l", "strength": 0.6}, {"f": 29, "limb": "hand_r", "strength": 1.0}],
     "front_kick": [{"f": 29, "limb": "foot_l", "strength": 1.0}],
     "take_hit": [{"f": 15, "limb": "head", "strength": 1.0}],
@@ -42,6 +42,28 @@ class MoveTests(unittest.TestCase):
         for name, expected in HITS.items():
             with self.subTest(move=name):
                 self.assertEqual(moves.hit_frames(moves.MOVES[name]), expected)
+
+    def test_one_idle_clip_per_key_pose(self):
+        for key in moves.KEY_POSES:
+            with self.subTest(key_pose=key):
+                idles = [m for m in moves.MOVES.values() if m.idle and m.key_in == key]
+                self.assertEqual(len(idles), 1)
+                self.assertEqual(idles[0].key_out, key)
+
+    def test_idle_loops_without_a_jump(self):
+        for name, move in ((n, m) for n, m in moves.MOVES.items() if m.idle):
+            seq = moves.frames(move)
+            steps = [moves.pose_distance(seq[f - 1], seq[f]) for f in range(1, len(seq))]
+            biggest = (max(s[0] for s in steps), max(s[1] for s in steps))
+            seam = {"last_to_first": moves.pose_distance(seq[-1], seq[0]),
+                    "into_last": steps[-1], "out_of_first": steps[0]}
+            for where, (rot, pos) in seam.items():
+                with self.subTest(move=name, where=where):
+                    self.assertLessEqual(rot, biggest[0])
+                    self.assertLessEqual(pos, biggest[1])
+            with self.subTest(move=name, where="alive"):
+                self.assertGreater(biggest[0], 0.0)
+                self.assertGreater(biggest[1], 0.0)
 
     def test_unknown_channel_raises(self):
         with self.assertRaises(KeyError):
