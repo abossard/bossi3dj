@@ -110,7 +110,7 @@ _Avoid_: Cue, marker, switch point
 
 **Intensity Tier**:
 One of three energy levels a Clip belongs to (calm, build, drop); Magic picks from the tier the music is in.
-_Avoid_: Level, energy bucket, mode
+_Avoid_: Energy level, energy bucket, fight mode
 
 **Angle**:
 One of the views every Move is rendered from with the same timing.
