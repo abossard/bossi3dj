@@ -117,6 +117,9 @@ SCALES = {
     '/vj/takeover': ('float', 0, 1, 0, 60),
     '/vj/energy': ('float', 0, 1, 0, 1),
     '/vj/hit': ('trigger', 0, 1, None, None),
+    '/vj/clip': ('int', 0, 255, None, None),
+    '/vj/clip_frame': ('int', 0, 4095, None, None),
+    '/vj/angle': ('int', 0, 7, None, None),
 }
 # --- contract:end ---
 

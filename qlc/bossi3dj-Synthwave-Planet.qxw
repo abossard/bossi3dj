@@ -22,7 +22,7 @@
    <Name>Synthwave Planet</Name>
    <Universe>0</Universe>
    <Address>0</Address>
-   <Channels>39</Channels>
+   <Channels>42</Channels>
   </Fixture>
   <Function ID="0" Type="Scene" Name="fire /vj/shock" Path="Synthwave">
    <Speed FadeIn="0" FadeOut="0" Duration="0"/>
@@ -142,10 +142,11 @@
   <ChannelsGroup ID="3" Name="Fog" Value="0">0,24,0,25,0,26,0,27,0,28,0,29,0,30,0,31,0,32</ChannelsGroup>
   <ChannelsGroup ID="4" Name="Camera" Value="0">0,7,0,8,0,9,0,10,0,11,0,35,0,36,0,37</ChannelsGroup>
   <ChannelsGroup ID="5" Name="Triggers" Value="0">0,21,0,22,0,38</ChannelsGroup>
+  <ChannelsGroup ID="6" Name="Robot" Value="0">0,39,0,40,0,41</ChannelsGroup>
  </Engine>
  <VirtualConsole>
   <Frame Caption="Synthwave Planet" ID="1">
-   <WindowState Visible="True" X="0" Y="0" Width="1200" Height="1886"/>
+   <WindowState Visible="True" X="0" Y="0" Width="1200" Height="2172"/>
    <AllowResize>False</AllowResize>
    <ShowHeader>False</ShowHeader>
    <ShowEnableButton>False</ShowEnableButton>
@@ -612,6 +613,33 @@
      <Function ID="2"/>
      <Action>Flash</Action>
     </Button>
+   </Frame>
+   <Frame Caption="Robot" ID="78">
+    <WindowState Visible="True" X="12" Y="1886" Width="228" Height="274"/>
+    <AllowResize>False</AllowResize>
+    <ShowHeader>True</ShowHeader>
+    <ShowEnableButton>False</ShowEnableButton>
+    <Slider Caption="Clip" ID="79" WidgetStyle="Slider" InvertedAppearance="false">
+     <WindowState Visible="True" X="12" Y="28" Width="64" Height="230"/>
+     <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
+     <Level LowLimit="0" HighLimit="255" Value="0">
+      <Channel Fixture="0">39</Channel>
+     </Level>
+    </Slider>
+    <Slider Caption="Clip Frame" ID="80" WidgetStyle="Slider" InvertedAppearance="false">
+     <WindowState Visible="True" X="80" Y="28" Width="64" Height="230"/>
+     <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
+     <Level LowLimit="0" HighLimit="255" Value="0">
+      <Channel Fixture="0">40</Channel>
+     </Level>
+    </Slider>
+    <Slider Caption="Angle" ID="81" WidgetStyle="Slider" InvertedAppearance="false">
+     <WindowState Visible="True" X="148" Y="28" Width="64" Height="230"/>
+     <SliderMode ValueDisplayStyle="Exact">Level</SliderMode>
+     <Level LowLimit="0" HighLimit="255" Value="0">
+      <Channel Fixture="0">41</Channel>
+     </Level>
+    </Slider>
    </Frame>
   </Frame>
  </VirtualConsole>

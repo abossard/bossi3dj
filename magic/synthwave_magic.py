@@ -18,8 +18,11 @@ import zlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 # The contract (osc/contract.json) is the one source of every address, its wire range and wire default.
+# This show sends the rows its scenes read: the planet, the island and Godot. The Robot scene's rows have their own Magic project.
+SYNTHWAVE_SCENES = ("planet", "island")     # osc/contract.py SYNTHWAVE_SCENES
 with open(os.path.join(HERE, "..", "osc", "contract.json")) as _f:
-    CONTRACT = {r["address"]: r for r in json.load(_f)["controls"]}
+    CONTRACT = {r["address"]: r for r in json.load(_f)["controls"]
+                if r.get("godot") or set((r.get("blender") or {}).get("scenes", ())) & set(SYNTHWAVE_SCENES)}
 HEADER = b"L*h"                  # copied from master.magic; Magic does not check it
 GLOBAL_LAYER = 2147483646        # "Globals" source
 AUDIO_LAYER, OSC_LAYER = 2, 3    # Layer ids below

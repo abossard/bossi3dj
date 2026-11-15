@@ -85,7 +85,7 @@ def main():
     keys = [c["key"] for c in s["controls"]]
     check("a control for every address the %s reads" % s["kind"], sorted(keys) == sorted(want) and s["coverage"] == {"missing": [], "extra": []},
           "%d of %d" % (len(keys), len(want)))
-    check("sections follow the manual groups", [x["title"] for x in s["sections"]] == [g for g in contract.GROUPS if g != "Godot only"],
+    check("sections follow the manual groups", [x["title"] for x in s["sections"]] == [g for g in contract.GROUPS if any(r["group"] == g for r in page_model.scene_rows(rows, s["kind"]))],
           ", ".join(x["title"] for x in s["sections"]))
     check("every control has its sentence", all(c["plain"] for c in s["controls"]))
     by_key = {c["key"]: c for c in s["controls"]}

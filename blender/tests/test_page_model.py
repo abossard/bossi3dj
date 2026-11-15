@@ -27,7 +27,8 @@ class DescribeTests(unittest.TestCase):
 
     def test_sections_follow_the_manual_groups(self):
         titles = [s["title"] for s in self.page["sections"]]
-        self.assertEqual(titles, [g for g in contract.GROUPS if g != "Godot only"])
+        self.assertEqual(titles, [g for g in contract.GROUPS if any(r["group"] == g for r in pm.scene_rows(ROWS, "planet"))])
+        self.assertNotIn("Robot", titles)
 
     def test_each_control_carries_its_sentence_and_address_from_the_contract(self):
         by_key = {c["key"]: c for c in self.page["controls"]}
@@ -89,7 +90,8 @@ class DescribeTests(unittest.TestCase):
 
     def test_each_scene_shows_the_rows_its_scenes_field_names(self):
         cases = [("planet", {"vj_path", "vj_target", "vj_height"}, {"vj_grid", "vj_grid_speed"}),
-                 ("island", {"vj_grid", "vj_grid_speed"}, {"vj_path", "vj_target", "vj_height"})]
+                 ("island", {"vj_grid", "vj_grid_speed"}, {"vj_path", "vj_target", "vj_height"}),
+                 ("robot", {"vj_clip", "vj_clip_frame", "vj_angle"}, {"vj_path", "vj_grid"})]
         self.assertEqual(sorted(s for s, _i, _o in cases), sorted(contract.BLENDER_SCENES))
         for scene, shown, hidden in cases:
             with self.subTest(scene=scene):

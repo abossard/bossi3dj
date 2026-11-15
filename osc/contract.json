@@ -235,6 +235,21 @@
      "group": "Triggers", "plain": "A quick surge of speed with a wide-angle kick on the camera.",
      "label": "Hit",
      "blender": {"scenes": ["planet"], "effect": "planet scene: rising edge above 0.5: a surge of speed with a wide-angle kick (lens to 0.7x, back over 2 s), a swoop along the path on moving shots"},
+     "godot": null},
+    {"address": "/vj/clip", "kind": "int", "min": 0, "max": 255, "default": 0,
+     "group": "Robot", "plain": "Which Clip is on air, as its index in the Robot Scene's Manifest.",
+     "label": "Clip",
+     "blender": {"scenes": ["robot"], "effect": "robot scene only: the Clip on air, the index into the Manifest's `clips` list; its Clip Data places the Live Layers; the planet and the island do not read it"},
+     "godot": null},
+    {"address": "/vj/clip_frame", "kind": "int", "min": 0, "max": 4095, "default": 0,
+     "group": "Robot", "plain": "The frame of the Clip on air, counted by Magic from the Clip's start.",
+     "label": "Clip Frame",
+     "blender": {"scenes": ["robot"], "effect": "robot scene only: the frame of the Clip on air, counted by Magic from the Clip's start; the Live Layers and the Camera Track follow it; the planet and the island do not read it"},
+     "godot": null},
+    {"address": "/vj/angle", "kind": "int", "min": 0, "max": 7, "default": 0,
+     "group": "Robot", "plain": "Which Angle is on air, as its index in the Manifest.",
+     "label": "Angle",
+     "blender": {"scenes": ["robot"], "effect": "robot scene only: the Angle on air, the index into the Manifest's `angles` list; the scene replays that Angle's Camera Track; the planet and the island do not read it"},
      "godot": null}
   ]
 }

@@ -71,6 +71,9 @@ What is verified in the workspace file: its structure (Creator, Engine with fixt
 | 37 | Takeover Pause (`/vj/takeover`) | How long a control you touched stays yours before the music steers it again. | 0..255 = 0..1 |
 | 38 | Camera Energy (`/vj/energy`) | Makes the camera move harder, from a slow wide glide to faster, tighter moves. | 0..255 = 0..1 |
 | 39 | Hit (`/vj/hit`) | A quick surge of speed with a wide-angle kick on the camera. | below 128 off; from 128 fires once, strength 0.5 at 128 up to 1 at 255, back below 128 re-arms |
+| 40 | Clip (`/vj/clip`) | Which Clip is on air, as its index in the Robot Scene's Manifest. | split into 256 equal ranges, one per index |
+| 41 | Clip Frame (`/vj/clip_frame`) | The frame of the Clip on air, counted by Magic from the Clip's start. | split into 4096 equal ranges, one per index |
+| 42 | Angle (`/vj/angle`) | Which Angle is on air, as its index in the Manifest. | split into 8 equal ranges, one per index |
 <!-- artnet-channels:end -->
 
 ## What QLC+ offers and what we use

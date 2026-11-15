@@ -140,7 +140,7 @@ class TableTests(unittest.TestCase):
 
 
 class BlenderRuntimeTests(unittest.TestCase):
-    blender_rows = [r for r in ROWS if r["blender"]]
+    blender_rows = [r for r in ROWS if r["blender"] and set(r["blender"]["scenes"]) & set(contract.SYNTHWAVE_SCENES)]
 
     def test_rows_and_runtime_properties_are_the_same_set(self):
         self.assertEqual({prop(r) for r in self.blender_rows}, set(RT["DEFAULTS"]))
@@ -205,7 +205,7 @@ class BlenderScenesTests(unittest.TestCase):
 
     def test_problems(self):
         cases = [("absent", True), (None, True), ([], True), ("planet", True), (["moon"], True), (["planet", "planet"], True),
-                 (["planet"], False), (["island"], False), (["planet", "island"], False), (["island", "planet"], False)]
+                 (["planet"], False), (["island"], False), (["robot"], False), (["planet", "island"], False), (["island", "planet"], False)]
         for scenes, bad in cases:
             with self.subTest(scenes=scenes):
                 self.assertEqual(bool(contract.problems([self.row(scenes)])), bad)
@@ -216,7 +216,7 @@ class BlenderScenesTests(unittest.TestCase):
     def test_manual_scene_column(self):
         godot = {"effect": "x"}
         cases = [(["planet", "island"], None, "Blender"), (["planet"], None, "Blender planet"), (["island"], None, "Blender island"),
-                 (["planet", "island"], godot, "both"), (["planet"], godot, "Godot, Blender planet")]
+                 (["planet", "island"], godot, "both"), (["planet"], godot, "Godot, Blender planet"), (["robot"], None, "Blender robot")]
         for scenes, g, want in cases:
             with self.subTest(scenes=scenes, godot=bool(g)):
                 self.assertEqual(contract._scenes(self.row(scenes, g)), want)
@@ -224,7 +224,8 @@ class BlenderScenesTests(unittest.TestCase):
 
     def test_island_and_planet_only_rows(self):
         cases = [("/vj/grid", ["island"]), ("/vj/grid_speed", ["island"]), ("/vj/path", ["planet"]), ("/vj/target", ["planet"]),
-                 ("/vj/height", ["planet"]), ("/vj/blend", ["planet"]), ("/vj/fog", ["planet", "island"]), ("/vj/takeover", ["planet", "island"])]
+                 ("/vj/height", ["planet"]), ("/vj/blend", ["planet"]), ("/vj/fog", ["planet", "island"]), ("/vj/takeover", ["planet", "island"]),
+                 ("/vj/clip", ["robot"]), ("/vj/clip_frame", ["robot"]), ("/vj/angle", ["robot"])]
         rows = contract.by_address(ROWS)
         for address, want in cases:
             with self.subTest(address=address):

@@ -62,6 +62,9 @@ The source of the rows is [contract.json](contract.json). The table below, the b
 | `/vj/takeover` | 0..1, default 0.33 | 0..60 s, default 19.8. a control touched on the scene page or over Art-Net ignores Magic's value for this long after the last touch | not used |
 | `/vj/energy` | 0..1, default 0.3 | planet scene: how hard every camera moves. Eased (up over 1.5 s, down over 4 s). Low: a slow, wide floating glide; high: faster, pushed in, tighter lens, bigger pulse accents. Every shot keeps moving even at 0 | not used |
 | `/vj/hit` | trigger 0..1, default 0 | planet scene: rising edge above 0.5: a surge of speed with a wide-angle kick (lens to 0.7x, back over 2 s), a swoop along the path on moving shots | not used |
+| `/vj/clip` | integer 0..255, default 0 | robot scene only: the Clip on air, the index into the Manifest's `clips` list; its Clip Data places the Live Layers; the planet and the island do not read it | not used |
+| `/vj/clip_frame` | integer 0..4095, default 0 | robot scene only: the frame of the Clip on air, counted by Magic from the Clip's start; the Live Layers and the Camera Track follow it; the planet and the island do not read it | not used |
+| `/vj/angle` | integer 0..7, default 0 | robot scene only: the Angle on air, the index into the Manifest's `angles` list; the scene replays that Angle's Camera Track; the planet and the island do not read it | not used |
 <!-- contract-table:end -->
 
 ## Driving a scene without Magic

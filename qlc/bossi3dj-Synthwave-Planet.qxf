@@ -187,6 +187,18 @@
   <Capability Min="0" Max="127">off</Capability>
   <Capability Min="128" Max="255">fire once, harder the higher: A quick surge of speed with a wide-angle kick on the camera.</Capability>
  </Channel>
+ <Channel Name="Clip (/vj/clip)" Default="0">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="255">Which Clip is on air, as its index in the Robot Scene's Manifest.</Capability>
+ </Channel>
+ <Channel Name="Clip Frame (/vj/clip_frame)" Default="0">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="255">The frame of the Clip on air, counted by Magic from the Clip's start.</Capability>
+ </Channel>
+ <Channel Name="Angle (/vj/angle)" Default="0">
+  <Group Byte="0">Effect</Group>
+  <Capability Min="0" Max="255">Which Angle is on air, as its index in the Manifest.</Capability>
+ </Channel>
  <Mode Name="Synthwave">
   <Channel Number="0">Light Level (/vj/level)</Channel>
   <Channel Number="1">Bass (/vj/bass)</Channel>
@@ -227,6 +239,9 @@
   <Channel Number="36">Takeover Pause (/vj/takeover)</Channel>
   <Channel Number="37">Camera Energy (/vj/energy)</Channel>
   <Channel Number="38">Hit (/vj/hit)</Channel>
+  <Channel Number="39">Clip (/vj/clip)</Channel>
+  <Channel Number="40">Clip Frame (/vj/clip_frame)</Channel>
+  <Channel Number="41">Angle (/vj/angle)</Channel>
  </Mode>
  <Physical>
   <Bulb Type="" Lumens="0" ColourTemperature="0"/>

@@ -12,7 +12,7 @@ from the pictures that exist in docs/images/readme/osc/: <name>-blender.jpg and 
 without /vj/. A cell without a file stays empty.
 
 Every Blender row says in `blender.scenes` which Blender scenes read it: "planet" (synthwave_planet), "island"
-(synthwave_pyramids). The manual's Scene column shows it when it is not both.
+(synthwave_pyramids), "robot" (the live Robot scene, robot/). The manual's Scene column names the scenes unless they are the planet and the island.
 
 Standard library only. Wire units: a continuous control is 0..1, an index is an integer, a trigger keeps its strength.
 """
@@ -30,8 +30,9 @@ MANUAL_IMAGES = os.path.join("docs", "images", "readme", "osc")      # relative 
 
 TABLE_BEGIN, TABLE_END = "<!-- contract-table:begin -->", "<!-- contract-table:end -->"
 MANUAL_BEGIN, MANUAL_END = "<!-- osc-manual:begin -->", "<!-- osc-manual:end -->"
-BLENDER_SCENES = ("planet", "island")     # blender.scenes: the Blender scenes that read a row (synthwave_planet, synthwave_pyramids)
-GROUPS = ["Light and colour", "Sky, sun and moon", "Ground, water and things on it", "Fog", "Camera", "Triggers", "Godot only"]
+BLENDER_SCENES = ("planet", "island", "robot")     # blender.scenes: the Blender scenes that read a row (synthwave_planet, synthwave_pyramids, the live Robot scene)
+SYNTHWAVE_SCENES = ("planet", "island")            # the synthwave show's scenes (synthwave_runtime.py); the manual calls a row of both "Blender"
+GROUPS = ["Light and colour", "Sky, sun and moon", "Ground, water and things on it", "Fog", "Camera", "Triggers", "Robot", "Godot only"]
 SCALES_BEGIN = "# --- contract:begin (generated from osc/contract.json by `python3 osc/contract.py sync`, do not edit) ---"
 SCALES_END = "# --- contract:end ---"
 
@@ -128,7 +129,7 @@ def render_scales(rows=None):
 
 def _scenes(row):
     b = row["blender"]
-    blender = None if b is None else "Blender" if set(b["scenes"]) == set(BLENDER_SCENES) else "Blender " + " and ".join(b["scenes"])
+    blender = None if b is None else "Blender" if set(b["scenes"]) == set(SYNTHWAVE_SCENES) else "Blender " + " and ".join(b["scenes"])
     if blender is None:
         return "Godot"
     if row["godot"] is None:
