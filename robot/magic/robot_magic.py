@@ -28,7 +28,10 @@ OSC_ROWS = [("/vj/clip", "OutClip", 255), ("/vj/clip_frame", "OutFrame", 4095), 
 OSC_IP, OSC_PORT = "127.0.0.1", 9201
 LIVE_SERVER = "ROBOT_LIVE - Blender"      # Magic names a Syphon server "<server> - <app>"
 OUTPUT_SERVER = "Main Server"
-LIVE_GATE = "LiveOn"                       # manual Global: 0 draws the Android alone, 1 composites the Live World
+LIVE_GATE = "LiveOn"                       # 0 draws the Android alone, 1 composites the Live World
+LIVE_ADDRESS = "/vj/live_layer"            # int from Blender's live layer, toggles 0/1 at 2 Hz while ROBOT_LIVE draws
+OSC_IN_PORT = 9202                         # Magic's OSC input, 127.0.0.1
+LIVE_TIMEOUT = 1.5                         # seconds without a toggle until LiveOn falls back to 0
 BLEND_MULTIPLY = 3                         # Blend Mode values, modules.md
 
 # Names taken from synthwave_magic.GLOBALS: audio bands, Clock, onsets, kick, beat clock (Phase, Tick, Beats, Bars, BPM), energy.
@@ -141,12 +144,24 @@ def graph_globals(m, seed=0, tier_build=0.25, tier_drop=0.55, cut_rate=1.0):
 
 # ------------------------------------------------------------ project
 
-def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=None, project_dir=None, audio_device=None, **graph):
+def live_globals(timeout=LIVE_TIMEOUT):
+    """LiveOn follows the heartbeat: 1 for `timeout` s after each change of the received value, else 0. LiveTimer starts at 0, so no heartbeat means 0."""
+    return [
+        ("LiveRaw", 0, "osc:%s" % LIVE_ADDRESS, []),
+        ("LivePrev", 0, "calc", [ex("LiveRaw")]),  # a plain global: link reads the same frame, an Expression reads the last one
+        ("LiveChanged", 0, "calc", [ex("if(LiveRaw != LivePrev, 1, 0)")]),
+        ("LiveTimer", 0, "calc", [ex("if(LiveChanged > 0.5, %s, max(0, y - Dt))" % num(timeout))]),
+        (LIVE_GATE, 0, "calc", [ex("if(LiveTimer > 0, 1, 0)")]),
+    ]
+
+
+def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=None, project_dir=None, audio_device=None, osc_in=OSC_IN_PORT, **graph):
     """Builder (not yet built) of the Robot project for Manifest `m`. File params are relative to project_dir when given."""
-    b = mp.Builder(syphon=OUTPUT_SERVER, size=tuple(size or m.size), fps=m.fps, audio_device=audio_device)
+    b = mp.Builder(syphon=OUTPUT_SERVER, size=tuple(size or m.size), fps=m.fps, audio_device=audio_device, osc_in=osc_in)
     for name, value, source, mods in clock_globals() + graph_globals(m, seed=seed, **graph):
         b.glob(name, value, source, mods)
-    b.glob(LIVE_GATE, 0, None, [])
+    for g in live_globals():
+        b.glob(*g)
     robot, osc = b.scene("Robot"), b.scene("OSC Out")
 
     def clip_files(kind):
@@ -198,10 +213,11 @@ def main():
     ap.add_argument("--live", default=LIVE_SERVER)
     ap.add_argument("--osc-ip", default=OSC_IP)
     ap.add_argument("--osc-port", type=int, default=OSC_PORT)
+    ap.add_argument("--osc-in", type=int, default=OSC_IN_PORT, help="Magic OSC input port for the live heartbeat")
     ap.add_argument("--seed", type=float, default=0)
     a = ap.parse_args()
     out = a.out or os.path.join(os.path.dirname(os.path.abspath(a.manifest)), "robot.magic")
-    root = build_project(a.manifest, out, live=a.live, osc_ip=a.osc_ip, osc_port=a.osc_port, seed=a.seed)
+    root = build_project(a.manifest, out, live=a.live, osc_ip=a.osc_ip, osc_port=a.osc_port, osc_in=a.osc_in, seed=a.seed)
     print("wrote %s (%d globals, %d OSC rows -> %s:%d)" % (out, len(mp.global_names(root)), len(OSC_ROWS), a.osc_ip, a.osc_port))
 
 

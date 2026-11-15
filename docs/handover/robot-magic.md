@@ -48,8 +48,10 @@ The addresses are only in `robot_magic.OSC_ROWS` until `osc/contract.json` has t
 
 ## Missing live source (2026-11-15, proven in Magic Beta 3)
 
-- A module wired to a missing Syphon server draws black, even bypassed or at Power 0. An InputSelector evaluates only the input it draws.
-- The output gate picks the Android alone at `LiveOn` 0 (default) and the composite at 1. Magic has no signal for a server being present, so `LiveOn` is a manual Global: set it to 1 once Blender publishes `ROBOT_LIVE`, or drive it from a source later (an OSC heartbeat from Blender is the option).
-- Proof with `grab`: `LiveOn` 0, no server: lit 0.283, mean RGB (20, 34, 29), the Android disc. `LiveOn` 1 with `ROBOT_TEST - Python` (red left, blue right) from `robot/magic/syphon_test_pattern.py`: lit 1.0, grid left (201, 74, 74), right (88, 88, 215), Android in front.
-- Found on the way: Transparency Amount 1 blanked the whole composite. Fixed to 0.
-- Items 1 and 4 of the list below are answered: ProRes 4444 alpha plays (disc over the live layer), and the Mask with one child on both pins draws.
+- A module wired to a missing Syphon server draws black, even bypassed or at Power 0. An InputSelector evaluates only the input it draws, so the output gate picks the Android alone at `LiveOn` 0 and the composite at 1.
+- `LiveOn` follows a heartbeat: `/vj/live_layer`, int toggling 0/1 at 2 Hz from Blender's live layer to Magic's OSC input (udp 127.0.0.1:9202). Each change of the value sets `LiveTimer` to 1.5 s; `LiveOn` is 1 while it runs. No heartbeat, `LiveOn` 0, never black. The contract row is with B11 (`osc/` is not touched here).
+- Sender: `robot/live/heartbeat.py` (`Heartbeat.beat()` for a Blender timer, CLI `--port --rate --seconds`), tests in `robot/live/tests/`. Generator: `live_globals()` in `robot_magic.py`, `--osc-in PORT` for test copies.
+- Magic: a Global that links another Global with no modifier reads the same frame, only an Expression reads the last one, so `LivePrev` is `Expression(LiveRaw)`. A plain link made the change detector never fire.
+- Proof (test copy: OSC input 19404, SyphonClient `ROBOT_TEST - Python` with `robot/magic/syphon_test_pattern.py`, sampler `robot/magic/syphon_sample.py`): heartbeat off, lit 0.283, mean RGB about (20, 34, 29) or (32, 36, 37), the Android. Heartbeat on, lit 1.0, mean about (110 to 123, 79 to 81, 119 to 127), live layer with the Android in front. Heartbeat killed at t, composite until t + 0.95 s, then lit 0.282 with the Android, no frame below that over 9 s.
+- Transparency Amount was 1 (fully transparent) and blanked the composite; now 0.
+- Items 1 and 4 of the list below are answered: ProRes 4444 alpha plays, and the Mask with one child on both pins draws.

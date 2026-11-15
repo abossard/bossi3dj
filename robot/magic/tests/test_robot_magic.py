@@ -143,6 +143,53 @@ class GraphGlobalsTests(unittest.TestCase):
         self.assertAlmostEqual(run.settled(2)["SpeedRatio"], 1.0)
 
 
+class LiveGateTests(unittest.TestCase):
+    FPS = 30
+
+    def run_gate(self, toggle_times, seconds):
+        """LiveOn per frame when the heartbeat value flips at each time in toggle_times (s)."""
+        def drive(f):
+            t = f / self.FPS
+            return {"LiveRaw": sum(1 for x in toggle_times if x <= t) % 2, "Dt": 1.0 / self.FPS}
+        frames = list(simulate(rm.live_globals(), drive, int(seconds * self.FPS)))
+        return [fr["LiveOn"] for fr in frames]
+
+    def at(self, series, seconds):
+        return series[int(seconds * self.FPS)]
+
+    def test_no_heartbeat_stays_off(self):
+        self.assertEqual(set(self.run_gate([], 5)), {0})
+
+    def test_heartbeat_switches_on_and_times_out(self):
+        beats = [1.0, 1.5, 2.0, 2.5, 3.0]
+        series = self.run_gate(beats, 8)
+        for seconds, want in ((0.9, 0), (1.3, 1), (2.0, 1), (3.0, 1), (4.3, 1), (4.7, 0), (7.5, 0)):
+            with self.subTest(seconds=seconds):
+                self.assertEqual(self.at(series, seconds), want)
+
+    def test_returns_after_a_gap(self):
+        series = self.run_gate([1.0, 1.5, 6.0, 6.5], 9)
+        for seconds, want in ((3.5, 0), (6.2, 1), (7.9, 1), (8.5, 0)):
+            with self.subTest(seconds=seconds):
+                self.assertEqual(self.at(series, seconds), want)
+
+    def test_falls_back_within_two_seconds_of_the_last_beat(self):
+        series = self.run_gate([1.0, 1.5, 2.0], 6)
+        last_on = max(i for i, v in enumerate(series) if v)
+        self.assertLessEqual(last_on / self.FPS - 2.0, 2.0)
+
+    def test_osc_input_port_and_address(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root, _, _ = generated(tmp, osc_in=19402)
+            self.assertEqual(mp.summary(root)["osc_in_ports"], ["19402"])
+        with tempfile.TemporaryDirectory() as tmp:
+            root, _, _ = generated(tmp)
+            self.assertEqual(mp.summary(root)["osc_in_ports"], [str(rm.OSC_IN_PORT)])
+            raw = mp.find_global(root, "LiveRaw")
+            self.assertEqual(raw.get("featureString"), rm.LIVE_ADDRESS)
+        self.assertEqual((rm.OSC_IN_PORT, rm.LIVE_ADDRESS), (9202, "/vj/live_layer"))
+
+
 class ProjectTests(unittest.TestCase):
     def test_check_passes(self):
         with tempfile.TemporaryDirectory() as tmp:
