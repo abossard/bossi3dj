@@ -39,11 +39,12 @@ Answered (the user, 2026-11-15, and live runs):
 - Duplicate `Child` id in Mask (`20,20`) is accepted and draws.
 - Blend `Mode 3` multiplies the Shadow Pass onto the live layer (pixels checked with `ROBOT_TEST`).
 - Relative `File` paths next to the `.magic` resolve (every Clip played in the live runs).
+- `Goto Start` on a 2-frame pulse restarts the VideoFile exactly once and the frames rise monotonically after it (2026-11-16, `robot/magic/restart_check.py`, 30 Hz Syphon samples of a counter clip, grey level 4 per frame: pulse at 2.01 s gives frame 0 at 2.01 s, at 3.01 s frame 1 at 3.04 s, at 8.01 s frame 0 at 8.04 s, no second drop).
+- `Looping 0` does not hold the last frame: after frame 59 (level 236) the output is black (0.0 on every sample for 3 s). Fix: the generator sets `Looping 1`, which replays from frame 0 and never goes black (levels cycle 4 to 236; restart check passes). A Clip that outlasts its Move, or a stopped clock, now shows its Key Pose cycle instead of black.
 
 Open:
-1. `Goto Start` linked to a 2-frame pulse: does it restart the video once, and does `Looping 0` hold the last frame (the Key Pose) instead of going black? The user will test it.
-2. `ROBOT_LIVE - Blender` is the Syphon server name once the live scene exists (R7); tests use `ROBOT_TEST`.
-3. OSCSender sends floats; the live scene should accept them as integers.
+1. `ROBOT_LIVE - Blender` is the Syphon server name once the live scene exists (R7); tests use `ROBOT_TEST`.
+2. OSCSender sends floats; the live scene should accept them as integers.
 
 ## Contract
 

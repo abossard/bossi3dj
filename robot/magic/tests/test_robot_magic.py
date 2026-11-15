@@ -243,6 +243,13 @@ class ProjectTests(unittest.TestCase):
                       for c in [m.clips[m.clip_index(mv.name, a)]]]
             self.assertEqual(files, expect)
 
+    def test_video_files_loop_instead_of_going_black(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root, _, _ = generated(tmp)
+            loops = [iv.get("value") for iv in root.iter("InputValue") if iv.get("name") == "Looping"]
+        self.assertEqual(set(loops), {"1"})
+        self.assertEqual(len(loops), 16)
+
     def test_syphon_names(self):
         with tempfile.TemporaryDirectory() as tmp:
             root, out, _ = generated(tmp, live="ROBOT_TEST - Blender")

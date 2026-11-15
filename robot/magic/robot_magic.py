@@ -171,7 +171,7 @@ def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=No
                 path = m.path(m.clips[m.clip_index(mv.name, a)]["passes"][kind])
                 path = os.path.relpath(path, project_dir) if project_dir else os.path.abspath(path)
                 nodes.append(robot.node("VideoFile", {"File": path, "Speed": ("global:SpeedRatio", [], 1), "Goto Start": ("global:StartPulse", [], 0),
-                                                      "Looping": 0}))
+                                                      "Looping": 1}))   # Looping 0 draws black after the last frame (restart_check.py); 1 replays instead
         return robot.node("InputSelector", {"Input #": ("global:Sel", [], 0)}, inputs=nodes)
 
     world = robot.node("SyphonClient", {"Server": live})
