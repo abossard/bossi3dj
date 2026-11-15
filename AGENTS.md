@@ -13,6 +13,7 @@ Live VJ scenes driven by one OSC contract: Magic Music Visuals sends `/vj/*`, a 
 | `magic/` | `.magic` generators, `magicproj.py`, tests | skill `magic-projects` |
 | `blender/` | OSC bridge, scenes, planet build, review tools | [blender/GUIDELINES.md](blender/GUIDELINES.md) |
 | `godot/colossus/` | Godot 4.7 project of the Colossus Scene | [godot/colossus/docs/GUIDELINES.md](godot/colossus/docs/GUIDELINES.md) |
+| `robot/` | Robot Scene: pre-rendered Clips in Magic, Live Layers from Blender (concept) | [robot/README.md](robot/README.md) |
 | `tools/` | status, Blender lock, `.blend` path check | `make help` |
 | `docs/` | research, hand-over notes, the 2026-11 retrospective | [docs/retrospective-2026-11.md](docs/retrospective-2026-11.md) |
 

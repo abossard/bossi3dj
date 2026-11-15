@@ -1,0 +1,1061 @@
+<title>Robot Scene Concept</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a control-room spec sheet on a dark stage. Amber marks what is pre-rendered, cyan what runs live. */
+:root {
+  --stage: #0d0e11;
+  --panel: #16181d;
+  --line: #2a2e36;
+  --text: #e7e3da;
+  --muted: #9a978f;
+  --amber: #ffb04a;
+  --cyan: #5fe0d2;
+  --red: #ff5a4e;
+  --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--stage); color: var(--text); font: 400 16px/1.6 var(--body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--stage); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+a { color: var(--amber); }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 800; text-transform: uppercase; letter-spacing: .01em; line-height: .95; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(56px, 11vw, 132px); }
+h2 { font-size: clamp(34px, 5vw, 54px); }
+h3 { font-size: 24px; font-weight: 600; }
+p { margin: 0; }
+.mono { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.amber { color: var(--amber); } .cyan { color: var(--cyan); }
+
+/* top bar */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: color-mix(in srgb, var(--stage) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.bar .wrap { display: flex; align-items: center; gap: 18px; padding-block: 10px; flex-wrap: wrap; }
+.bar strong { font-family: var(--display); font-size: 22px; text-transform: uppercase; letter-spacing: .02em; }
+.bar nav { display: flex; gap: 14px; flex-wrap: wrap; }
+.bar nav a { color: var(--muted); text-decoration: none; font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.bar nav a:hover { color: var(--text); }
+.bar .clock { margin-left: auto; display: flex; gap: 12px; align-items: center; }
+.beatdot { width: 10px; height: 10px; border-radius: 50%; background: var(--amber); opacity: .25; }
+button.ghost { background: none; border: 1px solid var(--line); color: var(--text); font: 500 12px var(--mono); text-transform: uppercase; letter-spacing: .06em; padding: 6px 10px; border-radius: 3px; cursor: pointer; }
+button.ghost:hover { border-color: var(--muted); }
+
+/* hero */
+.hero { padding-block: 48px 24px; display: grid; gap: 28px; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: end; }
+.hero .lede { font-size: 19px; max-width: 34ch; margin-top: 18px; }
+.hero .meta { margin-top: 22px; display: grid; gap: 6px; }
+.hero canvas { width: 100%; aspect-ratio: 2 / 1; display: block; border: 1px solid var(--line); background: #000; }
+.hero .cta { display: inline-block; margin-top: 22px; font: 600 15px var(--body); color: var(--stage); background: var(--amber); padding: 10px 16px; border-radius: 3px; text-decoration: none; }
+@media (max-width: 860px) { .hero { grid-template-columns: 1fr; } }
+
+section { padding-block: 56px 8px; }
+.head { display: grid; gap: 10px; margin-bottom: 24px; max-width: 70ch; }
+.head p { color: var(--muted); }
+
+/* pipeline */
+.diagram { overflow-x: auto; border: 1px solid var(--line); background: var(--panel); }
+.diagram svg { display: block; min-width: 780px; width: 100%; height: auto; }
+.diagram text { font-family: var(--body); }
+.cards4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-top: 0; }
+.cards4 > div { background: var(--stage); padding: 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.cards4 ul, .split ul, .hard ul { margin: 0; padding-left: 18px; color: var(--text); }
+.cards4 li, .split li { margin-bottom: 4px; font-size: 15px; }
+@media (max-width: 900px) { .cards4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .cards4 { grid-template-columns: 1fr; } }
+
+/* pre vs live */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.split > div { padding: 22px; border: 1px solid var(--line); display: grid; gap: 12px; align-content: start; min-width: 0; }
+.split .pre { border-top: 3px solid var(--amber); }
+.split .live { border-top: 3px solid var(--cyan); }
+.split .why { color: var(--muted); font-size: 15px; }
+@media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
+
+/* timeline */
+.timeline canvas { width: 100%; display: block; border: 1px solid var(--line); background: var(--panel); }
+.timeline .tl-scroll { overflow-x: auto; }
+.timeline .tl-scroll canvas { min-width: 720px; aspect-ratio: 1000 / 300; }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px 28px; margin-top: 22px; }
+.rules div { display: grid; gap: 4px; min-width: 0; }
+.rules b { font-weight: 600; }
+.rules p { color: var(--muted); font-size: 15px; }
+
+/* hard parts */
+.hard { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.hard > div { background: var(--stage); padding: 20px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.hard .risk { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+.hard .risk.high { color: var(--red); } .hard .risk.mid { color: var(--amber); }
+.hard p { font-size: 15px; color: var(--muted); }
+.hard p b { color: var(--text); font-weight: 600; }
+@media (max-width: 900px) { .hard { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .hard { grid-template-columns: 1fr; } }
+
+/* mockups */
+.store { font: 500 12px var(--mono); letter-spacing: .04em; padding: 8px 12px; border: 1px solid var(--line); display: inline-block; color: var(--muted); }
+.store.ok { color: var(--cyan); border-color: color-mix(in srgb, var(--cyan) 40%, var(--line)); }
+.store.bad { color: var(--red); }
+.groups { display: grid; gap: 40px; }
+.group h3 { margin-bottom: 14px; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.group h3 span { font: 500 12px var(--mono); letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
+.grid2, .grid3, .grid4 { display: grid; gap: 20px; }
+.grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1100px) { .grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 860px) { .grid3 { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .grid2, .grid4 { grid-template-columns: 1fr; } }
+.mock { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.mock canvas { width: 100%; aspect-ratio: 16 / 9; display: block; background: #000; border: 1px solid var(--line); }
+.mock .title { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.mock h4 { margin: 0; font: 600 17px var(--body); }
+.mock .blurb { color: var(--muted); font-size: 14.5px; line-height: 1.5; }
+.rate { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.rate button { width: 36px; height: 32px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 500 14px var(--mono); border-radius: 3px; cursor: pointer; }
+.rate button[aria-pressed="true"] { background: var(--amber); color: var(--stage); border-color: var(--amber); }
+.rate button:disabled { opacity: .4; cursor: not-allowed; }
+.rate .hint { font: 400 11px var(--mono); color: var(--muted); margin-left: 6px; }
+textarea { width: 100%; min-height: 64px; resize: vertical; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; font: 400 14px/1.45 var(--body); }
+textarea:disabled { opacity: .5; }
+.saved { font: 400 11px var(--mono); color: var(--muted); min-height: 1em; }
+
+/* decisions */
+.decisions { display: grid; gap: 18px; counter-reset: q; }
+.decision { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 18px; padding-block: 18px; border-top: 1px solid var(--line); }
+.decision .q { display: grid; gap: 6px; }
+.decision .q b { font-size: 17px; font-weight: 600; }
+.decision .q p { color: var(--muted); font-size: 15px; }
+@media (max-width: 760px) { .decision { grid-template-columns: 1fr; } }
+footer { padding-block: 48px 64px; color: var(--muted); font-size: 14px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="bar">
+  <div class="wrap">
+    <strong>Robot Scene</strong>
+    <nav>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#split">Pre-rendered or live</a>
+      <a href="#audio">Audio to Clips</a>
+      <a href="#hard">Hard parts</a>
+      <a href="#mockups">Mockups</a>
+      <a href="#decisions">Decisions</a>
+    </nav>
+    <div class="clock">
+      <span class="beatdot" id="beatdot"></span>
+      <span class="mono" id="clock">124 BPM · bar 1/16 · calm</span>
+      <button class="ghost" id="motion" type="button">Pause motion</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="hero">
+    <div>
+      <p class="mono">bossi3dj · concept round 1 · 2026-11-15</p>
+      <h1>Robot<br>Scene</h1>
+      <p class="lede">A fighting Android, rendered in Blender at full quality ahead of time, played by Magic on the beat, with live Blender layers on top.</p>
+      <div class="meta">
+        <span class="mono"><span class="amber">■</span> pre-rendered in Blender, played by Magic</span>
+        <span class="mono"><span class="cyan">■</span> drawn live by Blender, mixed by Magic</span>
+      </div>
+      <a class="cta" href="#mockups">Rate the 9 mockups</a>
+    </div>
+    <div>
+      <canvas id="hero" width="960" height="480" aria-label="Animated composite: a pre-rendered Android Clip, its Matte and a live layer separate into three planes and join again"></canvas>
+      <p class="mono" style="margin-top:8px">Every 8 bars the picture splits into the three layers Magic stacks: Clip, Matte, Live Layer.</p>
+    </div>
+  </div>
+
+  <section id="pipeline">
+    <div class="head">
+      <p class="mono">1 · Pipeline</p>
+      <h2>Blender builds, Magic plays</h2>
+      <p>Blender stops being the show renderer. It becomes the workshop that renders a Clip Library in high quality and writes one Render Package. Magic plays that package to the music. A small live Blender scene adds what has to react within a frame.</p>
+    </div>
+    <div class="diagram">
+      <svg id="pipe" viewBox="0 0 1000 300" role="img" aria-label="Pipeline: Blender render framework to Render Package to Magic, which plays Clips, sends OSC to a live Blender scene and composites its Syphon layer before the output">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9a978f"/></marker>
+        </defs>
+        <line x1="408" y1="14" x2="408" y2="290" stroke="#2a2e36" stroke-dasharray="4 6"/>
+        <text x="20" y="30" fill="#9a978f" font-size="12" letter-spacing="1.2" font-family="IBM Plex Mono, monospace">BEFORE THE SHOW · OFFLINE</text>
+        <text x="424" y="30" fill="#9a978f" font-size="12" letter-spacing="1.2" font-family="IBM Plex Mono, monospace">DURING THE SHOW · LIVE</text>
+
+        <g id="edges" fill="none" stroke-width="1.5">
+          <path id="e1" d="M170,102 L208,102" stroke="#ffb04a" marker-end="url(#arr)"/>
+          <path id="e2" d="M360,102 L438,102" stroke="#ffb04a" marker-end="url(#arr)"/>
+          <path id="e3" d="M590,102 L628,102" stroke="#e7e3da" marker-end="url(#arr)"/>
+          <path id="e4" d="M780,102 L818,102" stroke="#e7e3da" marker-end="url(#arr)"/>
+          <path id="e5" d="M515,136 C515,190 540,205 560,222" stroke="#e7e3da" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+          <path id="e6" d="M680,222 C700,200 705,170 705,138" stroke="#5fe0d2" marker-end="url(#arr)"/>
+          <path id="e7" d="M285,136 C285,250 420,255 538,252" stroke="#ffb04a" stroke-dasharray="2 5" marker-end="url(#arr)"/>
+          <path id="e0" d="M515,46 L515,66" stroke="#e7e3da" marker-end="url(#arr)"/>
+        </g>
+
+        <g font-size="15" font-weight="600">
+          <rect x="20" y="68" width="150" height="68" rx="3" fill="#0d0e11" stroke="#ffb04a"/>
+          <text x="32" y="94" fill="#e7e3da">Blender</text>
+          <text x="32" y="116" fill="#9a978f" font-size="12.5" font-weight="400">render framework</text>
+
+          <rect x="210" y="68" width="150" height="68" rx="3" fill="#0d0e11" stroke="#ffb04a"/>
+          <text x="222" y="94" fill="#e7e3da">Render Package</text>
+          <text x="222" y="116" fill="#9a978f" font-size="12.5" font-weight="400">Hap Clips, Mattes, manifest</text>
+
+          <rect x="440" y="68" width="150" height="68" rx="3" fill="#0d0e11" stroke="#e7e3da"/>
+          <text x="452" y="94" fill="#e7e3da">Magic · play</text>
+          <text x="452" y="116" fill="#9a978f" font-size="12.5" font-weight="400">picks Clips on the beat</text>
+
+          <rect x="630" y="68" width="150" height="68" rx="3" fill="#0d0e11" stroke="#e7e3da"/>
+          <text x="642" y="94" fill="#e7e3da">Magic · composite</text>
+          <text x="642" y="116" fill="#9a978f" font-size="12.5" font-weight="400">Clip + Matte + Live</text>
+
+          <rect x="820" y="68" width="160" height="68" rx="3" fill="#0d0e11" stroke="#e7e3da"/>
+          <text x="832" y="94" fill="#e7e3da">Output</text>
+          <text x="832" y="116" fill="#9a978f" font-size="12.5" font-weight="400">projector, Syphon out</text>
+
+          <rect x="540" y="214" width="150" height="68" rx="3" fill="#0d0e11" stroke="#5fe0d2"/>
+          <text x="552" y="240" fill="#e7e3da">Blender · live</text>
+          <text x="552" y="262" fill="#9a978f" font-size="12.5" font-weight="400">Live Layers on black</text>
+        </g>
+        <g font-size="11.5" fill="#9a978f" font-family="IBM Plex Mono, monospace">
+          <text x="522" y="56">music in</text>
+          <text x="455" y="182">OSC: clip, frame, hits</text>
+          <text x="712" y="186" fill="#5fe0d2">Syphon</text>
+          <text x="290" y="226" fill="#ffb04a">same rig and camera paths</text>
+        </g>
+        <g id="dots"></g>
+      </svg>
+    </div>
+    <div class="cards4">
+      <div>
+        <p class="mono amber">Blender · render framework</p>
+        <ul>
+          <li>One Android, one rig, one set, many Clips.</li>
+          <li>Each Clip: one move from one camera, a whole number of beats long.</li>
+          <li>Passes per Clip: beauty, Android Matte, depth, object ids (fists, eyes, impact spots).</li>
+          <li>Renders in EEVEE or Cycles, off the show machine's clock.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="mono amber">Render Package</p>
+        <ul>
+          <li>Clips as Hap files (all keyframes, decoded on the GPU, Magic's best case).</li>
+          <li><code>manifest.json</code>: length in beats, Pose Key in and out, Cut Points, tier, camera.</li>
+          <li>The camera path and rig of each Clip, for the live scene.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="mono">Magic scene</p>
+        <ul>
+          <li>Generated from the manifest with <code>magicproj.py</code>, never built by hand.</li>
+          <li>VideoFile modules feed an InputSelector; audio Globals choose the input on the beat.</li>
+          <li>Mask cuts the Live Layer to the Android or the room; Blend adds it.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="mono cyan">Blender · live</p>
+        <ul>
+          <li>Loads the same rig and camera path, set to the frame Magic reports.</li>
+          <li>Draws only thin layers on black: sparks, HUD, light flashes, particles.</li>
+          <li>Publishes its own Syphon server; Magic adds it, so no alpha channel is needed.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="split">
+    <div class="head">
+      <p class="mono">2 · Pre-rendered or live</p>
+      <h2>Quality ahead of time, reaction in the frame</h2>
+      <p>The planet taught the rule: a real-time scene on this GPU fights for every millisecond and still flickers. So everything heavy is rendered once, and live work is kept small.</p>
+    </div>
+    <div class="split">
+      <div class="pre">
+        <p class="mono amber">Pre-rendered Clips</p>
+        <ul>
+          <li>The Android, its materials, its moves: idles, strikes, blocks, hits, finishers.</li>
+          <li>The set and its lighting, with GI, reflections, motion blur and depth of field.</li>
+          <li>Camera moves inside a Clip: push-ins, orbits, low angles.</li>
+          <li>The Mattes: Android coverage, depth, ids of fists, eyes and impact spots.</li>
+          <li>Opponents, if any: drones, a rival, a giant machine.</li>
+        </ul>
+        <p class="why">Why: a Clip looks the same every night, at any quality the render farm can afford, at zero cost to the show GPU beyond decoding.</p>
+      </div>
+      <div class="live">
+        <p class="mono cyan">Live Layers</p>
+        <ul>
+          <li>Sparks and debris at the real impact spot, on the snare.</li>
+          <li>HUD, target brackets and readouts that track the fists.</li>
+          <li>Light flashes, strobe, glitch, colour shifts on kick and drop.</li>
+          <li>Particles and smoke in the room, cut behind the Android by the Matte.</li>
+        </ul>
+        <p class="why">Why: it reacts within a frame and follows tempo changes a Clip cannot. It stays cheap because Blender draws thin layers on black, not a full scene.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="audio" class="timeline">
+    <div class="head">
+      <p class="mono">3 · Audio to Clips</p>
+      <h2>Clips land on the beat</h2>
+      <p>Magic already decides what the music means. Here it picks the next Clip at the next Cut Point. Sixteen bars of a track, with the playhead running on this page's clock:</p>
+    </div>
+    <div class="tl-scroll"><canvas id="timeline" width="1000" height="300" aria-label="Timeline of 16 bars with music energy, Intensity Tier, Clips, Cut Points and Live Layer hits"></canvas></div>
+    <div class="rules">
+      <div><b>Whole beats</b><p>Clips are 4, 8 or 16 beats long. At 124 BPM, 4 beats are 1.94 s, 58 frames at 30 fps.</p></div>
+      <div><b>Tempo follows the music</b><p>VideoFile Speed = live BPM ÷ 124. Within about ±15 % the motion still reads; beyond that a second render tempo is needed.</p></div>
+      <div><b>Pose Keys join Clips</b><p>Every Clip starts and ends on a Pose Key: guard, stagger or crouch. A cut goes only into a Clip that starts on the key the current one reaches.</p></div>
+      <div><b>Intensity Tier</b><p>Magic's energy picks the tier: calm (idles, circling), fight (strikes, blocks), peak (combos, finishers). A drop forces a finisher at the next bar.</p></div>
+      <div><b>Live on every hit</b><p>Kick: a light flash in the Live Layer. Snare: sparks at the fist. These never wait for a cut.</p></div>
+    </div>
+  </section>
+
+  <section id="hard">
+    <div class="head">
+      <p class="mono">4 · Hard parts</p>
+      <h2>Where this can fail</h2>
+      <p>Numbers marked "estimate" are not measured yet. Each gets a test before the library is rendered.</p>
+    </div>
+    <div class="hard">
+      <div>
+        <span class="risk high">risk: high</span>
+        <h3>Continuity between Clips</h3>
+        <p>A cut from a punch to a kick shows a jump unless both share a Pose Key, the same camera position at the cut, and the same lighting. <b>Plan:</b> few Pose Keys, every Clip rendered from a held rest pose, a 2 to 4 frame blend on cuts within one camera, hard cuts only when the camera changes.</p>
+      </div>
+      <div>
+        <span class="risk high">risk: high</span>
+        <h3>Live Layers off the fist</h3>
+        <p>Magic does not report a VideoFile's playhead. Magic has to count the Clip's time itself and send clip and frame to Blender; any drift puts sparks beside the fist. <b>Plan:</b> a sync Clip with a frame counter burnt in, locked-off or slow cameras in round 1, and Live Layers that tolerate a frame of error (glow, not pinpoint).</p>
+      </div>
+      <div>
+        <span class="risk mid">risk: medium</span>
+        <h3>File size and decoding</h3>
+        <p>Hap at 1080p30 is about 25 to 35 MB/s (estimate), Hap Q twice that. 80 Clips of 4 s make 8 to 11 GB, Mattes on top. <b>Plan:</b> Android Matte in the Hap alpha, depth and ids in a half-size second file, and one long file per tier with Start and End Time jumps instead of 80 open modules. Measure Magic's memory first.</p>
+      </div>
+      <div>
+        <span class="risk mid">risk: medium</span>
+        <h3>The Android itself</h3>
+        <p>A model, a rig and believable fight animation are the largest unknown. Hand-keyed fights eat weeks; motion capture libraries need licences and cleanup. <b>Plan:</b> decide the source first (decision 2 below), then prove one 8 beat combo end to end.</p>
+      </div>
+      <div>
+        <span class="risk mid">risk: medium</span>
+        <h3>Render time and the GPU slot</h3>
+        <p>About 7,000 frames for the first library. EEVEE at a few seconds a frame is hours; Cycles is overnight (estimate). Renders need the one Blender slot this machine has. <b>Plan:</b> render overnight, never while the planet sessions work.</p>
+      </div>
+      <div>
+        <span class="risk low">risk: low</span>
+        <h3>Magic wiring</h3>
+        <p>Every piece exists in Magic: VideoFile, InputSelector, Mask, Blend, SyphonClient, audio Globals. <b>Plan:</b> a generator in <code>robot/</code> writes the scene from the manifest; <code>magicproj.py check</code> and a Syphon grab prove it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="mockups">
+    <div class="head">
+      <p class="mono">5 · Mockups</p>
+      <h2>Rate the directions</h2>
+      <p>Nine sketches in motion, not renders. Judge the idea: material, staging, camera, how the live layer sits on top. 1 means drop it, 5 means build this. Say what to keep or change in the note.</p>
+      <span class="store" id="store">Connecting to the rating store…</span>
+    </div>
+    <div class="groups" id="groups"></div>
+  </section>
+
+  <section id="decisions">
+    <div class="head">
+      <p class="mono">6 · Decisions</p>
+      <h2>What I need from you</h2>
+      <p>Answer in the fields; they save with the ratings. Short answers are fine. Blender work starts after this round.</p>
+    </div>
+    <div class="decisions" id="decisionList"></div>
+  </section>
+
+  <footer>
+    Robot Scene orchestrator · folder <code>robot/</code> · notes in <code>docs/handover/robot-orchestrator.md</code>. Nothing here touches the planet, the contract or Magic's show project yet.
+  </footer>
+</main>
+
+<script>
+(() => {
+"use strict";
+const BPM = 124, BEAT = 60 / BPM, D2R = Math.PI / 180;
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const easeOut = x => 1 - (1 - x) * (1 - x);
+const easeIO = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+
+/* ---------- music model: 16 bars, tiers, Clips ---------- */
+const tierAt = bar => { const b = ((bar % 16) + 16) % 16; return b < 4 ? "calm" : b < 12 ? "fight" : "peak"; };
+const CLIPS = [
+  { b: 0, len: 2, name: "idle_circle", in: "G", out: "G", cam: 1 },
+  { b: 2, len: 2, name: "idle_stretch", in: "G", out: "G", cam: 2 },
+  { b: 4, len: 1, name: "jab_cross", in: "G", out: "G", cam: 1 },
+  { b: 5, len: 1, name: "front_kick", in: "G", out: "G", cam: 3 },
+  { b: 6, len: 1, name: "block_counter", in: "G", out: "G", cam: 1 },
+  { b: 7, len: 1, name: "uppercut", in: "G", out: "G", cam: 2 },
+  { b: 8, len: 2, name: "combo_four", in: "G", out: "G", cam: 3 },
+  { b: 10, len: 1, name: "hit_stagger", in: "G", out: "S", cam: 1 },
+  { b: 11, len: 1, name: "recover", in: "S", out: "G", cam: 1 },
+  { b: 12, len: 2, name: "combo_peak", in: "G", out: "C", cam: 2 },
+  { b: 14, len: 1, name: "finisher_spin", in: "C", out: "C", cam: 3 },
+  { b: 15, len: 1, name: "finisher_land", in: "C", out: "G", cam: 1 }
+];
+const clipAt = bar => { const b = ((bar % 16) + 16) % 16; return CLIPS.find(c => b >= c.b && b < c.b + c.len); };
+const MOVES = {
+  fight: ["jab", "cross", "jab", "kick", "block", "uppercut", "cross", "hit"],
+  peak: ["cross", "uppercut", "kick", "cross", "uppercut", "kick", "jab", "finisher"]
+};
+function moveAt(bi) {
+  const bar = Math.floor(bi / 4), tier = tierAt(bar), b16 = ((bar % 16) + 16) % 16;
+  if (tier === "calm") return { tier, move: "idle" };
+  if (b16 === 15 && ((bi % 4) + 4) % 4 >= 2) return { tier, move: "finisher" };
+  const list = MOVES[tier];
+  return { tier, move: list[Math.floor(hash(bi * 3.1) * list.length)] };
+}
+
+/* ---------- poses and forward kinematics ---------- */
+const P = {
+  guard:    { t: 8,   rx: 0,    ry: 0,    fa: 35,  fe: 115, ba: 20,  be: 130, fh: 25,  fk: 18, bh: -22, bk: 12 },
+  idle:     { t: 3,   rx: 0,    ry: .01,  fa: 22,  fe: 75,  ba: 12,  be: 85,  fh: 12,  fk: 10, bh: -10, bk: 8 },
+  sway:     { t: 7,   rx: .025, ry: .025, fa: 30,  fe: 100, ba: 16,  be: 105, fh: 18,  fk: 24, bh: -15, bk: 16 },
+  jab:      { t: 16,  rx: .04,  ry: 0,    fa: 88,  fe: 2,   ba: 22,  be: 128, fh: 30,  fk: 16, bh: -26, bk: 8 },
+  cross:    { t: 22,  rx: .07,  ry: 0,    fa: 30,  fe: 120, ba: 92,  be: 0,   fh: 34,  fk: 20, bh: -30, bk: 6 },
+  kick:     { t: -18, rx: -.02, ry: -.03, fa: 40,  fe: 110, ba: -10, be: 100, fh: 96,  fk: 4,  bh: -8,  bk: 6 },
+  uppercut: { t: 4,   rx: .03,  ry: -.04, fa: 30,  fe: 120, ba: 72,  be: 95,  fh: 20,  fk: 28, bh: -24, bk: 20 },
+  block:    { t: -4,  rx: -.03, ry: .02,  fa: 72,  fe: 110, ba: 62,  be: 118, fh: 22,  fk: 26, bh: -20, bk: 18 },
+  hit:      { t: -26, rx: -.09, ry: .01,  fa: -25, fe: 60,  ba: -40, be: 50,  fh: 20,  fk: 30, bh: -30, bk: 22 },
+  finisher: { t: -34, rx: .02,  ry: -.07, fa: -70, fe: 10,  ba: 80,  be: 0,   fh: 128, fk: 0,  bh: -12, bk: 4 }
+};
+const STRIKE = { jab: "fh", cross: "bh", uppercut: "bh", kick: "ff", finisher: "ff" };
+const lerpPose = (a, b, w) => { const o = {}; for (const k in a) o[k] = a[k] + (b[k] - a[k]) * w; return o; };
+function poseFor(move, tier, p, beatF) {
+  let pose;
+  if (tier === "calm" || move === "idle") {
+    pose = lerpPose(P.idle, P.sway, .5 + .5 * Math.sin(beatF * Math.PI / 2));
+  } else {
+    const w = p < .16 ? easeOut(p / .16) : p < .42 ? 1 : Math.max(0, 1 - easeIO(Math.min(1, (p - .42) / .5)));
+    pose = lerpPose(P.guard, P[move], w);
+  }
+  pose.ry += Math.sin(beatF * Math.PI * 2) * .006;
+  return pose;
+}
+function stateAt(beatF) {
+  const bi = Math.floor(beatF), p = beatF - bi, m = moveAt(bi);
+  return { bi, p, tier: m.tier, move: m.move, bar: Math.floor(bi / 4), pose: poseFor(m.move, m.tier, p, beatF) };
+}
+function fk(o, x, y, s, f = 1) {
+  const dir = (a, L) => [Math.sin(a * D2R) * L * s * f, Math.cos(a * D2R) * L * s];
+  const add = (p, v) => [p[0] + v[0], p[1] + v[1]];
+  const hip = [x + o.rx * s * f, y + o.ry * s];
+  const chest = add(hip, [Math.sin(o.t * D2R) * .33 * s * f, -Math.cos(o.t * D2R) * .33 * s]);
+  const head = add(chest, [Math.sin(o.t * .6 * D2R) * .13 * s * f, -Math.cos(o.t * .6 * D2R) * .13 * s]);
+  const fe = add(chest, dir(o.fa, .17)), be = add(chest, dir(o.ba, .17));
+  const fk_ = add(hip, dir(o.fh, .25)), bk_ = add(hip, dir(o.bh, .25));
+  return { hip, chest, head, fe, fh: add(fe, dir(o.fa + o.fe, .16)), be, bh: add(be, dir(o.ba + o.be, .16)),
+    fk: fk_, ff: add(fk_, dir(o.fh - o.fk, .24)), bk: bk_, bf: add(bk_, dir(o.bh - o.bk, .24)), s, f, t: o.t };
+}
+function impactOf(st, s, J) {
+  const limb = STRIKE[s.move];
+  if (s.tier === "calm" || !limb) return null;
+  if (s.p >= .16 && s.p < .5 && st.lastHit !== s.bi) { st.lastHit = s.bi; return J[limb]; }
+  return null;
+}
+
+/* ---------- drawing the Android ---------- */
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function poly(ctx, p, dx = 0, dy = 0) { ctx.beginPath(); ctx.moveTo(p[0][0] + dx, p[0][1] + dy); for (let i = 1; i < p.length; i++) ctx.lineTo(p[i][0] + dx, p[i][1] + dy); }
+const backL = J => [[J.chest, J.be, J.bh], [J.hip, J.bk, J.bf]];
+const frontL = J => [[J.hip, J.fk, J.ff], [J.chest, J.fe, J.fh]];
+function headShape(ctx, J, w, fill, stroke, eye, glow) {
+  ctx.save(); ctx.translate(J.head[0], J.head[1]); ctx.rotate(J.t * .6 * D2R * J.f);
+  const hw = w * 1.2, hh = w * 1.45;
+  rr(ctx, -hw, -hh, hw * 2, hh * 2, w * .5);
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); }
+  if (eye) { ctx.fillStyle = eye; if (glow) { ctx.shadowBlur = glow; ctx.shadowColor = eye; } ctx.fillRect(J.f > 0 ? -hw * .05 : -hw * .9, -hh * .28, hw * .95, hh * .24); ctx.shadowBlur = 0; }
+  ctx.restore();
+}
+function drawSolid(ctx, J, c) {
+  const w = (c.w || .075) * J.s;
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  const seg = (p, col, wd, dx, dy) => { poly(ctx, p, dx, dy); ctx.strokeStyle = col; ctx.lineWidth = wd; ctx.stroke(); };
+  backL(J).forEach(p => seg(p, c.back, w * .9));
+  seg([J.hip, J.chest], c.body, w * 2);
+  ctx.fillStyle = c.body; ctx.beginPath(); ctx.arc(J.chest[0], J.chest[1], w * 1.05, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(J.hip[0], J.hip[1], w * .95, 0, 7); ctx.fill();
+  frontL(J).forEach(p => seg(p, c.body, w));
+  headShape(ctx, J, w, c.body, null, c.eye, c.glow);
+  if (c.rim) {
+    const dx = (c.lx ?? -.3) * w, dy = (c.ly ?? -.35) * w;
+    seg([J.hip, J.chest], c.rim, w * .45, dx * 1.7, dy * 1.7);
+    frontL(J).forEach(p => seg(p, c.rim, w * .26, dx, dy));
+  }
+  if (c.rim2) { ctx.globalAlpha = .8; frontL(J).forEach(p => seg(p, c.rim2, w * .24, 0, w * .34)); seg([J.hip, J.chest], c.rim2, w * .3, 0, w * .5); ctx.globalAlpha = 1; }
+  ctx.fillStyle = c.joint || c.back;
+  [J.fe, J.fk].forEach(p => { ctx.beginPath(); ctx.arc(p[0], p[1], w * .42, 0, 7); ctx.fill(); });
+}
+function drawNeon(ctx, J, c) {
+  const w = (c.w || .06) * J.s;
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  const seg = (p, col, wd) => { poly(ctx, p); ctx.strokeStyle = col; ctx.lineWidth = wd; ctx.stroke(); };
+  ctx.shadowBlur = 12; ctx.shadowColor = c.back;
+  backL(J).forEach(p => seg(p, c.back, w + 3));
+  ctx.shadowBlur = 0; backL(J).forEach(p => seg(p, c.fill, w - 1));
+  ctx.shadowBlur = 16; ctx.shadowColor = c.front;
+  seg([J.hip, J.chest], c.front, w * 2 + 3); frontL(J).forEach(p => seg(p, c.front, w + 3));
+  ctx.shadowBlur = 0;
+  seg([J.hip, J.chest], c.fill, w * 2 - 1); frontL(J).forEach(p => seg(p, c.fill, w - 1));
+  headShape(ctx, J, w, c.fill, c.front, c.eye, 14);
+}
+function drawInk(ctx, J, c, t) {
+  const w = (c.w || .065) * J.s, k = Math.floor(t * 12); let n = 0;
+  const j = () => (hash(k * 31 + (n++)) - .5) * w * .55;
+  ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = c.ink;
+  const brush = (p, wd, al) => {
+    for (let pass = 0; pass < 3; pass++) {
+      ctx.beginPath(); ctx.moveTo(p[0][0] + j(), p[0][1] + j());
+      for (let i = 1; i < p.length; i++) ctx.lineTo(p[i][0] + j(), p[i][1] + j());
+      ctx.globalAlpha = al; ctx.lineWidth = wd * (.45 + .3 * pass); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  };
+  backL(J).forEach(p => brush(p, w, .32));
+  brush([J.hip, J.chest], w * 2, .7);
+  frontL(J).forEach(p => brush(p, w, .62));
+  ctx.globalAlpha = .85; headShape(ctx, J, w * .95, c.ink, null, c.eye, 0); ctx.globalAlpha = 1;
+}
+function drawMatte(ctx, J, col) {
+  const w = .075 * J.s;
+  ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = col; ctx.fillStyle = col;
+  [...backL(J), ...frontL(J)].forEach(p => { poly(ctx, p); ctx.lineWidth = w; ctx.stroke(); });
+  poly(ctx, [J.hip, J.chest]); ctx.lineWidth = w * 2; ctx.stroke();
+  ctx.beginPath(); ctx.arc(J.chest[0], J.chest[1], w * 1.05, 0, 7); ctx.fill();
+  headShape(ctx, J, w, col, null, null, 0);
+}
+
+/* ---------- particles ---------- */
+class FX {
+  constructor() { this.p = []; }
+  burst(x, y, n, o = {}) {
+    for (let i = 0; i < n; i++) {
+      const a = (o.dir ?? -Math.PI / 2) + (Math.random() - .5) * (o.spread ?? Math.PI * 2);
+      const sp = (o.speed || 220) * (.3 + Math.random() * .9);
+      this.p.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0, max: (o.life || .6) * (.5 + Math.random() * .8),
+        col: o.col || "#ffd28a", w: o.w || 1.6, g: o.g ?? 520, type: o.type || "spark", r: (o.r || 2) * (.6 + Math.random() * .8), floor: o.floor });
+    }
+  }
+  step(dt) {
+    for (const q of this.p) {
+      q.life += dt;
+      const drag = q.type === "smoke" ? .94 : .985;
+      q.vx *= drag; q.vy = q.vy * (q.type === "smoke" ? .94 : 1) + q.g * dt;
+      q.x += q.vx * dt; q.y += q.vy * dt;
+      if (q.floor && q.y > q.floor) { q.y = q.floor; q.vy *= -.32; q.vx *= .7; }
+    }
+    this.p = this.p.filter(q => q.life < q.max);
+    if (this.p.length > 700) this.p.splice(0, this.p.length - 700);
+  }
+  draw(ctx) {
+    for (const q of this.p) {
+      const k = 1 - q.life / q.max;
+      if (q.type === "spark") {
+        ctx.globalCompositeOperation = "lighter"; ctx.strokeStyle = q.col; ctx.globalAlpha = k; ctx.lineWidth = q.w;
+        ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(q.x - q.vx * .03, q.y - q.vy * .03); ctx.stroke();
+      } else if (q.type === "chip") {
+        ctx.globalCompositeOperation = "source-over"; ctx.fillStyle = q.col; ctx.globalAlpha = Math.min(1, k * 2); ctx.fillRect(q.x, q.y, q.r, q.r);
+      } else if (q.type === "smoke") {
+        ctx.globalCompositeOperation = "source-over"; ctx.fillStyle = q.col; ctx.globalAlpha = k * .16;
+        ctx.beginPath(); ctx.arc(q.x, q.y, q.r * (1 + q.life * 4), 0, 7); ctx.fill();
+      } else if (q.type === "dot") {
+        ctx.globalCompositeOperation = "source-over"; ctx.fillStyle = q.col; ctx.globalAlpha = Math.min(1, k * 1.6);
+        ctx.beginPath(); ctx.arc(q.x, q.y, q.r, 0, 7); ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+  }
+}
+function texture(w, h, base, amt, seed) {
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const x = c.getContext("2d"); x.fillStyle = base; x.fillRect(0, 0, w, h);
+  const id = x.getImageData(0, 0, w, h), d = id.data;
+  for (let i = 0; i < d.length; i += 4) { const n = (hash(i * .25 + seed) - .5) * amt; d[i] += n; d[i + 1] += n; d[i + 2] += n; }
+  x.putImageData(id, 0, 0); return c;
+}
+function mono(ctx, txt, x, y, col, size = 11, align = "left") { ctx.font = `500 ${size}px "IBM Plex Mono", monospace`; ctx.fillStyle = col; ctx.textAlign = align; ctx.fillText(txt, x, y); ctx.textAlign = "left"; }
+
+const W = 640, H = 360;
+
+/* ---------- mockups ---------- */
+const MOCKS = [
+  { id: "look-chrome-foundry", group: "Look", title: "Chrome Foundry", blurb: "Polished steel Android in a steel mill. Sodium lamps, molten channel, welding sparks raining from the gantry. Heavy, industrial, warm.",
+    init(st) { st.fx = new FX(); },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF), g = 300, k = 1 - s.p;
+      const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#140d08"); bg.addColorStop(1, "#2b1608"); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      for (let i = 0; i < 8; i++) { const x = 30 + i * 85; ctx.fillStyle = "#1e1611"; ctx.fillRect(x, 0, 18, g); ctx.fillStyle = "#3a2716"; ctx.fillRect(x + 15, 0, 3, g); }
+      ctx.fillStyle = "#24190f"; ctx.fillRect(0, 96, W, 10); ctx.fillStyle = "#4a3018"; ctx.fillRect(0, 96, W, 2);
+      for (let i = 0; i < 4; i++) { const x = 120 + i * 140, sw = Math.sin(T.t * 1.1 + i) * 6; ctx.strokeStyle = "#3b2a1c"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, 106); ctx.quadraticCurveTo(x + sw, 150, x + sw * 1.6, 190 + i * 8); ctx.stroke(); }
+      const cone = ctx.createRadialGradient(320, 40, 10, 320, 160, 260); cone.addColorStop(0, `rgba(255,176,74,${.32 + .08 * k})`); cone.addColorStop(1, "rgba(255,176,74,0)");
+      ctx.fillStyle = cone; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#1b120c"; ctx.fillRect(0, g, W, H - g);
+      const flick = .8 + .2 * Math.sin(T.t * 9) * Math.sin(T.t * 3.3);
+      const lava = ctx.createLinearGradient(0, 318, 0, H); lava.addColorStop(0, `rgba(255,120,20,${.9 * flick})`); lava.addColorStop(1, "#3a0f00");
+      ctx.fillStyle = lava; ctx.fillRect(0, 322, W, H - 322);
+      const J = fk(s.pose, 300, g - .47 * 175, 175, 1);
+      const pal = { back: "#41454c", body: "#9aa1ab", rim: "#fff1cf", rim2: "#ff7a1a", eye: "#ffb04a", glow: 10, joint: "#2a2d32" };
+      ctx.save(); ctx.globalAlpha = .16; ctx.translate(0, 2 * g); ctx.scale(1, -1); drawSolid(ctx, J, pal); ctx.restore();
+      drawSolid(ctx, J, pal);
+      if (Math.random() < .35) st.fx.burst(60 + Math.random() * 520, 100, 1, { dir: Math.PI / 2, spread: .6, speed: 60, life: 1.6, col: "#ffcf7a", floor: g + 4, w: 1.2 });
+      const hit = impactOf(st, s, J);
+      if (hit) st.fx.burst(hit[0], hit[1], 34, { speed: 340, life: .7, col: "#ffe2a8", floor: g + 4 });
+      st.fx.step(T.dt); st.fx.draw(ctx);
+    } },
+  { id: "look-neon-synthwave", group: "Look", title: "Neon Synthwave", blurb: "Outline Android in cyan and magenta on the planet's sunset grid. Kin to the Synthwave Planet Scene, so the two can follow each other in a set.",
+    init(st) { st.fx = new FX(); st.flash = 0; },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF), hz = 210, k = 1 - s.p;
+      const sky = ctx.createLinearGradient(0, 0, 0, hz); sky.addColorStop(0, "#12042a"); sky.addColorStop(1, "#5a0d55"); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, hz);
+      const sun = ctx.createLinearGradient(0, 90, 0, 210); sun.addColorStop(0, "#ffd36b"); sun.addColorStop(1, "#ff3d8b");
+      ctx.fillStyle = sun; ctx.beginPath(); ctx.arc(320, 175, 82, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = "#3d0a46"; for (let i = 0; i < 6; i++) { const y = 150 + i * 10; ctx.fillRect(220, y, 200, 1.5 + i * 1.1); }
+      ctx.fillStyle = "#1c0630"; ctx.beginPath(); ctx.moveTo(0, hz); [[60, 170], [120, 196], [170, 160], [240, 200], [400, 190], [470, 150], [540, 192], [600, 172], [640, 190]].forEach(p => ctx.lineTo(p[0], p[1])); ctx.lineTo(640, hz); ctx.fill();
+      ctx.fillStyle = "#0b0219"; ctx.fillRect(0, hz, W, H - hz);
+      st.flash = Math.max(0, st.flash - T.dt * 3);
+      const glow = .45 + .4 * k * (s.tier === "calm" ? .4 : 1) + st.flash;
+      ctx.strokeStyle = `rgba(255,61,180,${clamp(glow, 0, 1)})`; ctx.lineWidth = 1.2; ctx.shadowBlur = 6; ctx.shadowColor = "#ff3db4";
+      const scroll = (T.beatF * .5) % 1;
+      for (let i = 0; i < 14; i++) { const z = (i + 1 - scroll); const y = hz + 150 / z * .9; if (y > H || y < hz) continue; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+      for (let i = -12; i <= 12; i++) { ctx.beginPath(); ctx.moveTo(320 + i * 8, hz); ctx.lineTo(320 + i * 90, H); ctx.stroke(); }
+      ctx.shadowBlur = 0;
+      const J = fk(s.pose, 300, 318 - .47 * 160, 160, 1);
+      drawNeon(ctx, J, { back: "#ff3db4", front: "#5fe0f2", fill: "#0b0219", eye: "#ffffff" });
+      const hit = impactOf(st, s, J);
+      if (hit) { st.flash = .6; st.fx.burst(hit[0], hit[1], 26, { speed: 300, life: .5, col: "#9ff6ff", g: 200 }); }
+      st.fx.step(T.dt); st.fx.draw(ctx);
+      ctx.fillStyle = "rgba(0,0,0,.18)"; for (let y = 0; y < H; y += 3) ctx.fillRect(0, y, W, 1);
+    } },
+  { id: "look-brutalist-arena", group: "Look", title: "Brutalist Arena", blurb: "Concrete pit, one hard shaft of daylight, dust in the beam. A dark Android with a white rim, concrete chips on every hit, one red warning lamp.",
+    init(st) { st.fx = new FX(); st.shake = 0; st.wall = texture(W, H, "#6a6761", 26, 3); st.motes = Array.from({ length: 60 }, (_, i) => [hash(i) * 220 + 210, hash(i + 9) * 300, hash(i + 4)]); },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF), g = 296;
+      st.shake = Math.max(0, st.shake - T.dt * 4);
+      ctx.save(); ctx.translate((Math.random() - .5) * 10 * st.shake, (Math.random() - .5) * 10 * st.shake);
+      ctx.drawImage(st.wall, -8, -8, W + 16, H + 16);
+      ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.fillRect(-8, -8, W + 16, H + 16);
+      ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.lineWidth = 1;
+      for (let x = 0; x < W; x += 106) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, g); ctx.stroke(); }
+      for (let y = 40; y < g; y += 64) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+      ctx.fillStyle = "rgba(0,0,0,.45)"; for (let x = 26; x < W; x += 53) for (let y = 72; y < g; y += 64) { ctx.beginPath(); ctx.arc(x, y, 2.2, 0, 7); ctx.fill(); }
+      ctx.fillStyle = "#3a3936"; ctx.fillRect(-8, g, W + 16, H - g + 8);
+      const shaft = ctx.createLinearGradient(0, 0, 0, H); shaft.addColorStop(0, "rgba(255,252,240,.30)"); shaft.addColorStop(1, "rgba(255,252,240,.08)");
+      ctx.fillStyle = shaft; ctx.beginPath(); ctx.moveTo(250, -8); ctx.lineTo(390, -8); ctx.lineTo(440, g + 30); ctx.lineTo(200, g + 30); ctx.fill();
+      ctx.fillStyle = "rgba(255,250,235,.12)"; ctx.beginPath(); ctx.ellipse(320, g + 14, 120, 16, 0, 0, 7); ctx.fill();
+      const lamp = s.p < .2 && s.tier !== "calm"; ctx.fillStyle = lamp ? "#ff5a4e" : "#5a1e1a"; ctx.beginPath(); ctx.arc(560, 60, 6, 0, 7); ctx.fill();
+      if (lamp) { const r = ctx.createRadialGradient(560, 60, 0, 560, 60, 70); r.addColorStop(0, "rgba(255,90,78,.35)"); r.addColorStop(1, "rgba(255,90,78,0)"); ctx.fillStyle = r; ctx.fillRect(480, 0, 160, 140); }
+      ctx.fillStyle = "rgba(255,250,235,.55)";
+      st.motes.forEach(m => { const y = (m[1] + T.t * (6 + m[2] * 8)) % g, x = m[0] + Math.sin(T.t * .5 + m[2] * 9) * 12; ctx.globalAlpha = .3 + .5 * m[2]; ctx.fillRect(x, y, 1.6, 1.6); });
+      ctx.globalAlpha = 1;
+      const J = fk(s.pose, 305, g - .47 * 172, 172, 1);
+      ctx.fillStyle = "rgba(0,0,0,.45)"; ctx.beginPath(); ctx.ellipse(J.hip[0], g + 4, 60, 7, 0, 0, 7); ctx.fill();
+      drawSolid(ctx, J, { back: "#0e0e10", body: "#18181b", rim: "#f4f1ea", lx: .15, ly: -.6, eye: "#ff5a4e", glow: 6, joint: "#0a0a0b" });
+      const hit = impactOf(st, s, J);
+      if (hit) { st.shake = s.move === "finisher" || s.move === "kick" ? 1 : .5; st.fx.burst(hit[0], hit[1], 22, { type: "chip", speed: 260, life: 1, col: "#9a968e", floor: g + 4, r: 3 }); st.fx.burst(hit[0], hit[1], 8, { type: "smoke", speed: 40, life: 1.4, col: "#cfc9bd", g: -10, r: 8 }); }
+      st.fx.step(T.dt); st.fx.draw(ctx);
+      ctx.restore();
+    } },
+  { id: "look-ink-smoke", group: "Look", title: "Ink and Smoke", blurb: "Brush ink on paper. The Android boils like a hand-drawn line, leaves afterimages, and every hit splashes ink and smoke. Quietest of the looks, strongest in a dark club.",
+    init(st) { st.fx = new FX(); st.ink = new FX(); st.paper = texture(W, H, "#e9e1cf", 18, 7); st.trail = []; st.acc = 0; },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF), g = 300;
+      ctx.drawImage(st.paper, 0, 0);
+      const v = ctx.createRadialGradient(320, 180, 120, 320, 180, 420); v.addColorStop(0, "rgba(80,60,30,0)"); v.addColorStop(1, "rgba(80,60,30,.28)"); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#c8372d"; ctx.beginPath(); ctx.arc(520, 80, 34, 0, 7); ctx.fill();
+      ctx.strokeStyle = "#141210"; ctx.lineCap = "round";
+      for (let i = 0; i < 3; i++) { ctx.globalAlpha = .5; ctx.lineWidth = 3 + i * 2; ctx.beginPath(); ctx.moveTo(60, g + 6 + i); ctx.quadraticCurveTo(320, g - 2 + hash(i) * 6, 590, g + 8); ctx.stroke(); }
+      ctx.globalAlpha = 1;
+      const J = fk(s.pose, 300, g - .47 * 175, 175, 1);
+      st.acc += T.dt; if (st.acc > .07) { st.acc = 0; st.trail.push(J); if (st.trail.length > 6) st.trail.shift(); }
+      st.trail.forEach((tj, i) => { ctx.save(); ctx.globalAlpha = .06 + i * .015; drawMatte(ctx, tj, "#141210"); ctx.restore(); });
+      st.ink.step(T.dt); st.ink.draw(ctx);
+      drawInk(ctx, J, { ink: "#141210", eye: "#c8372d" }, T.t);
+      const hit = impactOf(st, s, J);
+      if (hit) { st.ink.burst(hit[0], hit[1], 18, { type: "dot", speed: 260, life: 2.4, col: "#141210", g: 380, floor: g + 10, r: 3.2 }); st.fx.burst(hit[0], hit[1], 10, { type: "smoke", speed: 60, life: 2, col: "#5d574d", g: -30, r: 10 }); }
+      st.fx.step(T.dt); st.fx.draw(ctx);
+    } },
+
+  { id: "stage-swarm", group: "Staging", title: "One against the swarm", blurb: "A single Android holds the centre while a swarm of drones circles in. Each strike takes one out. The swarm tightens with the music's energy.",
+    init(st) { st.fx = new FX(); st.d = Array.from({ length: 18 }, (_, i) => ({ a: hash(i) * 7, r: 150 + hash(i + 3) * 120, sp: .3 + hash(i + 5) * .5, y: hash(i + 8), dead: 0 })); },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF), g = 304, cx = 300, cy = 190;
+      const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#05070d"); bg.addColorStop(1, "#111827"); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#0a0f19"; for (let i = 0; i < 12; i++) { const x = i * 58, h = 60 + hash(i + 2) * 90; ctx.fillRect(x, g - h, 40, h); }
+      ctx.fillStyle = "rgba(255,180,90,.5)"; for (let i = 0; i < 40; i++) ctx.fillRect(hash(i) * 640, g - 20 - hash(i + 1) * 120, 2, 2);
+      const fog = ctx.createLinearGradient(0, g - 60, 0, g); fog.addColorStop(0, "rgba(40,55,80,0)"); fog.addColorStop(1, "rgba(40,55,80,.6)"); ctx.fillStyle = fog; ctx.fillRect(0, g - 60, W, 60);
+      ctx.fillStyle = "#0c111b"; ctx.fillRect(0, g, W, H - g);
+      const J = fk(s.pose, cx, g - .47 * 160, 160, 1);
+      const tight = s.tier === "calm" ? 1 : s.tier === "fight" ? .8 : .62, spin = s.tier === "peak" ? 1.8 : 1;
+      const pts = st.d.map(d => {
+        if (d.dead > 0) { d.dead -= T.dt; if (d.dead <= 0) { d.r = 260; d.a = hash(T.t) * 7; } return null; }
+        d.a += d.sp * spin * T.dt; d.r += ((150 + d.y * 110) * tight - d.r) * T.dt * .8;
+        return [cx + 40 + Math.cos(d.a) * d.r * 1.25, cy - 30 + Math.sin(d.a) * d.r * .38 + (d.y - .5) * 120, d];
+      }).filter(Boolean);
+      pts.sort((a, b) => Math.sin(a[2].a) - Math.sin(b[2].a));
+      const drawDrone = p => { const sc = .7 + .3 * (Math.sin(p[2].a) + 1) / 2; ctx.save(); ctx.translate(p[0], p[1]); ctx.scale(sc, sc);
+        ctx.fillStyle = "#1d2532"; ctx.beginPath(); ctx.moveTo(-14, 0); ctx.lineTo(0, -6); ctx.lineTo(14, 0); ctx.lineTo(0, 7); ctx.fill();
+        ctx.strokeStyle = "#5b6678"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-18, -7); ctx.lineTo(-8, -7); ctx.moveTo(8, -7); ctx.lineTo(18, -7); ctx.stroke();
+        ctx.fillStyle = "#ff4b3e"; ctx.shadowBlur = 8; ctx.shadowColor = "#ff4b3e"; ctx.beginPath(); ctx.arc(0, 0, 2.4, 0, 7); ctx.fill(); ctx.shadowBlur = 0; ctx.restore(); };
+      pts.filter(p => Math.sin(p[2].a) < 0).forEach(drawDrone);
+      drawSolid(ctx, J, { back: "#3b414b", body: "#aab2bd", rim: "#e8f0ff", rim2: "#ff9a4a", eye: "#ffb04a", glow: 10, joint: "#272b31" });
+      pts.filter(p => Math.sin(p[2].a) >= 0).forEach(drawDrone);
+      const hit = impactOf(st, s, J);
+      if (hit) {
+        let best = null, bd = 1e9; pts.forEach(p => { const d = Math.hypot(p[0] - hit[0], p[1] - hit[1]); if (d < bd) { bd = d; best = p; } });
+        st.fx.burst(hit[0], hit[1], 16, { speed: 260, life: .5, col: "#ffe2a8", g: 300 });
+        if (best) { best[2].dead = BEAT * 2; st.fx.burst(best[0], best[1], 30, { speed: 300, life: .8, col: "#ff8a5a", g: 400, floor: g }); st.fx.burst(best[0], best[1], 6, { type: "smoke", speed: 30, life: 1.2, col: "#3a4150", g: -20, r: 8 }); }
+      }
+      st.fx.step(T.dt); st.fx.draw(ctx);
+    } },
+  { id: "stage-mirror-duel", group: "Staging", title: "Mirror duel", blurb: "Two Androids of one design, steel and gunmetal, trade bars: one attacks, the other blocks or takes the hit, then they swap. Reads as a conversation with the music.",
+    init(st) { st.fx = new FX(); },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF), g = 300, k = 1 - s.p;
+      ctx.fillStyle = "#0b0c10"; ctx.fillRect(0, 0, W, H);
+      [[230, "#ffb04a"], [420, "#9fb4c8"]].forEach(([x, c]) => { const r = ctx.createRadialGradient(x, -20, 10, x, 200, 260); r.addColorStop(0, c + "55"); r.addColorStop(1, c + "00"); ctx.fillStyle = r; ctx.fillRect(0, 0, W, H); });
+      ctx.fillStyle = "#15171d"; ctx.fillRect(0, g, W, H - g);
+      ctx.strokeStyle = "#23262e"; for (let i = 0; i < 10; i++) { ctx.beginPath(); ctx.moveTo(320 + (i - 5) * 30, g); ctx.lineTo(320 + (i - 5) * 140, H); ctx.stroke(); }
+      const heroAttacks = s.bar % 2 === 0;
+      const defend = s.tier === "calm" ? "idle" : (s.move === "jab" || s.move === "cross") ? "block" : (s.move === "block" || s.move === "hit") ? "guard" : "hit";
+      const atk = s.pose, defP = defend === "guard" ? P.guard : poseFor(defend === "block" ? "block" : defend, s.tier, s.p, T.beatF + .5);
+      const A = fk(heroAttacks ? atk : defP, 262, g - .47 * 165, 165, 1);
+      const B = fk(heroAttacks ? defP : atk, 392, g - .47 * 165, 165, -1);
+      drawSolid(ctx, B, { back: "#23262c", body: "#4a4f58", rim: "#b8c8da", lx: .3, eye: "#ff5a4e", glow: 8, joint: "#1a1c20" });
+      drawSolid(ctx, A, { back: "#4a4d53", body: "#a9afb8", rim: "#ffe2b0", eye: "#ffb04a", glow: 8, joint: "#2a2d32" });
+      const hit = impactOf(st, s, heroAttacks ? A : B);
+      if (hit) st.fx.burst(hit[0], hit[1], 28, { speed: 300, life: .6, col: heroAttacks ? "#ffd59a" : "#cfe2ff", floor: g + 2 });
+      st.fx.step(T.dt); st.fx.draw(ctx);
+      mono(ctx, heroAttacks ? "steel attacks" : "gunmetal attacks", 16, 26, "rgba(231,227,218,.55)");
+      ctx.globalAlpha = .4 * k; ctx.fillStyle = heroAttacks ? "#ffb04a" : "#9fb4c8"; ctx.fillRect(16, 34, 60 * (s.p), 2); ctx.globalAlpha = 1;
+    } },
+  { id: "stage-giant-machine", group: "Staging", title: "Against the giant machine", blurb: "A small Android against one enormous industrial arm. The claw slams on beat 3 of every fight bar, the Android dodges and answers. Scale does the drama.",
+    init(st) { st.fx = new FX(); st.shake = 0; st.lastSlam = -1; },
+    draw(ctx, st, T) {
+      const bi = Math.floor(T.beatF), p = T.beatF - bi, bar = Math.floor(bi / 4), beat = ((bi % 4) + 4) % 4, tier = tierAt(bar), g = 312;
+      st.shake = Math.max(0, st.shake - T.dt * 3);
+      ctx.save(); ctx.translate((Math.random() - .5) * 14 * st.shake, (Math.random() - .5) * 14 * st.shake);
+      const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#0c1014"); bg.addColorStop(1, "#1d2228"); ctx.fillStyle = bg; ctx.fillRect(-10, -10, W + 20, H + 20);
+      ctx.fillStyle = "#14181d"; ctx.beginPath(); ctx.moveTo(430, H); ctx.lineTo(470, 40); ctx.lineTo(700, 0); ctx.lineTo(700, H); ctx.fill();
+      ctx.fillStyle = "rgba(255,176,74,.7)"; for (let r = 0; r < 9; r++) for (let c = 0; c < 4; c++) if (hash(r * 7 + c) > .45) ctx.fillRect(500 + c * 30 + r * 2, 70 + r * 26, 10, 4);
+      ctx.fillStyle = "#101418"; ctx.fillRect(-10, g, W + 20, H - g + 10);
+      // arm: wind up on beats 0-1, slam on 2, hold, lift on 3
+      let drop;
+      if (tier === "calm") drop = .1 + .05 * Math.sin(T.t);
+      else if (beat < 2) drop = .1 - .08 * easeIO((beat + p) / 2);
+      else if (beat === 2) drop = p < .22 ? easeOut(p / .22) : 1;
+      else drop = 1 - easeIO(p);
+      const claw = [350 + (1 - drop) * 60, 20 + drop * 245];
+      const sh = [690, -40], el = [560 + (1 - drop) * 30, 40 + drop * 70];
+      ctx.lineCap = "round";
+      [[sh, el, 46], [el, claw, 34]].forEach(([a, b, w]) => { ctx.strokeStyle = "#2a3038"; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.stroke(); ctx.strokeStyle = "#4b5562"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(a[0], a[1] - w * .3); ctx.lineTo(b[0], b[1] - w * .3); ctx.stroke(); });
+      ctx.strokeStyle = "#8a6a3a"; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(el[0] + 20, el[1] + 10); ctx.lineTo((el[0] + claw[0]) / 2 + 25, (el[1] + claw[1]) / 2 + 8); ctx.stroke();
+      ctx.fillStyle = "#2f363f"; ctx.save(); ctx.translate(claw[0], claw[1]);
+      ctx.beginPath(); ctx.moveTo(-36, -10); ctx.lineTo(36, -10); ctx.lineTo(28, 22); ctx.lineTo(-28, 22); ctx.fill();
+      [-24, 0, 24].forEach(x => { ctx.beginPath(); ctx.moveTo(x - 7, 20); ctx.lineTo(x + 7, 20); ctx.lineTo(x + 2, 48); ctx.lineTo(x - 2, 48); ctx.fill(); });
+      ctx.fillStyle = "#ffb04a"; ctx.shadowBlur = 10; ctx.shadowColor = "#ffb04a"; ctx.fillRect(-20, 0, 40, 4); ctx.shadowBlur = 0; ctx.restore();
+      if (tier === "calm") { ctx.fillStyle = "rgba(255,176,74,.12)"; const sx = 300 + Math.sin(T.t * .8) * 200; ctx.beginPath(); ctx.moveTo(claw[0] - 6, claw[1] + 40); ctx.lineTo(claw[0] + 6, claw[1] + 40); ctx.lineTo(sx + 50, g); ctx.lineTo(sx - 50, g); ctx.fill(); }
+      let move = "idle";
+      if (tier !== "calm") move = beat < 2 ? (beat === 0 ? "guard" : "jab") : beat === 2 ? "block" : (tier === "peak" ? "finisher" : "uppercut");
+      const pose = move === "guard" ? P.guard : poseFor(move, tier, p, T.beatF);
+      const dodge = beat === 2 && tier !== "calm" ? -.25 * easeOut(Math.min(1, p * 3)) : 0;
+      pose.rx += dodge;
+      const J = fk(pose, 240, g - .47 * 120, 120, 1);
+      drawSolid(ctx, J, { back: "#3b3f46", body: "#a3aab4", rim: "#fff0d0", eye: "#5fe0d2", glow: 8, joint: "#25282d" });
+      if (tier !== "calm" && beat === 2 && p > .22 && st.lastSlam !== bi) { st.lastSlam = bi; st.shake = 1; st.fx.burst(claw[0], g, 14, { type: "smoke", speed: 120, life: 1.4, col: "#59616b", g: -20, r: 10, spread: Math.PI, dir: -Math.PI / 2 }); st.fx.burst(claw[0], g, 30, { type: "chip", speed: 280, life: 1.1, col: "#6b737d", floor: g + 2, r: 3 }); }
+      if (tier !== "calm" && beat === 3 && p > .16 && st.lastHit !== bi) { st.lastHit = bi; st.fx.burst(claw[0] - 20, claw[1] + 30, 40, { speed: 360, life: .7, col: "#ffe2a8", floor: g }); }
+      st.fx.step(T.dt); st.fx.draw(ctx);
+      ctx.restore();
+    } },
+
+  { id: "camera-cut-language", group: "Camera", title: "Cut on the bar", blurb: "Four shot types, one per bar: wide, low, close on the chest, orbit. Hard cuts land on bar starts only, so the camera never fights the fight. Shows the lens on each shot.",
+    init(st) { st.fx = new FX(); st.lastBar = null; st.flash = 0; },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF), g = 300, shot = ((s.bar % 4) + 4) % 4;
+      if (st.lastBar !== s.bar) { st.lastBar = s.bar; st.flash = 1; }
+      st.flash = Math.max(0, st.flash - T.dt * 8);
+      const names = ["WIDE · 24 mm", "LOW · 18 mm", "CLOSE · 85 mm", "ORBIT · 35 mm"];
+      ctx.fillStyle = "#101318"; ctx.fillRect(0, 0, W, H);
+      ctx.save();
+      const J0 = fk(s.pose, 320, g - .47 * 150, 150, 1);
+      let orbit = 1;
+      if (shot === 0) { ctx.translate(320, 200); ctx.scale(.62, .62); ctx.translate(-320, -200); }
+      if (shot === 1) { ctx.translate(320, 360); ctx.scale(1.15, 1.25); ctx.translate(-320, -330); }
+      if (shot === 2) { ctx.translate(320, 190); ctx.scale(2.3, 2.3); ctx.translate(-J0.chest[0], -J0.chest[1] + 10); }
+      if (shot === 3) { orbit = Math.cos((T.beatF % 4) / 4 * Math.PI * 2 * .5 + .4); }
+      const shift = shot === 3 ? Math.sin((T.beatF % 4) / 4 * Math.PI) * 260 : 0;
+      ctx.fillStyle = "#1a1f27"; ctx.fillRect(-400, 0, 1440, g);
+      ctx.strokeStyle = "#2b323d"; ctx.lineWidth = 2;
+      for (let i = -6; i < 14; i++) { const x = i * 70 - shift; ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, g); ctx.stroke(); mono(ctx, String(i + 7).padStart(2, "0"), x + 6, 58, "#3b4452"); }
+      ctx.fillStyle = "#242a33"; ctx.fillRect(-400, g, 1440, 200);
+      ctx.save(); ctx.translate(320, 0); ctx.scale(orbit < 0 ? -1 : 1, 1); ctx.scale(.35 + .65 * Math.abs(orbit), 1); ctx.translate(-320, 0);
+      drawSolid(ctx, J0, { back: "#3a4350", body: "#8f9cb0", rim: "#e6eefc", eye: "#ffb04a", glow: 8, joint: "#272d36" });
+      ctx.restore();
+      const hit = impactOf(st, s, J0);
+      if (hit) st.fx.burst(hit[0], hit[1], 18, { speed: 260, life: .5, col: "#ffe2a8", g: 300 });
+      st.fx.step(T.dt); st.fx.draw(ctx);
+      ctx.restore();
+      ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, 34); ctx.fillRect(0, H - 34, W, 34);
+      ctx.strokeStyle = "rgba(231,227,218,.25)"; ctx.lineWidth = 1; ctx.strokeRect(W / 3, 34, W / 3, H - 68);
+      mono(ctx, `CAM ${shot + 1} · ${names[shot]}`, 16, H - 13, "#e7e3da", 12);
+      mono(ctx, `bar ${((s.bar % 16) + 16) % 16 + 1} · beat ${((s.bi % 4) + 4) % 4 + 1}`, W - 16, H - 13, "#9a978f", 12, "right");
+      mono(ctx, "cuts only on bar 1", 16, 22, "#9a978f");
+      if (st.flash > 0) { ctx.fillStyle = `rgba(255,255,255,${st.flash * .5})`; ctx.fillRect(0, 34, W, H - 68); }
+    } },
+  { id: "live-hud-layer", group: "Live Layer", title: "Tactical HUD on the Clip", blurb: "The pre-rendered Clip in warm amber, then its Matte, then the live cyan layer: brackets on the fists, depth readouts, a beat ring, sparks and arcs. Cycles every two bars.",
+    init(st) { st.fx = new FX(); },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF), g = 300, mode = Math.floor(((s.bar % 6) + 6) % 6 / 2), k = 1 - s.p;
+      const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#1a140f"); bg.addColorStop(1, "#2a1d12"); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      for (let i = 0; i < 7; i++) { ctx.fillStyle = "#211912"; ctx.fillRect(40 + i * 92, 0, 16, g); }
+      const cone = ctx.createRadialGradient(300, 30, 10, 300, 160, 240); cone.addColorStop(0, "rgba(255,176,74,.25)"); cone.addColorStop(1, "rgba(255,176,74,0)"); ctx.fillStyle = cone; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#1a130d"; ctx.fillRect(0, g, W, H - g);
+      const J = fk(s.pose, 300, g - .47 * 170, 170, 1);
+      drawSolid(ctx, J, { back: "#4a4540", body: "#a59a8c", rim: "#ffe6bf", rim2: "#c9671f", eye: "#ffb04a", glow: 6, joint: "#2e2924" });
+      if (mode === 1) {
+        ctx.save(); ctx.beginPath(); ctx.rect(320, 0, 320, H); ctx.clip();
+        ctx.fillStyle = "#000"; ctx.fillRect(320, 0, 320, H); drawMatte(ctx, J, "#ffffff"); ctx.restore();
+        ctx.strokeStyle = "#e7e3da"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(320, 0); ctx.lineTo(320, H); ctx.stroke();
+        mono(ctx, "MATTE · Android coverage", 332, 22, "#9a978f");
+      }
+      if (mode === 2) {
+        const C = "#5fe0d2";
+        ctx.strokeStyle = C; ctx.lineWidth = 1.4; ctx.shadowBlur = 8; ctx.shadowColor = C;
+        const bracket = (p, r, label) => { const [x, y] = p; ctx.beginPath(); [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([a, b]) => { ctx.moveTo(x + a * r, y + b * r * .5); ctx.lineTo(x + a * r, y + b * r); ctx.lineTo(x + a * r * .5, y + b * r); }); ctx.stroke(); if (label) mono(ctx, label, x + r + 6, y - r + 8, C, 10); };
+        bracket(J.head, 22, "HEAD · 3.4 m");
+        bracket(J.fh, 14, `FIST L · ${(3.1 + Math.sin(T.t) * .1).toFixed(1)} m`);
+        bracket(J.bh, 14, null);
+        ctx.globalAlpha = .5; ctx.beginPath(); ctx.moveTo(...J.fh); ctx.lineTo(J.fh[0] + 40, J.fh[1] - 40); ctx.lineTo(J.fh[0] + 120, J.fh[1] - 40); ctx.stroke(); ctx.globalAlpha = 1;
+        const rr_ = 30 + s.p * 120; ctx.globalAlpha = k * .8; ctx.beginPath(); ctx.ellipse(J.hip[0], g + 4, rr_, rr_ * .14, 0, 0, 7); ctx.stroke(); ctx.globalAlpha = 1;
+        const sy = (T.t * 120) % H; ctx.globalAlpha = .25; ctx.fillStyle = C; ctx.fillRect(0, sy, W, 1.5); ctx.globalAlpha = 1;
+        if (s.tier === "peak") { ctx.beginPath(); ctx.moveTo(...J.fh); for (let i = 1; i < 8; i++) { const a = i / 8; ctx.lineTo(J.fh[0] + (J.bh[0] - J.fh[0]) * a + (hash(i + Math.floor(T.t * 20)) - .5) * 24, J.fh[1] + (J.bh[1] - J.fh[1]) * a + (hash(i * 3 + Math.floor(T.t * 20)) - .5) * 24); } ctx.lineTo(...J.bh); ctx.stroke(); }
+        ctx.shadowBlur = 0;
+        const clip = clipAt(s.bar);
+        mono(ctx, `CLIP ${clip.name} · cam ${clip.cam}`, 16, 22, C);
+        mono(ctx, `frame ${String(Math.floor(((T.beatF % (clip.len * 4)) + clip.len * 4) % (clip.len * 4) * BEAT * 30)).padStart(3, "0")} · ${s.tier}`, 16, 38, C);
+        mono(ctx, "124 BPM", W - 16, 22, C, 11, "right");
+      }
+      const hit = impactOf(st, s, J);
+      if (hit && mode === 2) st.fx.burst(hit[0], hit[1], 26, { speed: 300, life: .55, col: "#9ff6ee", g: 250 });
+      if (mode === 2) { st.fx.step(T.dt); st.fx.draw(ctx); } else st.fx.p.length = 0;
+      const tags = [["CLIP", "#ffb04a", true], ["MATTE", "#e7e3da", mode === 1], ["LIVE LAYER", "#5fe0d2", mode === 2]];
+      let x = 16; tags.forEach(([t, c, on]) => { ctx.globalAlpha = on ? 1 : .3; ctx.strokeStyle = c; ctx.lineWidth = 1; ctx.font = '500 10px "IBM Plex Mono", monospace'; const w = ctx.measureText(t).width + 12; ctx.strokeRect(x, H - 28, w, 18); mono(ctx, t, x + 6, H - 15, c, 10); x += w + 6; }); ctx.globalAlpha = 1;
+    } }
+];
+
+/* ---------- hero: three layers that split and join ---------- */
+const hero = document.getElementById("hero"), hctx = hero.getContext("2d");
+const HW = hero.width, HH = hero.height;
+const mk = () => { const c = document.createElement("canvas"); c.width = HW; c.height = HH; return c; };
+const L1 = mk(), L2 = mk(), L3 = mk(); const l1 = L1.getContext("2d"), l2 = L2.getContext("2d"), l3 = L3.getContext("2d");
+const heroSt = { fx: new FX() };
+function drawHero(T) {
+  const s = stateAt(T.beatF), g = 400, k = 1 - s.p;
+  const bg = l1.createLinearGradient(0, 0, 0, HH); bg.addColorStop(0, "#160f0a"); bg.addColorStop(1, "#2c1709"); l1.fillStyle = bg; l1.fillRect(0, 0, HW, HH);
+  for (let i = 0; i < 9; i++) { l1.fillStyle = "#20170f"; l1.fillRect(40 + i * 110, 0, 22, g); l1.fillStyle = "#3a2716"; l1.fillRect(58 + i * 110, 0, 4, g); }
+  const cone = l1.createRadialGradient(480, 30, 10, 480, 220, 360); cone.addColorStop(0, "rgba(255,176,74,.34)"); cone.addColorStop(1, "rgba(255,176,74,0)"); l1.fillStyle = cone; l1.fillRect(0, 0, HW, HH);
+  l1.fillStyle = "#1b120c"; l1.fillRect(0, g, HW, HH - g);
+  const lava = l1.createLinearGradient(0, 430, 0, HH); lava.addColorStop(0, "rgba(255,120,20,.85)"); lava.addColorStop(1, "#3a0f00"); l1.fillStyle = lava; l1.fillRect(0, 434, HW, HH - 434);
+  const J = fk(s.pose, 450, g - .47 * 230, 230, 1);
+  const pal = { back: "#41454c", body: "#9aa1ab", rim: "#fff1cf", rim2: "#ff7a1a", eye: "#ffb04a", glow: 10, joint: "#2a2d32" };
+  l1.save(); l1.globalAlpha = .15; l1.translate(0, 2 * g); l1.scale(1, -1); drawSolid(l1, J, pal); l1.restore();
+  drawSolid(l1, J, pal);
+  l2.fillStyle = "#000"; l2.fillRect(0, 0, HW, HH); drawMatte(l2, J, "#fff");
+  l3.clearRect(0, 0, HW, HH);
+  const C = "#5fe0d2";
+  l3.strokeStyle = C; l3.lineWidth = 2; l3.shadowBlur = 10; l3.shadowColor = C;
+  [[J.head, 28], [J.fh, 18], [J.bh, 18]].forEach(([p, r]) => { l3.beginPath(); [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([a, b]) => { l3.moveTo(p[0] + a * r, p[1] + b * r * .5); l3.lineTo(p[0] + a * r, p[1] + b * r); l3.lineTo(p[0] + a * r * .5, p[1] + b * r); }); l3.stroke(); });
+  const rr_ = 40 + s.p * 160; l3.globalAlpha = k * .8; l3.beginPath(); l3.ellipse(J.hip[0], g + 6, rr_, rr_ * .14, 0, 0, 7); l3.stroke(); l3.globalAlpha = 1; l3.shadowBlur = 0;
+  const hit = impactOf(heroSt, s, J);
+  if (hit) heroSt.fx.burst(hit[0], hit[1], 36, { speed: 380, life: .6, col: "#9ff6ee", g: 300 });
+  heroSt.fx.step(T.dt); heroSt.fx.draw(l3);
+  // explode amount over 8 bars
+  const b8 = ((T.beatF / 4) % 8 + 8) % 8;
+  const e = b8 < 4 ? 0 : b8 < 5 ? easeIO(b8 - 4) : b8 < 7 ? 1 : 1 - easeIO(b8 - 7);
+  hctx.setTransform(1, 0, 0, 1, 0, 0); hctx.fillStyle = "#0d0e11"; hctx.fillRect(0, 0, HW, HH);
+  if (e < .01) {
+    hctx.drawImage(L1, 0, 0); hctx.globalCompositeOperation = "lighter"; hctx.drawImage(L3, 0, 0); hctx.globalCompositeOperation = "source-over";
+    mono(hctx, "MAGIC OUTPUT · Clip + Live Layer, placed by the Matte", 20, HH - 18, "rgba(231,227,218,.7)", 13);
+  } else {
+    const plane = (img, i, label, col, add) => {
+      const a = 1 - .46 * e, b = -.16 * e, c = .5 * e, d = 1 - .62 * e;
+      const tx = 70 * e + i * 150 * e, ty = 190 * e - i * 120 * e + 40 * e;
+      hctx.setTransform(a, b, c * .35, d, tx, ty);
+      hctx.globalAlpha = i === 1 ? e : 1;
+      if (add && i === 2) { hctx.fillStyle = "rgba(0,0,0,.55)"; hctx.fillRect(0, 0, HW, HH); }
+      hctx.globalCompositeOperation = add ? "lighter" : "source-over";
+      hctx.drawImage(img, 0, 0);
+      hctx.globalCompositeOperation = "source-over"; hctx.globalAlpha = 1;
+      hctx.strokeStyle = col; hctx.lineWidth = 2 / Math.max(.4, a); hctx.strokeRect(0, 0, HW, HH);
+      hctx.setTransform(1, 0, 0, 1, 0, 0);
+      hctx.globalAlpha = e; mono(hctx, label, tx + HW * a + c * .35 * 0 + 12, ty + HH * b + 22, col, 13); hctx.globalAlpha = 1;
+    };
+    plane(L1, 0, "CLIP · pre-rendered", "#ffb04a", false);
+    plane(L2, 1, "MATTE · where the Android is", "#e7e3da", false);
+    plane(L3, 2, "LIVE LAYER · Blender over Syphon", "#5fe0d2", true);
+  }
+}
+
+/* ---------- timeline ---------- */
+const tl = document.getElementById("timeline"), tctx = tl.getContext("2d");
+function drawTimeline(T) {
+  const TW = tl.width, TH = tl.height, x0 = 110, bw = (TW - x0 - 14) / 16;
+  tctx.fillStyle = "#16181d"; tctx.fillRect(0, 0, TW, TH);
+  const lanes = [["MUSIC", 18, 64], ["TIER", 92, 22], ["CLIPS", 126, 54], ["CUT POINTS", 194, 22], ["LIVE LAYER", 228, 40]];
+  lanes.forEach(([n, y, h]) => { mono(tctx, n, 14, y + h / 2 + 4, "#9a978f", 11); tctx.strokeStyle = "#22252c"; tctx.beginPath(); tctx.moveTo(x0, y + h + 4); tctx.lineTo(TW - 14, y + h + 4); tctx.stroke(); });
+  for (let b = 0; b <= 16; b++) { const x = x0 + b * bw; tctx.strokeStyle = b % 4 === 0 ? "#3a3f48" : "#262a31"; tctx.beginPath(); tctx.moveTo(x, 14); tctx.lineTo(x, TH - 14); tctx.stroke(); if (b < 16) mono(tctx, String(b + 1), x + 3, TH - 4, "#5d5f66", 10); }
+  // energy
+  tctx.beginPath(); tctx.moveTo(x0, 82);
+  for (let i = 0; i <= 256; i++) { const bf = i / 4, bar = Math.floor(bf / 4), tier = tierAt(bar); const base = tier === "calm" ? .25 : tier === "fight" ? .6 : .9; const v = base * (.75 + .25 * Math.abs(Math.sin(bf * Math.PI))) * (.9 + .1 * hash(i)); tctx.lineTo(x0 + bf / 4 * bw, 82 - v * 60); }
+  tctx.lineTo(x0 + 16 * bw, 82); tctx.closePath(); tctx.fillStyle = "rgba(231,227,218,.12)"; tctx.fill(); tctx.strokeStyle = "rgba(231,227,218,.4)"; tctx.stroke();
+  for (let i = 0; i < 64; i++) { tctx.fillStyle = "#e7e3da"; tctx.fillRect(x0 + i / 4 * bw - .5, 80, 1, 4); }
+  // tier
+  const tc = { calm: "#3b4250", fight: "#a8742e", peak: "#ff5a4e" };
+  for (let b = 0; b < 16; b++) { tctx.fillStyle = tc[tierAt(b)]; tctx.fillRect(x0 + b * bw + 1, 92, bw - 2, 22); }
+  mono(tctx, "calm", x0 + 6, 107, "#e7e3da", 11); mono(tctx, "fight", x0 + 4 * bw + 6, 107, "#0d0e11", 11); mono(tctx, "peak", x0 + 12 * bw + 6, 107, "#0d0e11", 11);
+  // clips
+  CLIPS.forEach(c => { const x = x0 + c.b * bw + 2, w = c.len * bw - 4; tctx.fillStyle = "rgba(255,176,74,.16)"; tctx.fillRect(x, 126, w, 54); tctx.strokeStyle = "#ffb04a"; tctx.strokeRect(x + .5, 126.5, w - 1, 53);
+    tctx.save(); tctx.beginPath(); tctx.rect(x, 126, w, 54); tctx.clip(); mono(tctx, c.name, x + 6, 146, "#e7e3da", 11); mono(tctx, `${c.len * 4} beats · cam ${c.cam}`, x + 6, 162, "#9a978f", 10); tctx.restore();
+    mono(tctx, c.in, x + 3, 176, "#ffb04a", 10); mono(tctx, c.out, x + w - 10, 176, "#ffb04a", 10); });
+  // cut points
+  CLIPS.forEach(c => { [c.b, ...(c.len === 2 ? [c.b + 1] : [])].forEach(b => { const x = x0 + b * bw; tctx.fillStyle = "#e7e3da"; tctx.beginPath(); tctx.moveTo(x, 197); tctx.lineTo(x + 6, 205); tctx.lineTo(x, 213); tctx.lineTo(x - 6, 205); tctx.closePath(); tctx.fill(); }); });
+  // live hits
+  for (let i = 0; i < 64; i++) { const m = moveAt(i), x = x0 + i / 4 * bw + bw * .04; if (STRIKE[m.move] && m.tier !== "calm") { tctx.strokeStyle = "#5fe0d2"; tctx.lineWidth = 2; tctx.beginPath(); tctx.moveTo(x, 266); tctx.lineTo(x, 236); tctx.stroke(); tctx.lineWidth = 1; } else { tctx.fillStyle = "rgba(95,224,210,.35)"; tctx.fillRect(x - .5, 258, 1, 8); } }
+  // playhead
+  const ph = ((T.beatF % 64) + 64) % 64, px = x0 + ph / 4 * bw;
+  tctx.fillStyle = "rgba(255,255,255,.06)"; tctx.fillRect(x0 + Math.floor(ph / 4) * bw, 14, bw, TH - 28);
+  tctx.strokeStyle = "#ffffff"; tctx.lineWidth = 2; tctx.beginPath(); tctx.moveTo(px, 12); tctx.lineTo(px, TH - 16); tctx.stroke(); tctx.lineWidth = 1;
+}
+
+/* ---------- mockup cards ---------- */
+const groupsEl = document.getElementById("groups");
+const SECTIONS = [
+  { name: "Look", note: "material and light", groups: ["Look"], cls: "grid4" },
+  { name: "Staging", note: "who fights whom", groups: ["Staging"], cls: "grid3" },
+  { name: "Camera and Live Layer", note: "how the shots cut, what Blender adds live", groups: ["Camera", "Live Layer"], cls: "grid2" }
+];
+const cards = {};
+SECTIONS.forEach(sd => {
+  const sec = document.createElement("div"); sec.className = "group";
+  sec.innerHTML = `<h3>${sd.name}<span>${sd.note}</span></h3><div class="${sd.cls}"></div>`;
+  groupsEl.appendChild(sec);
+  const grid = sec.querySelector("." + sd.cls);
+  MOCKS.filter(m => sd.groups.includes(m.group)).forEach(m => {
+    const el = document.createElement("article"); el.className = "mock";
+    el.innerHTML = `<canvas width="${W}" height="${H}" aria-label="${m.title}, animated mockup"></canvas>
+      <div class="title"><h4>${m.title}</h4><span class="mono">${m.group}</span></div>
+      <p class="blurb">${m.blurb}</p>
+      <div class="rate" role="group" aria-label="Rate ${m.title}">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" aria-pressed="false" disabled>${n}</button>`).join("")}<span class="hint">1 drop · 5 build this</span></div>
+      <textarea id="note-${m.id}" placeholder="Keep, change, combine with…" disabled></textarea>
+      <span class="saved" aria-live="polite"></span>`;
+    grid.appendChild(el);
+    const st = {}; m.init(st);
+    cards[m.id] = { m, st, el, canvas: el.querySelector("canvas"), ctx: el.querySelector("canvas").getContext("2d"), visible: false, offset: MOCKS.indexOf(m) * 4 };
+  });
+});
+
+/* ---------- decisions ---------- */
+const DECISIONS = [
+  { id: "d1-direction", q: "Which look and which staging go into round 2?", note: "Your ratings answer most of it. Name a combination if you want one, e.g. Brutalist Arena with the giant machine." },
+  { id: "d2-android-source", q: "Where does the Android come from?", note: "A: a rigged model and motion-capture fight clips from a library (fast, licences, cleanup). B: a stylised hard-surface Android built in Blender with hand-keyed moves (slow, fully ours). C: A for the moves, B for the body." },
+  { id: "d3-camera", q: "Camera in round 1: locked-off and slow moves, or full fight camera?", note: "Locked-off makes live layers line up easily and proves the pipeline first. Full camera is the bigger look and the bigger risk." },
+  { id: "d4-tempo", q: "Render at 124 BPM and stretch, or a second tempo set?", note: "One set covers about 105 to 143 BPM by Magic's Speed. A second set (e.g. 140) doubles render time." },
+  { id: "d5-budget", q: "Resolution and disk budget?", note: "Proposal: 1080p30 Hap, Android Matte in the alpha, under 20 GB for the first library." },
+  { id: "d6-live-first", q: "Which live layers first?", note: "Sparks at impacts, HUD on the fists, light flashes on the kick, room particles behind the Android, glitch on drops." },
+  { id: "d7-contract", q: "Same /vj/* contract or its own addresses?", note: "The live scene needs clip and frame from Magic. Either new rows in osc/contract.json (through the OSC owners) or a /robot/* prefix only this scene reads." }
+];
+const decList = document.getElementById("decisionList");
+DECISIONS.forEach((d, i) => {
+  const el = document.createElement("div"); el.className = "decision";
+  el.innerHTML = `<div class="q"><span class="mono">Decision ${i + 1}</span><b>${d.q}</b><p>${d.note}</p></div>
+    <div style="display:grid;gap:6px;min-width:0"><textarea id="ans-${d.id}" placeholder="Your answer" disabled></textarea><span class="saved" aria-live="polite"></span></div>`;
+  decList.appendChild(el);
+  d.el = el;
+});
+
+/* ---------- rating store (db capability) ---------- */
+const storeEl = document.getElementById("store");
+let db = null; const chain = {};
+function setStore(kind, msg) { storeEl.className = "store" + (kind === "ok" ? " ok" : kind === "bad" ? " bad" : ""); storeEl.textContent = msg; }
+function enable() { document.querySelectorAll(".rate button, textarea").forEach(b => b.disabled = false); }
+function save(path, data, statusEl) {
+  if (!db) return;
+  statusEl.textContent = "Saving…";
+  chain[path] = (chain[path] || Promise.resolve()).then(() => db.doc(path).set(data))
+    .then(() => { statusEl.textContent = "Saved " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); })
+    .catch(e => { statusEl.textContent = "Not saved: " + (e && (e.message || e.code) || "store refused the write"); });
+}
+const ratings = {};
+Object.values(cards).forEach(c => {
+  const btns = c.el.querySelectorAll(".rate button"), ta = c.el.querySelector("textarea"), stEl = c.el.querySelector(".saved");
+  const push = () => save("ratings/" + c.m.id, { mockup: c.m.title, group: c.m.group, stars: ratings[c.m.id]?.stars ?? null, comment: ta.value, updatedAt: new Date().toISOString() }, stEl);
+  btns.forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; ratings[c.m.id] = { ...(ratings[c.m.id] || {}), stars: n }; btns.forEach(x => x.setAttribute("aria-pressed", String(+x.dataset.n === n))); push(); }));
+  let tmr; ta.addEventListener("input", () => { clearTimeout(tmr); tmr = setTimeout(push, 900); });
+  ta.addEventListener("blur", () => { clearTimeout(tmr); if ((ratings[c.m.id]?.comment ?? "") !== ta.value) { ratings[c.m.id] = { ...(ratings[c.m.id] || {}), comment: ta.value }; push(); } });
+  c.apply = d => { ratings[c.m.id] = d; btns.forEach(x => x.setAttribute("aria-pressed", String(+x.dataset.n === d.stars))); if (document.activeElement !== ta && typeof d.comment === "string") ta.value = d.comment; };
+});
+DECISIONS.forEach(d => {
+  const ta = d.el.querySelector("textarea"), stEl = d.el.querySelector(".saved");
+  const push = () => save("answers/" + d.id, { question: d.q, answer: ta.value, updatedAt: new Date().toISOString() }, stEl);
+  let tmr; ta.addEventListener("input", () => { clearTimeout(tmr); tmr = setTimeout(push, 900); });
+  ta.addEventListener("blur", () => { clearTimeout(tmr); push(); });
+  d.apply = v => { if (document.activeElement !== ta && typeof v.answer === "string") ta.value = v.answer; };
+});
+(async () => {
+  const timer = setTimeout(() => { if (!db) setStore("bad", "The rating store did not answer. Open this page signed in on claude.ai to save ratings."); }, 10000);
+  let ns = null;
+  try { ns = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch (e) { ns = null; }
+  if (!ns) { clearTimeout(timer); setStore("bad", "Ratings save only when this page is open signed in on claude.ai."); return; }
+  db = ns; clearTimeout(timer);
+  setStore("ok", "Ratings and notes save here as you go. Claude reads them back.");
+  enable();
+  db.collection("ratings").onSnapshot(snap => { snap.docs.forEach(d => { const c = cards[d.id]; if (c) c.apply(d.data() || {}); }); }, e => setStore("bad", "Could not read saved ratings: " + (e.message || e.code)));
+  db.collection("answers").onSnapshot(snap => { snap.docs.forEach(doc => { const d = DECISIONS.find(x => x.id === doc.id); if (d) d.apply(doc.data() || {}); }); }, () => {});
+})();
+
+/* ---------- pipeline dots ---------- */
+const svgNS = "http://www.w3.org/2000/svg", dots = document.getElementById("dots");
+[["e0", "#e7e3da", 1.2], ["e1", "#ffb04a", 1.6], ["e2", "#ffb04a", 1.6], ["e3", "#e7e3da", 1.2], ["e4", "#e7e3da", 1.2], ["e5", "#e7e3da", 1.6], ["e6", "#5fe0d2", 1.4], ["e7", "#ffb04a", 2.6]].forEach(([id, col, dur], i) => {
+  for (let k = 0; k < 2; k++) {
+    const c = document.createElementNS(svgNS, "circle"); c.setAttribute("r", "3.5"); c.setAttribute("fill", col);
+    const a = document.createElementNS(svgNS, "animateMotion"); a.setAttribute("dur", dur + "s"); a.setAttribute("repeatCount", "indefinite"); a.setAttribute("begin", (k * dur / 2 + i * .13) + "s");
+    const mp = document.createElementNS(svgNS, "mpath"); mp.setAttribute("href", "#" + id); a.appendChild(mp); c.appendChild(a); dots.appendChild(c);
+  }
+});
+const pipe = document.getElementById("pipe");
+
+/* ---------- loop ---------- */
+const io = new IntersectionObserver(es => es.forEach(e => { const c = Object.values(cards).find(x => x.canvas === e.target); if (c) c.visible = e.isIntersecting; if (e.target === hero) heroVis = e.isIntersecting; if (e.target === tl) tlVis = e.isIntersecting; }), { rootMargin: "100px" });
+let heroVis = true, tlVis = false;
+Object.values(cards).forEach(c => io.observe(c.canvas)); io.observe(hero); io.observe(tl);
+let simT = 8 * 4 * BEAT + .3, last = performance.now(), running = !reduce;
+const clockEl = document.getElementById("clock"), dotEl = document.getElementById("beatdot"), btn = document.getElementById("motion");
+function renderAll(dt, all) {
+  const beatF = simT / BEAT;
+  if (all || heroVis) drawHero({ t: simT, dt, beatF });
+  if (all || tlVis) drawTimeline({ t: simT, dt, beatF });
+  Object.values(cards).forEach(c => { if (all || c.visible) c.m.draw(c.ctx, c.st, { t: simT, dt, beatF: beatF + c.offset }); });
+  const bar = Math.floor(beatF / 4);
+  clockEl.textContent = `124 BPM · bar ${((bar % 16) + 16) % 16 + 1}/16 · ${tierAt(bar)}`;
+  dotEl.style.opacity = String(.25 + .75 * (1 - (beatF % 1)));
+}
+function frame(now) { const dt = Math.min(.05, (now - last) / 1000); last = now; if (running) { simT += dt; renderAll(dt, false); } requestAnimationFrame(frame); }
+function setRunning(r) { running = r; btn.textContent = r ? "Pause motion" : "Play motion"; try { r ? pipe.unpauseAnimations() : pipe.pauseAnimations(); } catch (e) {} }
+btn.addEventListener("click", () => setRunning(!running));
+renderAll(1 / 60, true);
+setRunning(running);
+requestAnimationFrame(frame);
+})();
+</script>

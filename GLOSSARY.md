@@ -78,9 +78,50 @@ _Avoid_: Turbo, speed-up
 The slow turn of the stars against the sun, as over a year, which leaves the Sun Height alone.
 _Avoid_: Star rotation, sky spin
 
+## Robot Scene
+
+**Android**:
+The humanoid fighting machine at the centre of the Robot Scene.
+_Avoid_: Robot, mech, bot, fighter
+
+**Clip**:
+One pre-rendered move of the Android from one camera, a whole number of beats long, with its Mattes. Kinds: idle, move, hit, finisher.
+_Avoid_: Video, footage, loop, take
+
+**Clip Library**:
+Every Clip rendered for the Robot Scene, grouped by kind and Intensity Tier.
+_Avoid_: Footage pool, video bank
+
+**Matte**:
+A pre-rendered pass that tells Magic where something is in a Clip's frame: the Android's coverage, depth, or an object id.
+_Avoid_: Mask (Magic's module name), alpha, cutout
+
+**Pose Key**:
+A pose shared by the end of one Clip and the start of the next, so a cut between them is continuous.
+_Avoid_: Hub pose, transition pose
+
+**Cut Point**:
+A beat inside a Clip where Magic may switch to another Clip that starts on the same Pose Key.
+_Avoid_: Cue, marker, switch point
+
+**Intensity Tier**:
+One of the energy levels a Clip belongs to (calm, fight, peak); Magic picks Clips from the tier the music is in.
+_Avoid_: Level, energy bucket, mode
+
+**Render Package**:
+The Blender output a Magic generator reads: the Clip files, their Mattes and a manifest of lengths, Cut Points, Pose Keys and camera paths.
+_Avoid_: Export, bundle, output file
+
+**Live Layer**:
+Something Blender draws live over Syphon on top of the Clips (sparks, HUD, lights, particles), placed with the Clip's Mattes and camera path.
+_Avoid_: Overlay, live stuff, FX layer
+
 ## Relationships
 
 - A **Colossus** carries one **Grab Path** made of many **Grab Points**
 - The **Wanderer** holds at most one **Grab Point** per hand
 - **Shake** can happen in any **Phase** in which the **Wanderer** is on the **Colossus**
 - Each **Reset** brings the next **Colossus** and returns the **Wanderer** to the **Shrine**
+- A **Clip** starts and ends on a **Pose Key**; a **Cut Point** joins **Clips** that share one
+- The **Render Package** carries the **Clip Library**; each **Clip** brings its **Mattes**
+- A **Live Layer** follows the camera path of the **Clip** on air
