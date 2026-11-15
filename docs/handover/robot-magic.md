@@ -31,27 +31,29 @@ python3 magic/magicproj.py check robot/package/fixture/robot.magic   # 0 errors,
 - Mask gets the beauty selector on both pins (alpha from its own alpha: identity). It is there so the Matte can become its own Pass later.
 - Placeholder Clips are 480x270 (the committed fixture Manifest says so; production is 1920x1080). Beauty ProRes 4444 with an alpha disc, shadow and depth ProRes 422.
 
-## Needs the user's Magic
+## Magic checks
 
-1. Does VideoFile play ProRes 4444 and keep the alpha? (Fallback: Hap Alpha, needs another encoder.)
-2. Does a VideoFile that the InputSelector is not drawing keep playing? If not, an Angle cut mid-Clip shows the other Angle's old frame. Fallback: draw all 8 behind Transparency Amount 0/1, or restart on every Angle cut with a Start Time per beat.
-3. `Goto Start` linked to a 2-frame pulse: does it restart the video once, and does `Looping 0` hold the last frame (the Key Pose) instead of going black?
-4. Blend `Mode 3` multiplies the Shadow Pass onto the Live World as meant (shadow dark on white). Mask with one source on both pins.
-5. Duplicate `Child` id in Mask (`20,20`): accepted by `check`, not tried in Magic.
-6. Relative `File` paths (`beauty/idle__front.mov` next to the `.magic`) resolve; `absoluteFilename` is also written.
-7. `ROBOT_LIVE - Blender` is the Syphon server name once the live scene exists (R7); tests use `ROBOT_TEST`.
-8. OSCSender sends floats; the live scene should accept them as integers.
+Answered (the user, 2026-11-15, and live runs):
+- VideoFile plays ProRes 4444 and keeps the alpha.
+- A VideoFile the InputSelector is not drawing keeps playing, so an Angle cut mid-Clip shows the right frame.
+- Duplicate `Child` id in Mask (`20,20`) is accepted and draws.
+- Blend `Mode 3` multiplies the Shadow Pass onto the live layer (pixels checked with `ROBOT_TEST`).
+- Relative `File` paths next to the `.magic` resolve (every Clip played in the live runs).
 
-## Open for the `osc/` owner
+Open:
+1. `Goto Start` linked to a 2-frame pulse: does it restart the video once, and does `Looping 0` hold the last frame (the Key Pose) instead of going black? The user will test it.
+2. `ROBOT_LIVE - Blender` is the Syphon server name once the live scene exists (R7); tests use `ROBOT_TEST`.
+3. OSCSender sends floats; the live scene should accept them as integers.
 
-The addresses are only in `robot_magic.OSC_ROWS` until `osc/contract.json` has the rows (R2).
+## Contract
+
+`/vj/clip`, `/vj/clip_frame`, `/vj/angle` and `/vj/live_layer` are rows in `osc/contract.json`; `ContractRowTests` fails when `robot_magic.py` drifts from them.
 
 ## Missing live source (2026-11-15, proven in Magic Beta 3)
 
 - A module wired to a missing Syphon server draws black, even bypassed or at Power 0. An InputSelector evaluates only the input it draws, so the output gate picks the Android alone at `LiveOn` 0 and the composite at 1.
-- `LiveOn` follows a heartbeat: `/vj/live_layer`, int toggling 0/1 at 2 Hz from Blender's live layer to Magic's OSC input (udp 127.0.0.1:9202). Each change of the value sets `LiveTimer` to 1.5 s; `LiveOn` is 1 while it runs. No heartbeat, `LiveOn` 0, never black. The contract row is with B11 (`osc/` is not touched here).
+- `LiveOn` follows a heartbeat: `/vj/live_layer`, int toggling 0/1 at 2 Hz from Blender's live layer to Magic's OSC input (udp 127.0.0.1:9202). Each change of the value sets `LiveTimer` to 1.5 s; `LiveOn` is 1 while it runs. No heartbeat, `LiveOn` 0, never black. The contract row is in `osc/contract.json`.
 - Sender: `robot/live/heartbeat.py` (`Heartbeat.beat()` for a Blender timer, CLI `--port --rate --seconds`), tests in `robot/live/tests/`. Generator: `live_globals()` in `robot_magic.py`, `--osc-in PORT` for test copies.
 - Magic: a Global that links another Global with no modifier reads the same frame, only an Expression reads the last one, so `LivePrev` is `Expression(LiveRaw)`. A plain link made the change detector never fire.
 - Proof (test copy: OSC input 19404, SyphonClient `ROBOT_TEST - Python` with `robot/magic/syphon_test_pattern.py`, sampler `robot/magic/syphon_sample.py`): heartbeat off, lit 0.283, mean RGB about (20, 34, 29) or (32, 36, 37), the Android. Heartbeat on, lit 1.0, mean about (110 to 123, 79 to 81, 119 to 127), live layer with the Android in front. Heartbeat killed at t, composite until t + 0.95 s, then lit 0.282 with the Android, no frame below that over 9 s.
 - Transparency Amount was 1 (fully transparent) and blanked the composite; now 0.
-- Items 1 and 4 of the list below are answered: ProRes 4444 alpha plays, and the Mask with one child on both pins draws.
