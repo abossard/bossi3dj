@@ -28,6 +28,7 @@ OSC_ROWS = [("/vj/clip", "OutClip", 255), ("/vj/clip_frame", "OutFrame", 4095), 
 OSC_IP, OSC_PORT = "127.0.0.1", 9201
 LIVE_SERVER = "ROBOT_LIVE - Blender"      # Magic names a Syphon server "<server> - <app>"
 OUTPUT_SERVER = "Main Server"
+LIVE_GATE = "LiveOn"                       # manual Global: 0 draws the Android alone, 1 composites the Live World
 BLEND_MULTIPLY = 3                         # Blend Mode values, modules.md
 
 # Names taken from synthwave_magic.GLOBALS: audio bands, Clock, onsets, kick, beat clock (Phase, Tick, Beats, Bars, BPM), energy.
@@ -145,6 +146,7 @@ def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=No
     b = mp.Builder(syphon=OUTPUT_SERVER, size=tuple(size or m.size), fps=m.fps, audio_device=audio_device)
     for name, value, source, mods in clock_globals() + graph_globals(m, seed=seed, **graph):
         b.glob(name, value, source, mods)
+    b.glob(LIVE_GATE, 0, None, [])
     robot, osc = b.scene("Robot"), b.scene("OSC Out")
 
     def clip_files(kind):
@@ -162,9 +164,11 @@ def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=No
     shaded = robot.node("Blend", {"Mode": BLEND_MULTIPLY}, inputs=[world, shadow])
     beauty = clip_files("beauty")
     matte = robot.node("Mask", {"Use Alpha": 1}, inputs=[beauty, beauty])
-    comp = robot.node("Transparency", {"Amount": 1}, inputs=[matte, shaded])
+    comp = robot.node("Transparency", {"Amount": 0}, inputs=[matte, shaded])
     osc_mod = robot.scene_module(osc)
-    robot.output(comp, osc_mod)
+    # A module wired to a missing Syphon server draws black, bypassed or not; an InputSelector only evaluates the input it draws.
+    gate = robot.node("InputSelector", {"Input #": ("global:%s" % LIVE_GATE, [], 0)}, inputs=[matte, comp])
+    robot.output(gate, osc_mod)
     senders = []
     for address, glob, top in OSC_ROWS:
         senders.append(osc.node("OSCSender", {"IP Addr.": osc_ip, "Port": osc_port, "Message": address,

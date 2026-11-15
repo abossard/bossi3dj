@@ -16,7 +16,7 @@ python3 magic/magicproj.py check robot/package/fixture/robot.magic   # 0 errors,
 
 - `manifest.py`: validates every rule of `robot/CONTRACTS.md` (frames from beats, bpm and fps; Key Poses; one timing per Move across Angles; every Move has every Angle; cut points; wire limits 8 Angles and 256 Clips; files, Clip Data frame count and Hits).
 - `clip_graph.py`: pure model, `step(state, beat, energy)` per beat. Next Move on a bar boundary among Moves with `key_in == key_out`, in the Intensity Tier of the energy (any tier if empty, never the same Move unless alone). Angle cut at Cut Points with `cut_rate`. Picks are `frac(sin(n*12.9898 + seed*78.233 + salt*37.719)*43758.5453)`, so a seed repeats a run.
-- `robot_magic.py`: Robot scene (SyphonClient `ROBOT_LIVE - Blender` into Blend Multiply with the Shadow InputSelector, Mask on the beauty InputSelector, Transparency with the Android in front) and `OSC Out` scene (3 OSCSenders to 127.0.0.1:9201). 8 VideoFiles per selector, ordered move-major, Angle minor. Speed linked to `SpeedRatio` = BPM / manifest bpm. `Goto Start` linked to `StartPulse` (2 frames at each Move change). OSC rows live in one table, `OSC_ROWS`.
+- `robot_magic.py`: Robot scene (SyphonClient `ROBOT_LIVE - Blender` into Blend Multiply with the Shadow InputSelector, Mask on the beauty InputSelector, Transparency Amount 0 (1 is fully transparent and draws nothing) with the Android in front, then an InputSelector gate on the Global `LiveOn`) and `OSC Out` scene (3 OSCSenders to 127.0.0.1:9201). 8 VideoFiles per selector, ordered move-major, Angle minor. Speed linked to `SpeedRatio` = BPM / manifest bpm. `Goto Start` linked to `StartPulse` (2 frames at each Move change). OSC rows live in one table, `OSC_ROWS`.
 - Beat clock, kick, energy: the Globals of `magic/synthwave_magic.py`, picked by name (`CLOCK_GLOBALS`), so the audio analysis is the one the other show uses.
 - The graph fits Magic Globals. No arrays needed: the transition table, tier, cut points and Clip numbers are nested `if` chains written from the Manifest; state is held by `y` latches; picks use a hash of the beat count.
 - `tests/test_robot_magic.py` runs the generated Globals in a small ExprTk-subset interpreter with Magic's one-frame-lag rule and compares Move, Angle, Clip index and Clip frame with the model over 4 seeds and cut rates, three tiers. The interpreter is not Magic.
@@ -45,3 +45,11 @@ python3 magic/magicproj.py check robot/package/fixture/robot.magic   # 0 errors,
 ## Open for the `osc/` owner
 
 The addresses are only in `robot_magic.OSC_ROWS` until `osc/contract.json` has the rows (R2).
+
+## Missing live source (2026-11-15, proven in Magic Beta 3)
+
+- A module wired to a missing Syphon server draws black, even bypassed or at Power 0. An InputSelector evaluates only the input it draws.
+- The output gate picks the Android alone at `LiveOn` 0 (default) and the composite at 1. Magic has no signal for a server being present, so `LiveOn` is a manual Global: set it to 1 once Blender publishes `ROBOT_LIVE`, or drive it from a source later (an OSC heartbeat from Blender is the option).
+- Proof with `grab`: `LiveOn` 0, no server: lit 0.283, mean RGB (20, 34, 29), the Android disc. `LiveOn` 1 with `ROBOT_TEST - Python` (red left, blue right) from `robot/magic/syphon_test_pattern.py`: lit 1.0, grid left (201, 74, 74), right (88, 88, 215), Android in front.
+- Found on the way: Transparency Amount 1 blanked the whole composite. Fixed to 0.
+- Items 1 and 4 of the list below are answered: ProRes 4444 alpha plays (disc over the live layer), and the Mask with one child on both pins draws.

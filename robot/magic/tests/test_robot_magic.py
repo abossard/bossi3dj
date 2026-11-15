@@ -184,6 +184,24 @@ class ProjectTests(unittest.TestCase):
             self.assertEqual(servers, ["ROBOT_TEST - Blender"])
         self.assertEqual(rm.LIVE_SERVER, "ROBOT_LIVE - Blender")
 
+    def test_android_draws_without_the_live_source(self):
+        """A missing Syphon server blacks out whatever is wired to it, so the gate picks the Android alone at LiveOn 0 and the live branch hangs off input 1 only."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root, _, _ = generated(tmp)
+            scene = next(s for s in mp.scenes(root) if s.get("name") == "Robot")
+            nodes = {n.get("id"): n for n in mp.scene_nodes(scene)[1:]}
+            plug = {i: n.get("pluginName") for i, n in nodes.items()}
+
+            def reaches(i, plugin):
+                return plug[i] == plugin or any(reaches(c.get("id"), plugin) for c in nodes[i].iter("Child") if c.get("id") in nodes)
+
+            gate = next(n for n in nodes.values() if [c.get("id") for c in n.iter("Child")] and plug[[c.get("id") for c in n.iter("Child")][0]] == "Mask"
+                        and plug[n.get("id")] == "InputSelector")
+            first, second = [c.get("id") for c in gate.iter("Child")]
+            self.assertFalse(reaches(first, "SyphonClient"))
+            self.assertTrue(reaches(second, "SyphonClient"))
+            self.assertEqual(float(mp.find_global(root, rm.LIVE_GATE).get("value")), 0)
+
     def test_clock_globals_exist_in_the_audio_source(self):
         names = {g[0] for g in rm.sm.GLOBALS}
         self.assertEqual([n for n in rm.CLOCK_GLOBALS if n not in names], [])
@@ -210,7 +228,7 @@ SNAPSHOT = {
     "Robot": [("SyphonClient", [], [])] + [VIDEO] * 8 + [("InputSelector", ["VideoFile"] * 8, ["Input #<-Sel"]),
                                                             ("Blend", ["SyphonClient", "InputSelector"], [])] + [VIDEO] * 8
     + [("InputSelector", ["VideoFile"] * 8, ["Input #<-Sel"]), ("Mask", ["InputSelector", "InputSelector"], []),
-       ("Transparency", ["Mask", "Blend"], []), ("OSC Out", [], [])],
+       ("Transparency", ["Mask", "Blend"], []), ("OSC Out", [], []), ("InputSelector", ["Mask", "Transparency"], ["Input #<-LiveOn"])],
     "OSC Out": [("OSCSender", [], ["Value<-OutClip"]), ("OSCSender", [], ["Value<-OutFrame"]), ("OSCSender", [], ["Value<-OutAngle"])],
 }
 
