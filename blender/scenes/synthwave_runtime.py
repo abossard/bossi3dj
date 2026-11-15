@@ -370,8 +370,7 @@ def _play():
 def main():
     ensure_props(bpy.context.scene)
     bpy.app.driver_namespace[RUNTIME_KEY] = types.SimpleNamespace(
-        freeze=freeze, advance=advance, steps_left=steps_left, quiesce=quiesce, peek_dt=peek_dt, CLOCKS=CLOCKS, STEP=STEP,
-        idle=lambda: _state["idle"])
+        freeze=freeze, advance=advance, steps_left=steps_left, quiesce=quiesce, peek_dt=peek_dt, CLOCKS=CLOCKS, STEP=STEP)
     install_handler()
     start_bridge()
     _state["star_system"] = load_sibling(STAR_SYSTEM_FILE, "star system")

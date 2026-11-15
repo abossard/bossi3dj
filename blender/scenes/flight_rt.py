@@ -383,9 +383,7 @@ def frame(scene, depsgraph=None):
     if drive is None:
         drive = _state["drive"] = en.Drive(scene.get("vj_energy", en.E0))
     drive.step(dt, scene.get("vj_energy", en.E0), scene.get("vj_hit", 0.0), scene.get("rt_beat", 0.0))
-    idle = rt.idle() if rt is not None and hasattr(rt, "idle") else 0.0
-    scene["rt_energy"], scene["rt_kick"] = drive.e, drive.kick
-    scene["rt_pulse"] = fl.clamp(drive.glow * (1.0 + (en.PULSE_IDLE_GAIN - 1.0) * idle) - en.PULSE_IDLE_FLOOR * idle, 0.0, 1.0)
+    scene["rt_energy"], scene["rt_kick"], scene["rt_pulse"] = drive.e, drive.kick, drive.glow
     P = _state["path"]
     if P is None:
         P = _state["path"] = pc.PathCamera(live_targets(scene), _state["map"])
