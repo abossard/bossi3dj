@@ -1,0 +1,192 @@
+{
+ "version": 1,
+ "bpm": 124,
+ "fps": 30,
+ "size": [
+  480,
+  270
+ ],
+ "key_poses": [
+  "guard"
+ ],
+ "angles": [
+  {
+   "id": "front",
+   "camera": "CAM_FRONT"
+  },
+  {
+   "id": "side",
+   "camera": "CAM_SIDE"
+  }
+ ],
+ "clips": [
+  {
+   "id": "idle__front",
+   "move": "idle",
+   "angle": "front",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "calm",
+   "cut_points": [
+    0,
+    2
+   ],
+   "passes": {
+    "beauty": "beauty/idle__front.mov",
+    "shadow": "shadow/idle__front.mov",
+    "depth": "depth/idle__front.mov"
+   },
+   "clip_data": "clip_data/idle__front.json",
+   "camera_track": "camera/front.json"
+  },
+  {
+   "id": "idle__side",
+   "move": "idle",
+   "angle": "side",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "calm",
+   "cut_points": [
+    0,
+    2
+   ],
+   "passes": {
+    "beauty": "beauty/idle__side.mov",
+    "shadow": "shadow/idle__side.mov",
+    "depth": "depth/idle__side.mov"
+   },
+   "clip_data": "clip_data/idle__side.json",
+   "camera_track": "camera/side.json"
+  },
+  {
+   "id": "jab_cross__front",
+   "move": "jab_cross",
+   "angle": "front",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "build",
+   "cut_points": [
+    0,
+    2
+   ],
+   "passes": {
+    "beauty": "beauty/jab_cross__front.mov",
+    "shadow": "shadow/jab_cross__front.mov",
+    "depth": "depth/jab_cross__front.mov"
+   },
+   "clip_data": "clip_data/jab_cross__front.json",
+   "camera_track": "camera/front.json"
+  },
+  {
+   "id": "jab_cross__side",
+   "move": "jab_cross",
+   "angle": "side",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "build",
+   "cut_points": [
+    0,
+    2
+   ],
+   "passes": {
+    "beauty": "beauty/jab_cross__side.mov",
+    "shadow": "shadow/jab_cross__side.mov",
+    "depth": "depth/jab_cross__side.mov"
+   },
+   "clip_data": "clip_data/jab_cross__side.json",
+   "camera_track": "camera/side.json"
+  },
+  {
+   "id": "front_kick__front",
+   "move": "front_kick",
+   "angle": "front",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "drop",
+   "cut_points": [
+    0,
+    2
+   ],
+   "passes": {
+    "beauty": "beauty/front_kick__front.mov",
+    "shadow": "shadow/front_kick__front.mov",
+    "depth": "depth/front_kick__front.mov"
+   },
+   "clip_data": "clip_data/front_kick__front.json",
+   "camera_track": "camera/front.json"
+  },
+  {
+   "id": "front_kick__side",
+   "move": "front_kick",
+   "angle": "side",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "drop",
+   "cut_points": [
+    0,
+    2
+   ],
+   "passes": {
+    "beauty": "beauty/front_kick__side.mov",
+    "shadow": "shadow/front_kick__side.mov",
+    "depth": "depth/front_kick__side.mov"
+   },
+   "clip_data": "clip_data/front_kick__side.json",
+   "camera_track": "camera/side.json"
+  },
+  {
+   "id": "take_hit__front",
+   "move": "take_hit",
+   "angle": "front",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "build",
+   "cut_points": [
+    0,
+    2
+   ],
+   "passes": {
+    "beauty": "beauty/take_hit__front.mov",
+    "shadow": "shadow/take_hit__front.mov",
+    "depth": "depth/take_hit__front.mov"
+   },
+   "clip_data": "clip_data/take_hit__front.json",
+   "camera_track": "camera/front.json"
+  },
+  {
+   "id": "take_hit__side",
+   "move": "take_hit",
+   "angle": "side",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "build",
+   "cut_points": [
+    0,
+    2
+   ],
+   "passes": {
+    "beauty": "beauty/take_hit__side.mov",
+    "shadow": "shadow/take_hit__side.mov",
+    "depth": "depth/take_hit__side.mov"
+   },
+   "clip_data": "clip_data/take_hit__side.json",
+   "camera_track": "camera/side.json"
+  }
+ ]
+}

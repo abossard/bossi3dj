@@ -1,0 +1,934 @@
+{
+ "angle": "side",
+ "camera": "CAM_SIDE",
+ "frames": [
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 0
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 1
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 2
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 3
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 4
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 5
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 6
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 7
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 8
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 9
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 10
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 11
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 12
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 13
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 14
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 15
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 16
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 17
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 18
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 19
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 20
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 21
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 22
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 23
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 24
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 25
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 26
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 27
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 28
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 29
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 30
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 31
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 32
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 33
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 34
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 35
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 36
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 37
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 38
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 39
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 40
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 41
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 42
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 43
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 44
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 45
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 46
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 47
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 48
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 49
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 50
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 51
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 52
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 53
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 54
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 55
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 56
+  },
+  {
+   "location": [
+    0.0,
+    -4.0,
+    1.6
+   ],
+   "rotation": [
+    0.7071,
+    0.7071,
+    0.0,
+    0.0
+   ],
+   "focal_length": 50.0,
+   "sensor_width": 36.0,
+   "f": 57
+  }
+ ]
+}
