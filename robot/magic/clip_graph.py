@@ -2,9 +2,10 @@
 
 State is (move, angle, start): the Move on air, the Angle on air and the beat count at which the Move began. `step` is called
 once per beat with the running beat count and the music's energy:
-- when the Move has run its beats (always on a bar, since Clips are 4, 8 or 16 beats), pick the next Move among those whose
-  key_in equals the current key_out, in the Intensity Tier the energy is in (any tier if that one has none), not the current
-  Move unless it is the only one; the pick comes from the bar number;
+- when a Move Clip has run its beats (always on a bar, since Clips are 4, 8 or 16 beats), pick the next Move among the
+  non-idle Moves whose key_in equals the current key_out, in the Intensity Tier the energy is in, not the current Move unless it
+  is the only one; the pick comes from the bar number. With no pick the Android goes to the Idle Clip of that Key Pose;
+- an Idle Clip loops (Magic does that) and is left on the next bar boundary, once it has played, into such a pick; with no pick it stays;
 - at a Cut Point of the Move on air (offset in beats since its start), cut to another Angle with probability `cut_rate`.
 Picks are a hash of the beat count and the seed, so a run repeats. robot_magic.py writes the same hash and the same tables
 into Magic Globals; tests/test_robot_magic.py runs those Globals beside this model.
@@ -33,15 +34,22 @@ class ClipGraph:
         return "calm" if energy < self.tier_build else "build" if energy < self.tier_drop else "drop"
 
     def candidates(self, move, tier):
-        """Names of the Moves that may follow `move` in `tier`: same Key Pose, current Move left out unless it is alone."""
+        """Names of the Move Clips that may follow `move` in `tier`: same Key Pose, current Move left out unless it is alone. May be empty."""
         key = self.manifest.move(move).key_out
-        fits = [m for m in self.moves if m.key_in == key]
-        cands = [m.name for m in fits if m.tier == tier] or [m.name for m in fits]
+        cands = [m.name for m in self.moves if not m.idle and m.key_in == key and m.tier == tier]
         return [c for c in cands if c != move] or cands
 
-    def next_move(self, move, bar, tier):
+    def pool(self, move, tier):
+        """What the pick draws from: the candidates, else the Idle Clip of the Key Pose (an Idle Clip with no candidate stays)."""
         cands = self.candidates(move, tier)
-        return cands[min(len(cands) - 1, int(math.floor(hash01(bar, self.seed, SALT_MOVE) * len(cands))))] if cands else move
+        if cands:
+            return cands
+        m = self.manifest.move(move)
+        return [move if m.idle else self.manifest.idle_move(m.key_out)]
+
+    def next_move(self, move, bar, tier):
+        pool = self.pool(move, tier)
+        return pool[min(len(pool) - 1, int(math.floor(hash01(bar, self.seed, SALT_MOVE) * len(pool))))]
 
     def next_angle(self, angle, beat):
         n = len(self.angles)
@@ -56,9 +64,14 @@ class ClipGraph:
     def step(self, state, beat, energy):
         move, angle, start = state
         offset = beat - start
-        if offset >= self.manifest.move(move).beats:
+        m = self.manifest.move(move)
+        if m.idle:
+            leave = beat % 4 == 0 and offset > 0 and self.next_move(move, beat // 4, self.tier(energy)) != move
+        else:
+            leave = offset >= m.beats
+        if leave:
             move, start, offset = self.next_move(move, beat // 4, self.tier(energy)), beat, 0
-        if offset in self.manifest.move(move).cut_points:
+        if offset % self.manifest.move(move).beats in self.manifest.move(move).cut_points:
             angle = self.next_angle(angle, beat)
         return State(move, angle, start)
 
@@ -78,4 +91,5 @@ class ClipGraph:
         """Value of /vj/clip_frame: Magic's count from the Clip's start, at beat count `beat` plus a beat fraction."""
         m = self.manifest
         per_beat = m.fps * 60.0 / m.bpm
-        return min(m.move(state.move).frames - 1, int(math.floor((beat - state.start + phase) * per_beat)))
+        mv, f = m.move(state.move), int(math.floor((beat - state.start + phase) * per_beat))
+        return f % mv.frames if mv.idle else min(mv.frames - 1, f)

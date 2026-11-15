@@ -127,6 +127,17 @@ class GraphGlobalsTests(unittest.TestCase):
             with self.subTest(beat=beat):
                 self.assertLessEqual(changed, 5)
 
+    def test_idle_clip_stays_on_air_and_its_frame_wraps(self):
+        """Calm music from the start: the Idle Clip runs on, Move never changes, OutFrame counts up and wraps every 4 beats."""
+        run = Run(self.m, [0.1] * 20)
+        idle = self.m.moves.index(self.m.move("idle"))
+        self.assertEqual({int(v["Move"]) for v in run.frames}, {idle})
+        self.assertEqual({v["StartPulse"] for v in run.frames}, {0})
+        frames = [v["OutFrame"] for v in run.frames[4 * run.FRAMES_PER_BEAT:]]
+        wraps = sum(1 for a, b in zip(frames, frames[1:]) if b < a)
+        self.assertGreaterEqual(wraps, 3)
+        self.assertEqual(max(frames), self.m.move("idle").frames - 1)
+
     def test_clip_frame_counts_from_the_clip_start(self):
         energies = [0.4] * 12
         run = Run(self.m, energies, seed=2)

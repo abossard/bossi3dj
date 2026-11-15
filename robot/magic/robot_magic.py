@@ -99,10 +99,11 @@ def graph_globals(m, seed=0, tier_build=0.25, tier_drop=0.55, cut_rate=1.0):
     entries = []
     for t in tiers:
         for mv in m.moves:
-            entries.append([graph_moves[c] for c in g.candidates(mv.name, t)])
+            entries.append([graph_moves[c] for c in g.pool(mv.name, t)])
     pick_table = "0"
     for k in range(len(entries) - 1, -1, -1):
         pick_table = pick(entries[k]) if k == len(entries) - 1 else "if(Tier*%d + Move == %d, %s, %s)" % (M, k, pick(entries[k]), pick_table)
+    ends = "BeatEv2 > 0.5 and (if(IsIdle > 0.5, Beats - floor(Beats/4)*4 == 0 and Beats - MoveStart > 0 and PickNext != Move, Beats - MoveStart >= MoveBeats))"
     cut_tests = ["(%s)" % " or ".join("NxtOff == %d" % c for c in mv.cut_points) for mv in m.moves]
     cut_here = cut_tests[-1]
     for i in range(M - 2, -1, -1):
@@ -120,14 +121,15 @@ def graph_globals(m, seed=0, tier_build=0.25, tier_drop=0.55, cut_rate=1.0):
         ("Tier", 0, "calc", [ex("if(EnergyAvg < TierBuild, 0, if(EnergyAvg < TierDrop, 1, 2))")]),
         ("MoveBeats", 0, "calc", [ex(table("Move", [mv.beats for mv in m.moves]))]),
         ("MoveFrames", 0, "calc", [ex(table("Move", [mv.frames for mv in m.moves]))]),
+        ("IsIdle", 0, "calc", [ex(table("Move", [1 if mv.idle else 0 for mv in m.moves]))]),
         ("PickH", 0, "calc", [ex(hash_expr("floor(Beats/4)", SALT_MOVE)), ex("x - floor(x)")]),
         ("PickNext", 0, "calc", [ex(pick_table)]),
         ("AngleH", 0, "calc", [ex(hash_expr("Beats", SALT_CUT)), ex("x - floor(x)")]),
         ("AngleH2", 0, "calc", [ex(hash_expr("Beats", SALT_ANGLE)), ex("x - floor(x)")]),
-        ("Wrap", 0, "calc", [ex("if(BeatEv2 > 0.5 and Beats - MoveStart >= MoveBeats, 1, 0)")]),
+        ("Wrap", 0, "calc", [ex("if(%s, 1, 0)" % ends)]),
         ("WrapPrev", 0, "calc", [ex("Wrap")]),
-        ("NxtMove", 0, "calc", [ex("if(BeatEv2 > 0.5 and Beats - MoveStart >= MoveBeats, PickNext, Move)")]),
-        ("NxtOff", 0, "calc", [ex("if(BeatEv2 > 0.5 and Beats - MoveStart >= MoveBeats, 0, Beats - MoveStart)")]),
+        ("NxtMove", 0, "calc", [ex("if(%s, PickNext, Move)" % ends)]),
+        ("NxtOff", 0, "calc", [ex("if(%s, 0, (Beats - MoveStart) %% max(1, MoveBeats))" % ends)]),
         ("Move", 0, "calc", [ex("if(Wrap > 0.5, NxtMove, y)")]),
         ("MoveStart", 0, "calc", [ex("if(Wrap > 0.5, Beats, y)")]),
         ("Angle", 0, "calc", [ex("if(BeatEv3 > 0.5 and (%s) and AngleH < CutRate, (Angle + 1 + floor(AngleH2*%d)) %% %d, y)"
@@ -136,7 +138,8 @@ def graph_globals(m, seed=0, tier_build=0.25, tier_drop=0.55, cut_rate=1.0):
         ("StartPulse", 0, "calc", [ex("max(Wrap, WrapPrev)")]),
         ("SpeedRatio", 1, "calc", [ex("BPM/%s" % num(m.bpm))]),
         ("OutClip", 0, "calc", [ex(table("Sel", [m.clip_index(mv.name, a) for mv in m.moves for a in m.angle_ids]))]),
-        ("OutFrame", 0, "calc", [ex("max(0, min(MoveFrames - 1, floor((Beats - MoveStart + Phase)*%s)))" % num(per_beat))]),
+        ("OutFrame", 0, "calc", [ex("if(IsIdle > 0.5, max(0, floor((Beats - MoveStart + Phase)*%s)) %% max(1, MoveFrames), max(0, min(MoveFrames - 1, floor((Beats - MoveStart + Phase)*%s))))"
+                                    % (num(per_beat), num(per_beat)))]),
         ("OutAngle", 0, "calc", [ex("Angle")]),
     ]
     return out
@@ -155,10 +158,11 @@ def live_globals(timeout=LIVE_TIMEOUT):
     ]
 
 
-def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=None, project_dir=None, audio_device=None, osc_in=OSC_IN_PORT, **graph):
-    """Builder (not yet built) of the Robot project for Manifest `m`. File params are relative to project_dir when given."""
+def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=None, project_dir=None, audio_device=None, osc_in=OSC_IN_PORT, clock=None, **graph):
+    """Builder (not yet built) of the Robot project for Manifest `m`. File params are relative to project_dir when given.
+    `clock` replaces the audio clock Globals (name, value, source, mods), for a test that drives Beats, Phase, EnergyAvg and BPM itself."""
     b = mp.Builder(syphon=OUTPUT_SERVER, size=tuple(size or m.size), fps=m.fps, audio_device=audio_device, osc_in=osc_in)
-    for name, value, source, mods in clock_globals() + graph_globals(m, seed=seed, **graph):
+    for name, value, source, mods in (clock if clock is not None else clock_globals()) + graph_globals(m, seed=seed, **graph):
         b.glob(name, value, source, mods)
     for g in live_globals():
         b.glob(*g)

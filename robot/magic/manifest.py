@@ -10,7 +10,7 @@ TIERS = ("calm", "build", "drop")
 CLIP_BEATS = (4, 8, 16)
 PASSES = ("beauty", "shadow", "depth")
 MAX_ANGLES, MAX_CLIPS = 8, 256        # OSC wire: /vj/angle 0..7, /vj/clip 0..255
-MOVE_SHARED = ("beats", "frames", "key_in", "key_out", "tier", "cut_points")
+MOVE_SHARED = ("beats", "frames", "key_in", "key_out", "tier", "cut_points", "idle")
 
 
 class ManifestError(Exception):
@@ -52,6 +52,10 @@ class Manifest:
 
     def move(self, name):
         return next(m for m in self.moves if m.name == name)
+
+    def idle_move(self, key_pose):
+        """Name of the Idle Clip's Move of a Key Pose."""
+        return next(m.name for m in self.moves if m.idle and m.key_in == key_pose)
 
     def clip_index(self, move, angle):
         """Index in `clips`: the value of /vj/clip."""
@@ -118,7 +122,7 @@ def validate(data, base_dir=None):
     for i, c in enumerate(clips):
         where = "clips[%d]" % i
         if not isinstance(c, dict) or not _require(c, ("id", "move", "angle", "beats", "frames", "key_in", "key_out", "tier",
-                                                       "cut_points", "passes", "clip_data", "camera_track"), where, out):
+                                                       "idle", "cut_points", "passes", "clip_data", "camera_track"), where, out):
             continue
         where = "clip %s" % c["id"]
         if c["id"] != "%s__%s" % (c["move"], c["angle"]):
@@ -136,6 +140,10 @@ def validate(data, base_dir=None):
         for k in ("key_in", "key_out"):
             if c[k] not in poses:
                 out.append("%s: %s %r is not a Key Pose" % (where, k, c[k]))
+        if not isinstance(c["idle"], bool):
+            out.append("%s: idle must be true or false" % where)
+        elif c["idle"] and c["key_in"] != c["key_out"]:
+            out.append("%s: an Idle Clip needs key_in equal to key_out" % where)
         if c["tier"] not in TIERS:
             out.append("%s: tier must be one of %s" % (where, TIERS))
         cp = c["cut_points"]
@@ -163,6 +171,16 @@ def validate(data, base_dir=None):
                             out.append("%s: hit outside the Clip: %r" % (where, h))
                 except (ValueError, AttributeError) as e:
                     out.append("%s: clip data unreadable: %s" % (where, e))
+    idles = {}
+    for group in by_move.values():
+        for g in group:
+            if g["idle"] is True:
+                idles.setdefault((g["key_in"], g["angle"]), []).append(g["move"])
+    for pose in poses:
+        for a in angle_ids:
+            found = idles.get((pose, a), [])
+            if len(found) != 1:
+                out.append("Key Pose %s, Angle %s: %d Idle Clips, exactly one needed" % (pose, a, len(found)))
     for move, group in by_move.items():
         for k in MOVE_SHARED:
             if len({json.dumps(g[k]) for g in group}) > 1:

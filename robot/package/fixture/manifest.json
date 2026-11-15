@@ -29,6 +29,7 @@
    "key_in": "guard",
    "key_out": "guard",
    "tier": "calm",
+   "idle": true,
    "cut_points": [
     0,
     2
@@ -50,6 +51,7 @@
    "key_in": "guard",
    "key_out": "guard",
    "tier": "calm",
+   "idle": true,
    "cut_points": [
     0,
     2
@@ -71,6 +73,7 @@
    "key_in": "guard",
    "key_out": "guard",
    "tier": "build",
+   "idle": false,
    "cut_points": [
     0,
     2
@@ -92,6 +95,7 @@
    "key_in": "guard",
    "key_out": "guard",
    "tier": "build",
+   "idle": false,
    "cut_points": [
     0,
     2
@@ -113,6 +117,7 @@
    "key_in": "guard",
    "key_out": "guard",
    "tier": "drop",
+   "idle": false,
    "cut_points": [
     0,
     2
@@ -134,6 +139,7 @@
    "key_in": "guard",
    "key_out": "guard",
    "tier": "drop",
+   "idle": false,
    "cut_points": [
     0,
     2
@@ -155,6 +161,7 @@
    "key_in": "guard",
    "key_out": "guard",
    "tier": "build",
+   "idle": false,
    "cut_points": [
     0,
     2
@@ -176,6 +183,7 @@
    "key_in": "guard",
    "key_out": "guard",
    "tier": "build",
+   "idle": false,
    "cut_points": [
     0,
     2

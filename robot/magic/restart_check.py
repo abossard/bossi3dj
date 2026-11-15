@@ -53,7 +53,7 @@ def make_project(path, port, end_time=0, looping=0):
 
 
 def sample(seconds, hz):
-    """Runs under python3.13: prints wall time and mean grey level of Magic's output per sample."""
+    """Runs under python3.13: prints wall time and the mean green, red and blue level of Magic's output per sample."""
     import syphon
     from Foundation import NSDate, NSRunLoop
     from syphon.utils.raw import copy_mtl_texture_to_bytes
@@ -76,8 +76,8 @@ def sample(seconds, hz):
             pump(0.002)
         if c.has_new_frame:
             raw = copy_mtl_texture_to_bytes(c.new_frame_image)
-        g = raw[1::4]
-        print("%.3f %.2f" % (time.time(), sum(g) / len(g)), flush=True)
+        g, r, b = raw[1::4], raw[2::4], raw[0::4]
+        print("%.3f %.2f %.2f %.2f" % (time.time(), sum(g) / len(g), sum(r) / len(r), sum(b) / len(b)), flush=True)
 
 
 def analyse(rows, sent):

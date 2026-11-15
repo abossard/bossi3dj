@@ -5,7 +5,7 @@ Branch `integration/presentable`. Code in `robot/magic/`, fixture in `robot/pack
 ## Commands
 
 ```
-python3 -m unittest discover robot/magic/tests                       # 32 tests, no ffmpeg or Magic needed
+python3 -m unittest discover robot/magic/tests                       # 45 tests, no ffmpeg or Magic needed
 python3 robot/magic/fixture.py [--media]                             # manifest, Clip Data, Camera Tracks; --media: ffmpeg placeholder Clips (57 MB, git-ignored)
 python3 robot/magic/manifest.py robot/package/fixture/manifest.json  # validate
 python3 robot/magic/robot_magic.py robot/package/fixture/manifest.json   # -> robot/package/fixture/robot.magic (git-ignored)
@@ -15,7 +15,7 @@ python3 magic/magicproj.py check robot/package/fixture/robot.magic   # 0 errors,
 ## What works
 
 - `manifest.py`: validates every rule of `robot/CONTRACTS.md` (frames from beats, bpm and fps; Key Poses; one timing per Move across Angles; every Move has every Angle; cut points; wire limits 8 Angles and 256 Clips; files, Clip Data frame count and Hits).
-- `clip_graph.py`: pure model, `step(state, beat, energy)` per beat. Next Move on a bar boundary among Moves with `key_in == key_out`, in the Intensity Tier of the energy (any tier if empty, never the same Move unless alone). Angle cut at Cut Points with `cut_rate`. Picks are `frac(sin(n*12.9898 + seed*78.233 + salt*37.719)*43758.5453)`, so a seed repeats a run.
+- `clip_graph.py`: pure model, `step(state, beat, energy)` per beat. Next Move on a bar boundary among Moves with `key_in == key_out`, in the Intensity Tier of the energy (no pick when that tier has none: the Idle Clip, below; never the same Move unless alone). Angle cut at Cut Points with `cut_rate`. Picks are `frac(sin(n*12.9898 + seed*78.233 + salt*37.719)*43758.5453)`, so a seed repeats a run.
 - `robot_magic.py`: Robot scene (SyphonClient `ROBOT_LIVE - Blender` into Blend Multiply with the Shadow InputSelector, Mask on the beauty InputSelector, Transparency Amount 0 (1 is fully transparent and draws nothing) with the Android in front, then an InputSelector gate on the Global `LiveOn`) and `OSC Out` scene (3 OSCSenders to 127.0.0.1:9201). 8 VideoFiles per selector, ordered move-major, Angle minor. Speed linked to `SpeedRatio` = BPM / manifest bpm. `Goto Start` linked to `StartPulse` (2 frames at each Move change). OSC rows live in one table, `OSC_ROWS`.
 - Beat clock, kick, energy: the Globals of `magic/synthwave_magic.py`, picked by name (`CLOCK_GLOBALS`), so the audio analysis is the one the other show uses.
 - The graph fits Magic Globals. No arrays needed: the transition table, tier, cut points and Clip numbers are nested `if` chains written from the Manifest; state is held by `y` latches; picks use a hash of the beat count.
@@ -35,7 +35,7 @@ python3 magic/magicproj.py check robot/package/fixture/robot.magic   # 0 errors,
 
 Answered (the user, 2026-11-15, and live runs):
 - VideoFile plays ProRes 4444 and keeps the alpha.
-- A VideoFile the InputSelector is not drawing keeps playing, so an Angle cut mid-Clip shows the right frame.
+- A VideoFile the InputSelector is not drawing keeps playing (the user's answer; the 2026-11-16 measurement under Idle Clips says it does not advance).
 - Duplicate `Child` id in Mask (`20,20`) is accepted and draws.
 - Blend `Mode 3` multiplies the Shadow Pass onto the live layer (pixels checked with `ROBOT_TEST`).
 - Relative `File` paths next to the `.magic` resolve (every Clip played in the live runs).
@@ -58,3 +58,14 @@ Open:
 - Magic: a Global that links another Global with no modifier reads the same frame, only an Expression reads the last one, so `LivePrev` is `Expression(LiveRaw)`. A plain link made the change detector never fire.
 - Proof (test copy: OSC input 19404, SyphonClient `ROBOT_TEST - Python` with `robot/magic/syphon_test_pattern.py`, sampler `robot/magic/syphon_sample.py`): heartbeat off, lit 0.283, mean RGB about (20, 34, 29) or (32, 36, 37), the Android. Heartbeat on, lit 1.0, mean about (110 to 123, 79 to 81, 119 to 127), live layer with the Android in front. Heartbeat killed at t, composite until t + 0.95 s, then lit 0.282 with the Android, no frame below that over 9 s.
 - Transparency Amount was 1 (fully transparent) and blanked the composite; now 0.
+
+## Idle Clips (2026-11-16)
+
+- Manifest: `idle` is required; an Idle Clip has `key_in == key_out`; every Key Pose has exactly one Idle Clip per Angle (`manifest.py`, rejected cases in `RejectTests`).
+- Clip Graph: the pick draws from the non-idle Moves that start in the Key Pose and sit in the energy's tier, not the current Move unless it is alone. No candidate: the Idle Clip of that Key Pose (`pool`). An Idle Clip is left on a bar boundary once it has played at least a bar, only when a pick exists; otherwise it stays. The tier no longer falls back to another tier, so calm music with no calm Move idles. Idle frames wrap (`frame`).
+- Magic: `IsIdle`, `Wrap`, `NxtMove`, `NxtOff` and `OutFrame` carry the idle rules; the simulator test compares them with the model (calm, build and drop runs, so idles are entered and left).
+- Fixture: the old `idle` Move is the guard Idle Clip (`idle: true`). Its media is a still card with a disc that breathes once per Clip, first and last frame equal.
+- Looping: every VideoFile stays on `Looping 1`. An Idle Clip needs it. A Move Clip keeps it as the fallback: `Looping 0` goes black after the last frame (measured), and a pulse that arrives a few frames late would show black. The cost is a replay of the Move from frame 0 in that gap, in its `key_in` pose.
+- Live proof (`python3 robot/magic/idle_check.py --cut-rate 0`, OSC clock on 19406, counter Clips, 30 Hz Syphon samples, no black sample): idle until beat 16.12, jab_cross from beat 16.19 (0.09 s after the bar line, first level frame 0), idle again from beat 20.13 (0.06 s after the bar line, Move ended at level 228), idle until beat 32.11, jab_cross from 32.17 (0.08 s). In the idle from beat 20.5 to 31.5: 3 loop seams, largest step between samples 8.4 levels, longest flat run 0.07 s, so no black or stuck frame at the loop point.
+- Found: with Angle cuts on (`--cut-rate 1`), the other Angle's Clip is at frame 0 at the cut, not in step with the one cut from (cut at beat 22 of an idle: 132 to 23, at beat 18 of a Move: frame 29 to 0). A VideoFile the InputSelector is not drawing does not advance in this project, which differs from the answer in the list above. Not changed: it needs a decision (cut Angles only at a Clip start, or draw all Angles at Transparency 1).
+- The card levels come back through a `v^2 / 255` curve here (Mask path); `idle_check.py` decodes them.

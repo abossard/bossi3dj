@@ -1,4 +1,4 @@
-"""Fixture Render Package: 4 Moves x 2 Angles, one Key Pose, 4 beats at 124 BPM and 30 fps, at 480x270.
+"""Fixture Render Package: 3 Moves and 1 Idle Clip x 2 Angles, one Key Pose, 4 beats at 124 BPM and 30 fps, at 480x270.
 
     python3 robot/magic/fixture.py            # manifest, Clip Data, Camera Tracks (committed)
     python3 robot/magic/fixture.py --media    # also the placeholder Clips (git-ignored; ffmpeg, ProRes)
@@ -18,6 +18,7 @@ PACKAGE = os.path.join(HERE, "..", "package", "fixture")
 BPM, FPS, SIZE = 124, 30, [480, 270]
 MOVES = [("idle", "calm", [0, 2], []), ("jab_cross", "build", [0, 2], [1, 2]), ("front_kick", "drop", [0, 2], [2]),
          ("take_hit", "build", [0, 2], [1])]        # name, tier, cut points, beats with a Hit
+IDLE = "idle"                                  # the guard Key Pose's Idle Clip: looped by Magic, first and last frame identical
 ANGLES = [("front", "CAM_FRONT"), ("side", "CAM_SIDE")]
 BEATS = 4
 LIMBS = ("head", "eye_l", "eye_r", "hand_l", "hand_r", "foot_l", "foot_r")
@@ -30,7 +31,7 @@ def manifest():
         for angle, _cam in ANGLES:
             cid = "%s__%s" % (move, angle)
             clips.append({"id": cid, "move": move, "angle": angle, "beats": BEATS, "frames": frames, "key_in": "guard",
-                          "key_out": "guard", "tier": tier, "cut_points": cuts,
+                          "key_out": "guard", "tier": tier, "idle": move == IDLE, "cut_points": cuts,
                           "passes": {p: "%s/%s.mov" % (p, cid) for p in ("beauty", "shadow", "depth")},
                           "clip_data": "clip_data/%s.json" % cid, "camera_track": "camera/%s.json" % angle})
     return {"version": 1, "bpm": BPM, "fps": FPS, "size": SIZE, "key_poses": ["guard"],
@@ -82,8 +83,12 @@ def render_media(root=PACKAGE, m=None):
     w, h = SIZE
     for i, c in enumerate(m["clips"]):
         card = "testsrc2=size=%dx%d:rate=%d,hue=h=%d" % (w, h, FPS, i * 45)
+        radius = "H*0.4"
+        if c["idle"]:       # a still card and a disc breathing once per Clip: frame 0 and the last frame are equal, so Magic loops it
+            card = "color=c=0x305080:size=%dx%d:rate=%d" % (w, h, FPS)
+            radius = "H*(0.4+0.02*sin(2*PI*N/%d))" % (c["frames"] - 1)
         beauty = ["-f", "lavfi", "-i", card, "-f", "lavfi", "-i", "color=white:size=%dx%d:rate=%d" % (w, h, FPS),
-                  "-filter_complex", "[1]format=gray,geq=lum='if(lt(hypot(X-W/2,Y-H/2),H*0.4),255,0)'[a];"
+                  "-filter_complex", "[1]format=gray,geq=lum='if(lt(hypot(X-W/2,Y-H/2),%s),255,0)'[a];" % radius +
                   "[0][a]alphamerge,format=yuva444p10le", "-c:v", "prores_ks", "-profile:v", "4444"]
         grey = ["-f", "lavfi", "-i", card + ",format=gray,format=yuv422p10le", "-c:v", "prores_ks", "-profile:v", "3"]
         for name, args in (("beauty", beauty), ("shadow", grey), ("depth", grey)):
