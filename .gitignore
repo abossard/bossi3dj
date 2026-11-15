@@ -23,3 +23,5 @@ blender/local/
 
 # terrain test recordings and other videos: for the user, not for git
 docs/video/*.mp4
+# Robot Scene build output (robot/build/build_robot.py)
+robot/build/robot.blend
