@@ -132,17 +132,93 @@ textarea:disabled { opacity: .5; }
 @media (max-width: 760px) { .decision { grid-template-columns: 1fr; } }
 footer { padding-block: 48px 64px; color: var(--muted); font-size: 14px; }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+
+/* round 2 additions */
+button.ghost { padding: 8px 12px; }
+textarea { padding: 10px 12px; }
+.hero .cta.alt { background: none; color: var(--text); border: 1px solid var(--line); margin-left: 8px; }
+.sub { color: var(--muted); font-size: 14px; display: block; }
+dl { margin: 0; }
+.split3, .tradeoff { display: grid; gap: 6px; font-size: 13.5px; line-height: 1.45; }
+.split3 > div, .tradeoff > div { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; }
+.split3 dt, .tradeoff dt { font: 500 10.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; padding-top: 2px; }
+.split3 dd, .tradeoff dd { margin: 0; color: var(--text); }
+.tradeoff { padding-top: 8px; border-top: 1px solid var(--line); }
+.tradeoff dt { color: var(--muted); }
+.tradeoff dd { color: var(--muted); }
+.matrix-wrap { margin-top: 36px; display: grid; gap: 12px; }
+.tablescroll { overflow-x: auto; border: 1px solid var(--line); }
+table.matrix { border-collapse: collapse; width: 100%; min-width: 680px; font-size: 14px; }
+.matrix th, .matrix td { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; }
+.matrix thead th { font: 500 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.matrix tbody th { font-weight: 400; } .matrix tbody th b { color: var(--amber); margin-right: 6px; }
+.dots { display: inline-flex; gap: 4px; }
+.dots i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--line); }
+.dots i.on { background: var(--cyan); border-color: var(--cyan); }
+.dots i.on.hot { background: var(--amber); border-color: var(--amber); }
+.combo { display: grid; gap: 8px; margin-top: 18px; max-width: 70ch; }
+.combo label { display: grid; gap: 2px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.chips button[aria-pressed="true"] { border-color: var(--amber); color: var(--amber); }
+#fw { min-width: 880px; }
+#fw .fwlab { font: 500 11px var(--mono); letter-spacing: .08em; fill: var(--muted); }
+#fw .fwm, #fw .fwe, #fw .fwdot { transition: opacity .3s; }
+#fw .off { opacity: .14; }
+.fw-row { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 28px; margin-top: 24px; }
+.fw-example { display: grid; gap: 8px; align-content: start; }
+.fw-example canvas { width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--line); background: #000; display: block; }
+.contracts { display: grid; gap: 12px; align-content: start; }
+.contracts ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.contracts li { display: grid; gap: 4px; }
+.contracts li p { color: var(--muted); font-size: 14px; }
+.badge { display: inline-block; font: 500 10.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; margin-right: 8px; border: 1px solid; border-radius: 3px; }
+.badge.now { color: var(--amber); } .badge.later { color: var(--muted); }
+.fw-rate { margin-top: 28px; max-width: 560px; }
+@media (max-width: 860px) { .fw-row { grid-template-columns: 1fr; } }
+.names { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-bottom: 28px; }
+.namegroup { display: grid; gap: 8px; align-content: start; }
+.nameopt { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-block: 6px; border-bottom: 1px solid var(--line); }
+.nameopt > span:first-child { min-width: 110px; font-weight: 600; }
+.rate.small button { width: 30px; height: 28px; font-size: 12px; }
+.terms { display: grid; border-top: 1px solid var(--line); }
+.term { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 20px; padding-block: 14px; border-bottom: 1px solid var(--line); }
+.term[data-verdict="reject"] .tdef { opacity: .45; }
+.tdef { display: grid; gap: 4px; }
+.tdef b { font-size: 17px; }
+.tdef p { font-size: 14.5px; }
+.tdef .avoid { color: var(--muted); }
+.tdef .clash { color: var(--red); font-size: 13.5px; }
+.tctl { display: grid; gap: 6px; align-content: start; }
+.verdict { display: flex; gap: 4px; flex-wrap: wrap; }
+.verdict button, .pick { border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 500 12px var(--mono); text-transform: uppercase; letter-spacing: .05em; padding: 8px 12px; border-radius: 3px; cursor: pointer; }
+.verdict button[data-v="accept"][aria-pressed="true"] { background: var(--cyan); color: var(--stage); border-color: var(--cyan); }
+.verdict button[data-v="rename"][aria-pressed="true"] { background: var(--amber); color: var(--stage); border-color: var(--amber); }
+.verdict button[data-v="reject"][aria-pressed="true"] { background: var(--red); color: var(--stage); border-color: var(--red); }
+.verdict button:disabled, .pick:disabled { opacity: .4; cursor: not-allowed; }
+input[type="text"] { width: 100%; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 3px; padding: 8px 12px; font: 400 14px var(--body); }
+input[type="text"]:disabled { opacity: .5; }
+@media (max-width: 760px) { .term { grid-template-columns: 1fr; } }
+.dir { border: 1px solid var(--line); padding: 20px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.dir.chosen { border-color: var(--amber); }
+.dir h3 { font-size: 26px; }
+.dir p { font-size: 15px; }
+.dir .ms { color: var(--muted); display: grid; gap: 4px; }
+.dir .ms b { color: var(--text); }
+.dir .scope { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 14px; }
+.dir .scope ul { margin: 4px 0 0; padding-left: 18px; }
+.pick[aria-pressed="true"] { background: var(--amber); color: var(--stage); border-color: var(--amber); }
 </style>
 
 <div class="bar">
   <div class="wrap">
     <strong>Robot Scene</strong>
     <nav>
-      <a href="#pipeline">Pipeline</a>
-      <a href="#split">Pre-rendered or live</a>
-      <a href="#audio">Audio to Clips</a>
-      <a href="#hard">Hard parts</a>
+      <a href="#pipeline">Concept</a>
       <a href="#mockups">Mockups</a>
+      <a href="#hybrids">Hybrids</a>
+      <a href="#framework">Framework</a>
+      <a href="#glossary">Glossary</a>
+      <a href="#direction">Direction</a>
       <a href="#decisions">Decisions</a>
     </nav>
     <div class="clock">
@@ -163,7 +239,7 @@ footer { padding-block: 48px 64px; color: var(--muted); font-size: 14px; }
         <span class="mono"><span class="amber">■</span> pre-rendered in Blender, played by Magic</span>
         <span class="mono"><span class="cyan">■</span> drawn live by Blender, mixed by Magic</span>
       </div>
-      <a class="cta" href="#mockups">Rate the 9 mockups</a>
+      <a class="cta" href="#mockups">Rate the mockups</a> <a class="cta alt" href="#hybrids">Hybrid ideas and proposals</a>
     </div>
     <div>
       <canvas id="hero" width="960" height="480" aria-label="Animated composite: a pre-rendered Android Clip, its Matte and a live layer separate into three planes and join again"></canvas>
@@ -365,9 +441,73 @@ footer { padding-block: 48px 64px; color: var(--muted); font-size: 14px; }
     <div class="groups" id="groups"></div>
   </section>
 
+  <section id="hybrids">
+    <div class="head">
+      <p class="mono">6 · Hybrid ideas</p>
+      <h2>Split the work between render, Blender and Magic</h2>
+      <p>Eight ways to divide the picture, starting from your idea of a live world around a pre-rendered Android (H1). Each card says what is rendered ahead, what Blender draws live and what Magic does. Strength, risk and cost are relative to the other seven.</p>
+    </div>
+    <div class="grid4" id="hybridGrid"></div>
+    <div class="matrix-wrap">
+      <h3>Side by side</h3>
+      <p class="sub">More dots means more of that column. Live cost is load on the show GPU; build effort is work before the first show.</p>
+      <div class="tablescroll"><table class="matrix" id="matrix"></table></div>
+      <div class="combo">
+        <label for="ans-best-combination"><b>Best combination</b><span class="sub">Ideas combine. Write your pick, e.g. "H4 + H2 + H7", and why.</span></label>
+        <textarea id="ans-best-combination" data-store placeholder="H4 + H2 + …" disabled></textarea>
+        <span class="saved" id="saved-best-combination" aria-live="polite"></span>
+      </div>
+    </div>
+  </section>
+
+  <section id="framework">
+    <div class="head">
+      <p class="mono">7 · Framework proposal</p>
+      <h2>One pipeline, eight switches</h2>
+      <p>H1 to H8 are modules of one build, not eight projects. Blender builds and renders once; a generator writes the Magic scene; Magic runs the show; live Blender layers are optional. Pick an idea to see which modules it switches on. The example lights H4 + H2 + H7 + H1.</p>
+    </div>
+    <div class="chips" id="fwChips" role="group" aria-label="Show the modules of one idea"></div>
+    <div class="diagram"><svg id="fw" viewBox="0 0 1000 440" role="img" aria-label="Framework: Blender build modules, the Clip Library and Manifest, the generator, Magic runtime modules, optional live Blender modules and the output"></svg></div>
+    <div class="fw-row">
+      <div class="fw-example">
+        <canvas id="comboCanvas" width="640" height="360" aria-label="Animated example of H4, H2, H7 and H1 combined"></canvas>
+        <p class="sub">Example in motion: the Clip Graph picks the next Clip on the bar (H4), Magic recolours the rim from Light Passes (H2), sparks and fog sit in depth at the Hits (H7), the world behind is live (H1).</p>
+      </div>
+      <div class="contracts">
+        <h3>Contracts between the parts</h3>
+        <ul id="contracts"></ul>
+      </div>
+    </div>
+    <div class="mock fw-rate" id="fwRate"></div>
+  </section>
+
+  <section id="glossary">
+    <div class="head">
+      <p class="mono">8 · Glossary proposal</p>
+      <h2>Agree the words first</h2>
+      <p>The terms the framework needs, in the style of <code>GLOSSARY.md</code>. Accept, rename or reject each one; a comment is optional. Red notes mark a clash with a word the planet, island or Colossus already uses. Accepted terms go into <code>GLOSSARY.md</code> after this round; the round-1 terms there are provisional.</p>
+    </div>
+    <div class="names" id="names"></div>
+    <div class="terms" id="terms"></div>
+  </section>
+
+  <section id="direction">
+    <div class="head">
+      <p class="mono">9 · Direction proposal</p>
+      <h2>Pick the direction for v1</h2>
+      <p>Three statements of what the Robot Scene is. Each has a first milestone that proves it end to end, judged as a 60 s recording with music, not as stills. Pick one, or write your own below.</p>
+    </div>
+    <div class="grid3" id="directions"></div>
+    <div class="combo">
+      <label for="ans-direction-own"><b>Your own direction, or changes to the pick</b></label>
+      <textarea id="ans-direction-own" data-store placeholder="Direction B, but …" disabled></textarea>
+      <span class="saved" id="saved-direction" aria-live="polite"></span>
+    </div>
+  </section>
+
   <section id="decisions">
     <div class="head">
-      <p class="mono">6 · Decisions</p>
+      <p class="mono">10 · Decisions</p>
       <h2>What I need from you</h2>
       <p>Answer in the fields; they save with the ratings. Short answers are fine. Blender work starts after this round.</p>
     </div>
@@ -939,32 +1079,387 @@ function drawTimeline(T) {
   tctx.strokeStyle = "#ffffff"; tctx.lineWidth = 2; tctx.beginPath(); tctx.moveTo(px, 12); tctx.lineTo(px, TH - 16); tctx.stroke(); tctx.lineWidth = 1;
 }
 
-/* ---------- mockup cards ---------- */
+/* ---------- hybrid ideas ---------- */
+const CYAN = "#5fe0d2", AMBER = "#ffb04a";
+function chips(ctx, list) { let x = 12; list.forEach(([t, c, on = true]) => { ctx.font = '500 10px "IBM Plex Mono", monospace'; const w = ctx.measureText(t).width + 14; ctx.globalAlpha = on ? 1 : .3; ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(x, H - 30, w, 20); ctx.strokeStyle = c; ctx.lineWidth = 1; ctx.strokeRect(x + .5, H - 29.5, w - 1, 19); mono(ctx, t, x + 7, H - 16, c, 10); x += w + 6; }); ctx.globalAlpha = 1; }
+const STARS = Array.from({ length: 140 }, (_, i) => [hash(i) * 900 - 130, hash(i + 50) * 240, hash(i + 99)]);
+function liveWorld(ctx, T, cam, k) {
+  const sky = ctx.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, "#04030c"); sky.addColorStop(1, "#1d0b36"); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+  const neb = ctx.createRadialGradient(460 - cam * .15, 90, 10, 460 - cam * .15, 90, 220); neb.addColorStop(0, `rgba(170,60,200,${.18 + .14 * k})`); neb.addColorStop(1, "rgba(170,60,200,0)"); ctx.fillStyle = neb; ctx.fillRect(0, 0, W, H);
+  STARS.forEach(s => { ctx.globalAlpha = .35 + .65 * s[2] * (.6 + .4 * k); ctx.fillStyle = "#fff"; ctx.fillRect(s[0] - cam * .2, s[1], 1.4, 1.4); }); ctx.globalAlpha = 1;
+  const sun = ctx.createRadialGradient(110 - cam * .3, 210, 4, 110 - cam * .3, 210, 90); sun.addColorStop(0, "rgba(255,214,140,1)"); sun.addColorStop(.25, "rgba(255,140,80,.6)"); sun.addColorStop(1, "rgba(255,90,60,0)"); ctx.fillStyle = sun; ctx.fillRect(0, 100, 300, 220);
+  const px = 320 - cam * .6;
+  ctx.save(); ctx.beginPath(); ctx.arc(px, 980, 700, 0, 7); ctx.clip();
+  const land = ctx.createLinearGradient(0, 280, 0, H); land.addColorStop(0, "#2a1440"); land.addColorStop(1, "#0d0618"); ctx.fillStyle = land; ctx.fillRect(0, 250, W, H);
+  ctx.fillStyle = "rgba(255,120,200,.10)"; for (let i = 0; i < 9; i++) { ctx.beginPath(); ctx.ellipse(px - 300 + i * 80 + Math.sin(i) * 20, 300 + (i % 3) * 18, 50, 6, 0, 0, 7); ctx.fill(); }
+  ctx.restore();
+  ctx.strokeStyle = `rgba(255,90,200,${.45 + .5 * k})`; ctx.lineWidth = 3; ctx.shadowBlur = 18; ctx.shadowColor = "#ff5ac8"; ctx.beginPath(); ctx.arc(px, 980, 700, Math.PI * 1.32, Math.PI * 1.68); ctx.stroke(); ctx.shadowBlur = 0;
+}
+const ANDROID = { back: "#41454c", body: "#9aa1ab", rim: "#fff1cf", eye: AMBER, glow: 10, joint: "#2a2d32" };
+const RELIGHT_HUES = [190, 320, 40, 270];
+
+const HYBRIDS = [
+  { id: "hybrid-h1", code: "H1", title: "Live world, pre-rendered Android", yours: true,
+    pre: "Android Clips with alpha, Matte, Shadow Pass, Camera Track", live: "Space and planet, reacting to the music, replaying the Clip's camera", magic: "Plays the Clip, sends clip and frame, stacks world, shadow, Android",
+    strength: "The world reacts fully; the Android keeps render quality", risk: "Camera and light must match per frame or the Android looks pasted on", cost: "high live, medium build",
+    init(st) { st.fx = new FX(); },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF), k = 1 - s.p, cam = Math.sin(T.t * .3) * 46;
+      liveWorld(ctx, T, cam, s.tier === "calm" ? .3 * k : k);
+      const J = fk(s.pose, 300 - cam, 300 - .47 * 170, 170, 1);
+      ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.beginPath(); ctx.ellipse(J.hip[0] + 34, 302, 70, 8, -.04, 0, 7); ctx.fill();
+      drawSolid(ctx, J, { ...ANDROID, rim2: "#ff6ab0" });
+      const hit = impactOf(st, s, J); if (hit) st.fx.burst(hit[0], hit[1], 24, { speed: 300, life: .5, col: "#ffd9f0", g: 260 });
+      st.fx.step(T.dt); st.fx.draw(ctx);
+      const f = String(Math.floor(((T.beatF % 8) + 8) % 8 * BEAT * 30)).padStart(3, "0");
+      mono(ctx, `clip frame ${f} = live frame ${f}`, W - 12, 20, CYAN, 10, "right");
+      chips(ctx, [["LIVE WORLD", CYAN], ["SHADOW PASS", AMBER], ["ANDROID CLIP", AMBER]]);
+    } },
+  { id: "hybrid-h2", code: "H2", title: "Relightable Android",
+    pre: "Android in Light Passes: key, rim, emission, fills, plus normal and depth", live: "Nothing", magic: "Mixes the Light Passes: rim colour, emission and light direction follow the music",
+    strength: "Feels live at full render quality, no live Blender at all", risk: "Light Passes multiply file size and decode load", cost: "low live, medium build",
+    init(st) { st.fx = new FX(); },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF), k = 1 - s.p, hue = RELIGHT_HUES[((s.bar % 4) + 4) % 4], key = .45 + .45 * (s.tier === "calm" ? .3 : k), emit = s.tier === "peak" ? k : .25;
+      ctx.fillStyle = "#0e1014"; ctx.fillRect(0, 0, W, H);
+      const halo = ctx.createRadialGradient(300, 170, 20, 300, 170, 260); halo.addColorStop(0, `hsla(${hue},80%,55%,${.18 * key})`); halo.addColorStop(1, "hsla(0,0%,0%,0)"); ctx.fillStyle = halo; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#15181d"; ctx.fillRect(0, 300, W, 60);
+      const J = fk(s.pose, 280, 300 - .47 * 175, 175, 1), g = Math.round(40 + 140 * key);
+      drawSolid(ctx, J, { back: `rgb(${g * .45},${g * .47},${g * .5})`, body: `rgb(${g},${g + 4},${g + 10})`, rim: `hsl(${hue},90%,70%)`, lx: -.5, ly: -.2, eye: `hsla(${hue},100%,${50 + 30 * emit}%,1)`, glow: 6 + 20 * emit, joint: "#202328" });
+      const hit = impactOf(st, s, J); if (hit) st.fx.burst(hit[0], hit[1], 16, { speed: 220, life: .4, col: `hsl(${hue},100%,80%)`, g: 200 });
+      st.fx.step(T.dt); st.fx.draw(ctx);
+      const passes = [["KEY", "#d8dde5", key], ["RIM", `hsl(${hue},90%,65%)`, .9], ["EMIT", AMBER, emit], ["FILL", "#7d8fb0", .4]];
+      passes.forEach(([n, c, gain], i) => { const x = 470 + (i % 2) * 82, y = 36 + Math.floor(i / 2) * 92; ctx.fillStyle = "#000"; ctx.fillRect(x, y, 74, 70); ctx.save(); ctx.globalAlpha = .25 + .75 * gain; drawMatte(ctx, fk(s.pose, x + 30, y + 40, 52, 1), c); ctx.restore(); ctx.strokeStyle = "#2a2e36"; ctx.strokeRect(x + .5, y + .5, 73, 69); mono(ctx, `${n} ${gain.toFixed(2)}`, x + 4, y + 82, "#9a978f", 9); });
+      chips(ctx, [["LIGHT PASSES", AMBER], ["MAGIC MIX", "#e7e3da"]]);
+    } },
+  { id: "hybrid-h3", code: "H3", title: "Normal-pass relight in Magic",
+    pre: "Android beauty, Normal Pass, Depth Pass", live: "Nothing in Blender", magic: "An ISF shader lights the Normal Pass: a strobe sweeps across, hit flashes from one side",
+    strength: "Any light, any colour, any time, from two extra passes", risk: "Shader light on a render can look flat or fake; needs care", cost: "low live, medium build",
+    init(st) { st.fx = new FX(); st.flash = 0; },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF), bp = ((T.beatF / 4) % 1 + 1) % 1, lx = -40 + bp * 720, ly = 110, col = s.tier === "peak" ? "#ff5ac8" : CYAN;
+      ctx.fillStyle = "#090a0d"; ctx.fillRect(0, 0, W, H);
+      const lg = ctx.createRadialGradient(lx, ly, 2, lx, ly, 200); lg.addColorStop(0, col + "55"); lg.addColorStop(1, col + "00"); ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#121419"; ctx.fillRect(0, 300, W, 60);
+      const J = fk(s.pose, 300, 300 - .47 * 175, 175, 1), w = .075 * 175;
+      drawSolid(ctx, J, { back: "#16181c", body: "#24272d", eye: "#555", glow: 0, joint: "#111" });
+      const dx = lx - J.chest[0], dy = ly - J.chest[1], d = Math.hypot(dx, dy), ux = dx / d, uy = dy / d, fall = clamp(1.2 - d / 420, .15, 1);
+      ctx.save(); ctx.globalAlpha = fall; ctx.lineCap = "round"; ctx.strokeStyle = col; ctx.shadowBlur = 10; ctx.shadowColor = col;
+      [[J.hip, J.chest], ...frontL(J)].forEach((p, i) => { poly(ctx, p, ux * w * (i ? .38 : .75), uy * w * (i ? .38 : .75)); ctx.lineWidth = w * (i ? .28 : .5); ctx.stroke(); });
+      ctx.restore();
+      const hit = impactOf(st, s, J); if (hit) { st.flash = 1; st.fx.burst(hit[0], hit[1], 14, { speed: 200, life: .35, col: "#fff", g: 100 }); }
+      if (st.flash > 0) { st.flash = Math.max(0, st.flash - T.dt * 5); ctx.save(); ctx.globalAlpha = st.flash; ctx.strokeStyle = "#fff"; ctx.lineCap = "round"; frontL(J).forEach(p => { poly(ctx, p, w * .4, 0); ctx.lineWidth = w * .3; ctx.stroke(); }); poly(ctx, [J.hip, J.chest], w * .8, 0); ctx.lineWidth = w * .5; ctx.stroke(); ctx.restore(); }
+      st.fx.step(T.dt); st.fx.draw(ctx);
+      ctx.fillStyle = col; ctx.beginPath(); ctx.arc(lx, ly, 5, 0, 7); ctx.fill();
+      ctx.fillStyle = "#000"; ctx.fillRect(520, 24, 100, 100); ctx.save(); const g2 = ctx.createLinearGradient(540, 0, 600, 0); g2.addColorStop(0, "#6a6aff"); g2.addColorStop(1, "#ff8a8a"); drawMatte(ctx, fk(s.pose, 562, 84, 70, 1), g2); ctx.restore(); ctx.strokeStyle = "#2a2e36"; ctx.strokeRect(520.5, 24.5, 99, 99); mono(ctx, "NORMAL PASS", 524, 138, "#9a978f", 9);
+      chips(ctx, [["BEAUTY + NORMALS", AMBER], ["ISF RELIGHT", "#e7e3da"]]);
+    } },
+  { id: "hybrid-h4", code: "H4", title: "Clip Graph",
+    pre: "Short Clips that start and end in shared Key Poses", live: "Nothing", magic: "Walks the graph: the next Clip on a bar boundary, chosen by Intensity Tier",
+    strength: "Seamless fights from few Clips, like a game state machine in video", risk: "Needs exact Key Poses; a one-frame mismatch shows as a pop", cost: "low live, medium build",
+    init(st) { st.fx = new FX(); },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF), N = { G: [150, 120, "guard"], C: [80, 260, "crouch"], R: [235, 255, "recoil"] };
+      const E = [["G", "G", "jab_cross", "cross"], ["G", "C", "duck", "block"], ["C", "G", "uppercut", "uppercut"], ["G", "R", "take_hit", "hit"], ["R", "G", "recover", "guard"], ["C", "C", "sweep", "kick"]];
+      const walk = [0, 1, 2, 3, 4, 0, 1, 5, 2, 0, 3, 4];
+      const step = ((s.bar % walk.length) + walk.length) % walk.length, e = E[walk[step]], bp = ((T.beatF / 4) % 1 + 1) % 1;
+      ctx.fillStyle = "#0d0f13"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#14171c"; ctx.fillRect(340, 0, 300, H);
+      const pt = (a, b, t) => { if (a === b) { const [x, y] = N[a]; const an = -Math.PI / 2 + t * Math.PI * 2; return [x + Math.cos(an) * 26, y - 40 + Math.sin(an) * 26 + 26 - 26]; } const [x1, y1] = N[a], [x2, y2] = N[b], mx = (x1 + x2) / 2 + (y2 - y1) * .25, my = (y1 + y2) / 2 - (x2 - x1) * .25; const u = 1 - t; return [u * u * x1 + 2 * u * t * mx + t * t * x2, u * u * y1 + 2 * u * t * my + t * t * y2]; };
+      E.forEach((ed, i) => { const on = i === walk[step]; ctx.strokeStyle = on ? AMBER : "#3a3f48"; ctx.lineWidth = on ? 2 : 1.2; ctx.beginPath(); for (let t = 0; t <= 1.001; t += .05) { const p = pt(ed[0], ed[1], t); t === 0 ? ctx.moveTo(...p) : ctx.lineTo(...p); } ctx.stroke(); const m = pt(ed[0], ed[1], .5); mono(ctx, ed[2], m[0] + 6, m[1] - 4, on ? AMBER : "#6b6e75", 9); });
+      Object.entries(N).forEach(([key, [x, y, name]]) => { const on = key === e[0] || key === e[1]; ctx.fillStyle = "#0d0f13"; ctx.strokeStyle = on ? "#e7e3da" : "#3a3f48"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, 20, 0, 7); ctx.fill(); ctx.stroke(); mono(ctx, key, x, y + 4, "#e7e3da", 12, "center"); mono(ctx, name, x, y + 36, "#9a978f", 9, "center"); });
+      const tok = pt(e[0], e[1], bp); ctx.fillStyle = AMBER; ctx.shadowBlur = 10; ctx.shadowColor = AMBER; ctx.beginPath(); ctx.arc(tok[0], tok[1], 5, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
+      const pose = e[3] === "guard" ? lerpPose(P.hit, P.guard, easeOut(Math.min(1, bp * 2))) : poseFor(e[3], "fight", ((T.beatF % 1) + 1) % 1, T.beatF);
+      const J = fk(pose, 470, 300 - .47 * 150, 150, 1);
+      ctx.fillStyle = "#1a1d23"; ctx.fillRect(340, 300, 300, 60);
+      drawSolid(ctx, J, ANDROID);
+      const hit = impactOf(st, { ...s, move: e[3], tier: "fight" }, J); if (hit) st.fx.burst(hit[0], hit[1], 16, { speed: 240, life: .45, col: "#ffe2a8", g: 300 });
+      st.fx.step(T.dt); st.fx.draw(ctx);
+      mono(ctx, `bar ${((s.bar % 16) + 16) % 16 + 1} · ${s.tier} · ${e[2]}`, 352, 22, AMBER, 10);
+      chips(ctx, [["KEY POSES", AMBER], ["MAGIC PICKS ON THE BAR", "#e7e3da"]]);
+    } },
+  { id: "hybrid-h5", code: "H5", title: "Time-scrubbed hero moves",
+    pre: "Long moves rendered at 120 fps or more", live: "Nothing", magic: "Drives rate and position from the music: slow motion in the breakdown, real time on the drop, rewinds",
+    strength: "One expensive move gives many moments; slow motion hides nothing", risk: "4x frames per second of Clip: render time and disk", cost: "low live, high render",
+    init(st) { st.fx = new FX(); st.lt = 0; st.trail = []; st.acc = 0; },
+    draw(ctx, st, T) {
+      const cyc = ((T.beatF % 16) + 16) % 16, bar = Math.floor(cyc / 4);
+      const rate = bar === 0 ? 1 : bar === 1 ? .25 : bar === 2 ? 1 : cyc < 14 ? -1 : 1;
+      st.lt += rate * T.dt / BEAT;
+      const m = moveAt(Math.floor(st.lt) + 32), pp = ((st.lt % 1) + 1) % 1, pose = poseFor(m.move, m.tier, pp, st.lt);
+      ctx.fillStyle = "#0a0d14"; ctx.fillRect(0, 0, W, H);
+      const sh = ctx.createLinearGradient(0, 0, 0, 300); sh.addColorStop(0, "rgba(120,160,255,.12)"); sh.addColorStop(1, "rgba(120,160,255,0)"); ctx.fillStyle = sh; ctx.fillRect(200, 0, 220, 300);
+      ctx.fillStyle = "#121722"; ctx.fillRect(0, 280, W, 80);
+      const J = fk(pose, 300, 280 - .47 * 165, 165, 1);
+      st.acc += T.dt; if (st.acc > .05) { st.acc = 0; st.trail.push(J); if (st.trail.length > 8) st.trail.shift(); }
+      if (Math.abs(rate) < 1) st.trail.forEach((tj, i) => { ctx.save(); ctx.globalAlpha = .05 + i * .02; drawMatte(ctx, tj, "#8fb0ff"); ctx.restore(); });
+      drawSolid(ctx, J, { ...ANDROID, rim: "#dfe8ff" });
+      const hit = impactOf(st, { bi: Math.floor(st.lt), p: pp, tier: m.tier, move: m.move }, J); if (hit) st.fx.burst(hit[0], hit[1], 20, { speed: 260 * Math.max(.3, Math.abs(rate)), life: .6 / Math.max(.3, Math.abs(rate)), col: "#ffe2a8", g: 300 * Math.abs(rate) });
+      st.fx.step(T.dt * Math.max(.25, Math.abs(rate))); st.fx.draw(ctx);
+      const gx = 16, gy = 300, gw = W - 32, gh = 34; ctx.strokeStyle = "#2a2e36"; ctx.strokeRect(gx + .5, gy + .5, gw, gh);
+      ctx.strokeStyle = CYAN; ctx.beginPath(); for (let i = 0; i <= 160; i++) { const c = i / 10, b = Math.floor(c / 4), r = b === 0 ? 1 : b === 1 ? .25 : b === 2 ? 1 : c < 14 ? -1 : 1, y = gy + gh / 2 - r * gh * .42; i ? ctx.lineTo(gx + i / 160 * gw, y) : ctx.moveTo(gx, y); } ctx.stroke();
+      ctx.fillStyle = "#fff"; ctx.fillRect(gx + cyc / 16 * gw - 1, gy, 2, gh);
+      mono(ctx, `rate ${rate < 0 ? "−" : ""}${Math.abs(rate).toFixed(2)}×`, 16, 22, CYAN, 11);
+      mono(ctx, "rendered at 120 fps", W - 16, 22, "#9a978f", 10, "right");
+      ["intro 1×", "breakdown 0.25×", "drop 1×", "rewind"].forEach((t, i) => mono(ctx, t, gx + 6 + i * gw / 4, gy + gh + 14, "#6b6e75", 9));
+    } },
+  { id: "hybrid-h6", code: "H6", title: "Multi-angle sync",
+    pre: "Every move from 3 to 4 Shot Cameras with the same timing", live: "Nothing", magic: "Cuts between Angles on the beat; the action carries on without a jump",
+    strength: "Continuity is free: the same moment from another camera", risk: "Renders and disk grow with every Angle", cost: "low live, high render",
+    init(st) { st.fx = new FX(); st.lastBi = null; st.flash = 0; },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF), cut = Math.floor(T.beatF / 2), a = ((cut % 4) + 4) % 4;
+      if (st.lastBi !== cut) { st.lastBi = cut; st.flash = 1; }
+      const view = (c, i, x, y, w, h, big) => {
+        c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip(); c.fillStyle = "#11141a"; c.fillRect(x, y, w, h);
+        const gy = [.82, .9, .95, .72][i], sc = [.42, .55, 1.05, .5][i] * h / 360 * (big ? 1 : 1), fx = [1, -1, 1, 1][i], sqx = [1, .5, 1, 1][i], sqy = [1, 1, 1, .62][i];
+        c.fillStyle = "#1c2129"; c.fillRect(x, y + h * gy, w, h);
+        c.translate(x + w / 2, y + h * gy); c.scale(sqx, sqy);
+        const J = fk(s.pose, 0, -.47 * 330 * sc, 330 * sc, fx);
+        if (i === 2) c.translate(-J.chest[0] * .3, h * .18);
+        drawSolid(c, J, ANDROID);
+        c.restore(); return J;
+      };
+      ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+      view(ctx, a, 0, 0, W, 270, true);
+      const hitJ = fk(s.pose, 0, 0, 1, 1);
+      if (STRIKE[s.move] && s.tier !== "calm" && s.p > .16 && st.lastHit !== s.bi) { st.lastHit = s.bi; st.fx.burst(W / 2 + (a === 1 ? -40 : 60), 120, 18, { speed: 240, life: .45, col: "#ffe2a8", g: 300 }); }
+      st.fx.step(T.dt); st.fx.draw(ctx);
+      if (st.flash > 0) { st.flash = Math.max(0, st.flash - T.dt * 8); ctx.fillStyle = `rgba(255,255,255,${st.flash * .35})`; ctx.fillRect(0, 0, W, 270); }
+      const names = ["A1 side", "A2 front", "A3 close", "A4 high"];
+      for (let i = 0; i < 4; i++) { const x = 8 + i * 158, y = 278; view(ctx, i, x, y, 150, 72, false); ctx.strokeStyle = i === a ? AMBER : "#2a2e36"; ctx.lineWidth = i === a ? 2 : 1; ctx.strokeRect(x + .5, y + .5, 149, 71); mono(ctx, names[i], x + 5, y + 13, i === a ? AMBER : "#9a978f", 9); }
+      mono(ctx, `ON AIR ${names[a]} · cut every 2 beats`, 12, 20, "#e7e3da", 10);
+    } },
+  { id: "hybrid-h7", code: "H7", title: "Depth-composited live effects",
+    pre: "Android with Depth Pass and Clip Data: Hits, eyes and joints in screen space per frame", live: "Sparks, light shafts, fog, energy arcs, HUD tags at those points (Blender or Magic)", magic: "Composites the effects in depth: in front of or behind the Android",
+    strength: "Effects land exactly on the fist and pass behind the body", risk: "Clip Data and the Clip must stay frame-locked", cost: "medium live, medium build",
+    init(st) { st.fx = new FX(); st.motes = Array.from({ length: 70 }, (_, i) => ({ x: hash(i) * W, y: 60 + hash(i + 7) * 230, z: hash(i + 3) * 2 - 1, sp: 8 + hash(i + 2) * 22 })); },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF), k = 1 - s.p;
+      ctx.fillStyle = "#0b0d12"; ctx.fillRect(0, 0, W, H);
+      const shaft = ctx.createLinearGradient(0, 0, 0, 300); shaft.addColorStop(0, `rgba(95,224,210,${.16 + .1 * k})`); shaft.addColorStop(1, "rgba(95,224,210,0)"); ctx.fillStyle = shaft; ctx.beginPath(); ctx.moveTo(330, 0); ctx.lineTo(420, 0); ctx.lineTo(480, 300); ctx.lineTo(260, 300); ctx.fill();
+      ctx.fillStyle = "#14171d"; ctx.fillRect(0, 300, W, 60);
+      const J = fk(s.pose, 300, 300 - .47 * 175, 175, 1);
+      const drawMotes = front => st.motes.forEach(m => { if ((m.z > 0) !== front) return; m.x = (m.x + m.sp * T.dt * (m.z + 1.4)) % W; const r = 2 + (m.z + 1) * 2.4; ctx.fillStyle = `rgba(200,240,235,${.12 + .2 * (m.z + 1) / 2})`; ctx.beginPath(); ctx.arc(m.x, m.y, r, 0, 7); ctx.fill(); });
+      drawMotes(false);
+      drawSolid(ctx, J, ANDROID);
+      drawMotes(true);
+      ctx.strokeStyle = CYAN; ctx.lineWidth = 1.2; ctx.shadowBlur = 8; ctx.shadowColor = CYAN;
+      [[J.head, "EYE", 14], [J.fh, "FIST L", 10]].forEach(([p, t, r]) => { ctx.strokeRect(p[0] - r, p[1] - r, r * 2, r * 2); mono(ctx, t, p[0] + r + 4, p[1] - r + 8, CYAN, 9); });
+      if (s.tier === "peak") { ctx.beginPath(); ctx.moveTo(...J.fh); for (let i = 1; i < 7; i++) { const a = i / 7; ctx.lineTo(J.fh[0] + (J.bh[0] - J.fh[0]) * a + (hash(i + Math.floor(T.t * 20)) - .5) * 22, J.fh[1] + (J.bh[1] - J.fh[1]) * a + (hash(i * 5 + Math.floor(T.t * 20)) - .5) * 22); } ctx.lineTo(...J.bh); ctx.stroke(); }
+      ctx.shadowBlur = 0;
+      const hit = impactOf(st, s, J); if (hit) st.fx.burst(hit[0], hit[1], 26, { speed: 300, life: .5, col: "#aef8f0", g: 260, floor: 302 });
+      st.fx.step(T.dt); st.fx.draw(ctx);
+      ctx.fillStyle = "#000"; ctx.fillRect(530, 20, 94, 94); const dg = ctx.createLinearGradient(0, 30, 0, 110); dg.addColorStop(0, "#ddd"); dg.addColorStop(1, "#777"); drawMatte(ctx, fk(s.pose, 572, 76, 66, 1), dg); ctx.strokeStyle = "#2a2e36"; ctx.strokeRect(530.5, 20.5, 93, 93); mono(ctx, "DEPTH PASS", 532, 128, "#9a978f", 9);
+      chips(ctx, [["CLIP + DEPTH", AMBER], ["CLIP DATA", AMBER], ["LIVE FX IN DEPTH", CYAN]]);
+    } },
+  { id: "hybrid-h8", code: "H8", title: "Live Swarm, pre-rendered giant",
+    pre: "A huge, slow, detailed Android with its Camera Track", live: "A Swarm of small drones: instanced, music-driven formations, same camera", magic: "Stacks the Swarm over the giant, cut by the Matte",
+    strength: "The giant brings quality, the Swarm the music reaction", risk: "Swarm and giant must share camera and light; scale must read", cost: "high live, high build",
+    init(st) { st.u = Array.from({ length: 120 }, (_, i) => ({ x: hash(i) * W, y: hash(i + 1) * H })); },
+    draw(ctx, st, T) {
+      const s = stateAt(T.beatF * .5), k = 1 - (((T.beatF % 1) + 1) % 1), cam = Math.sin(T.t * .2) * 20;
+      const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#0a0b10"); bg.addColorStop(1, "#1a1512"); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      const haze = ctx.createRadialGradient(420, 120, 20, 420, 120, 320); haze.addColorStop(0, "rgba(255,176,74,.14)"); haze.addColorStop(1, "rgba(255,176,74,0)"); ctx.fillStyle = haze; ctx.fillRect(0, 0, W, H);
+      const J = fk(s.pose.t !== undefined ? s.pose : P.guard, 430 - cam, 470 - .47 * 520 * .6, 520, -1);
+      drawSolid(ctx, J, { back: "#1e2024", body: "#3a3d43", rim: "#ffcf8f", lx: .4, ly: -.4, eye: AMBER, glow: 18, joint: "#16171a", w: .08 });
+      const form = ((Math.floor(T.beatF / 4) % 3) + 3) % 3, n = st.u.length;
+      st.u.forEach((u, i) => {
+        const a = i / n * Math.PI * 2 + T.t * .6; let tx, ty;
+        if (form === 0) { tx = J.head[0] + Math.cos(a) * (90 + 20 * k); ty = J.head[1] + Math.sin(a) * (40 + 10 * k); }
+        else if (form === 1) { tx = 60 + i / n * 300 - cam; ty = 120 + Math.sin(i * .5 + T.t * 2) * 30 * (.5 + k); }
+        else { const t = i / n; tx = 40 + (J.fh[0] - 40) * t + Math.cos(t * 18 + T.t * 3) * 22; ty = 300 + (J.fh[1] - 300) * t + Math.sin(t * 18 + T.t * 3) * 22; }
+        u.x += (tx - u.x) * Math.min(1, T.dt * 3); u.y += (ty - u.y) * Math.min(1, T.dt * 3);
+        ctx.fillStyle = CYAN; ctx.globalAlpha = .55 + .45 * k; ctx.beginPath(); ctx.moveTo(u.x, u.y - 3); ctx.lineTo(u.x + 3, u.y + 2); ctx.lineTo(u.x - 3, u.y + 2); ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+      mono(ctx, ["formation: crown", "formation: wall", "formation: stream to the fist"][form], 12, 20, CYAN, 10);
+      chips(ctx, [["GIANT CLIP", AMBER], ["LIVE SWARM", CYAN]]);
+    } }
+];
+const MATRIX = { cols: ["Live cost", "Quality", "Reactivity", "Build effort", "Risk"], rows: { H1: [4, 3, 5, 4, 4], H2: [1, 5, 3, 3, 2], H3: [2, 4, 4, 3, 3], H4: [1, 5, 3, 3, 2], H5: [1, 5, 3, 3, 2], H6: [1, 5, 2, 3, 1], H7: [3, 4, 5, 4, 3], H8: [4, 4, 5, 5, 4] } };
+
+/* ---------- rating cards ---------- */
+const cards = {};
+let cardCount = 0;
+function rateHTML(id, title) {
+  return `<div class="rate" role="group" aria-label="Rate ${title}">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" aria-pressed="false" disabled>${n}</button>`).join("")}<span class="hint">1 drop · 5 build this</span></div>
+    <textarea id="note-${id}" placeholder="Keep, change, combine with…" disabled></textarea>
+    <span class="saved" aria-live="polite"></span>`;
+}
+function makeCard(m, grid, extra = "") {
+  const el = document.createElement("article"); el.className = "mock";
+  el.innerHTML = `<canvas width="${W}" height="${H}" aria-label="${m.title}, animated mockup"></canvas>
+    <div class="title"><h4>${m.code ? m.code + " · " : ""}${m.title}</h4><span class="mono">${m.yours ? "your idea" : (m.group || "hybrid")}</span></div>
+    ${m.blurb ? `<p class="blurb">${m.blurb}</p>` : ""}${extra}${rateHTML(m.id, m.title)}`;
+  grid.appendChild(el);
+  const st = {}; m.init(st);
+  const canvas = el.querySelector("canvas");
+  cards[m.id] = { m, st, el, canvas, ctx: canvas.getContext("2d"), visible: false, offset: (cardCount++) * 4 };
+}
 const groupsEl = document.getElementById("groups");
 const SECTIONS = [
   { name: "Look", note: "material and light", groups: ["Look"], cls: "grid4" },
   { name: "Staging", note: "who fights whom", groups: ["Staging"], cls: "grid3" },
   { name: "Camera and Live Layer", note: "how the shots cut, what Blender adds live", groups: ["Camera", "Live Layer"], cls: "grid2" }
 ];
-const cards = {};
 SECTIONS.forEach(sd => {
   const sec = document.createElement("div"); sec.className = "group";
   sec.innerHTML = `<h3>${sd.name}<span>${sd.note}</span></h3><div class="${sd.cls}"></div>`;
   groupsEl.appendChild(sec);
   const grid = sec.querySelector("." + sd.cls);
-  MOCKS.filter(m => sd.groups.includes(m.group)).forEach(m => {
-    const el = document.createElement("article"); el.className = "mock";
-    el.innerHTML = `<canvas width="${W}" height="${H}" aria-label="${m.title}, animated mockup"></canvas>
-      <div class="title"><h4>${m.title}</h4><span class="mono">${m.group}</span></div>
-      <p class="blurb">${m.blurb}</p>
-      <div class="rate" role="group" aria-label="Rate ${m.title}">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" aria-pressed="false" disabled>${n}</button>`).join("")}<span class="hint">1 drop · 5 build this</span></div>
-      <textarea id="note-${m.id}" placeholder="Keep, change, combine with…" disabled></textarea>
-      <span class="saved" aria-live="polite"></span>`;
-    grid.appendChild(el);
-    const st = {}; m.init(st);
-    cards[m.id] = { m, st, el, canvas: el.querySelector("canvas"), ctx: el.querySelector("canvas").getContext("2d"), visible: false, offset: MOCKS.indexOf(m) * 4 };
-  });
+  MOCKS.filter(m => sd.groups.includes(m.group)).forEach(m => makeCard(m, grid));
 });
+const hybridGrid = document.getElementById("hybridGrid");
+HYBRIDS.forEach(h => makeCard(h, hybridGrid, `<dl class="split3">
+  <div><dt class="amber">Pre-rendered</dt><dd>${h.pre}</dd></div>
+  <div><dt class="cyan">Live Blender</dt><dd>${h.live}</dd></div>
+  <div><dt>Magic</dt><dd>${h.magic}</dd></div>
+</dl><dl class="tradeoff"><div><dt>Strength</dt><dd>${h.strength}</dd></div><div><dt>Main risk</dt><dd>${h.risk}</dd></div><div><dt>Cost</dt><dd>${h.cost}</dd></div></dl>`));
+const dots5 = (v, hot) => `<span class="dots" aria-label="${v} of 5">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= v ? (hot ? "on hot" : "on") : ""}"></i>`).join("")}</span>`;
+document.getElementById("matrix").innerHTML = `<thead><tr><th>Idea</th>${MATRIX.cols.map(c => `<th>${c}</th>`).join("")}</tr></thead><tbody>${HYBRIDS.map(h => `<tr><th><b>${h.code}</b> ${h.title}</th>${MATRIX.rows[h.code].map((v, i) => `<td>${dots5(v, i === 0 || i >= 3)}</td>`).join("")}</tr>`).join("")}</tbody>`;
+
+/* ---------- framework diagram ---------- */
+const svgNSfw = "http://www.w3.org/2000/svg";
+const FW_MODS = [
+  { id: "rig", x: 20, y: 70, t: "Rig", s: "one Android", core: 1, side: "b" },
+  { id: "moves", x: 20, y: 140, t: "Move Library", s: "Moves, Key Poses", h: ["H4", "H5"], side: "b" },
+  { id: "cams", x: 20, y: 210, t: "Shot Cameras", s: "Angles, Camera Tracks", h: ["H1", "H6", "H8"], side: "b" },
+  { id: "passes", x: 20, y: 280, t: "Render Passes", s: "light, matte, depth, more", h: ["H1", "H2", "H3", "H5"], side: "b" },
+  { id: "lib", x: 220, y: 105, t: "Clip Library", s: "Clips per Angle", core: 1, side: "p" },
+  { id: "data", x: 220, y: 175, t: "Clip Data", s: "per-frame points, Hits", h: ["H7"], side: "p" },
+  { id: "manifest", x: 220, y: 245, t: "Manifest", s: "Clips, Key Poses, beats", core: 1, side: "p" },
+  { id: "gen", x: 410, y: 175, t: "Generator", s: "magicproj.py", core: 1, side: "m" },
+  { id: "pick", x: 600, y: 50, t: "Clip Picker", s: "Clip Graph on the bar", h: ["H4"], side: "m" },
+  { id: "play", x: 600, y: 115, t: "Player", s: "rate, position, Angle", core: 1, h: ["H5", "H6"], side: "m" },
+  { id: "mix", x: 600, y: 180, t: "Pass Mixer", s: "Light Passes", h: ["H2"], side: "m" },
+  { id: "relight", x: 600, y: 245, t: "Relight shader", s: "ISF on normals", h: ["H3"], side: "m" },
+  { id: "comp", x: 790, y: 150, t: "Compositor", s: "Matte, depth, add", core: 1, h: ["H1", "H7", "H8"], side: "m" },
+  { id: "out", x: 790, y: 250, t: "Output", s: "projector, Syphon", core: 1, side: "m" },
+  { id: "world", x: 410, y: 365, t: "Live World", s: "space, planet", h: ["H1"], side: "l" },
+  { id: "swarm", x: 590, y: 365, t: "Swarm", s: "instanced drones", h: ["H8"], side: "l" },
+  { id: "fx", x: 770, y: 365, t: "Live effects", s: "sparks, fog, HUD", h: ["H7"], side: "l" }
+];
+const FW_EDGES = [["rig", "lib"], ["moves", "lib"], ["cams", "lib"], ["passes", "lib"], ["moves", "manifest"], ["passes", "data"], ["lib", "gen"], ["data", "gen"], ["manifest", "gen"], ["gen", "pick"], ["gen", "play"], ["gen", "mix"], ["gen", "relight"], ["pick", "play"], ["play", "comp"], ["mix", "comp"], ["relight", "comp"], ["comp", "out"], ["play", "world", "osc"], ["play", "swarm", "osc"], ["play", "fx", "osc"], ["world", "comp", "syphon"], ["swarm", "comp", "syphon"], ["fx", "comp", "syphon"], ["data", "fx", "data"], ["cams", "world", "data"]];
+const SIDE_COL = { b: AMBER, p: AMBER, m: "#e7e3da", l: CYAN };
+const fw = document.getElementById("fw"), MW = 170, MH = 50;
+const fwMods = {}; let fwSvg = "";
+fwSvg += `<text x="20" y="34" class="fwlab">BLENDER · BUILD, OFFLINE</text><text x="220" y="34" class="fwlab">RENDER PACKAGE</text><text x="410" y="34" class="fwlab">GENERATOR</text><text x="600" y="34" class="fwlab">MAGIC · RUNTIME</text><text x="410" y="352" class="fwlab" fill="${CYAN}">BLENDER · LIVE, OPTIONAL</text>`;
+const anchor = (m, to) => { const cx = m.x + MW / 2, cy = m.y + MH / 2; const o = to; const dx = o.x + MW / 2 - cx, dy = o.y + MH / 2 - cy; if (Math.abs(dy) > Math.abs(dx) * .6 && (to.side === "l" || m.side === "l")) return [cx, dy > 0 ? m.y + MH : m.y]; return [dx > 0 ? m.x + MW : m.x, cy]; };
+FW_EDGES.forEach(([a, b, kind], i) => { const A = FW_MODS.find(m => m.id === a), B = FW_MODS.find(m => m.id === b); const p1 = anchor(A, B), p2 = anchor(B, A); const mx = (p1[0] + p2[0]) / 2; const d = `M${p1[0]},${p1[1]} C${mx},${p1[1]} ${mx},${p2[1]} ${p2[0]},${p2[1]}`; const col = kind === "syphon" || kind === "osc" ? CYAN : kind === "data" ? AMBER : "#5d6068"; fwSvg += `<path id="fwe${i}" class="fwe" data-a="${a}" data-b="${b}" d="${d}" fill="none" stroke="${col}" stroke-width="1.2" ${kind === "osc" || kind === "data" ? 'stroke-dasharray="4 4"' : ""}/>`; });
+FW_MODS.forEach(m => { fwSvg += `<g class="fwm" data-id="${m.id}"><rect x="${m.x}" y="${m.y}" width="${MW}" height="${MH}" rx="3" fill="#0d0e11" stroke="${SIDE_COL[m.side]}"/><text x="${m.x + 10}" y="${m.y + 21}" fill="#e7e3da" font-size="14" font-weight="600">${m.t}</text><text x="${m.x + 10}" y="${m.y + 39}" fill="#9a978f" font-size="11.5">${m.s}</text>${(m.h || []).map((h, i) => `<text x="${m.x + MW - (m.h.length - 1 - i) * 24}" y="${m.y - 4}" text-anchor="end" font-size="10" fill="${AMBER}" font-family="IBM Plex Mono, monospace">${h}</text>`).join("")}</g>`; });
+fwSvg += `<text x="560" y="335" class="fwlab" fill="${CYAN}">OSC: clip, frame</text><text x="860" y="335" class="fwlab" fill="${CYAN}">Syphon</text><g id="fwdots"></g>`;
+fw.innerHTML = fwSvg;
+const fwDots = fw.querySelector("#fwdots");
+FW_EDGES.forEach((e, i) => { const c = document.createElementNS(svgNSfw, "circle"); c.setAttribute("r", "3"); c.setAttribute("fill", e[2] ? CYAN : AMBER); c.setAttribute("class", "fwdot"); c.dataset.a = e[0]; c.dataset.b = e[1]; const an = document.createElementNS(svgNSfw, "animateMotion"); an.setAttribute("dur", (1.6 + hash(i) * .8).toFixed(2) + "s"); an.setAttribute("repeatCount", "indefinite"); an.setAttribute("begin", (hash(i + 3) * 1.5).toFixed(2) + "s"); const mp = document.createElementNS(svgNSfw, "mpath"); mp.setAttribute("href", "#fwe" + i); an.appendChild(mp); c.appendChild(an); fwDots.appendChild(c); });
+function fwSelect(sel) {
+  const on = new Set(FW_MODS.filter(m => m.core || (m.h || []).some(h => sel.includes(h))).map(m => m.id));
+  fw.querySelectorAll(".fwm").forEach(g => g.classList.toggle("off", !on.has(g.dataset.id)));
+  fw.querySelectorAll(".fwe, .fwdot").forEach(p => p.classList.toggle("off", !(on.has(p.dataset.a) && on.has(p.dataset.b))));
+  document.querySelectorAll("#fwChips button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.sel === sel.join("+"))));
+}
+const fwChips = document.getElementById("fwChips");
+[["H4", "H2", "H7", "H1"], ...HYBRIDS.map(h => [h.code]), ["H1", "H2", "H3", "H4", "H5", "H6", "H7", "H8"]].forEach((sel, i) => {
+  const b = document.createElement("button"); b.type = "button"; b.className = "ghost"; b.dataset.sel = sel.join("+");
+  b.textContent = i === 0 ? "Example: H4 + H2 + H7 + H1" : sel.length === 8 ? "All" : sel[0];
+  b.addEventListener("click", () => fwSelect(sel)); fwChips.appendChild(b);
+});
+fwSelect(["H4", "H2", "H7", "H1"]);
+const CONTRACTS = [
+  ["Manifest schema", "now", "One JSON per Render Package: each Clip with Move, Angle, length in beats, Key Pose in and out, Cut Points, Intensity Tier, file, Passes, frame rate. The generator and the live scene read only this."],
+  ["Clip Data format", "now", "Per Clip, per frame: screen positions and depth of head, eyes, hands, feet, plus Hits (frame, point, strength). One JSON or CSV beside each Clip."],
+  ["Folder layout", "now", "robot/build (Blender scripts), robot/magic (generator and tests), robot/live (live scene), robot/concept (this page); rendered media outside git, listed in the Manifest."],
+  ["Syphon names", "now", "ROBOT_LIVE for the live Blender layer; tests use ROBOT_TEST. Never CAM_OUT or COLOSSUS_OUT."],
+  ["OSC rows", "later", "Clip id and frame from Magic to the live scene, as rows in osc/contract.json through its owners, or a /robot/* prefix (decision 7)."],
+  ["Light Pass set", "later", "Which lights get their own pass (key, rim, emission, fills). Fixed once the look is chosen."]
+];
+document.getElementById("contracts").innerHTML = CONTRACTS.map(([n, w, d]) => `<li><span class="badge ${w}">${w === "now" ? "fix now" : "later"}</span><b>${n}</b><p>${d}</p></li>`).join("");
+const FWCARD = { id: "framework", title: "Framework proposal", init() {}, draw() {} };
+const fwRate = document.getElementById("fwRate");
+fwRate.innerHTML = `<div class="title"><h4>Rate the framework</h4><span class="mono">proposal</span></div><p class="blurb">Does one pipeline with switchable modules fit? Say what is missing or too much.</p>${rateHTML("framework", "the framework")}`;
+cards.framework = { m: FWCARD, st: {}, el: fwRate, canvas: null, ctx: null, visible: false, offset: 0 };
+
+/* combined example: H4 + H2 + H7 + H1 */
+const combo = { canvas: document.getElementById("comboCanvas"), st: { fx: new FX(), motes: Array.from({ length: 50 }, (_, i) => ({ x: hash(i) * W, y: 80 + hash(i + 7) * 210, z: hash(i + 3) * 2 - 1, sp: 8 + hash(i + 2) * 20 })) }, visible: false };
+combo.ctx = combo.canvas.getContext("2d");
+combo.draw = (ctx, st, T) => {
+  const s = stateAt(T.beatF), k = 1 - s.p, cam = Math.sin(T.t * .3) * 40, hue = RELIGHT_HUES[((s.bar % 4) + 4) % 4], clip = clipAt(s.bar);
+  liveWorld(ctx, T, cam, s.tier === "calm" ? .3 * k : k);
+  const J = fk(s.pose, 300 - cam, 300 - .47 * 170, 170, 1);
+  ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.beginPath(); ctx.ellipse(J.hip[0] + 34, 302, 70, 8, -.04, 0, 7); ctx.fill();
+  const motes = front => st.motes.forEach(m => { if ((m.z > 0) !== front) return; m.x = (m.x + m.sp * T.dt * (m.z + 1.4)) % W; ctx.fillStyle = `rgba(230,200,255,${.1 + .16 * (m.z + 1) / 2})`; ctx.beginPath(); ctx.arc(m.x, m.y, 2 + (m.z + 1) * 2.2, 0, 7); ctx.fill(); });
+  motes(false);
+  drawSolid(ctx, J, { ...ANDROID, rim: `hsl(${hue},90%,72%)`, lx: -.5, ly: -.25 });
+  motes(true);
+  const hit = impactOf(st, s, J); if (hit) st.fx.burst(hit[0], hit[1], 26, { speed: 300, life: .5, col: `hsl(${hue},100%,85%)`, g: 260, floor: 302 });
+  st.fx.step(T.dt); st.fx.draw(ctx);
+  mono(ctx, `H4  ${clip.in} → ${clip.name} → ${clip.out}`, 12, 20, AMBER, 10);
+  mono(ctx, `H2  rim hue ${hue}°`, 12, 36, `hsl(${hue},90%,72%)`, 10);
+  mono(ctx, "H7  sparks at Hits, motes in depth", 12, 52, CYAN, 10);
+  mono(ctx, "H1  live world", 12, 68, CYAN, 10);
+};
+
+/* ---------- glossary proposal ---------- */
+const TERMS = [
+  ["robot-scene", "Robot Scene", "The VJ scene in which a pre-rendered Android fights to the music, with optional live layers.", "Robot show, android scene", "Name under review below."],
+  ["android", "Android", "The humanoid fighting machine at the centre of the Robot Scene; one rig, one design.", "Robot, mech, bot, fighter", "Name under review below. The giant of H8 is the Android at a larger scale, not a Colossus (Godot term)."],
+  ["move", "Move", "One named action of the Android, such as a jab, a duck or a recoil, independent of camera.", "Animation, action, attack", ""],
+  ["clip", "Clip", "One Move rendered from one Angle, a whole number of beats long, with its Passes and Clip Data.", "Video, footage, loop, take", ""],
+  ["key-pose", "Key Pose", "A pose in which Clips start and end, so any Clip may follow any Clip that ends in the same Key Pose.", "Hub pose, transition pose, Pose Key", "Replaces the provisional \"Pose Key\" in GLOSSARY.md."],
+  ["clip-graph", "Clip Graph", "The graph of Clips joined by Key Poses that Magic walks to pick the next Clip.", "State machine, move tree, playlist", "Magic has a Playlist of scenes; this is not it."],
+  ["cut-point", "Cut Point", "A beat inside a Clip where Magic may switch to another Clip or Angle.", "Cue, marker, switch point", ""],
+  ["intensity-tier", "Intensity Tier", "One of three energy levels a Clip belongs to (calm, build, drop); Magic picks from the tier the music is in.", "Level, energy bucket, mode", "Round 1 named the tiers calm, fight, peak; this proposes calm, build, drop."],
+  ["angle", "Angle", "One of the 3 to 4 views every Move is rendered from with the same timing.", "View, cam, shot", "/vj/cam picks a \"shot\" on the island and in Godot."],
+  ["shot-camera", "Shot Camera", "The Blender camera that renders one Angle.", "CAM_N, On-Air Camera", "On-Air Camera and Path Camera are planet terms."],
+  ["camera-track", "Camera Track", "The per-frame export of a Shot Camera that live layers replay so their parallax matches.", "Camera path, camera export", "Path Camera and /vj/path are planet terms."],
+  ["pass", "Pass", "One rendered image layer of a Clip; Light Pass, Matte, Depth Pass, Normal Pass and Shadow Pass are kinds.", "AOV, render layer, channel", ""],
+  ["light-pass", "Light Pass", "A Pass lit by one light only, so Magic can mix lights after the render.", "Light layer, light group", ""],
+  ["matte", "Matte", "A Pass that says where the Android covers the frame.", "Mask (Magic's module), alpha, cutout", ""],
+  ["depth-pass", "Depth Pass", "A Pass with the distance of every pixel, so live effects sit in front of or behind the Android.", "Z buffer, Z pass", ""],
+  ["normal-pass", "Normal Pass", "A Pass with the surface direction of every pixel, for Relight.", "Normal map", ""],
+  ["shadow-pass", "Shadow Pass", "The Android's shadow and contact shade on the ground, to lay over a Live World.", "Contact shadow, AO pass", ""],
+  ["clip-data", "Clip Data", "Per-frame screen positions and depths of the Android's head, eyes, hands and feet, plus its Hits.", "Metadata, tracking data", ""],
+  ["hit", "Hit", "An impact event in Clip Data: frame, point and strength.", "Impact, strike, hit point", "/vj/hit in osc/contract.json is a music trigger; this one comes from the Clip."],
+  ["clip-library", "Clip Library", "Every Clip rendered for the Robot Scene.", "Footage pool, video bank", ""],
+  ["manifest", "Manifest", "The JSON that lists every Clip with its Move, Angle, beats, Key Poses, Passes and files.", "Index, catalog, metadata file", ""],
+  ["render-package", "Render Package", "The folder Blender writes: the Clip Library, its Clip Data and the Manifest.", "Export, bundle, output file", ""],
+  ["live-layer", "Live Layer", "Anything Blender draws live and Magic puts on top of or behind the Clip.", "Overlay, live stuff, FX layer", ""],
+  ["live-world", "Live World", "A Live Layer that is the whole surroundings behind the Android, such as space and a planet.", "Live background, environment", "Planet and Star System are Synthwave Planet terms."],
+  ["relight", "Relight", "Changing a Clip's lighting in Magic by mixing Light Passes or shading the Normal Pass.", "Recolour, relighting, regrade", ""],
+  ["swarm", "Swarm", "Many small live units in Blender that share the Clip's Camera Track.", "Drones, flock, horde", "The planet has a flamingo \"flock\"."]
+];
+const NAMES = {
+  "Scene name": [["scene-robot-scene", "Robot Scene"], ["scene-steel-bout", "Steel Bout"], ["scene-machine-fight", "Machine Fight"], ["scene-arena", "Arena"]],
+  "Android name": [["android-android", "the Android"], ["android-unit", "Unit"], ["android-automaton", "Automaton"], ["android-vanguard", "Vanguard"], ["android-rook", "Rook"]]
+};
+const namesEl = document.getElementById("names");
+namesEl.innerHTML = Object.entries(NAMES).map(([g, opts]) => `<div class="namegroup"><h3>${g}</h3>${opts.map(([id, o]) => `<div class="nameopt" data-id="${id}"><span>${o}</span><div class="rate small" role="group" aria-label="Rate ${o}">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" aria-pressed="false" data-store disabled>${n}</button>`).join("")}</div><span class="saved"></span></div>`).join("")}</div>`).join("")
+  + `<div class="namegroup"><label for="ans-name-ideas"><b>Other names</b></label><textarea id="ans-name-ideas" data-store placeholder="A name of your own" disabled></textarea><span class="saved" id="saved-name-ideas"></span></div>`;
+const termsEl = document.getElementById("terms");
+termsEl.innerHTML = TERMS.map(([id, t, def, avoid, clash]) => `<div class="term" data-id="${id}">
+  <div class="tdef"><b>${t}</b><p>${def}</p><p class="avoid"><i>Avoid</i>: ${avoid}</p>${clash ? `<p class="clash">${clash}</p>` : ""}</div>
+  <div class="tctl"><div class="verdict" role="group" aria-label="Verdict on ${t}">${["accept", "rename", "reject"].map(v => `<button type="button" data-v="${v}" aria-pressed="false" data-store disabled>${v}</button>`).join("")}</div>
+  <input type="text" id="rename-${id}" placeholder="New name" data-store disabled hidden>
+  <input type="text" id="tcomment-${id}" placeholder="Comment" data-store disabled>
+  <span class="saved"></span></div></div>`).join("");
+
+/* ---------- direction proposal ---------- */
+const DIRECTIONS = [
+  { id: "A", name: "Quality first, video-led, live as accent", text: "The Robot Scene is a film you can play. Everything you see is rendered ahead at full quality: the Android, the world, the light. Magic walks a Clip Graph (H4), cuts Angles on the beat (H6) and recolours the Android from Light Passes (H2). Live Blender adds only small accents at the Hits (H7).",
+    milestone: "One Key Pose, 4 Clips (idle, jab-cross, kick, take hit) from 2 Angles; a generated Magic scene that picks them on bars; one Live Layer: sparks at the Hits. A 60 s recording with music.",
+    v1: ["Clip Graph", "2 Angles", "Light Passes for rim and emission", "sparks at Hits"], later: ["Relight shader", "slow motion", "Live World", "Swarm"] },
+  { id: "B", name: "Live world, video hero", text: "Your idea first (H1). The world is live and reacts to the music: space, the planet, light. The Android is a pre-rendered hero with alpha, a Shadow Pass and a Camera Track, set into that world by Magic. The live world carries the reaction; the Android carries the quality.",
+    milestone: "3 Clips with a locked camera and 1 with a slow push; a live space backdrop replaying the Camera Track; Shadow Pass on a live ground; clip and frame over OSC. A 60 s recording with music.",
+    v1: ["Live World", "alpha Clips with Shadow Pass", "Camera Track replay", "OSC sync"], later: ["Clip Graph", "Angles", "Relight", "Swarm"] },
+  { id: "C", name: "Relight-led, no live Blender in v1", text: "Magic is the whole runtime. Clips come with Light Passes and a Normal Pass; Magic relights them to the music (H2, H3) and walks a Clip Graph (H4). Blender only builds and renders. The show machine runs Magic alone, which is the simplest and steadiest show.",
+    milestone: "4 Clips with 5 Light Passes and a Normal Pass each; one ISF relight shader with a sweeping strobe and hit flashes; a generated Magic scene. A 60 s recording with music.",
+    v1: ["Light Passes", "Normal Pass relight", "Clip Graph"], later: ["Live effects", "Live World", "Angles", "slow motion"] }
+];
+document.getElementById("directions").innerHTML = DIRECTIONS.map(d => `<article class="dir" data-id="${d.id}">
+  <p class="mono">Direction ${d.id}</p><h3>${d.name}</h3><p>${d.text}</p>
+  <p class="ms"><b>First milestone</b>${d.milestone}</p>
+  <div class="scope"><div><b>v1</b><ul>${d.v1.map(x => `<li>${x}</li>`).join("")}</ul></div><div><b>Later</b><ul>${d.later.map(x => `<li>${x}</li>`).join("")}</ul></div></div>
+  <button type="button" class="pick" data-dir="${d.id}" aria-pressed="false" data-store disabled>Pick ${d.id}</button></article>`).join("");
 
 /* ---------- decisions ---------- */
 const DECISIONS = [
@@ -989,7 +1484,7 @@ DECISIONS.forEach((d, i) => {
 const storeEl = document.getElementById("store");
 let db = null; const chain = {};
 function setStore(kind, msg) { storeEl.className = "store" + (kind === "ok" ? " ok" : kind === "bad" ? " bad" : ""); storeEl.textContent = msg; }
-function enable() { document.querySelectorAll(".rate button, textarea").forEach(b => b.disabled = false); }
+function enable() { document.querySelectorAll(".rate button, textarea, [data-store]").forEach(b => b.disabled = false); }
 function save(path, data, statusEl) {
   if (!db) return;
   statusEl.textContent = "Saving…";
@@ -1000,18 +1495,41 @@ function save(path, data, statusEl) {
 const ratings = {};
 Object.values(cards).forEach(c => {
   const btns = c.el.querySelectorAll(".rate button"), ta = c.el.querySelector("textarea"), stEl = c.el.querySelector(".saved");
-  const push = () => save("ratings/" + c.m.id, { mockup: c.m.title, group: c.m.group, stars: ratings[c.m.id]?.stars ?? null, comment: ta.value, updatedAt: new Date().toISOString() }, stEl);
+  const push = () => save("ratings/" + c.m.id, { mockup: (c.m.code ? c.m.code + " " : "") + c.m.title, group: c.m.group || (c.m.code ? "Hybrid" : "Framework"), stars: ratings[c.m.id]?.stars ?? null, comment: ta.value, updatedAt: new Date().toISOString() }, stEl);
   btns.forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; ratings[c.m.id] = { ...(ratings[c.m.id] || {}), stars: n }; btns.forEach(x => x.setAttribute("aria-pressed", String(+x.dataset.n === n))); push(); }));
   let tmr; ta.addEventListener("input", () => { clearTimeout(tmr); tmr = setTimeout(push, 900); });
   ta.addEventListener("blur", () => { clearTimeout(tmr); if ((ratings[c.m.id]?.comment ?? "") !== ta.value) { ratings[c.m.id] = { ...(ratings[c.m.id] || {}), comment: ta.value }; push(); } });
   c.apply = d => { ratings[c.m.id] = d; btns.forEach(x => x.setAttribute("aria-pressed", String(+x.dataset.n === d.stars))); if (document.activeElement !== ta && typeof d.comment === "string") ta.value = d.comment; };
 });
-DECISIONS.forEach(d => {
-  const ta = d.el.querySelector("textarea"), stEl = d.el.querySelector(".saved");
-  const push = () => save("answers/" + d.id, { question: d.q, answer: ta.value, updatedAt: new Date().toISOString() }, stEl);
+const ANSWERS = {};
+function answerField(id, question, ta, stEl, extra = () => ({})) {
+  const push = () => save("answers/" + id, { question, answer: ta.value, ...extra(), updatedAt: new Date().toISOString() }, stEl);
   let tmr; ta.addEventListener("input", () => { clearTimeout(tmr); tmr = setTimeout(push, 900); });
   ta.addEventListener("blur", () => { clearTimeout(tmr); push(); });
-  d.apply = v => { if (document.activeElement !== ta && typeof v.answer === "string") ta.value = v.answer; };
+  ANSWERS[id] = { push, apply: v => { if (document.activeElement !== ta && typeof v.answer === "string") ta.value = v.answer; } };
+}
+DECISIONS.forEach(d => answerField(d.id, d.q, d.el.querySelector("textarea"), d.el.querySelector(".saved")));
+answerField("best-combination", "Best combination of hybrid ideas", document.getElementById("ans-best-combination"), document.getElementById("saved-best-combination"));
+answerField("name-ideas", "Other names for the scene or the Android", document.getElementById("ans-name-ideas"), document.getElementById("saved-name-ideas"));
+let dirChoice = null;
+const dirTa = document.getElementById("ans-direction-own"), dirSaved = document.getElementById("saved-direction");
+answerField("direction", "Direction for v1", dirTa, dirSaved, () => ({ choice: dirChoice }));
+const showDir = () => document.querySelectorAll(".dir").forEach(el => { const on = el.dataset.id === dirChoice; el.classList.toggle("chosen", on); el.querySelector(".pick").setAttribute("aria-pressed", String(on)); el.querySelector(".pick").textContent = on ? `Picked ${el.dataset.id}` : `Pick ${el.dataset.id}`; });
+document.querySelectorAll(".dir .pick").forEach(b => b.addEventListener("click", () => { dirChoice = b.dataset.dir; showDir(); ANSWERS.direction.push(); }));
+const baseDirApply = ANSWERS.direction.apply; ANSWERS.direction.apply = v => { baseDirApply(v); if (v.choice) { dirChoice = v.choice; showDir(); } };
+const terms = {};
+document.querySelectorAll(".term").forEach(el => {
+  const id = el.dataset.id, T_ = TERMS.find(t => t[0] === id), vb = el.querySelectorAll(".verdict button"), rn = el.querySelector(`#rename-${id}`), cm = el.querySelector(`#tcomment-${id}`), stEl = el.querySelector(".saved");
+  const paint = () => { const v = terms[id]?.verdict; vb.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === v))); rn.hidden = v !== "rename"; el.dataset.verdict = v || ""; };
+  const push = () => save("terms/" + id, { term: T_[1], verdict: terms[id]?.verdict ?? null, rename: rn.value, comment: cm.value, updatedAt: new Date().toISOString() }, stEl);
+  vb.forEach(b => b.addEventListener("click", () => { terms[id] = { ...(terms[id] || {}), verdict: b.dataset.v }; paint(); push(); if (b.dataset.v === "rename") rn.focus(); }));
+  [rn, cm].forEach(inp => { let tmr; inp.addEventListener("input", () => { clearTimeout(tmr); tmr = setTimeout(push, 900); }); inp.addEventListener("blur", () => { clearTimeout(tmr); push(); }); });
+  el.apply = d => { terms[id] = d; paint(); if (document.activeElement !== rn && typeof d.rename === "string") rn.value = d.rename; if (document.activeElement !== cm && typeof d.comment === "string") cm.value = d.comment; };
+});
+document.querySelectorAll(".nameopt").forEach(el => {
+  const id = el.dataset.id, opt = el.querySelector("span").textContent, group = el.closest(".namegroup").querySelector("h3").textContent, bs = el.querySelectorAll("button"), stEl = el.querySelector(".saved");
+  bs.forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; bs.forEach(x => x.setAttribute("aria-pressed", String(+x.dataset.n === n))); save("names/" + id, { group, option: opt, stars: n, updatedAt: new Date().toISOString() }, stEl); }));
+  el.apply = d => bs.forEach(x => x.setAttribute("aria-pressed", String(+x.dataset.n === d.stars)));
 });
 (async () => {
   const timer = setTimeout(() => { if (!db) setStore("bad", "The rating store did not answer. Open this page signed in on claude.ai to save ratings."); }, 10000);
@@ -1019,10 +1537,12 @@ DECISIONS.forEach(d => {
   try { ns = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch (e) { ns = null; }
   if (!ns) { clearTimeout(timer); setStore("bad", "Ratings save only when this page is open signed in on claude.ai."); return; }
   db = ns; clearTimeout(timer);
-  setStore("ok", "Ratings and notes save here as you go. Claude reads them back.");
+  setStore("ok", "Ratings, verdicts and notes save here as you go. Claude reads them back.");
   enable();
   db.collection("ratings").onSnapshot(snap => { snap.docs.forEach(d => { const c = cards[d.id]; if (c) c.apply(d.data() || {}); }); }, e => setStore("bad", "Could not read saved ratings: " + (e.message || e.code)));
-  db.collection("answers").onSnapshot(snap => { snap.docs.forEach(doc => { const d = DECISIONS.find(x => x.id === doc.id); if (d) d.apply(doc.data() || {}); }); }, () => {});
+  db.collection("answers").onSnapshot(snap => { snap.docs.forEach(doc => { const a = ANSWERS[doc.id]; if (a) a.apply(doc.data() || {}); }); }, () => {});
+  db.collection("terms").onSnapshot(snap => { snap.docs.forEach(doc => { const el = document.querySelector(`.term[data-id="${doc.id}"]`); if (el && el.apply) el.apply(doc.data() || {}); }); }, () => {});
+  db.collection("names").onSnapshot(snap => { snap.docs.forEach(doc => { const el = document.querySelector(`.nameopt[data-id="${doc.id}"]`); if (el && el.apply) el.apply(doc.data() || {}); }); }, () => {});
 })();
 
 /* ---------- pipeline dots ---------- */
@@ -1037,22 +1557,23 @@ const svgNS = "http://www.w3.org/2000/svg", dots = document.getElementById("dots
 const pipe = document.getElementById("pipe");
 
 /* ---------- loop ---------- */
-const io = new IntersectionObserver(es => es.forEach(e => { const c = Object.values(cards).find(x => x.canvas === e.target); if (c) c.visible = e.isIntersecting; if (e.target === hero) heroVis = e.isIntersecting; if (e.target === tl) tlVis = e.isIntersecting; }), { rootMargin: "100px" });
+const io = new IntersectionObserver(es => es.forEach(e => { const c = Object.values(cards).find(x => x.canvas === e.target); if (c) c.visible = e.isIntersecting; if (e.target === hero) heroVis = e.isIntersecting; if (e.target === tl) tlVis = e.isIntersecting; if (e.target === combo.canvas) combo.visible = e.isIntersecting; }), { rootMargin: "100px" });
 let heroVis = true, tlVis = false;
-Object.values(cards).forEach(c => io.observe(c.canvas)); io.observe(hero); io.observe(tl);
+Object.values(cards).forEach(c => { if (c.canvas) io.observe(c.canvas); }); io.observe(hero); io.observe(tl); io.observe(combo.canvas);
 let simT = 8 * 4 * BEAT + .3, last = performance.now(), running = !reduce;
 const clockEl = document.getElementById("clock"), dotEl = document.getElementById("beatdot"), btn = document.getElementById("motion");
 function renderAll(dt, all) {
   const beatF = simT / BEAT;
   if (all || heroVis) drawHero({ t: simT, dt, beatF });
   if (all || tlVis) drawTimeline({ t: simT, dt, beatF });
-  Object.values(cards).forEach(c => { if (all || c.visible) c.m.draw(c.ctx, c.st, { t: simT, dt, beatF: beatF + c.offset }); });
+  if (all || combo.visible) combo.draw(combo.ctx, combo.st, { t: simT, dt, beatF });
+  Object.values(cards).forEach(c => { if (c.canvas && (all || c.visible)) c.m.draw(c.ctx, c.st, { t: simT, dt, beatF: beatF + c.offset }); });
   const bar = Math.floor(beatF / 4);
   clockEl.textContent = `124 BPM · bar ${((bar % 16) + 16) % 16 + 1}/16 · ${tierAt(bar)}`;
   dotEl.style.opacity = String(.25 + .75 * (1 - (beatF % 1)));
 }
 function frame(now) { const dt = Math.min(.05, (now - last) / 1000); last = now; if (running) { simT += dt; renderAll(dt, false); } requestAnimationFrame(frame); }
-function setRunning(r) { running = r; btn.textContent = r ? "Pause motion" : "Play motion"; try { r ? pipe.unpauseAnimations() : pipe.pauseAnimations(); } catch (e) {} }
+function setRunning(r) { running = r; btn.textContent = r ? "Pause motion" : "Play motion"; try { [pipe, fw].forEach(svg => r ? svg.unpauseAnimations() : svg.pauseAnimations()); } catch (e) {} }
 btn.addEventListener("click", () => setRunning(!running));
 renderAll(1 / 60, true);
 setRunning(running);

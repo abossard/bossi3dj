@@ -4,12 +4,14 @@ Started by the main orchestrator (`local_17c27d7a-be6f-4ed6-8881-dd774b2e9a7c`).
 
 ## State
 
-- Concept round 1 published, waiting for the user's ratings: https://claude.ai/artifact/7D5wLjhFTi7hNr6xwecMP8 (source `robot/concept/robot-scene.html`, republish with the Artifact tool from that path).
+- Concept page version 3 (2026-11-15): round 1 mockups plus, on the main orchestrator's relay of the user's words, Hybrid ideas H1 to H8 (H1 is the user's: live world, pre-rendered Android), a comparison matrix, a "best combination" field, a framework proposal (modules per idea, example H4 + H2 + H7 + H1, contracts fixed now or later), a glossary proposal (26 terms, accept, rename or reject, scene and Android name options) and three direction proposals with first milestones. Waiting for the user's ratings: https://claude.ai/artifact/7D5wLjhFTi7hNr6xwecMP8 (source `robot/concept/robot-scene.html`, republish with the Artifact tool from that path).
 - No Blender work yet. No contract, Magic or Blender file touched.
 
 ## Read the user's answers
 
 - `ArtifactData list` on the artifact URL, collection `ratings` (doc id = mockup id: `stars` 1..5, `comment`) and collection `answers` (doc id = decision id, `answer`).
+- Also: ratings `hybrid-h1` to `hybrid-h8` and `framework`; `answers` docs `best-combination`, `direction` (`choice` A, B or C plus `answer`), `name-ideas`; collection `terms` (doc id = term slug: `verdict` accept, rename or reject, `rename`, `comment`); collection `names` (option ratings).
+- After the answers: accepted terms into `GLOSSARY.md` (replacing the provisional round-1 terms, e.g. Pose Key becomes Key Pose if accepted), the chosen direction into `robot/README.md` and this note. Build nothing before that.
 - Mockups: look-chrome-foundry, look-neon-synthwave, look-brutalist-arena, look-ink-smoke, stage-swarm, stage-mirror-duel, stage-giant-machine, camera-cut-language, live-hud-layer.
 
 ## Concept as proposed
@@ -33,6 +35,7 @@ Started by the main orchestrator (`local_17c27d7a-be6f-4ed6-8881-dd774b2e9a7c`).
 - Magic does not report a VideoFile playhead: Magic must count Clip time and send it; drift moves sparks off the fist. Test with a sync Clip first.
 - Hap size (estimate 25 to 35 MB/s at 1080p30) and Magic's memory with many open VideoFiles: measure before rendering the library.
 - Renders need the one Blender slot; ask the main orchestrator for it.
+- Read `docs/lessons-learned-blender.md` (704a3ee) before any build: judge the moving picture, settle the look first, contact and shadow, contract first.
 
 ## Sessions
 
