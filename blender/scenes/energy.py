@@ -26,6 +26,12 @@ PULSE_ATTACK, PULSE_RELEASE = 0.08, 0.25   # s: the pyramids' glow (rt_pulse) fo
 #                                            Following the beat itself, the idle pulse's short spike lifted it to 0.2 and
 #                                            the recording showed a 1 % swing. The idle pulse now swings 0.08 to 0.28,
 #                                            a full beat reaches 0.62 (review/pulse_check.py)
+PULSE_IDLE_GAIN, PULSE_IDLE_FLOOR = 3.0, 0.2    # while the idle pulse runs (no /vj/* for IDLE_AFTER s): rt_pulse =
+#                                            glow x GAIN - FLOOR, in 0..1 (0 to 0.74). The idle glow of 0.08 to 0.28 read
+#                                            as a 10 % swing on the pyramids, not seen in motion; x 3 alone lifted the
+#                                            trough too (21 %), now 27 % by day. Pyramids only: IDLE_DEPTH also drives
+#                                            the stars. A Magic beat keeps gain 1 and floor 0, so it gets no whiter
+#                                            (review/pulse_check.py, round 18)
 BEAT_LENS = 0.0                            # lens push at a full pulse and full energy. Was 0.02: the push moved every
 # pixel on every beat, 55 % of the pulse's frame change on a held camera and 59 % of a moving one's at the lake
 # (round 16, review/flicker.py A/B); the dip and roll and the flashes stay

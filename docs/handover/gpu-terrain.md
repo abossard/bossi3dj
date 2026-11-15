@@ -187,6 +187,27 @@ Set M (the recording): R17-MOTION pass, no jump, jitter, strobe or loss of conta
 5. **Idle frame times**: not measured, `make status` load 40 to 87, `fps_trustworthy` false; the command under round 16's point 5.
 6. Others' items unchanged: river flow (1), the fall below 800 m (3), B9 and B11's page and contract leftovers (5).
 
+## Round 18 (2026-11-15): the stronger idle pulse
+
+The user: "Stronger idle pulse" (replaces "10% is fine"). Rubric `blender/review/rubric-round18-idle-pulse.md`.
+
+**Built.** A pyramid-only gain while the idle pulse runs: `flight_rt.py` writes rt_pulse = glow x PULSE_IDLE_GAIN - PULSE_IDLE_FLOOR, clamped to 0..1, weighted by the runtime's idle (`vj_runtime.idle()`, 0 while `/vj/*` changes, 1 after IDLE_AFTER). `energy.py` PULSE_IDLE_GAIN 3.0, PULSE_IDLE_FLOOR 0.2: the idle rt_pulse runs 0 to 0.74 (was 0.08 to 0.28). IDLE_DEPTH (stars) and PYR_PULSE are unchanged; a Magic beat has gain 1 and floor 0, as in round 17.
+
+**Numbers** (`pulse_check.py`, orbit pyramids 0.15, `blender/review/out/round18/`):
+
+| Run | gain, floor | full beat (rt_pulse 1) | idle swing | idle rt_pulse |
+|---|---|---|---|---|
+| day | 3.0, 0 | +40 % | 21 % | 0.20 to 0.91 |
+| day | 3.6, 0.22 | +39 % | 33 % | 0 to 0.94 |
+| day | 3.2, 0.2 | +52 % (other pose) | 39 % | 0 to 0.81 |
+| day (built) | 3.0, 0.2 | +40 % | 27 % | 0 to 0.74 |
+| night (built) | 3.0, 0.2 | +148 % (8.8 to 21.9) | 80 % (peak 15.9) | 0 to 0.68 |
+
+The pose differs per run (the orbit flies on during the settle), so compare the idle swing with the full beat of the same run. N18-IDLE pass (27 %). N18-CAP pass: rt_pulse stays at most 1, so a full beat is as bright as in round 17; at night the idle peak (15.9) stays under the full beat's (21.9). The largest one-frame step stays about 70 % of the swing (round 17's N17-PULSE smoothness fail, unchanged).
+
+**Recording.** `docs/video/gpu-terrain-idle-pulse.mp4` (30 s, 1920x1080, upright, git-ignored): orbit pyramids 0.15, every control held, idle. 513 new frames (load 30 to 38). Flicker mean 1.97, p95 4.74, toggles 0.0016, no frame over 30. The bright bodies in the frame's middle band beat at 2.07 Hz (124 BPM), 466 x the median spectral power.
+
+
 ## Regional water map and river flow (2026-11-15)
 
 The user: "yes regional water map". Rubric `blender/review/rubric-water-map.md`.
