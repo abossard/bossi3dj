@@ -190,6 +190,25 @@ class LiveGateTests(unittest.TestCase):
         self.assertEqual((rm.OSC_IN_PORT, rm.LIVE_ADDRESS), (9202, "/vj/live_layer"))
 
 
+class ContractRowTests(unittest.TestCase):
+    """The generator's addresses and Magic's input port are the rows of osc/contract.json."""
+
+    @classmethod
+    def setUpClass(cls):
+        with open(os.path.join(HERE, "..", "..", "..", "osc", "contract.json")) as f:
+            cls.rows = {c["address"]: c for c in json.load(f)["controls"]}
+
+    def test_osc_out_rows(self):
+        for address, _glob, top in rm.OSC_ROWS:
+            with self.subTest(address=address):
+                self.assertEqual((self.rows[address]["max"], self.rows[address].get("direction")), (top, None))
+
+    def test_live_layer_row(self):
+        row = self.rows[rm.LIVE_ADDRESS]
+        self.assertEqual((row["direction"], row["kind"], row["min"], row["max"]), ("to_magic", "int", 0, 1))
+        self.assertIn("127.0.0.1:%d" % rm.OSC_IN_PORT, row["blender"]["effect"])
+
+
 class ProjectTests(unittest.TestCase):
     def test_check_passes(self):
         with tempfile.TemporaryDirectory() as tmp:
