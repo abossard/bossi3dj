@@ -95,11 +95,16 @@ METEOR_PROPS = ["rt_met%d_%s" % (i, f) for i in range(METEORS) for f in ("ax", "
 for k, v in DEFAULTS.items():
     if not GRAFT or k not in S:
         S[k] = v
-for k in ("rt_time", "rt_cam_phase", "rt_fog_phase", "rt_beat", *SHOCK_PROPS, "rt_shake",
+for k in ("rt_time", "rt_cam_phase", "rt_fog_phase", "rt_beat", "rt_pulse", "rt_px_angle", *SHOCK_PROPS, "rt_shake",
           "rt_flock", "rt_flock_dir", *METEOR_PROPS, "rt_space", "rt_up_x", "rt_up_y", "rt_cam_x", "rt_cam_y", "rt_cam_z"):
     if not GRAFT or k not in S:
         S[k] = 0.0
 S["rt_up_z"] = 1.0
+PYR_FOUND = 0.6                 # the site pyramids' foundation under the base, in the unit pyramid's depth (1.27)
+PYR_FOOT = 0.06                 # pz over which the pyramid's foot comes out of the land's shade
+PYR_EDGE_PX = 2.5               # the pyramids' edge width in pixels
+PYR_PULSE = 3.0                 # the pyramids' emission gain at a full pulse (rt_pulse 1): +43 % luminance on
+#                                 the pyramids; the idle pulse swings them by about 10 % (review/pulse_check.py)
 PYR_SHADOWS = 4                 # the island's pyramids that cast a sun shadow on the ground (rt_pyr<i>_x/y/z base, a half base, h height)
 for i in range(PYR_SHADOWS):
     for f in "xyzah":
@@ -2145,15 +2150,22 @@ def pyr_build(T):
     col = T.scale(col, T.mrange(T.math("FRACT", T.mul(zl, 26.0)), 0.0, 0.12, 0.55, 1.0))
     col = T.scale(col, T.mrange(zl, 0.0, 0.3, 0.45, 1.0))
     cap = T.smooth(zl, 0.90, 0.93)
-    capc = T.scale((1.0, 0.72, 0.25), T.addf(2.2, T.mul(T.attr("rt_beat"), 4.0)))
+    capc = T.scale((1.0, 0.72, 0.25), 2.2)
     ph = T.phase()
     col = T.mix(cap, T.scale(col, T.mrange(ph["Twilight"], 0.0, 1.0, 1.0, 0.45)), capc)
     col = T.mix(ph["Night"], col, T.mix(cap, T.scale(col, 0.04), capc))
     # neon edges: the island's wireframe-modifier tubes, here the Wireframe node on the same faces
     # 2.5 px and steady (round 16): at 1.6 px with 7 x rt_beat the edges read as a dotted fringe flashing on the beat;
     # flicker A/B (review/pyramid_edges.py) showed no cost either way, the reviewer the thicker steady edge cleaner
-    wf = T.node("ShaderNodeWireframe", use_pixel_size=True)
-    wf.inputs["Size"].default_value = 2.5
+    col = T.scale(col, T.mrange(zl, 0.0, PYR_FOOT, 0.5, 1.0))     # the foot in the land's shade (round 17): the
+    # faces kept one tone down to the ground and read as stood on it, not in it
+    # the edge's width in world units, grown with the distance to a steady PYR_EDGE_PX (round 17): in pixel units the
+    # Wireframe node measures the width by the screen derivative, which breaks up on a face seen at a grazing angle, and
+    # a far ridge read dashed (orbit 0.15)
+    pos_e = geo.outputs["Position"]
+    cam_e = T.comb(T.attr("rt_cam_x"), T.attr("rt_cam_y"), T.attr("rt_cam_z"))
+    wf = T.node("ShaderNodeWireframe", use_pixel_size=False)
+    T.feed(wf.inputs["Size"], T.mul(T.vmath("DISTANCE", pos_e, cam_e), T.mul(T.attr("rt_px_angle"), PYR_EDGE_PX)))
     ecol = T.ramp(zl, [(0.0, (0.05, 0.85, 1.0)), (1.0, (1.0, 0.25, 0.95))])
     glow = T.addf(T.addf(2.6, T.mul(ph["Night"], 1.8)), T.mul(ph["Twilight"], 1.0))
     glow = T.mul(glow, T.mrange(ph["Night"], 0.0, 1.0, 1.0, 0.08))     # a slight glow at night, like the wires: white and cyan
@@ -2213,6 +2225,12 @@ def flamingo_build(T):
 
 
 m_pyr = emission_mat("Pyramid", pyr_build)
+# the whole pyramid answers the pulse on one envelope (round 17): faces, edges and capstone together, on the emission's
+# strength, after the haze (a gain before it was diluted by the fog round the pyramids: +7 % at 1.7 x), from the Drive's
+# pulse envelope (rt_pulse, energy.PULSE_ATTACK and PULSE_RELEASE), not the raw rt_beat (the idle pulse's step read as a
+# strobe on the capstone, and the faces did not move at all)
+T_ = NT(m_pyr.node_tree)
+T_.feed([nd for nd in T_.n if nd.type == "EMISSION"][0].inputs["Strength"], T_.addf(1.0, T_.mul(T_.attr("rt_pulse"), PYR_PULSE)))
 m_pyr.displacement_method = "DISPLACEMENT"
 m_palm = emission_mat("Palm", palm_build)
 m_fl = emission_mat("Flamingo", flamingo_build)
@@ -2434,7 +2452,17 @@ def unit_pyramid():
     cone.inputs["Depth"].default_value = 1.27
     # the Cone node's base already sits at z = 0: a lift by half the depth, for a cone centred on the origin, put every
     # site pyramid 0.635 x its size over its ground (15 to 29 m), and its capstone glow over the upper half
-    g_ = G.transform(cone.outputs["Mesh"], r=(0, 0, math.pi / 4))
+    # a foundation under the base (round 17): the faces continue PYR_FOUND x the depth into the ground. The ground under a
+    # site is levelled (gpu_terrain.pads), but the GPU grid's coarse rings (48 and 96 m cells, 1.5 to 12 km off) cannot
+    # hold a level pad: there the land dipped under the base and the pyramid floated (review/pyramid_ground.py). Now a
+    # dip shows more stone, as of a pyramid half buried in its hill
+    fnd = G.node("GeometryNodeMeshCone", fill_type="NONE")
+    fnd.inputs["Vertices"].default_value = 4
+    fnd.inputs["Radius Top"].default_value = math.sqrt(2.0)
+    fnd.inputs["Radius Bottom"].default_value = math.sqrt(2.0) * (1.27 + PYR_FOUND) / 1.27
+    fnd.inputs["Depth"].default_value = PYR_FOUND
+    g_ = G.join(cone.outputs["Mesh"], G.transform(fnd.outputs["Mesh"], t=(0, 0, -PYR_FOUND)))
+    g_ = G.transform(g_, r=(0, 0, math.pi / 4))
     return G.store(g_, "pz", G.math("DIVIDE", G.sep(G.pos())[2], 1.27))
 
 
@@ -3950,6 +3978,32 @@ def star_system():
     T = NT(bpy.data.materials["Pyramid Edge"].node_tree)
     em_ = next(n for n in T.n if n.type == "EMISSION")
     T.feed(em_.inputs["Strength"], T.mrange(T.phase()["Night"], 0.0, 1.0, 1.0, 0.08))
+    # the island pyramids answer the pulse like the site pyramids (round 17): the whole body and its edges on the
+    # pulse envelope (rt_pulse) on the emission's strength. Their edges flashed at 7 x rt_beat and the capstone at
+    # 4 x: the near pyramids of every pyramid shot, they were the glitchy edges and the unchanged faces the user saw
+    for name in ("Pyramid Body", "Pyramid Edge"):
+        T = NT(bpy.data.materials[name].node_tree)
+        for at_ in [n for n in T.n if n.type == "ATTRIBUTE" and n.attribute_name == "rt_beat"]:
+            for lk in [lk for o in at_.outputs for lk in o.links]:
+                for i_ in lk.to_node.inputs[:2]:
+                    if not i_.is_linked:
+                        i_.default_value = 0.0
+        em_ = next(n for n in T.n if n.type == "EMISSION")
+        k_ = T.addf(1.0, T.mul(T.attr("rt_pulse"), PYR_PULSE))
+        src_ = em_.inputs["Strength"].links[0].from_socket if em_.inputs["Strength"].is_linked else None
+        T.feed(em_.inputs["Strength"], T.mul(src_, k_) if src_ is not None else k_)
+    # and a steady line under their neon tubes (round 17): the wireframe-modifier tubes are a fixed 0.012 of a pyramid
+    # thick, and a far one's ridge fell under a pixel and read dotted. The site pyramids' edge, its width grown with the
+    # distance to PYR_EDGE_PX, in their colours, under the same haze
+    T = NT(bpy.data.materials["Pyramid Body"].node_tree)
+    fog_ = next(n for n in T.n if n.type == "GROUP" and n.node_tree.name == "VJ_Fog")
+    src_ = fog_.inputs["Color"].links[0].from_socket
+    geo_ = T.node("ShaderNodeNewGeometry")
+    wf_ = T.node("ShaderNodeWireframe", use_pixel_size=False)
+    cam_ = T.comb(T.attr("rt_cam_x"), T.attr("rt_cam_y"), T.attr("rt_cam_z"))
+    T.feed(wf_.inputs["Size"], T.mul(T.vmath("DISTANCE", geo_.outputs["Position"], cam_), T.mul(T.attr("rt_px_angle"), PYR_EDGE_PX)))
+    ecol_ = T.ramp(T.sep(T.node("ShaderNodeTexCoord").outputs["Generated"])[2], [(0.0, (0.05, 0.85, 1.0)), (1.0, (1.0, 0.25, 0.95))])
+    T.feed(fog_.inputs["Color"], T.mix(wf_.outputs["Fac"], src_, T.scale(ecol_, T.mul(T.mrange(T.phase()["Night"], 0.0, 1.0, 1.0, 0.08), 2.6))))
     T = NT(bpy.data.materials["Moon"].node_tree)
     # its earthshine (2.2% of the rock) at a quarter from space: there it lit the night side as an evenly grey disc
     # with no terminator (CAM_SYS e1, S2)

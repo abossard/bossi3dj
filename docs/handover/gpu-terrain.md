@@ -134,3 +134,55 @@ Tools (live planet Blender, every control held at the show defaults unless said)
 6. Reviewer note: a hole-like opening at a mountain peak in the follow pyramids 0.0 frame (about x 1060, y 212); unchecked.
 
 The five questions of the GPU terrain test were answered "Yes, all five" (2026-11-14) and built in 25322af.
+
+## Round 17 (2026-11-15): pulse, ground contact, edges
+
+The user (2026-11-15): "during a pulse, the pyramids need to pulse with it, and their connection to the ground needs to be realistic. edges are better, but still glitchy. frame rate is not an issue, but physical realism and good visual coherence." Rubric `blender/review/rubric-round17.md`, frozen before the build (7af25a7).
+
+**The near pyramids are the island's.** Every pyramid shot is framed on Pyramid_A to D (materials Pyramid Body and Pyramid Edge, wireframe-modifier tubes), not on the site pyramids (Planet_Sites). Their edges still flashed at 7 x rt_beat and the capstone at 4 x: the "still glitchy" edges. Round 16 had changed only the site pyramids.
+
+### Built
+
+- **Pulse** (`energy.py`, `flight_rt.py`, `build_planet.py`): `rt_pulse`, the Drive's glow, follows the beat's held peak (released over PULSE_RELEASE 0.25 s) at PULSE_ATTACK 0.08 s. It drives the emission strength of all three pyramid materials, 1 + PYR_PULSE (3) x rt_pulse, after the haze. A gain before the haze was diluted by the fog round the pyramids (+7 % at 1.7 x). The island's beat terms (edges 7 x, capstone 4 x rt_beat) are 0.
+- **Ground** (`gpu_terrain.pads`): a level pad in the map under every site pyramid (base + 1 m, level to 20 m past the base, blended into the land by 160 m, applied to the cached map at start, no rebake). A foundation under each site pyramid (`unit_pyramid`: the faces continue 0.6 x the depth into the ground), for the coarse rings that cannot hold a pad. The near noise is off over the pads.
+- **Contact**: the land's shade round a site pyramid's foot (GT_Flow's alpha, 1 at the base to 0 at 0.6 x the half side, the land at 0.6 there, under the haze); the site pyramid's foot in shade over its lowest 6 % (PYR_FOOT).
+- **Edges**: the site pyramids' Wireframe node in world units, its width grown with the distance to 2.5 px from the live lens (`rt_px_angle`, written by flight_rt); the same line in the island pyramids' body under their tubes.
+
+### Numbers
+
+**N17-GAP** (`blender/review/pyramid_ground.py`, 1355 site pyramids). The first run's 143 m was a stale map frame in the scan (fixed: it computes the frame when the live one is missing; the map then agrees with PL_Surface within 0.3 m). Rows: floating at the base / floating past the foundation / buried p50 / buried p95 (share of height) / faces cut by the land.
+
+| ring (cell) | before | after |
+|---|---|---|
+| 0 (3 m) | 1262 / – / 19.6 % / 57 % / 1333 | 14 / 0 / 2.4 % / 4.1 % / 21 |
+| 2 (12 m) | 1262 / – / 19.5 % / 57 % / 1332 | 22 / 0 / 2.4 % / 4.1 % / 23 |
+| 3 (24 m) | | 48 / 0 / 2.6 % / 4.3 % / 34 |
+| 4 (48 m) | 1239 / – / 19.1 % / 55 % / 1314 | 153 / 0 / 3.0 % / 8.3 % / 120 |
+| 5 (96 m) | 1194 / – / 18.7 % / 58 % / 1277 | 443 / 6 / 4.0 % / 21.5 % / 447 |
+
+Pads 6/60 m left 705 floating on the 48 m cells; 20/160 m: 165 (before the foundation). Pass on rings 0 to 3 (none floats, p95 under 6 %); ring 4 p95 8.3 %, ring 5 21.5 % and 6 past the foundation: fail.
+
+**N17-PULSE** (`blender/review/pulse_check.py`, orbit pyramids 0.15 held still; the pyramids' mask from a 40 x gain, 17.5 % of the frame): luminance 100 at rest, 143 at rt_pulse 1 (+43 %, bar 25 %: pass). The idle pulse (no `/vj/beat` from Magic) swings it 108 to 118 (about 10 %) twice a second; its largest one-frame step is 74 % of the swing (bar 40 %: fail). At 124 BPM an attack fast enough to show needs more than 40 % in a frame; visibility won. The outline does not change (the pulse touches only emission).
+
+**N17-FLICKER** (`flicker.py` A/B on the same seconds, the round-17 site-pyramid switches of `round17_probes.py` on / off): orbit pyramids 0.15 2.82 / 2.91, orbit 0.3 3.22 / 3.18, follow 0.0 1.08 / 1.18: within 5 %, pass. The recording against round 16's: mean 1.79 / 2.63, p95 5.36 / 5.25, toggles 0.0023 / 0.0043, frames over 30: 0 / 1.
+
+**N17-EDGE**: whole-frame toggles at orbit 0.15, world edges / round 16's pixel edges: 0.00734 / 0.00774 (5 % less, bar half: fail as measured; not measured inside the pyramid masks).
+
+### Shot-reviewer
+
+Final stills (`out/round17/final/`, five shots, rest and peak): R17-PULSE pass 5 of 5 (faces, edges and capstone together, outline unchanged); R17-GROUND pass; R17-CONTACT pass (cast shadows, shade at the foot); R17-COHERENT pass. R17-EDGE fail on two small far base edges (orbit 0.3, vantage 0.5); the dotted island ridges of the earlier set are now continuous lines. R17-HOLE fail: ragged see-through patches, a pale ring and dark pits on mountain ridges (orbit 0.3, rise 0.3). An A/B without the land's ring-overlap cut left every hole in place: not the cut.
+
+Set M (the recording): R17-MOTION pass, no jump, jitter, strobe or loss of contact in 36 tiles. The pulse is not visible at 480 px tiles ("a smooth swell of a few percent at most"): the idle pulse's 10 %.
+
+### Recording
+
+`docs/video/gpu-terrain-round17.mp4` (90 s, 1920x1080, 1554 new frames, git-ignored): 70 s held at show defaults (orbit pyramids 0.15, rise to 0.6, descent to 0.2, follow 0.1), 20 s Magic steering (it held one shot, no beats). Recorded without `--vflip` and flipped upright afterwards (`ffmpeg -vf vflip`); `syphon_record.py` needs `--vflip` for Blender. Stages by 15 s: 1.59, 3.12, 2.98, 1.73, 0.67, 0.93 (`blender/review/video_flicker.py`).
+
+### Open items and questions
+
+1. **The idle pulse's strength** (the user's call): about 10 % on the pyramids; Magic's beats (vj_beat to 1) give up to +43 %. Stronger idle: PYR_PULSE 4 to 5 (risk: white pyramids on a full beat at night) or a deeper idle pulse (synthwave_runtime IDLE_DEPTH 0.45, which also drives the stars).
+2. **Holes on mountain ridges** (open item 6): see-through patches and a pale ring at peaks, not the ring cut. Next suspects: the map's cubic lookup overshooting at peaks, the slope normal at a peak.
+3. **Far small base edges** read dashed (two in the final set): the base edge lies along the ground at a grazing angle.
+4. **Ring 5** (96 m cells, 6 to 12 km): 6 pyramids float past the foundation, buried p95 21.5 %.
+5. **Idle frame times**: not measured, `make status` load 40 to 87, `fps_trustworthy` false; the command under round 16's point 5.
+6. Others' items unchanged: river flow (1), the fall below 800 m (3), B9 and B11's page and contract leftovers (5).

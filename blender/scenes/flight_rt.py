@@ -383,7 +383,7 @@ def frame(scene, depsgraph=None):
     if drive is None:
         drive = _state["drive"] = en.Drive(scene.get("vj_energy", en.E0))
     drive.step(dt, scene.get("vj_energy", en.E0), scene.get("vj_hit", 0.0), scene.get("rt_beat", 0.0))
-    scene["rt_energy"], scene["rt_kick"] = drive.e, drive.kick
+    scene["rt_energy"], scene["rt_kick"], scene["rt_pulse"] = drive.e, drive.kick, drive.glow
     P = _state["path"]
     if P is None:
         P = _state["path"] = pc.PathCamera(live_targets(scene), _state["map"])
@@ -395,6 +395,7 @@ def frame(scene, depsgraph=None):
     scene["rt_blending"] = 1.0 if P.blending() else 0.0
     _state["n"] += 1
     place(rig, pose)
+    scene["rt_px_angle"] = rig.data.sensor_width / rig.data.lens / scene.render.resolution_x     # rad per pixel (the pyramids' edges)
     gpu_terrain.follow(scene, pose[0])
     lamp_sight(scene, tuple(rig.matrix_world.translation), dt)
 

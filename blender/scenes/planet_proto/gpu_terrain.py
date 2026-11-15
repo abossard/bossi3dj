@@ -259,8 +259,9 @@ class NB:
     def cam(self):
         return self.vec(self.attr("rt_cam_x", "VIEW_LAYER"), self.attr("rt_cam_y", "VIEW_LAYER"), self.attr("rt_cam_z", "VIEW_LAYER"))
 
-    def detail(self, p, h, w):
-        """The near noise (m) at world point p on land of height h over water level w."""
+    def detail(self, p, h, w, contact=None):
+        """The near noise (m) at world point p on land of height h over water level w; none on a site's pad (contact,
+        GT_Flow's alpha)."""
         out = None
         for wave, amp in NOISE:
             nz = self.node("ShaderNodeTexNoise", noise_dimensions="3D")
@@ -272,10 +273,12 @@ class NB:
             out = term if out is None else self.math("ADD", out, term)
         near = self.math("SUBTRACT", 1.0, self.smooth(self.vmath("DISTANCE", p, self.cam()), *NOISE_NEAR))
         dry = self.smooth(self.math("SUBTRACT", h, w), *NOISE_DRY)
+        if contact is not None:
+            dry = self.math("MULTIPLY", dry, self.math("SUBTRACT", 1.0, self.smooth(contact, 0.0, 0.05)))
         return self.math("MULTIPLY", out, self.math("MULTIPLY", near, dry))
 
 
-def displacement(nb, img, A, water):
+def displacement(nb, img, flow, A, water):
     """Vector Displacement (object space) that puts a clipmap vertex on the Planet."""
     lv, i, j = nb.attr("gt_l"), nb.attr("gt_i"), nb.attr("gt_j")
     lc, pc = nb.attr("rt_gt_lam", "VIEW_LAYER"), nb.attr("rt_gt_phi", "VIEW_LAYER")
@@ -310,7 +313,7 @@ def displacement(nb, img, A, water):
         hv = nb.lerp(nb.math("SUBTRACT", hland, 2.0), wl, wet)
     else:
         p0 = nb.vmath("ADD", tuple(fl.CENTRE), nb.vmath("SCALE", d, scale=nb.math("ADD", hland, fl.R)))
-        hv = nb.math("ADD", hland, nb.detail(p0, hland, w))
+        hv = nb.math("ADD", hland, nb.detail(p0, hland, w, nb.tex(flow, lam, phi).outputs["Alpha"]))
     pos = nb.vmath("ADD", tuple(fl.CENTRE), nb.vmath("SCALE", d, scale=nb.math("ADD", hv, fl.R)))
     geo = nb.node("ShaderNodeNewGeometry")         # the object sits at the origin, unrotated: object space = world
     vd = nb.node("ShaderNodeVectorDisplacement", space="OBJECT")
@@ -341,15 +344,15 @@ def surface(nb, img, flow, A):
     p = geo.outputs["Position"]
 
     def dnoise(axis):
-        pa = nb.detail(nb.vmath("ADD", p, nb.vmath("SCALE", axis, scale=eps)), h, w)
-        pb = nb.detail(nb.vmath("SUBTRACT", p, nb.vmath("SCALE", axis, scale=eps)), h, w)
+        pa = nb.detail(nb.vmath("ADD", p, nb.vmath("SCALE", axis, scale=eps)), h, w, ftx.outputs["Alpha"])
+        pb = nb.detail(nb.vmath("SUBTRACT", p, nb.vmath("SCALE", axis, scale=eps)), h, w, ftx.outputs["Alpha"])
         return nb.math("DIVIDE", nb.math("SUBTRACT", pa, pb), 2.0 * eps)
 
     gx = nb.math("ADD", gx, dnoise(east))
     gy = nb.math("ADD", gy, dnoise(north))
     n = nb.vmath("NORMALIZE", nb.vmath("SUBTRACT", nb.vmath("SUBTRACT", up, nb.vmath("SCALE", east, scale=gx)),
                                        nb.vmath("SCALE", north, scale=gy)))
-    return {"h": h, "w": w, "flow": ftx.outputs["Color"], "normal": n}
+    return {"h": h, "w": w, "flow": ftx.outputs["Color"], "normal": n, "contact": ftx.outputs["Alpha"]}
 
 
 def covered(nb, A):
@@ -379,7 +382,7 @@ def material(src, name, img, flow, A, water):
     out = next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL" and n.is_active_output)
     for lk in list(out.inputs["Displacement"].links):
         nt.links.remove(lk)
-    nt.links.new(displacement(nb, img, A, water), out.inputs["Displacement"])
+    nt.links.new(displacement(nb, img, flow, A, water), out.inputs["Displacement"])
     m.displacement_method = "DISPLACEMENT"
     # the overlap: a pixel the finer ring draws is cut from this one
     shader = out.inputs["Surface"].links[0].from_socket
@@ -407,6 +410,11 @@ def material(src, name, img, flow, A, water):
             to = lk.to_socket
             nt.links.remove(lk)
             nt.links.new(n.outputs["True Normal"] if water else sf["normal"], to)
+    if not water:       # the land's shade round a site pyramid's foot, under the haze (round 17)
+        shade = nb.math("SUBTRACT", 1.0, nb.math("MULTIPLY", sf["contact"], 1.0 - CONTACT_DARK))
+        for n in [n for n in nt.nodes if n.type == "GROUP" and n.node_tree and n.node_tree.name == "VJ_Fog"]:
+            for lk in list(n.inputs["Color"].links):
+                nt.links.new(nb.vmath("SCALE", lk.from_socket, scale=shade), n.inputs["Color"])
     return m
 
 
@@ -420,14 +428,91 @@ def follow(scene, cam):
     scene["rt_gt_phi"] = float(math.asin(max(-1.0, min(1.0, c[2]))))
 
 
+CONTACT = 0.6               # the land's shade round a site pyramid's foot reaches this x its half side
+CONTACT_DARK = 0.6          # the land's light right at the foot, against 1 away from it
+PAD_SINK = 1.0              # m: the pad under a site pyramid lies this far over its base (the base stays buried)
+PAD_EDGE = (20.0, 160.0)    # m past the base edge: level, then blended back into the land (a 60 m blend was lost
+#                             on the 48 m cells: 705 of 1355 floated there; 160 m: 165)
+
+
+def site_base(vs, up):
+    """The base square of a site pyramid's vertices: the four over its foundation's (build_planet.unit_pyramid)."""
+    order = np.argsort(vs @ up)
+    return vs[order[4:8]] if len(vs) > 5 else vs[order[:4]]
+
+
+def pads(scene, h, A):
+    """(h, contact): h with a level pad under every site pyramid (Planet_Sites' instances): the sites are placed at the land height
+    under their centre, and across a base of up to 115 m the land rose or fell by tens of metres, so a pyramid floated
+    on one side and was cut by the slope on the other (round 17, review/pyramid_ground.py). Like a real pyramid's
+    levelled bedrock, the pad holds the base's height and blends into the land over PAD_EDGE. contact (same shape as h)
+    is 1 under a base and falls to 0 at CONTACT x its half side past it: the land's shade at the pyramid's foot."""
+    ob = scene.objects.get("Planet_Sites")
+    contact = np.zeros(h.shape, np.float32)
+    if ob is None:
+        return h, contact
+    h0, h = h, h.copy()
+    kmax = np.zeros(h.shape, np.float32)       # where pads overlap (a group's pyramids), the nearer footprint wins
+    rows, w = h.shape
+    C = np.array(fl.CENTRE, float)
+    dg = bpy.context.evaluated_depsgraph_get()
+    for inst in dg.object_instances:
+        if not (inst.is_instance and inst.parent and inst.parent.name == ob.name):
+            continue
+        m = np.array(inst.matrix_world.copy())
+        if np.linalg.det(m[:3, :3]) <= 0.0:          # the mirrored copy under the sea
+            continue
+        vs = (m[:3, :3] @ np.array([tuple(v.co) for v in inst.object.data.vertices], float).T).T + m[:3, 3]
+        up = vs.mean(0) - C
+        up /= np.linalg.norm(up)
+        base = site_base(vs, up)
+        bc = base.mean(0)
+        level = float(np.linalg.norm(bc - C)) - fl.R + PAD_SINK
+        e1 = base[0] - bc
+        e1 -= up * (e1 @ up)
+        e1 /= np.linalg.norm(e1)
+        e2 = np.cross(up, e1)
+        half = float(np.max(np.abs((base - bc) @ e1))) / math.sqrt(2.0)       # e1 runs along a half diagonal
+        rad = half * math.sqrt(2.0) + PAD_EDGE[1]
+        c = A @ up
+        lam0, phi0 = math.atan2(c[1], c[0]), math.asin(max(-1.0, min(1.0, c[2])))
+        x0 = (lam0 + math.pi) / (2.0 * math.pi) * w - 0.5
+        y0 = (phi0 + math.pi / 2.0) / math.pi * rows - 0.5
+        rx = rad / (fl.R * max(math.cos(phi0), 0.05)) / (2.0 * math.pi / w) + 2
+        ry = rad / fl.R / (math.pi / rows) + 2
+        xs = np.arange(int(x0 - rx), int(x0 + rx) + 2)
+        ys = np.arange(max(int(y0 - ry), 0), min(int(y0 + ry) + 2, rows))
+        L = -math.pi + (xs + 0.5) * 2.0 * math.pi / w
+        P = -math.pi / 2.0 + (ys + 0.5) * math.pi / rows
+        LL, PP = np.meshgrid(L, P)
+        d = np.stack([np.cos(PP) * np.cos(LL), np.cos(PP) * np.sin(LL), np.sin(PP)], -1) @ A
+        q = d * fl.R - up * fl.R
+        a, b = q @ e1, q @ e2               # along the half diagonals: the base square is |a| + |b| <= half * sqrt 2
+        u, v = (a + b) / math.sqrt(2.0), (a - b) / math.sqrt(2.0)
+        out = np.maximum(np.abs(u), np.abs(v)) - half
+        k = 1.0 - np.clip((out - PAD_EDGE[0]) / (PAD_EDGE[1] - PAD_EDGE[0]), 0.0, 1.0)
+        k = k * k * (3.0 - 2.0 * k)
+        xi = xs % w
+        ix = np.ix_(ys, xi)
+        win = k > kmax[ix]
+        h[ix] = np.where(win, h0[ix] + (level - h0[ix]) * k, h[ix])
+        kmax[ix] = np.where(win, k, kmax[ix])
+        c = 1.0 - np.clip(out / (CONTACT * half), 0.0, 1.0)
+        contact[ix] = np.maximum(contact[ix], c * c)
+    return h, contact
+
+
 def start(scene, probe_group):
     t = time.perf_counter()
     A = _state["axes"] = axes(scene)
     h, wl, f = bake(scene, probe_group)
+    h, contact = pads(scene, h, A)
+    _state["h_padded"] = h
     hc, hf = split(h)
     wc, wf = split(wl)
     img = image("GT_Map", np.stack([hc, hf, wc, wf], -1))
-    flow = image("GT_Flow", np.concatenate([f.astype(np.float32), np.ones(f.shape[:2] + (1,), np.float32)], -1))
+    c2 = 0.25 * (contact[0::2, 0::2] + contact[1::2, 0::2] + contact[0::2, 1::2] + contact[1::2, 1::2])
+    flow = image("GT_Flow", np.concatenate([f.astype(np.float32), c2[..., None]], -1))      # alpha: the pads' contact
     land, water = make_mesh(LAND), make_mesh(WATER)
     for ob, src, name, wet in ((land, "Terrain", "Terrain GPU", False), (water, "Sea", "Sea GPU", True)):
         ob.data.materials.clear()

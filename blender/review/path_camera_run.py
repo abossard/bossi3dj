@@ -2,7 +2,7 @@
 every path and every target, then optionally a stretch left to Magic. In the live planet Blender with flight_rt started:
     DN["pc_job"] = {"out": "/abs/run.json", "flag": "/abs/go.flag", "passes": [...], "holes_at": [s, ...]}; exec this
     file; wait for DN["pc_done"].
-A pass: {"name": str, "set": {vj_key: value}, "hold": true, "seconds": 180}. A held pass (the default) holds every
+"steps" (optional) replaces STEPS. A pass: {"name": str, "set": {vj_key: value}, "hold": true, "seconds": 180}. A held pass (the default) holds every
 control against OSC and Art-Net (Magic, QLC+), starts from the runtime's defaults plus its set and sends the STEPS
 through the bridge as a desk would: path, target and height at the listed second, /vj/blend at its default, so most
 changes fly. An unheld pass ("hold": false) releases the holds and lets Magic steer for its seconds. Default: one held
@@ -38,6 +38,7 @@ STEPS = ((0, "orbit", "pyramids", 0.3), (12, "orbit", "lake", 0.3), (24, "follow
          (48, "rise", "river", 0.5), (60, "rise", "coast", 0.5), (72, "vantage", "coast", 0.5), (84, "vantage", "moon", 0.5),
          (96, "orbit", "moon", 0.7), (108, "orbit", "planet", 1.0), (120, "vantage", "planet", 1.0), (132, "vantage", "sun", 0.5),
          (144, "follow", "sun", 0.2), (156, "follow", "pyramids", 0.0), (168, "rise", "pyramids", 0.3))
+STEPS = tuple(tuple(x) for x in JOB["steps"]) if JOB.get("steps") else STEPS     # [s, path, target, height] from the job
 PASSES = [dict({"set": {}, "hold": True, "seconds": 180.0}, **p) for p in (JOB.get("passes") or [{"name": "day"}])]
 STARTS = [sum(p["seconds"] for p in PASSES[:k]) for k in range(len(PASSES))]
 TOTAL = sum(p["seconds"] for p in PASSES)

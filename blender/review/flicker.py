@@ -10,7 +10,7 @@ A case with "log": true also returns one row per pair of frames: t (s from the c
 altitude (m), the mean difference over the whole frame and over its top, middle and bottom thirds, the toggle share
 and the A/B side.
 An A/B case adds "alt": {"every": frames, "a": probe, "b": probe}; a probe is {"noise": float, "pulse": bool,
-"edges": pyramid_edges variant, "energy": {NAME: value}, "scene": {prop: value} written straight to the scene, back to the case's after}. The case's frames switch between a and b every "every" frames on the same flight, so
+"edges": pyramid_edges variant, "r17": round17_probes flags (exec that file first), "energy": {NAME: value}, "scene": {prop: value} written straight to the scene, back to the case's after}. The case's frames switch between a and b every "every" frames on the same flight, so
 both see the same seconds; the first 2 frames after a switch are not counted. Its row has the numbers per side. Every case starts from the show defaults
 (the runtime's DEFAULTS) with the clocks running; "set" overrides them. "hold" (default true) holds every vj_ control
 against OSC and Art-Net (Magic, QLC+), false leaves them to Magic. "pulse" false keeps the runtime's idle pulse at 0
@@ -67,6 +67,9 @@ def probe(p):
         S[k] = v
     for k in [k for k in st["scene0"] if k not in p.get("scene", {})]:
         S[k] = st["scene0"].pop(k)
+    if "r17" in p or st.get("r17_used"):      # round17_probes.py
+        st["r17_used"] = True
+        DN["r17_apply"](p.get("r17", {}))
     if "edges" in p or st.get("pe_used"):
         st["pe_used"] = True
         st["pe"](p.get("edges", {}))

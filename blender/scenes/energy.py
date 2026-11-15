@@ -21,6 +21,11 @@ HIT_LENS = 0.7                             # the lens at the kick's peak, times 
 HIT_SURGE = 3.0                            # extra rate at the kick's peak: a swoop along the move or the path
 HIT_KEEP = 4                               # hits whose kicks overlap
 BEAT_ATTACK, BEAT_RELEASE = 0.06, 0.25     # s
+PULSE_ATTACK, PULSE_RELEASE = 0.08, 0.25   # s: the pyramids' glow (rt_pulse) follows the beat's held peak (released
+#                                            over PULSE_RELEASE) at PULSE_ATTACK: a third of the step per frame at 30 fps.
+#                                            Following the beat itself, the idle pulse's short spike lifted it to 0.2 and
+#                                            the recording showed a 1 % swing. The idle pulse now swings 0.08 to 0.28,
+#                                            a full beat reaches 0.62 (review/pulse_check.py)
 BEAT_LENS = 0.0                            # lens push at a full pulse and full energy. Was 0.02: the push moved every
 # pixel on every beat, 55 % of the pulse's frame change on a held camera and 59 % of a moving one's at the lake
 # (round 16, review/flicker.py A/B); the dip and roll and the flashes stay
@@ -51,6 +56,8 @@ class Drive:
         self.hits = []                     # ages of the last HIT_KEEP hits
         self.kick = 0.0
         self.beat = 0.0
+        self.glow = 0.0                    # the pyramids' pulse envelope (rt_pulse)
+        self.held = 0.0                    # the beat's peak, released over PULSE_RELEASE
         self.phase = 0.0                   # the moves' clock: integrates rate and the hit's surge
         self.speed = rate(energy)
         self.fired = False
@@ -68,6 +75,8 @@ class Drive:
         self.kick = max((kick_env(a) for a in self.hits), default=0.0)
         tb = BEAT_ATTACK if beat > self.beat else BEAT_RELEASE
         self.beat += (fl.clamp(beat, 0.0, 1.0) - self.beat) * (1.0 - math.exp(-dt / tb) if dt > 0.0 else 0.0)
+        self.held = max(self.held * math.exp(-dt / PULSE_RELEASE) if dt > 0.0 else self.held, fl.clamp(beat, 0.0, 1.0))
+        self.glow += (self.held - self.glow) * (1.0 - math.exp(-dt / PULSE_ATTACK) if dt > 0.0 else 0.0)
         self.speed = rate(self.e) + HIT_SURGE * self.kick
         self.phase += self.speed * dt
         return self
