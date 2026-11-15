@@ -100,6 +100,10 @@ _Avoid_: Video, footage, loop, take
 A pose in which Clips start and end, so any Clip may follow any Clip that ends in the same Key Pose.
 _Avoid_: Hub pose, transition pose, Pose Key
 
+**Idle Clip**:
+The Clip of one Key Pose's idle Move: the Android stays in that pose but alive (breathing, small servo moves), and its first and last frames are identical, so Magic loops it without a seam until the Clip Graph picks the next Move.
+_Avoid_: Idle loop, hold frame, freeze frame, rest pose
+
 **Clip Graph**:
 The graph of Clips joined by Key Poses that Magic walks to pick the next Clip.
 _Avoid_: State machine, move tree, playlist
@@ -187,5 +191,6 @@ _Avoid_: Recolour, relighting, regrade
 - **Shake** can happen in any **Phase** in which the **Wanderer** is on the **Colossus**
 - Each **Reset** brings the next **Colossus** and returns the **Wanderer** to the **Shrine**
 - A **Clip** is one **Move** from one **Angle**; it starts and ends in a **Key Pose**, and the **Clip Graph** joins **Clips** that share one
+- Each **Key Pose** has one **Idle Clip** per **Angle**; a **Move** that ends with no next pick goes to the **Idle Clip** of its last **Key Pose**, and the **Clip Graph** leaves it on the next bar
 - The **Render Package** holds the **Clip Library**, its **Clip Data** and the **Manifest**; each **Clip** brings its **Passes**
 - A **Live Layer** replays the **Camera Track** of the **Clip** on air and places effects at its **Hits**

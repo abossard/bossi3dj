@@ -27,12 +27,15 @@ Each Clip:
 | `frames` | frame count |
 | `key_in`, `key_out` | Key Pose at the first and last frame |
 | `tier` | Intensity Tier: `calm`, `build` or `drop` |
+| `idle` | `true` for an Idle Clip: `key_in` equals `key_out`, first and last frames identical, Magic loops it; `false` for a Move Clip, which Magic restarts on each pick |
 | `cut_points` | beats inside the Clip where a switch is allowed, `[0]` at least |
 | `passes` | `{beauty, shadow, depth}`: file paths relative to the package; beauty carries the Matte as alpha |
 | `clip_data` | path of the Clip Data file |
 | `camera_track` | path of the Camera Track file |
 
 Clips of one Move share timing across Angles, so Magic may cut Angles at any frame.
+
+Every Key Pose has exactly one Idle Clip per Angle. A Move Clip that ends with no next pick goes to the Idle Clip of its `key_out`; the Clip Graph leaves the Idle Clip on the next bar boundary into any Move with that `key_in`.
 
 ## Clip Data (`clip_data/<clip id>.json`)
 
