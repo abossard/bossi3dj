@@ -33,10 +33,10 @@ Page: https://claude.ai/artifact/7D5wLjhFTi7hNr6xwecMP8 (source `robot/concept/r
 | Node | Work | Needs | Model, effort | State |
 |---|---|---|---|---|
 | R1 | Contracts: Manifest, Clip Data, Camera Track, Syphon, folder layout | nothing | orchestrator | done (`robot/CONTRACTS.md`) |
-| R2 | OSC rows `/vj/clip`, `/vj/clip_frame`, `/vj/angle` into the contract | B11 via the main orchestrator | Sonnet 5.5 medium (B11) | rows sent |
-| R3 | Pure Clip Graph model and Manifest validator (stdlib, parametrized tests), a fixture Render Package with placeholder Clips made by ffmpeg | R1 | Sonnet 5.5 medium | proposed session |
-| R4 | Magic generator: Manifest to `.magic` (VideoFile per Clip, InputSelector, Clip Graph and Angle cuts in Globals, Speed from BPM, SyphonClient `ROBOT_LIVE`, Mask and Blend, OSCSender for R2); `magicproj.py check`; codec spike (this ffmpeg has ProRes 4444, no Hap encoder) | R3 | Sonnet 5.5 medium (same session as R3) | proposed session |
-| R5 | Android, Moves and foundry set as a build script; pure Move key tables with tests first | R1 | Opus 5.5 high | proposed session, Blender part waits for the slot |
+| R2 | OSC rows `/vj/clip`, `/vj/clip_frame`, `/vj/angle` into the contract, plus `/vj/live_layer` (Blender to Magic, udp 9202) | B11 via the main orchestrator | Sonnet 5.5 medium (B11) | done (716497d, 4535025) |
+| R3 | Pure Clip Graph model and Manifest validator (stdlib, parametrized tests), a fixture Render Package with placeholder Clips made by ffmpeg | R1 | Sonnet 5.5 medium | done (415f0c6) |
+| R4 | Magic generator: Manifest to `.magic` (VideoFile per Clip, InputSelector, Clip Graph and Angle cuts in Globals, Speed from BPM, SyphonClient `ROBOT_LIVE`, Mask and Blend, OSCSender for R2); `magicproj.py check`; codec spike (this ffmpeg has ProRes 4444, no Hap encoder) | R3 | Sonnet 5.5 medium (same session as R3) | done (415f0c6); missing live layer never black (78f3978); `LiveOn` follows the heartbeat (71988e4, b9674cb), proven with grabs |
+| R5 | Android, Moves and foundry set as a build script; pure Move key tables with tests first | R1 | Opus 5.5 high | pure part done (8eba3ae); holds the Blender slot for the build and a test Clip render |
 | R6 | Render the v1 Clip Library (4 Moves x 2 Angles, beauty, Shadow, Depth, Clip Data) | R5, Blender slot (headless renders count) | R5 session | waits for the slot |
 | R7 | Live World scene in `robot/live/`: foundry set, beat-lit lamps, sparks at Hits, Syphon `ROBOT_LIVE`, reads R2 | R5, R2, Blender slot | R5 session | waits |
 | R8 | Load in Magic, 60 s recording with music, flicker numbers, the user judges | R4, R6, R7 | orchestrator | later |
@@ -44,6 +44,13 @@ Page: https://claude.ai/artifact/7D5wLjhFTi7hNr6xwecMP8 (source `robot/concept/r
 - Blender-free first: R3, R4 and the pure part of R5 run now; R5's Blender part, R6 and R7 ask the main orchestrator for the slot first.
 - Magic is the user's app: R4 proves the file with `magicproj.py check` and a fixture; loading it into Magic and the recording (R8) wait for the user.
 
+## Open checks for the user (Magic)
+
+- Answered by the user (2026-11-15): ProRes 4444 alpha plays; an unselected VideoFile keeps playing; a Mask with the same Child id on both pins is accepted.
+- Open, the user tests it later: restart and hold. Does Goto Start on a 2-frame pulse restart a VideoFile, and does Looping 0 hold the last frame?
+- Open, the user's call: which Magic project to reopen. Magic has `robot.magic` open; the project before it (`PostTest.magic`) was another session's scratch test file.
+
 ## Sessions
 
-- None started yet (a turn started by another session cannot start sessions). Proposed: R3 + R4 (Sonnet 5.5 medium), R5 (Opus 5.5 high).
+- R3 + R4: `local_ffd73c0e-3e19-4460-863e-4508560ceccd` (Sonnet 5.5 medium), note `docs/handover/robot-magic.md`.
+- R5: `local_6a0e527e-a8db-4997-a367-8bf99da5d819` (Opus 5.5 high).
