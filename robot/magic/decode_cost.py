@@ -102,7 +102,7 @@ def make_manifest(folder, angles, config):
     return mf.Manifest(d, folder), bool(matte)
 
 
-def make_project(folder, m, matte_pass):
+def make_project(folder, m, matte_pass, name="decode_cost"):
     clock = [("Time", 0, "calc", [("Increase", 1)]), ("TimeLag", 0, "calc", [("Expression", "Time")]),
              ("Dt", 0.016, "calc", [("Expression", "max(0.001, min(0.05, Time - TimeLag))")]),
              ("Bpm", 124, None, []), ("Section", 2, None, []),
@@ -117,7 +117,7 @@ def make_project(folder, m, matte_pass):
     for iv in root.iter("InputValue"):
         if iv.get("name") == "File" and iv.get("value"):
             iv.set("absoluteFilename", os.path.normpath(os.path.join(folder, iv.get("value"))))
-    path = os.path.join(folder, "decode_cost.magic")
+    path = os.path.join(folder, name + ".magic")
     rm.mp.write(path, root)
     return path
 
@@ -139,9 +139,11 @@ def run(root, config, angles, seconds, sock):
     folder = os.path.join(root, "%s_%d" % (config, angles))
     os.makedirs(folder, exist_ok=True)
     m, matte_pass = make_manifest(folder, angles, config)
-    project = make_project(folder, m, matte_pass)
+    project = make_project(folder, m, matte_pass, "%s_%d" % (config, angles))
     load1 = os.getloadavg()[0]
-    subprocess.run([sys.executable, MAGICPROJ, "load", project], check=True, capture_output=True)
+    out = subprocess.run([sys.executable, MAGICPROJ, "load", project], check=True, capture_output=True, text=True).stdout
+    if "NOT confirmed" in out or "Error!" in out or os.path.basename(project) not in out:     # Magic keeps the previous project when a load fails
+        raise SystemExit("load of %s not confirmed, stopping: %s" % (project, out.strip()))
     pid = magic_pid()
     time.sleep(5)
     while True:
