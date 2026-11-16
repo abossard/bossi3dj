@@ -44,6 +44,13 @@ Page: https://claude.ai/artifact/7D5wLjhFTi7hNr6xwecMP8 (source `robot/concept/r
 - Blender-free first: R3, R4 and the pure part of R5 run now; R5's Blender part, R6 and R7 ask the main orchestrator for the slot first.
 - Magic is the user's app: R4 proves the file with `magicproj.py check` and a fixture; loading it into Magic and the recording (R8) wait for the user.
 
+## Issue #19, many more Moves (2026-11-16)
+
+- 3 Key Poses (guard, low, crouch), 18 Moves and 3 Idle Clips (R5, 0dfe9b1 to f38ca6d); Clip Graph no-repeat and Key Pose exits with a 21-Move fixture (R3+R4, 74d759f).
+- Preview review rounds M1 to M4 on rubric-m1 (Eevee, half size); the user asked R5 directly for power_stomp and ground_pound "super realistic and brutal" (M4 passes).
+- Full render started 2026-11-16 18:32 on the user's "Start the render" and "After the rework": 34 Clips, 3248 frames, expected end 2026-11-17 07:20 to 09:10. Progress: robot/build/probe/library/progress.txt. Planet has no Blender meanwhile (agreed with orchestrator-2).
+- Next after the render: generate robot.magic from the package, a 90 s live test, the user judges; then #20 more camera perspectives.
+
 ## Show machine (2026-11-16)
 
 - The user: "for the moment, assume it'll run on a dedicated macbook like this one". Target: Apple M1 Max, 10 cores, 64 GB, Magic alone with the Robot's live Blender layer.
