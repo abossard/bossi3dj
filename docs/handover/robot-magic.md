@@ -140,3 +140,24 @@ Every run now verifies the load (window title `<config>_<angles>.magic - Editor`
 - `python3 robot/magic/live_test.py analyze robot/package/v1/manifest.json`: the numbers (`robot/magic/live/numbers.json`) and the 6x6 contact sheet `robot/magic/live/sheet.png` for the shot-reviewer against `robot/build/review/rubric-live.md` (frozen before the run: bar N1 to N9 for numbers, L1 to L6 for tiles).
 - Restore (lead's rule): Magic holds `show.magic` for B11's planet run. Run `python3 robot/magic/live_test.py note` while Magic still holds it, before the user's load (read-only: window title resolved to `magic/projects/show.magic`, stored in `robot/magic/live/held_project.txt`; `run` refuses without it). After the run and analysis, `python3 robot/magic/live_test.py restore` loads it back with `magicproj load` and confirms the editor title and no Error window. The outcome goes in this section.
 - The show's `robot.magic` itself is generated with `python3 robot/magic/robot_magic.py robot/package/v1/manifest.json` once the package is final; the test project differs from it only by the Probe scene.
+
+### R8 live test, run of 2026-11-16 (package v1, `robot_live_test.magic`, 90 s)
+
+**Under load 45 to 90 (`fps_trustworthy` false). fps is context only.** Test track (124 BPM, 48 bars) played straight into BlackHole 2ch (ffmpeg audiotoolbox, default output untouched), Spotify paused, the silence check passed before the run. Video `docs/video/robot-live-test.mp4` (960x540, recorded upside down by `syphon_record.py`, flipped afterwards; `run` now records with `--vflip`). Numbers: `python3 robot/magic/live_test.py analyze robot/package/v1/manifest.json` (`robot/magic/live/numbers.json`). Rubric `robot/build/review/rubric-live.md`, frozen before the run.
+
+| Bar | Result |
+|---|---|
+| N1 fps | median 202.6, p5 99.8, min 93.9 (context only, load) |
+| N2 black / stale | 0 black frames; 324 of 2,700 repeated frames (12 %), over the 1 % bar. Cause not separated: Magic runs a free 100 to 200 fps against 30 fps Clips and a 30 fps recorder (OutFrame steps +1 every 33 ms, p95 42 ms). A viewer's own sampling would see the same kind of repeats |
+| N3 Move changes on bar lines | 20 of 20; shown 0.7 frames (median), 1.1 (max) after the Beats event. Pass |
+| N4 cuts on cut points | 44 cuts, 0 off a cut point. Pass |
+| N5 Tier against Section | 0 changes off a bar line; 50 bar lines; literal reading (Section 2 frames before) 6 mismatches, all State changes landing on that same bar line; with 3 frames before to 2 after allowed, 0. Pass on the windowed reading |
+| N6 intensity | Move value changes per bar: calm 0.4 (5 bars), build 1.0 (10), drop 0.11 (28.2); cuts per bar 0.6, 1.0, 0.92. Literal fail: the drop is lower. Cause is in the package: the drop pool is one Move (`front_kick`), so the Clip restarts every bar without a Move change; only Angle cuts vary it |
+| N7 Idle seams | 10 seams, frame-difference peak 2.36 max against 1.99 p95 of normal frames; 10.7 times the median of the changed frames (0.22), over the 3 times bar. The median is of a mostly black frame; the seam is not above ordinary motion |
+| N8 spikes | the 5 times median test does not fit a frame 3.5 % lit (318 "spikes"). Largest difference 3.1, 1.6 times p95; flicker (15 s stages) mean 0.38 to 0.79, over30 0, toggles 0.002 |
+| N9 bar lines against the track | median 48 ms (37 ms after 30 s); max 340 ms (also after 30 s). Median passes, max fails the 100 ms bar |
+
+- X-Ray sections in order drop, breakdown, buildup, drop, breakdown, buildup, drop (State 3, 4, 2, 3, 4, 2, 3 at 8.7, 26.2, 28.1, 39.7, 56.9, 64.7, 70.7 s). Drops read about 1 s after the track's, breakdowns 2.7 to 3 s late, and the buildup read starts with the pad's tone rise inside the breakdown (3 s before the track's snare roll). Tempo 124.3 first, 122.9 at the end.
+- Found: `/vj/clip_frame` (OutFrame) falls back one beat (14 frames) for about 15 ms after almost every beat (375 jumps, 1.9 per beat; sizes 13 to 15), then recovers: `BeatFrac` wraps before `Beats` increments. It reaches only the OSC values the scenes get, not Magic's picture. Not fixed (a fix: hold BeatFrac until Beats has stepped, or derive the pair from one Global).
+- Picture review (shot-reviewer, one 6x6 sheet of 480 px tiles, gamma lifted 2.2 because the Android is dark on black; the first plain sheet judged only L1 to L3): L1, L2, L3, L5, L6 pass; L4 (edge fringe) needs a 1:1 frame and is not judged. The black level of the recording is about 10 of 255 (limited-range H.264).
+- Restore: one `magicproj load magic/projects/show.magic` opened an `Error!` window and Magic still held `robot_live_test.magic`; later Magic was no longer running. Not restored, see the report to the leads.

@@ -202,21 +202,46 @@ def tier_vs_state(events, fps=FPS):
     return checked, bad
 
 
+def tier_vs_state_window(events, fps=FPS, before=3, after=2):
+    """The same check with the OSC arrival jitter allowed for: the Tier after a bar line must be the tier of the Section at any time from `before` to
+    `after` frames (of 1/fps s) around the bar line. A State change landing on the bar line itself is not a mismatch."""
+    beats, section, tier = series(events, "Beats"), series(events, "Section"), series(events, "Tier")
+    bad = []
+    for t, b in changes(beats):
+        if int(b) % 4:
+            continue
+        ok = {tier_of_section(value_at(section, t + k / fps)) for k in range(-before, after + 1)}
+        got = int(value_at(tier, t + 3.0 / fps))
+        if got not in ok:
+            bad.append((round(t, 2), int(b), sorted(ok), got))
+    return bad
+
+
 def tier_off_bar(events):
     """Tier changes that do not happen at a Beats multiple of 4: [(t, beat)]."""
     beats = series(events, "Beats")
     return [(round(t, 2), int(value_at(beats, t))) for t, _v in changes(series(events, "Tier"))[1:] if int(value_at(beats, t)) % 4]
 
 
-def bar_offset_ms(events, t_audio):
+def bar_offset_ms(events, t_audio, after=12):
+    if t_audio is None:
+        return {}
     """Magic's bar lines (Beats multiple of 4) against the track's true bar lines (the first kick at t_audio): ms, median and max abs."""
     off = []
     for t, b in changes(series(events, "Beats")):
-        if int(b) % 4 or t < t_audio + 12:
+        if int(b) % 4 or t < t_audio + after:
             continue
         k = round((t - t_audio) / (SPB * 4))
         off.append((t - t_audio - k * SPB * 4) * 1000)
     return {"n": len(off), "median_ms": round(statistics.median(off)), "max_abs_ms": round(max(abs(x) for x in off))} if off else {}
+
+
+def out_frame_jumps(events, fps=FPS):
+    """OutFrame steps other than +1 inside one Clip (no Move change within 0.1 s): the /vj/clip_frame the scenes get. Returns the count, the share of beats and the biggest."""
+    frames, moves = changes(series(events, "OutFrame")), [t for t, _v in changes(series(events, "Move"))[1:]]
+    jumps = [(t, b - a) for (_t0, a), (t, b) in zip(frames, frames[1:]) if b != a + 1 and not any(abs(t - tm) < 0.1 for tm in moves)]
+    beats = len(changes(series(events, "Beats")))
+    return {"jumps": len(jumps), "per_beat": round(len(jumps) / beats, 2) if beats else None, "sizes": sorted({round(abs(d)) for _t, d in jumps})[:10]}
 
 
 def idle_seams(events, move_frames):
@@ -250,8 +275,10 @@ def picture_numbers(v, cut_ts=(), fps=FPS, black_lit=0.001, stale_diff=0.02):
     black = sum(1 for x in lit if x < black_lit)
     stale = sum(1 for x in diffs if x < stale_diff)
     med = statistics.median(diffs) if diffs else 0
+    changed = [d for d in diffs if d >= stale_diff]
+    med_changed = statistics.median(changed) if changed else 0
     spikes = [(i + 1) / fps for i, d in enumerate(diffs) if med and d > 5 * med and d > 1.0]
-    return {"frames": len(v), "black": black, "stale": stale, "lit_median": round(statistics.median(lit), 3), "diff_median": round(med, 3),
+    return {"frames": len(v), "black": black, "stale": stale, "lit_median": round(statistics.median(lit), 3), "diff_median": round(med, 3), "diff_median_changed": round(med_changed, 3), "diff_p99_changed": round(pct(changed, 99), 2) if changed else None,
             "diff_p95": round(pct(diffs, 95), 2), "diff_max": round(max(diffs), 2), "spikes_over_5x_median": len(spikes),
             "spikes_unexplained": [round(t, 2) for t in spikes if not any(abs(t - c) < 0.15 for c in cut_ts)][:12]}
 
@@ -259,14 +286,15 @@ def picture_numbers(v, cut_ts=(), fps=FPS, black_lit=0.001, stale_diff=0.02):
 def seam_numbers(v, seams, fps=FPS):
     """Frame difference in the 3 frames around each Idle seam against the median difference of the video."""
     diffs = [x[2] for x in v]
-    med = statistics.median(diffs[1:]) if len(diffs) > 1 else 0
+    changed = [d for d in diffs[1:] if d >= 0.02]
+    med = statistics.median(changed) if changed else 0
     peaks = []
     for t, _a, _b in seams:
         i = int(t * fps)
         win = diffs[max(1, i - 3):i + 4]
         peaks.append(max(win) if win else 0)
     return {"seams": len(seams), "peak_median": round(statistics.median(peaks), 2) if peaks else None, "peak_max": round(max(peaks), 2) if peaks else None,
-            "video_median": round(med, 2)}
+            "video_median_changed_frames": round(med, 2)}
 
 
 def analyze(events, m, t_audio=0.0, video=None):
@@ -280,8 +308,10 @@ def analyze(events, m, t_audio=0.0, video=None):
         "moves_on_bar_line": sum(1 for c in moves if c[3] % 4 == 0), "moves_off_bar_line": [(round(c[0], 2), c[3]) for c in moves if c[3] % 4],
         "cuts_off_cut_points": cuts_off_cut_points(cuts, m),
         "per_tier": per_tier(events, cuts),
-        "tier_vs_state": {"bar_lines": checked, "mismatches": bad[:8], "n_mismatch": len(bad), "tier_changes_off_bar": tier_off_bar(events)},
-        "bar_offset": bar_offset_ms(events, t_audio),
+        "tier_vs_state": {"bar_lines": checked, "mismatches": bad[:8], "n_mismatch": len(bad), "n_mismatch_windowed": len(tier_vs_state_window(events)),
+                          "mismatches_windowed": tier_vs_state_window(events)[:8], "tier_changes_off_bar": tier_off_bar(events)},
+        "bar_offset": bar_offset_ms(events, t_audio), "bar_offset_after_30s": bar_offset_ms(events, t_audio, after=30),
+        "out_frame_jumps": out_frame_jumps(events),
         "bpm_end": series(events, "Bpm")[-1][1] if series(events, "Bpm") else None,
         "states": [(round(t, 1), int(v)) for t, v in changes(series(events, "State"))],
     }
@@ -430,7 +460,8 @@ def audio_check(sock):
     raise SystemExit("Magic's Volume did not fall to silence after the audio check")
 
 
-def run():
+def run(own_music=False):
+    """own_music: the user's music already plays into Magic's input; the track is not played, no silence wait, and the bar offset against the track is not judged."""
     os.makedirs(LIVE, exist_ok=True)
     os.makedirs(os.path.dirname(VIDEO), exist_ok=True)
     if not os.path.exists(TRACK):
@@ -441,19 +472,28 @@ def run():
     sock.bind(("127.0.0.1", PROBE_PORT))
     sock.settimeout(0.2)
     preflight(sock)
-    audio_check(sock)
+    if own_music:
+        ev = []
+        collect(sock, 4, time.time(), ev)
+        peak = max([v for _t, n, v in ev if n == "Volume"] or [0])
+        print("own music: peak Volume %.2f" % peak)
+        if peak < 0.1:
+            raise SystemExit("Magic does not hear the user's music (peak Volume %.2f)" % peak)
+    else:
+        audio_check(sock)
     if os.path.exists(FLAG):
         os.remove(FLAG)
     rec = subprocess.Popen(["python3.13", SYPHON_RECORD, "--app", "Magic", "--server", "Main Server",
-                            "--seconds", str(SECONDS), "--fps", str(FPS), "--size", "960x540", "--flag", FLAG, "--out", VIDEO],
+                            "--seconds", str(SECONDS), "--fps", str(FPS), "--size", "960x540", "--vflip", "--flag", FLAG, "--out", VIDEO],
                            env=dict(os.environ, **PY313), stdout=subprocess.PIPE, text=True)
     time.sleep(4)          # the recorder finds the server and waits for the flag
     events = []
     t0 = time.time()
     open(FLAG, "w").close()
-    audio = play()
+    audio = None if own_music else play()
     collect(sock, SECONDS + 2, t0, events)
-    audio.terminate()
+    if audio:
+        audio.terminate()
     out = rec.communicate()[0]
     os.remove(FLAG)
     with open(EVENTS, "w") as f:
@@ -488,9 +528,10 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("command", choices=["prepare", "run", "analyze", "note", "restore"])
     ap.add_argument("manifest", nargs="?")
+    ap.add_argument("--own-music", action="store_true", help="run: the user's music plays into Magic; do not play the track")
     a = ap.parse_args()
     if a.command == "run":
-        return run()
+        return run(a.own_music)
     if a.command == "note":
         return note_held()
     if a.command == "restore":

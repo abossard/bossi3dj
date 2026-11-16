@@ -133,6 +133,21 @@ class HeldProjectTests(unittest.TestCase):
         self.assertIsNone(lt.find_project("no_such_project.magic"))
 
 
+class WindowTests(unittest.TestCase):
+    def test_a_state_change_on_the_bar_line_is_not_a_windowed_mismatch(self):
+        e = sorted(ev("Beats", [(1.0, 4)]) + ev("Section", [(0.0, 0), (1.0 + F / 2, 3)]) + ev("Tier", [(0.0, 0), (1.0 + F, 2)]))
+        self.assertEqual(len(lt.tier_vs_state(e)[1]), 1)
+        self.assertEqual(lt.tier_vs_state_window(e), [])
+
+    def test_a_tier_that_matches_no_section_in_the_window_is_a_mismatch(self):
+        e = sorted(ev("Beats", [(1.0, 4)]) + ev("Section", [(0.0, 3)]) + ev("Tier", [(0.0, 0)]))
+        self.assertEqual(len(lt.tier_vs_state_window(e)), 1)
+
+    def test_out_frame_jumps_inside_a_clip(self):
+        e = sorted(ev("OutFrame", [(0.0, 1), (0.03, 2), (0.06, 16), (0.09, 4), (0.12, 5)]) + ev("Move", [(0, 0)]) + ev("Beats", [(0, 4), (0.06, 5)]))
+        self.assertEqual(lt.out_frame_jumps(e)["jumps"], 2)
+
+
 class PictureTests(unittest.TestCase):
     def test_black_stale_and_spikes(self):
         v = [(10, 0.2, 0.0)] + [(10, 0.2, 1.0)] * 20 + [(0, 0.0, 9.0), (10, 0.2, 0.0), (10, 0.2, 1.0)]
@@ -145,7 +160,7 @@ class PictureTests(unittest.TestCase):
         v = [(10, 0.2, 1.0)] * 60
         v[31] = (10, 0.2, 8.0)
         out = lt.seam_numbers(v, [(1.0, 9, 0)])
-        self.assertEqual((out["seams"], out["peak_max"], out["video_median"]), (1, 8.0, 1.0))
+        self.assertEqual((out["seams"], out["peak_max"], out["video_median_changed_frames"]), (1, 8.0, 1.0))
 
 
 if __name__ == "__main__":
