@@ -94,6 +94,9 @@ Review: `robot/build/review/rubric-r1.md` (frozen), sheets to `shot-reviewer`.
 
 - Round M3 (last; `review/round_m3.sh`, Blender 135 s): rush_cross passes (cross reads from both Angles). power_stomp fails M2: its Hit tiles are the planted moment (sole 0.000 m, after a 0.56 m lift peaking 7 to 8 frames earlier, `review/foot_contact.py`), which reads as the low stance in a still. ground_pound fails M1 and M2 from the side: at a 50° lean the arms merge with the torso and the fists don't show on the floor, though `check` puts them within 0.028 m of their floor targets. M3 and M4 pass; lowest point 0 on every Move. No further round without the user.
 
+- Rework of power_stomp and ground_pound (the user: "super realistic and brutal"): keys can ease "in" into an impact and "out" after it; strike speed cap 10 m/s. Round M4 (rubric-m1): both pass M1 to M4 on sheets and full-size frames; weakest reads ground_pound side 29 and 44 (fist close to the foot) and power_stomp front 44 (fists hip-high). Check: fists within 0.027 m of their floor targets, stomp soles 0.000/0.006/0.000 m at the Hits after lifts of 0.43 to 0.67 m. Short video `docs/video/robot-moves-m4.mp4`.
+- Full render: `review/library_render.sh` (resumable, one Clip per Blender run, ground_pound last, the 8 v1 Clips skipped as complete). Progress in `robot/build/probe/library/progress.txt`.
+
 ## Open items for the orchestrator
 
 - Camera names are `ShotCamera.front` and `ShotCamera.side` (the R3 fixture uses `CAM_FRONT`, close to the Avoid word `CAM_N`).
