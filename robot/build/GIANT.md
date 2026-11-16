@@ -4,10 +4,22 @@ The opponent the user chose: a giant foundry machine the Android fights. Proposa
 
 ## Form
 
-- A forge titan, about 6 m tall (3x the Android). Built by script like the Android (`build_robot.py`): rigid beveled parts parented to bones, no skinning.
-- Chrome Foundry look with the existing materials: dark iron and gunmetal plates, polished steel on the edges and pistons, a molten core glowing through a grille in the chest (the `molten` material, the only light on the body).
-- Readable silhouette at 1080p: a hunched torso on two thick piston legs, a hammer-press right arm (a block head about 1 m), a three-finger claw left arm, a small head with one slit eye.
-- Rig: the Android's scheme scaled: root, hips, spine, chest, head; 2-bone IK arms and legs to wrist and ankle targets. Its own Key Pose `loom` (standing, hammer raised to the shoulder).
+Held: the user wants a rich, detailed, rigged model from the internet, not a script-built one; the form follows the chosen candidate. Fixed so far: about 6 m tall (3x the Android), a hammer or press arm and a claw or grab arm help the Exchanges below, a glowing core helps the look.
+
+## Why the Android reads weak, and what the machine does instead
+
+- Silhouette: built from boxes, spheres and cylinders, generic at tile size. The machine: a detailed model with distinct masses (hammer, claw, hunched torso) that read in silhouette alone.
+- Materials: near-mirror steel that reflects a black world, so it renders dark (3.5 % of the frame lit in the v1 live test). The machine: materials that keep their own colour (painted, worn iron; steel only on edges and pistons), so they read without a bright environment.
+- Light: one tiny amber visor is the only emitter. The machine: an emissive core and panel lights, plus a rim light per duel Angle that separates it from a dark backdrop.
+- Detail and scale cues: no panel lines, no greebles, no set in the Clips, so nothing tells its size. The machine: detail at three scales (plates, bolts, cables), and the Android beside it as the scale cue, with a visible floor shadow.
+
+## Imported, rigged asset
+
+- Source: a model whose licence allows use without a login, stored under `robot/assets/<name>/` with its licence file (or git-ignored with a fetch script and a checksum if it is large).
+- On import (`build_robot.py`, a new `import_asset` step): apply transforms, scale to the planned height, put the feet on the floor, convert its materials into the Chrome Foundry look by material name (metal, paint, emissive), set shadow visibility as for the Android, and add the Clip Data point empties parented to named bones. Passes stay as they are (beauty with the Matte, Shadow Catcher, Depth).
+- Driving it from key tables: a bone map in the build script from our channels (hips, spine, chest, head, hand and foot targets) to the asset's bones. If the asset has IK, our hand and foot targets drive its IK controls; if not, the build adds 2-bone IK constraints with our targets and poles to its arm and leg bones. Rotations convert from our convention (bones up, roll 0) into each bone's rest frame with its rest matrix, so the key tables stay asset-independent and testable without Blender.
+- `check` covers it as it covers the Android: planted soles, reach, lowest point; one probe frame per Key Pose before any render.
+- The same path can later replace the Android (#28): only the bone map and the material rules change, not the Move tables.
 
 ## Staging and Angles
 
@@ -43,4 +55,4 @@ The opponent the user chose: a giant foundry machine the Android fights. Proposa
 - Frames per duel Angle: 58 + 116 + 58 + 116 + 58 + 58 + 116 + 116 = 696; two duel Angles 1392.
 - Final at 64 samples: two figures and a wider frame, estimated at 20 s per frame against the Android's measured 15 to 16 s: about 7.7 h for both duel Angles. To measure on the first build.
 - Preview (Eevee, half size): 9 s Blender start per Clip plus about 0.3 s per frame: 16 Clips, about 10 min. Every Exchange gets a preview first, for `tools/robot_preview_reel.sh`.
-- Building the giant (rig, parts, Key Pose): one session of script work, then one Blender slot of about 15 min for build, `check` and the first previews.
+- Importing the giant (bone map, material rules, Key Pose): one session of script work once the asset is chosen, then one Blender slot of about 15 min for import, `check` and the first previews.
