@@ -2,3 +2,4 @@
 magic/decode/
 # build_robot.py qtrle probe renders and their decoded frames
 build/probe/
+magic/live/
