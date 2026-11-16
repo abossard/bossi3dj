@@ -92,6 +92,8 @@ Review: `robot/build/review/rubric-r1.md` (frozen), sheets to `shot-reviewer`.
 
 - Round M2 (same rubric, 6 re-rendered Moves plus full-size frames): jab_jab_hook, uppercut_combo, leap_slam, low_charge and crouch_strike (fists clear of the floor) pass. Fails: power_stomp (Hit tiles read as the low stance), ground_pound (fists hover about 20 px above the floor), elbow_rush side (reads as a guard; the arm's pole sends the elbow back and out, so a forward elbow cannot read). Fixed: the stomp drops lower and wider after a higher knee, the pound leans 50° to put the wrists at 0.20 m, and elbow_rush became rush_cross (a step-in cross). Hand reach of the new pound and stomp is unchecked until the next build.
 
+- Round M3 (last; `review/round_m3.sh`, Blender 135 s): rush_cross passes (cross reads from both Angles). power_stomp fails M2: its Hit tiles are the planted moment (sole 0.000 m, after a 0.56 m lift peaking 7 to 8 frames earlier, `review/foot_contact.py`), which reads as the low stance in a still. ground_pound fails M1 and M2 from the side: at a 50° lean the arms merge with the torso and the fists don't show on the floor, though `check` puts them within 0.028 m of their floor targets. M3 and M4 pass; lowest point 0 on every Move. No further round without the user.
+
 ## Open items for the orchestrator
 
 - Camera names are `ShotCamera.front` and `ShotCamera.side` (the R3 fixture uses `CAM_FRONT`, close to the Avoid word `CAM_N`).

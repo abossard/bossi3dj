@@ -1,0 +1,14 @@
+#!/bin/zsh
+# Moves preview round M3: build, check, the stomp's foot contact, previews of the three Moves fixed after M2,
+# sheets and the preview video. Writes robot/build/probe/m3/DONE; Blender closes before the sheets.
+cd "${0:A:h}/../../.."
+B=/Applications/Blender.app/Contents/MacOS/Blender; P=robot/build/probe/m3
+pgrep -i blender >/dev/null && { echo "Blender running, abort"; exit 1; }
+rm -rf $P; mkdir -p $P
+$B -b --factory-startup -P robot/build/build_robot.py -- build > $P/build.log 2>&1 || { echo BUILD FAIL > $P/DONE; exit 1; }
+$B -b robot/build/robot.blend -P robot/build/build_robot.py -- check --out $P/check.json > $P/check.log 2>&1
+$B -b robot/build/robot.blend -P robot/build/review/foot_contact.py -- power_stomp 2>&1 | grep '^CONTACT' | sed 's/^CONTACT //' > $P/contact.json
+zsh robot/build/review/preview_all.sh power_stomp ground_pound rush_cross
+echo "blender closed $(date +%T)" > $P/blender_closed.txt
+zsh robot/build/review/preview_video.sh && zsh robot/build/review/preview_sheets.sh
+touch $P/DONE
