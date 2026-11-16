@@ -133,7 +133,7 @@ def run():
             png(base + "_before.png", b)
             png(base + "_diff.png", np.repeat(np.clip(d * 4.0, 0, 255)[:, :, None], 3, 2))
             rows.append({"shot": shot["name"], "set": shot["set"], "changed_share": round(float((d > CHANGE).mean()), 5),
-                         "aa_share": round(float((aa > CHANGE).mean()), 5), "pose": st["pose"],
+                         "aa_share": round(float((aa > CHANGE).mean()), 5), "pose": st["pose"], "px": S.get("rt_px_angle"),
                          "load": round(os.getloadavg()[0], 1)})
             st["pose"] = None
     finally:
