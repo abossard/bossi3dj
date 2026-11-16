@@ -260,7 +260,8 @@ def _material(name, base, metallic, rough, rough_noise=0.0, emission=None, stren
         rng.inputs["To Min"].default_value, rng.inputs["To Max"].default_value = rough, rough + rough_noise
         nt.links.new(noise.outputs["Fac"], rng.inputs["Value"])
         nt.links.new(rng.outputs["Result"], bsdf.inputs["Roughness"])
-    if emission:
+    if emission:   # AgX turns a hot emitter cream-white; keep it dim and without white reflections
+        bsdf.inputs["Specular IOR Level"].default_value = 0.0
         bsdf.inputs["Emission Color"].default_value = (*emission, 1.0)
         bsdf.inputs["Emission Strength"].default_value = strength
     return mat
@@ -269,7 +270,7 @@ def _material(name, base, metallic, rough, rough_noise=0.0, emission=None, stren
 def build_materials():
     return {"steel": _material("steel", (0.80, 0.82, 0.85), 1.0, 0.06, rough_noise=0.08),
             "gunmetal": _material("gunmetal", (0.12, 0.13, 0.14), 1.0, 0.35),
-            "visor": _material("visor", (0.02, 0.02, 0.02), 0.0, 0.3, emission=(1.0, 0.42, 0.06), strength=5.0),
+            "visor": _material("visor", (0.02, 0.02, 0.02), 0.0, 0.7, emission=(1.0, 0.35, 0.03), strength=1.5),
             "floor": _material("floor_plate", (0.06, 0.055, 0.05), 0.8, 0.45, rough_noise=0.2),
             "wall": _material("wall", (0.05, 0.045, 0.04), 0.0, 0.8),
             "iron": _material("iron", (0.10, 0.09, 0.08), 0.9, 0.5),
