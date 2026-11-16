@@ -39,6 +39,18 @@ BAND_RATE = 0.3                     # e-folds/s at most through the hand-over ba
 BAND_CATCH = 3.0                    # e-folds/s at most while a held eye catches up with the blend outside the band
 PLANET_HALF = math.radians(32.0)    # the planet target's half field near the ground
 PUSH_PERIOD = 80.0                 # s at /vj/cam_speed 1: the vantage pushes in over half of it, out over the other
+BLEND_LAND = 0.35                   # share of the frame's centre column a blend keeps on the planet (0: off). The planet is
+#                                     small: the horizon dips 23 deg at 1.3 km, 52 at 10 km, and a blend's view stays near
+#                                     the end shots' level while the hump lifts it (issue #25: flat sky, black space)
+BLEND_LAND_RISE = 300.0             # m over both end shots' eyes over which that keep comes in (none at the ends: no kink)
+BLEND_LAND_RATE = 1.0               # 1/s: the keep's weight changes no faster (a change mid-blend, the blend's end)
+BLEND_BY_HEIGHT = True              # a blend's fog and clip from its clearance (by_height); False: the Director's lerp
+SKY_FRAME = False                   # a variant (issue #25, the user's taste call): sky targets on orbit and vantage frame
+#                                     the body on the upper third line and the horizon on the lower one (sky_frame)
+SKY_FRAME_HALF = math.radians(40.0)  # widest vertical half field it opens to
+BLEND_LAND_TURN = math.radians(40.0)   # rad/s: the kept view's heading follows the blend's no faster (a blend's view that
+#                                     passes over the zenith flips its heading in under a second; tipped down, that read as
+#                                     a whip pan at 176 deg/s)
 RISE_DEPTH = 0.75                   # rise and descend: the share of the log height span it travels down from the top
 PATHS = ("orbit", "follow", "rise", "vantage")
 TARGETS = ("pyramids", "lake", "river", "coast", "moon", "sun", "planet")
@@ -114,6 +126,22 @@ def lens_to_fit(p, look, size, least=0.12):
     d = max(fl.length(fl.sub(look, p)), 1.0)
     half = max(math.atan2(1.6 * size, d), least)
     return fl.clamp(fl.lens_for(min(half, math.radians(40.0))), 14.0, 85.0)
+
+
+def sky_frame(p, look):
+    """A view (fwd, up, lens) of a sky body at look with land in frame: the horizon on the lower third line, the body
+    on the upper one, the field opened to fit both (up to SKY_FRAME_HALF; wider gaps keep the horizon there and the
+    body inside the top tenth). Without it a body high over the horizon filled the frame with sky and nothing in it
+    moved (issue #25: vantage moon held still for 27 s)."""
+    u = fl.norm(fl.sub(p, fl.CENTRE))
+    to = fl.norm(fl.sub(look, p))
+    el = math.asin(fl.clamp(fl.dot(to, u), -1.0, 1.0))
+    dip = math.acos(fl.clamp(fl.R / max(fl.length(fl.sub(p, fl.CENTRE)), fl.R), -1.0, 1.0))
+    hv = fl.clamp(1.5 * (el + dip), math.radians(12.0), SKY_FRAME_HALF)
+    c = max(-dip + hv / 3.0, el - 0.8 * hv)
+    head = fl.tangent(u, to)
+    fwd = fl.add(fl.scale(head, math.cos(c)), u, math.sin(c))
+    return fwd, fl.tangent(fwd, u), fl.clamp(fl.lens_for(hv), 14.0, 85.0)
 
 
 def reach(h, size):
@@ -198,7 +226,10 @@ def pose(path, target, home, phase, h, terrain):
         look = look_point(target, p, travel)
         fwd, up, _ = look_frame(p, look, 0.0)
         lens = planet_lens(p) if target.kind == "planet" else lens_to_fit(p, look, target.size)
-        if path == "vantage":
+        framed = SKY_FRAME and target.kind == "sky" and path in ("orbit", "vantage")
+        if framed:
+            fwd, up, lens = sky_frame(p, look)
+        if path == "vantage" and not framed:      # framed: the push alone moves it (the zoom lost the body off the top)
             lens *= 1.0 + 0.35 * fl.smootherstep(0.5 * (1.0 - math.cos(phase)))
     props = props_at(clear)
     props["clip"] = clip_at(clear)
@@ -247,6 +278,10 @@ class PathCamera:
         self.D = dr.Director()
         self.key = None
         self.le = None                      # log of the eye's height over the sea, as last given out
+        self.eye0 = 0.0                     # the eye's height over the sea when the running blend began
+        self.land_k = 0.0                   # the land keep's weight (on_land), rate-limited
+        self.head = None                    # the kept view's heading, a tangent at the eye, turned at BLEND_LAND_TURN
+        self.land_gap = 0.0                 # rad between the blend's view and the kept view, last frame
 
     def target(self, name):
         return self.targets.get(name) or self.targets[HOME]
@@ -273,10 +308,60 @@ class PathCamera:
         if changed:      # a change: how fast the new view turns by itself, for the blend's length
             later = pose(path, t, self.targets[HOME], self.phase + r * 0.5, h, self.terrain)
             turn = fl.angle(target_pose[1], later[1]) / 0.5
+        if changed and self.le is not None:
+            self.eye0 = math.exp(self.le)
         out = self.D.step(dt, (path, target_name), target_pose, blend_s / dr.DUR_MAX, self.terrain, drive, turn)
         if self.D.blending():
             out = self.floored(out)
-        return self.banded(out, dt, changed and not self.D.blending())
+        out = self.banded(out, dt, changed and not self.D.blending())
+        want = 0.0
+        if self.D.blending():
+            out = self.by_height(out) if BLEND_BY_HEIGHT else out
+            ends = max(self.eye0, dr.spherical(target_pose[0])[1])
+            want = fl.clamp((dr.spherical(out[0])[1] - ends) / BLEND_LAND_RISE, 0.0, 1.0)
+        rate_k = min(BLEND_LAND_RATE, BLEND_LAND_TURN / max(self.land_gap, 1e-3)) * dt     # the turn it makes, too
+        self.land_k += fl.clamp(want - self.land_k, -rate_k, rate_k)
+        u = dr.spherical(out[0])[0]
+        base = fl.tangent(u, out[1])
+        if self.head is None or self.land_k <= 0.0:
+            self.head = base
+        else:
+            self.head = fl.tangent(u, self.head)
+            ang = fl.angle(self.head, base)
+            if ang > BLEND_LAND_TURN * dt:
+                base = fl.slerp(self.head, base, BLEND_LAND_TURN * dt / ang)
+            self.head = base
+        return self.on_land(out, self.land_k, self.head)
+
+    def by_height(self, pose_):
+        """A blend pose's fog and clip from its clearance, as a live pose has them (issue #25: the Director's lerp of
+        the end shots' ground fog fogged the land out from kilometres up)."""
+        u, hp = dr.spherical(pose_[0])
+        clear = max(hp - self.terrain.surface(u), 0.0)
+        props = dict(pose_[4])
+        props.update(props_at(clear), clip=clip_at(clear))
+        return tuple(pose_[:4]) + (props,)
+
+    def on_land(self, pose_, k, head):
+        """The pose turned by weight k (0..1) toward the kept view: heading head (a tangent at the eye), pitched no higher
+        than keeps BLEND_LAND of the frame's centre column on the planet; the roll carried over. step() brings k in over
+        BLEND_LAND_RISE m above both end shots' eyes."""
+        p, fwd, up = pose_[0], pose_[1], pose_[2]
+        u, hp = dr.spherical(p)
+        if BLEND_LAND <= 0.0:
+            return pose_
+        pitch = math.asin(fl.clamp(fl.dot(fwd, u), -1.0, 1.0))
+        dip = math.acos(fl.clamp(fl.R / (fl.R + max(hp, 0.0)), -1.0, 1.0))
+        hv = math.atan(fl.SENSOR / 2.0 / fl.ASPECT / pose_[3])
+        pf = min(pitch, -dip + hv * (1.0 - 2.0 * BLEND_LAND))
+        kept = fl.add(fl.scale(head, math.cos(pf)), u, math.sin(pf))
+        self.land_gap = fl.angle(fwd, kept)
+        if k <= 0.0:
+            return pose_
+        new = fl.slerp(fwd, kept, k)
+        level = fl.tangent(fwd, u)
+        roll = math.atan2(fl.dot(fl.cross(level, up), fwd), fl.dot(level, up))
+        return (p, new, fl.rot(new, roll, fl.tangent(new, u))) + tuple(pose_[3:])
 
     def banded(self, pose_, dt, cut=False):
         """A blend crosses the hand-over band at BAND_RATE at most, like the rise: a fall from space took it in 3 to 4
