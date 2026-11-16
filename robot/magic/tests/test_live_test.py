@@ -110,6 +110,18 @@ class ClockTests(unittest.TestCase):
         self.assertEqual(lt.fps_numbers(ev("Fps", [(i, v) for i, v in enumerate([30, 31, 29, 30, 0.5])]))["min"], 29)
 
 
+class DeviceTests(unittest.TestCase):
+    LISTING = """[AudioToolbox @ 0x1] CoreAudio devices:
+[AudioToolbox @ 0x1] [0]                    LG TV SSCR2, 1E6D
+[AudioToolbox @ 0x1] [1]                  BlackHole 2ch, BlackHole2ch_UID
+[AudioToolbox @ 0x1] [2]            External Headphones, BuiltIn"""
+
+    def test_device_index(self):
+        for name, want in [("BlackHole 2ch", 1), ("LG TV SSCR2", 0), ("Nope", None)]:
+            with self.subTest(name=name):
+                self.assertEqual(lt.device_index(self.LISTING, name), want)
+
+
 class HeldProjectTests(unittest.TestCase):
     def test_editor_title(self):
         for wins, want in [(["show.magic - Editor", "Main"], "show.magic"), (["Main"], None), (None, None), ([], None)]:

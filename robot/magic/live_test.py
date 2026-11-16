@@ -7,7 +7,7 @@
     python3 robot/magic/live_test.py restore                  # AFTER the run: loads that project back with magicproj load and confirms it
 
 The project is the show's robot.magic (generator defaults: auto cuts on, every Angle playing, Live World off through the heartbeat
-fallback) plus a Probe scene that sends the Globals below to 127.0.0.1:PROBE_PORT. The track is played with afplay to the default output
+fallback) plus a Probe scene that sends the Globals below to 127.0.0.1:PROBE_PORT. The track is played with ffmpeg audiotoolbox to the default output
 (BlackHole 2ch, as B11's full test did); Magic's audio input is the user's setting, a restart may need it picked again. The run never
 loads, never drives Magic's UI and never binds 9201, 9202 or 6454. Work files: robot/magic/live/ (git-ignored); the video goes to
 docs/video/robot-live-test.mp4 (git-ignored).
@@ -365,6 +365,27 @@ def audio_onset(events, level=0.05):
     return 0.0
 
 
+def device_index(listing, name="BlackHole 2ch"):
+    """Index of the CoreAudio device `name` in ffmpeg's audiotoolbox device listing, else None."""
+    for line in listing.splitlines():
+        if "] [" in line:
+            rest = line.split("] [", 1)[1]
+            idx, _, label = rest.partition("]")
+            if label.strip().split(",")[0] == name:
+                return int(idx)
+    return None
+
+
+def play():
+    """The track straight into BlackHole 2ch (ffmpeg audiotoolbox), whatever macOS' default output is. Popen, terminate to stop."""
+    listing = subprocess.run([FFMPEG, "-hide_banner", "-f", "lavfi", "-i", "anullsrc", "-t", "0.1", "-f", "audiotoolbox", "-list_devices", "true", "-"],
+                             capture_output=True, text=True).stderr
+    idx = device_index(listing)
+    if idx is None:
+        raise SystemExit("no BlackHole 2ch in the CoreAudio output devices")
+    return subprocess.Popen([FFMPEG, "-v", "error", "-i", TRACK, "-f", "audiotoolbox", "-audio_device_index", str(idx), "-"])
+
+
 def collect(sock, seconds, t0, events):
     end = time.time() + seconds
     from lab import parse_packet
@@ -392,7 +413,7 @@ def preflight(sock):
 
 def audio_check(sock):
     """Magic must hear the track: 6 s of it, then peak Volume above 0.1, then silence."""
-    p = subprocess.Popen(["afplay", TRACK])
+    p = play()
     events = []
     collect(sock, 6, time.time(), events)
     p.terminate()
@@ -430,7 +451,7 @@ def run():
     events = []
     t0 = time.time()
     open(FLAG, "w").close()
-    audio = subprocess.Popen(["afplay", TRACK])
+    audio = play()
     collect(sock, SECONDS + 2, t0, events)
     audio.terminate()
     out = rec.communicate()[0]
