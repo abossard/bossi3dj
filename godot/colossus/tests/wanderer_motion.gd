@@ -77,6 +77,24 @@ func _joint_speed(dt: float) -> float:
 	return worst
 
 
+## Shoulder to hand target over the arm's length: 1 is the arm straight.
+func _stretch(side: String, ik := false) -> float:
+	var up := _bone(side + "UpperArm")
+	var arm := (
+		up.distance_to(_bone(side + "LowerArm"))
+		+ _bone(side + "LowerArm").distance_to(_bone(side + "Hand"))
+	)
+	var target: Vector3 = (
+		(
+			(body._ik_l if side == "Left" else body._ik_r)
+			if ik
+			else (body._hand_l if side == "Left" else body._hand_r)
+		)
+		. global_position
+	)
+	return up.distance_to(target) / maxf(arm, 0.01)
+
+
 ## Samples `seconds` of physics ticks: joint speed per tick, feet (world) and the Wanderer state.
 func _sample(seconds: float) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
@@ -106,6 +124,13 @@ func _sample(seconds: float) -> Array[Dictionary]:
 					"yaw": main.wanderer.rotation.y,
 					"t": main.wanderer._t,
 					"mode": body._mode,
+					"stretch":
+					[
+						_stretch("Left"),
+						_stretch("Right"),
+						_stretch("Left", true),
+						_stretch("Right", true)
+					],
 				}
 			)
 		)
@@ -299,7 +324,7 @@ func _run() -> void:
 			(
 				(
 					"  tick %d %s state %d t %.2f jump %.1f: target moved %.3f m, body %.3f m,"
-					+ " yaw %.3f, same grip %s, hand w %.2f"
+					+ " yaw %.3f, same grip %s, hand w %.2f, stretch %.2f %.2f, ik %.2f %.2f"
 				)
 				% [
 					i,
@@ -312,6 +337,10 @@ func _run() -> void:
 					b["yaw"] - a["yaw"],
 					b["grip"] == a["grip"],
 					b["hand_w"],
+					b["stretch"][0],
+					b["stretch"][1],
+					b["stretch"][2],
+					b["stretch"][3],
 				]
 			)
 		)

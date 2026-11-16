@@ -40,6 +40,7 @@ func _init() -> void:
 	_test_clip_in_place()
 	_test_stride_speed()
 	_test_clip_keep_height_and_still()
+	_test_soft_reach()
 	print("%d passed, %d failed" % [_passed, _failed])
 	quit(1 if _failed > 0 else 0)
 
@@ -850,3 +851,17 @@ func _test_clip_keep_height_and_still() -> void:
 	]
 	for c in cases:
 		_check("clip %s" % c[0], c[1], c[2])
+
+
+func _test_soft_reach() -> void:
+	# Inside the start the target stays; past it the reach nears start + soft and never passes it.
+	var cases := [
+		["inside", 0.4, 0.4],
+		["at the start", 0.54, 0.54],
+		["one soft past", 0.6, 0.578],
+		["far past", 2.0, 0.6],
+	]
+	for c in cases:
+		_check(
+			"soft reach %s" % c[0], snappedf(WandererFeet.soft_reach(c[1], 0.54, 0.06), 0.001), c[2]
+		)

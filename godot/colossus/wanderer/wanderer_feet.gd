@@ -13,6 +13,11 @@ const ARM_SHARE := 0.92
 ## Ankle to toe tip, and the hand targets' distance off the surface (m).
 const TOES := 0.12
 const GRIP_OFF := 0.05
+## Share of the arm's length over which the arm eases into straight. A hand target past the arm's
+## reach pulls the arm straight, and the elbow comes out of straight at once when the target
+## comes back (a pop of 7 m/s in the lower arm); the arm IK aims at a target that nears full
+## reach smoothly instead (soft IK).
+const SOFT_REACH := 0.1
 
 var body: WandererBody
 ## Set by the body: true while the Wanderer stands or walks on the land.
@@ -24,6 +29,9 @@ var legs: TwoBoneIK3D
 ## a little and never pulls a straight arm.
 var hang_reach := 2.0
 var hang_out := 0.3
+## Where the hands should go (world), and the arm IK's targets this modifier sets from them.
+var hands: Array[Marker3D] = []
+var arm_targets: Array[Marker3D] = []
 var foot_l := Marker3D.new()
 var foot_r := Marker3D.new()
 var knee_l := Marker3D.new()
@@ -34,6 +42,8 @@ var _hips := -1
 var _feet := PackedInt32Array()
 var _knees := PackedInt32Array()
 var _shoulders := PackedInt32Array()
+var _elbows := PackedInt32Array()
+var _wrists := PackedInt32Array()
 var _arm := 0.6
 
 
@@ -52,6 +62,10 @@ func _process_modification_with_delta(delta: float) -> void:
 		_shoulders = PackedInt32Array(
 			[skel.find_bone("LeftUpperArm"), skel.find_bone("RightUpperArm")]
 		)
+		_elbows = PackedInt32Array(
+			[skel.find_bone("LeftLowerArm"), skel.find_bone("RightLowerArm")]
+		)
+		_wrists = PackedInt32Array([skel.find_bone("LeftHand"), skel.find_bone("RightHand")])
 		var lower := skel.find_bone("LeftLowerArm")
 		var hand := skel.find_bone("LeftHand")
 		_arm = (
@@ -85,6 +99,34 @@ func _process_modification_with_delta(delta: float) -> void:
 		legs.influence = _weight
 	var p := skel.get_bone_pose_position(_hips)
 	skel.set_bone_pose_position(_hips, p + Vector3.UP * _drop)
+	_soften_arms(skel)
+
+
+## Each arm target where its hand should go, pulled toward the shoulder so that it nears the arm's
+## reach smoothly: the elbow's speed stays finite where the arm turns straight. On this frame's
+## pose, after the hips moved.
+func _soften_arms(skel: Skeleton3D) -> void:
+	var xf := skel.global_transform
+	for i in arm_targets.size():
+		# The arm as the retarget poses it, a little shorter than at rest.
+		var shoulder := skel.get_bone_global_pose(_shoulders[i]).origin
+		var elbow := skel.get_bone_global_pose(_elbows[i]).origin
+		var arm := (
+			shoulder.distance_to(elbow)
+			+ elbow.distance_to(skel.get_bone_global_pose(_wrists[i]).origin)
+		)
+		var soft := arm * SOFT_REACH
+		var to := xf.affine_inverse() * hands[i].global_position - shoulder
+		var d := maxf(to.length(), 1e-4)
+		arm_targets[i].global_position = xf * (shoulder + to / d * soft_reach(d, arm - soft, soft))
+
+
+## Distance `d` eased so it nears `start + soft` without passing it: unchanged up to `start`, then
+## an exponential approach whose slope is 1 at `start`.
+static func soft_reach(d: float, start: float, soft: float) -> float:
+	if d <= start:
+		return d
+	return start + soft * (1.0 - exp(-(d - start) / soft))
 
 
 ## The hang that fits this frame's clip pose (skeleton space: +Z is forward, toward the surface).

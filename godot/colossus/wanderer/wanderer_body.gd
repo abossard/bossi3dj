@@ -65,6 +65,9 @@ var _speed := 0.0
 var _hand_w := 0.0
 var _hand_l := Marker3D.new()
 var _hand_r := Marker3D.new()
+## Where the arm IK aims: the hand target, pulled in to what the arm can reach (WandererFeet).
+var _ik_l := Marker3D.new()
+var _ik_r := Marker3D.new()
 var _elbow_l := Marker3D.new()
 var _elbow_r := Marker3D.new()
 var _look := Marker3D.new()
@@ -91,7 +94,7 @@ func _ready() -> void:
 	skeleton.get_parent().remove_child(skeleton)
 	skeleton.name = "Nomad"
 	model.free()
-	for m in [_hand_l, _hand_r, _elbow_l, _elbow_r, _look]:
+	for m in [_hand_l, _hand_r, _ik_l, _ik_r, _elbow_l, _elbow_r, _look]:
 		m.top_level = true
 		add_child(m)
 	var lib := _load_clips()
@@ -107,8 +110,14 @@ func _ready() -> void:
 	_pose = WandererPose.new()
 	_pose.active = lib == null
 	skeleton.add_child(_pose)
+	# Modifiers run in child order: the chest turns first, so the hang fit and the soft arm
+	# targets (WandererFeet) see the shoulders where the hand IK finds them (a turn after the hand
+	# IK would carry the hands off the grip); the head last.
+	_chest_look = _look_at("Chest", 0.35, deg_to_rad(35.0))
 	_planter = WandererFeet.new()
 	_planter.body = self
+	_planter.hands = [_hand_l, _hand_r]
+	_planter.arm_targets = [_ik_l, _ik_r]
 	skeleton.add_child(_planter)
 	_planter.legs = _two_bone(
 		["LeftUpperLeg", "LeftLowerLeg", "LeftFoot"],
@@ -117,13 +126,10 @@ func _ready() -> void:
 		[_planter.knee_l, _planter.knee_r]
 	)
 	_planter.legs.influence = 0.0
-	# Modifiers run in child order: the chest turns before the hands are put on the grip (a turn
-	# after the hand IK would carry the hands off it), the head last.
-	_chest_look = _look_at("Chest", 0.35, deg_to_rad(35.0))
 	_hands = _two_bone(
 		["LeftUpperArm", "LeftLowerArm", "LeftHand"],
 		["RightUpperArm", "RightLowerArm", "RightHand"],
-		[_hand_l, _hand_r],
+		[_ik_l, _ik_r],
 		[_elbow_l, _elbow_r]
 	)
 	_hands.influence = 0.0
