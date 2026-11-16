@@ -81,6 +81,7 @@ Open:
   - Magic process CPU (top): 1 Angle 314 %, 2 Angles 295 %. It is flat near 3 cores both times, so decode is CPU bound (software ProRes), not GPU bound.
   - GPU (whole-GPU Device Utilization): 5 % and 3 %, other apps included.
   - Per frame time: 1 Angle 35 ms, 2 Angles 60 ms, so about 25 ms per added Angle and 9 ms fixed. A straight line gives 3 Angles about 12 fps and 4 Angles about 9 fps at 30 fps Clips. That is a guess from two points under load; the 1 Angle run may sit at a 30 fps cap, which would make the per-Angle cost larger, not smaller. Two Angles already miss 30 fps here, so 3 to 4 Angles do not fit at 4444 1080p as it stands on this machine under this load. Re-run on a quiet machine before deciding; levers if it still misses: ProRes 422 or HQ for the beauty, a Hap or lower resolution shadow, or stopping the Angles that are off air (they are drawn only so the cuts land on the same frame).
+  - Target machine (user, 2026-11-16): a dedicated MacBook like this one (Apple M1 Max, 10 cores, 64 GB) with Magic and the Robot's live Blender layer alone on it. The runs above held Magic near 3 of 10 cores under load, so they are pessimistic for the show; the Angle-count and codec decision waits for a quiet re-run.
   - Not measured: GPU load of Magic alone, a quiet machine, depth Pass, the Syphon Live World.
 
 ## Section drives the tier (2026-11-16)
