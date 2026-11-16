@@ -76,7 +76,12 @@ Open:
 - Tests: the generated project has the layers, the pulse and `Move` links for 1, 2 and 3 Angles; the simulator checks `HideAngle<i>` against the model's Angle for 1, 2 and 3 Angles over a walk with cuts; the pulse stays two frames at each Move change for 2 and 3 Angles.
 - Live proof (`python3 robot/magic/idle_check.py --cut-rate 1`, same counter Clips): 14 cuts inside a Clip, 12 of them inside an Idle Clip. Steps across a cut: 3.2 to 5.1 levels (0.8 to 1.3 frames) at 11 of them, up to 9.4 levels (2.3 frames, at an idle loop seam) at the worst; the largest step between samples elsewhere is 16 levels, so no cut stands out, where the old design stepped 109. No black sample, 3 loop seams in the idle from beat 20.5 to 31.5, Move starts at frame 0, switches 0.06 to 0.08 s after the bar line.
 - Shadow Pass: while `LiveOn` is 0 the gate does not draw the Shadow layers, so they do not advance; they are in step again from the next Move start after the live layer appears.
-- Decode cost (2 Angles of ProRes 4444 1080p against 1): not measured yet. At the time of writing `make status` showed two Blender processes, load 153 and `fps_trustworthy` false.
+- Decode cost (2026-11-16, `python3 robot/magic/decode_cost.py`; 1920x1080 30 fps, beauty ProRes 4444 with alpha, shadow ProRes 422, so 2 streams per Angle; 20 s per run, alternating 1, 2, 2, 1): **all numbers taken under load 28 to 49 (`load_1m`, `fps_trustworthy` false), not trustworthy; only the ratio counts.**
+  - Magic Graphics FPS: 1 Angle 28.8 (28.5, 29.1), 2 Angles 16.6 (16.8, 16.5). Ratio 2/1: 0.58.
+  - Magic process CPU (top): 1 Angle 314 %, 2 Angles 295 %. It is flat near 3 cores both times, so decode is CPU bound (software ProRes), not GPU bound.
+  - GPU (whole-GPU Device Utilization): 5 % and 3 %, other apps included.
+  - Per frame time: 1 Angle 35 ms, 2 Angles 60 ms, so about 25 ms per added Angle and 9 ms fixed. A straight line gives 3 Angles about 12 fps and 4 Angles about 9 fps at 30 fps Clips. That is a guess from two points under load; the 1 Angle run may sit at a 30 fps cap, which would make the per-Angle cost larger, not smaller. Two Angles already miss 30 fps here, so 3 to 4 Angles do not fit at 4444 1080p as it stands on this machine under this load. Re-run on a quiet machine before deciding; levers if it still misses: ProRes 422 or HQ for the beauty, a Hap or lower resolution shadow, or stopping the Angles that are off air (they are drawn only so the cuts land on the same frame).
+  - Not measured: GPU load of Magic alone, a quiet machine, depth Pass, the Syphon Live World.
 
 ## Section drives the tier (2026-11-16)
 
