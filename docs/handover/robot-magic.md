@@ -91,3 +91,28 @@ Open:
 - Idle live proof again with the section as the OSC-driven clock (`idle_check.py`): idle to Move 0.059 s after bar 16, Move to idle 0.091 s after bar 20, idle to Move 0.050 s after bar 32, no black sample, 2 idle loop seams, 14 cuts all within the largest step elsewhere.
 - X-Ray itself live (`python3 robot/magic/xray_check.py`, synthetic 124 BPM track into Source 0, probe OSC on 19408): kick, sub-bass and pad bars come back as State drop (3), breakdown (4), buildup (2), drop (3) in order; Tier follows each on a bar line (beats 64, 76, 92, 112) and never off one; Bpm 122.2 after 46 s (starts at 120 and converges, +-3 of 124). Notes: the kick must reach 0.6 on KickRaw (a quiet synthetic kick never pulses, Bpm stayed 120); music that starts after silence reads as a drop at once (State 3 in the first second), a real set that starts on a song does the same; the buildup read came one bar after the pad and snare roll began.
 - Not covered: a real song's section accuracy (X-Ray's own notes hold that), and the Globals count (87 for the fixture).
+
+## Decode-cost fixes (2026-11-16, `decode_cost.py`, proposal for CONTRACTS.md and R5)
+
+**Every number: taken under load 28 to 190 (`load_1m`, `fps_trustworthy` false), not trustworthy. Runs alternate across configs; the order of the configs is what counts. Target is the dedicated M1 Max.** Fixture Moves, 1920x1080 30 fps, a noisy disc on transparent black (a quarter of the frame lit), every Angle drawn all the time. Magic's Graphics FPS reads up to about 33 here, so 30 to 33 means "not limited by decode".
+
+| config (beauty / shadow / matte) | 4 Angles fps (2 rounds) | Magic CPU | MB per Move and Angle |
+|---|---|---|---|
+| ProRes 4444 / ProRes 422 (today) | 20.5 | 159 % | 85 |
+| ProRes 4444 low quality (qscale 20) / 422 | 21.9 | 149 % | 60 |
+| ProRes 4444 / H.264 shadow | 21.8 | 162 % | 76 |
+| ProRes 4444 / half resolution H.264 shadow | 21.7 | 166 % | 55 |
+| QuickTime Animation (qtrle, 8-bit ARGB) / ProRes 422 | 28.3 | 67 % | 154 |
+| raw ARGB / ProRes 422 | 28.5 | 66 % | 520 |
+| raw ARGB / half resolution H.264 shadow | 29.1 | 61 % | 491 |
+| H.264 intra 4:2:0 colour / H.264 shadow, own grey matte | 32.5 | 209 % | 47 |
+
+Angle sweep, one round, same load (fps): ProRes 4444 / 422 1 Angle 33.9, 2 Angles 31.2, 3 Angles 21.0, 4 Angles 20.6. qtrle: 33.2, 29.5, 29.8 (4 Angles 28.3 above). H.264 with matte: 33.5, 32.2, 33.5 (4 Angles 32.5).
+
+- Result: the beauty codec is the cost. ProRes 4444 is software decode at about 3 cores for 4 Angles and falls below 30 fps at 3 Angles. Every Shadow Pass change (lower quality, H.264, half resolution) moved the 4 Angle fps by 1 to 1.5 only, so step 2 is not worth a format change.
+- Step 3 (play only the on-air Angle) is not needed and was not built, so cuts still land on the same frame. Nothing about cuts changed.
+- The `h264` config has not been checked for the black level: limited range 4:2:0 lifted the mean of the output from 23 to 31 (lit share 0.15 to 0.22), so it must be encoded full range.
+- Proposal, no Manifest or CONTRACTS.md change: **beauty Pass as QuickTime Animation (`qtrle`) in a .mov, 8-bit RGBA, 1920x1080**, Shadow and Depth stay as they are. It keeps the alpha in the beauty file (the generator's Mask is unchanged), decodes at about a third of the CPU of ProRes 4444 and 4 Angles hold 28 to 30 fps under load 100+. Cost: files are 1.8 times ProRes 4444 for this content (a real render with more lit area compresses less). Alpha stays straight or premultiplied as the ProRes path had it; I checked only that the Android shows up with the same lit share in Magic (0.164 against 0.152, mean grey 23.9 against 23.2). Check that Blender's FFmpeg output offers qtrle with RGBA (R5).
+- Alternative if more headroom is wanted: H.264 intra 4:2:0 colour (full range) plus a grey matte file as its own Pass (`passes.matte`, generator `matte_pass=True`, Mask `Use Alpha 0`). Fastest here (32.5 fps at 4 Angles, 47 MB) but it needs `matte` in the Manifest and CONTRACTS.md, 8-bit 4:2:0 colour, and Magic's CPU was about 2 cores (209 %), more than qtrle. Not recommended before the qtrle result is seen on a quiet machine.
+- Hap Alpha (GPU decode, probably the best): this ffmpeg has no Hap encoder (`-buildconf` has no libsnappy). It would need ffmpeg built with libsnappy (`brew install snappy` and an ffmpeg with `--enable-libsnappy`, for example the homebrew-ffmpeg tap) or Vidvox's hap-encoder tool. Nothing is installed; ask first.
+- Not measured: a quiet machine (rerun `python3 robot/magic/decode_cost.py --configs prores,qtrle,h264_matte --angles 1,2,3,4` when `make status` says `fps_trustworthy`), a real render, Hap, raw at 3 Angles. `python3 robot/magic/decode_cost.py --list` shows the configs.

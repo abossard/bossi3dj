@@ -145,8 +145,9 @@ def live_globals(timeout=LIVE_TIMEOUT):
     ]
 
 
-def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=None, project_dir=None, audio_device=None, osc_in=OSC_IN_PORT, clock=None, **graph):
+def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=None, project_dir=None, audio_device=None, osc_in=OSC_IN_PORT, clock=None, matte_pass=False, **graph):
     """Builder (not yet built) of the Robot project for Manifest `m`. File params are relative to project_dir when given.
+    `matte_pass`: the Matte is its own Pass ("matte" in each Clip's passes, grey) instead of the beauty's alpha (decode_cost.py measures both).
     `clock` replaces the audio clock Globals (name, value, source, mods), for a test that drives Beats, BeatFrac, Section and Bpm itself."""
     b = mp.Builder(syphon=OUTPUT_SERVER, size=tuple(size or m.size), fps=m.fps, audio_device=audio_device, osc_in=osc_in)
     for name, value, source, mods in (clock if clock is not None else clock_globals()) + graph_globals(m, seed=seed, **graph):
@@ -174,7 +175,7 @@ def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=No
     shadow = clip_files("shadow")
     shaded = robot.node("Blend", {"Mode": BLEND_MULTIPLY}, inputs=[world, shadow])
     beauty = clip_files("beauty")
-    matte = robot.node("Mask", {"Use Alpha": 1}, inputs=[beauty, beauty])
+    matte = robot.node("Mask", {"Use Alpha": 0}, inputs=[beauty, clip_files("matte")]) if matte_pass else robot.node("Mask", {"Use Alpha": 1}, inputs=[beauty, beauty])
     comp = robot.node("Transparency", {"Amount": 0}, inputs=[matte, shaded])
     osc_mod = robot.scene_module(osc)
     # A module wired to a missing Syphon server draws black, bypassed or not; an InputSelector only evaluates the input it draws.
