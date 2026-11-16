@@ -968,9 +968,13 @@ def planetize_fog(g):
     dist = next(n for n in T.n if n.type == "CAMERA").outputs["View Distance"]
     alt_p = planet_frame(T, P)[1]
     alt_c = planet_frame(T, T.vmath("ADD", P, T.vmath("SCALE", inc, scale=dist)))[1]
-    for n in [n for n in T.n if n.type == "MATH" and n.operation == "DIVIDE" and n.inputs[0].is_linked
-              and n.inputs[0].links[0].from_socket == dist and abs(n.inputs[1].default_value - FOG_D) < 1e-3]:
+    haze = [n for n in T.n if n.type == "MATH" and n.operation == "DIVIDE" and n.inputs[0].is_linked
+            and n.inputs[0].links[0].from_socket == dist and abs(n.inputs[1].default_value - FOG_D) < 1e-3]
+    for n in haze:
         T.l.new(fog_distance(T, alt_c), n.inputs[1])        # the haze's distance grows with the eye's height (issue #25)
+    if not haze:
+        print("WARNING planetize_fog: no haze distance (View Distance / %g) in the island's VJ_Fog, the haze stays as "
+              "it was (flat land from 4 to 7 km, issue #25)" % FOG_D)
     for sep in [n for n in T.n if n.type == "SEPXYZ" and n.inputs[0].is_linked and n.inputs[0].links[0].from_socket == P]:
         for ln in list(sep.outputs[2].links):
             if ln.to_node.type == "MATH" and ln.to_node.operation == "ABSOLUTE":        # surface height
@@ -4208,15 +4212,25 @@ if GRAFT:   # the island file embeds its runtime texts as last saved there, and 
         if os.path.exists(src_path):
             with open(src_path) as f_:
                 tx.from_string(f_.read())
-SKY_GROUPS = ("VJ_Sky", "VJ_SkyBase", "VJ_Meteor")           # a material that calls these draws sky
-SKY_NAMES = ("Atmosphere", "Sun", "Moon", "Star", "Nebula", "Meteor")
+SKY_MATERIALS = ("Atmosphere", "Sun", "Moon")                 # the sky's own materials, by name (worlds come too)
+SKY_PARTS = ("Star", "Nebula", "Meteor")                        # and any whose name holds one of these
+
+
+def is_sky(name):
+    """Whether the material name is the sky's (sky_without_hue). By role, not by the groups it calls: the land and the
+    water call VJ_SkyBase for their reflections and must keep /vj/hue."""
+    return name in SKY_MATERIALS or any(k in name for k in SKY_PARTS)
 
 
 def sky_without_hue():
     """/vj/hue turns the land only (the user, 2026-11-16, issue #25: "Land only"): the worlds and the sky's materials
-    (the atmosphere's limb, sun, moon, stars, nebula, meteors) call VJ_Color_Sky, VJ_Color with its hue held at no
-    turn (0.5). Returns the names it swapped, for the build's log."""
+    (is_sky) call VJ_Color_Sky, VJ_Color with its hue held at no turn (0.5). Returns the names it swapped, for the
+    build's log; without a Hue/Saturation node in VJ_Color it changes nothing and says so."""
     col = bpy.data.node_groups["VJ_Color"]
+    hs = [n for n in col.nodes if n.type == "HUE_SAT"]
+    if not hs:
+        print("WARNING sky_without_hue: VJ_Color has no Hue/Saturation node, the sky keeps /vj/hue")
+        return []
     sky = col.copy()
     sky.name = "VJ_Color_Sky"
     hs = next(n for n in sky.nodes if n.type == "HUE_SAT")
@@ -4224,13 +4238,7 @@ def sky_without_hue():
         sky.links.remove(ln)
     hs.inputs["Hue"].default_value = 0.5
     trees = [("world " + w.name, w.node_tree) for w in bpy.data.worlds if w.node_tree]
-    for m in bpy.data.materials:
-        nt = m.node_tree
-        if nt is None:
-            continue
-        calls = {n.node_tree.name for n in nt.nodes if n.type == "GROUP" and n.node_tree}
-        if any(g in calls for g in SKY_GROUPS) or any(k in m.name for k in SKY_NAMES):
-            trees.append((m.name, nt))
+    trees += [(m.name, m.node_tree) for m in bpy.data.materials if m.node_tree is not None and is_sky(m.name)]
     done = []
     for name, nt in trees:
         nodes = [n for n in nt.nodes if n.type == "GROUP" and n.node_tree == col]

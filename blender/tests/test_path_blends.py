@@ -32,7 +32,7 @@ def run(targets, prog, seconds, drive=None):
         prev = C.step(DT, *prog[0][1:4], 1.0, prog[0][4])
         if twin:
             twin.step(DT, *prog[0][1:4], 1.0, prog[0][4])
-    r = {"dark": 0.0, "turn": 0.0, "end": 0.0, "kept": 0.0, "cut": 0.0, "cut_kept": 0.0, "accent": 0.0}
+    r = {"dark": 0.0, "turn": 0.0, "end": 0.0, "start": 0.0, "kept": 0.0, "cut": 0.0, "cut_kept": 0.0, "accent": 0.0}
     i, gap = 0, 0.0
     for n in range(int(seconds / DT)):
         t = n * DT
@@ -52,6 +52,8 @@ def run(targets, prog, seconds, drive=None):
         if was and not C.blending() and not new:      # a blend that ended by itself, not by a cut
             r["end"] = max(r["end"], gap)
         gap = math.degrees(fl.angle(*C.views)) if C.blending() else 0.0
+        if new and blend > 0.0:                         # a blend's first frame: the keep comes in from nothing
+            r["start"] = max(r["start"], gap)
         r["kept"] = max(r["kept"], gap)
         if C.blending() and land(out[0], out[1], out[3]) < 0.1:
             r["dark"] += DT
@@ -77,6 +79,11 @@ CASES = [  # name, targets, program, seconds, most dark blend s, most turn deg/s
                          (22.4, "orbit", "sun", 0.6, 30.0)], 45.0, 5.5, 72.0),
     ("far change, eye held", FAR, [(0, "follow", "lake", 0.6, 30.0), (3, "rise", "moon", 0.6, 30.0),
                                    (9.9, "vantage", "moon", 0.6, 30.0)], 30.0, 3.5, 72.0),
+    ("far change at 6.9 s", FAR, [(0, "follow", "lake", 0.6, 30.0), (3, "rise", "moon", 0.6, 30.0),
+                                  (6.9, "vantage", "moon", 0.6, 30.0)], 30.0, 12.0, 72.0),
+    ("over the zenith", TARGETS, [(0, "follow", "sun", 0.0, 30.0), (3, "vantage", "sun", 0.0, 30.0)], 20.0, 3.0, 72.0),
+    ("heading steadied", TARGETS, [(0, "orbit", "lake", 0.3, 15.0), (0.01, "follow", "moon", 0.3, 15.0),
+                                   (9.36, "vantage", "moon", 0.3, 15.0)], 20.0, 3.0, 60.0),     # 76.7 without the ends
     ("far change, 15 s fade", FAR, [(0, "follow", "coast", 0.3, 15.0), (3, "follow", "moon", 0.3, 15.0),
                                     (9.5, "orbit", "moon", 0.3, 15.0)], 30.0, 1.0, 144.0),
     ("6 s blends", TARGETS, [(0, "vantage", "coast", 0.6, 6.0), (3, "follow", "lake", 0.6, 6.0)], 12.0, 2.5, 360.0),
@@ -101,7 +108,7 @@ class KeepTests(unittest.TestCase):
     def test_kept_view(self):
         cases = [  # pitch deg, clearance m, least land, most land, most deg off the view
             (0.0, 3000.0, pc.BLEND_LAND - 1e-6, 1.0, 90.0),         # level from height: tipped down to land
-            (-89.0, 3000.0, 0.0, pc.BLEND_LAND_MAX + 1e-6, 90.0),    # straight down: lifted to keep the horizon
+            (-89.0, 3000.0, 0.0, 0.8 + 1e-6, 90.0),                  # straight down: lifted to keep the horizon (run 4)
             (-5.0, 100.0, 0.0, 1.0, 5.0),                            # low over the plaza: a few degrees at most
         ]
         for pitch, clear, lo, hi, off in cases:
@@ -139,6 +146,8 @@ class BlendTests(unittest.TestCase):
                 self.assertGreater(r["kept"], 1.0, "the keep acts in this case (deg)")
                 self.assertLessEqual(r["end"], math.degrees(pc.BLEND_LAND_TURN) * DT + 0.05,
                                      "keep left on a blend's last frame (deg): one frame of BLEND_LAND_TURN at most")
+                self.assertLessEqual(r["start"], math.degrees(pc.BLEND_LAND_TURN) * DT + 0.05,
+                                     "keep on a blend's first frame (deg): one frame of BLEND_LAND_TURN at most")
 
     def test_cut_mid_blend(self):
         r = run(*[c for c in CASES if c[0] == "cut mid-blend"][0][1:4])

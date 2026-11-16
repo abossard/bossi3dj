@@ -1,6 +1,6 @@
 """Issue #25 live: the Path Camera's blend fixes and the SKY_FRAME variant in the planet Blender. In it:
     DN["bl_job"] = {"out": "/abs/file.jsonl", "program": [[t, path, target, height, cam_speed, blend], ...],
-                    "set": {"BLEND_LAND": 0.35, "BLEND_BY_HEIGHT": True, "SKY_FRAME": False}, "settle": 20.0,
+                    "set": {"BLEND_LAND": 0.35, "BLEND_BY_HEIGHT": True, "SKY_FRAME": True}, "settle": 20.0,
                     "flag": "/abs/flag"?, "hold": {vj_key: value}?, "nodes": {label: value}?, "snap": [t, ...]?};
     exec this file; wait for DN["bl_done"].
 Holds the camera controls (vj_path, vj_target, vj_height, vj_cam_speed, vj_blend) against OSC and plays the program

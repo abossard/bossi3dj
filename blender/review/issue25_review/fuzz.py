@@ -9,8 +9,8 @@ FAR=dict(TARGETS, coast=pc.ground_target("coast", fl.offset(T.c,T.e,T.n,-20000.0
 src=open(ROOT+"/blender/scenes/path_camera.py").read()
 off=types.ModuleType("off"); exec(compile(src.replace("BLEND_LAND = 0.35","BLEND_LAND = 0.0 "),"off","exec"),off.__dict__)
 class Rec(pc.PathCamera):
-    def turn_limited(self, base, out, dt, cut, left, blend_s, changed=False):
-        r=super().turn_limited(base,out,dt,cut,left,blend_s,changed)
+    def turn_limited(self, base, out, dt, cut, left, blend_s):
+        r=super().turn_limited(base,out,dt,cut,left,blend_s)
         self.rec=(base[1],out[1],r[1],left)
         return r
 seed=int(sys.argv[1]); secs=float(sys.argv[2]); mode=sys.argv[3]   # fixed | jitter

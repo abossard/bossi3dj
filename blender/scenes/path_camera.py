@@ -316,20 +316,20 @@ class PathCamera:
         if tr is not None:
             out = self.by_height(out) if BLEND_BY_HEIGHT else out
             out = self.on_land(out, fl.add(tr.a[1], target_pose[1]), min(tr.t, max(tr.d - tr.t, 0.0)))
-        out = self.turn_limited(base, out, dt, cut, max(tr.d - tr.t, 0.0) if tr is not None else None, blend_s, changed)
+        out = self.turn_limited(base, out, dt, cut, max(tr.d - tr.t, 0.0) if tr is not None else None, blend_s)
         if tr is not None:
             self.D.pose = (self.D.pose[0],) + tuple(out[1:])     # a change mid-blend starts from the view shown
         return en.accent(out, drive) if drive is not None else out
 
-    def turn_limited(self, base, out, dt, cut, left, blend_s, changed):
+    def turn_limited(self, base, out, dt, cut, left, blend_s):
         """While blending (left: the blend's seconds to go), the shown view turns no faster than the view before the keep
         did this frame plus BLEND_LAND_TURN, plus what empties a lag by the blend's end, and never faster than
         BLEND_TURN_MAX at /vj/blend blend_s unless the view before the keep does. Outside blends, a cut and the first
-        frame pass. On a change the Director starts from the view shown, so its own turn is measured from that."""
+        frame pass."""
         prev, self.views = self.views, (base[1], out[1])
         if prev is None or cut or dt <= 0.0 or left is None or left <= dt:
             return out
-        own = fl.angle(prev[1] if changed else prev[0], base[1])
+        own = fl.angle(prev[0], base[1])
         allowed = own + BLEND_LAND_TURN * dt + fl.angle(prev[1], prev[0]) * dt / left
         allowed = min(allowed, max(own, BLEND_TURN_MAX * dr.DUR_MAX / max(blend_s, 1e-3) * dt))
         d = fl.angle(prev[1], out[1])
