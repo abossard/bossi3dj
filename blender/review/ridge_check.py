@@ -48,6 +48,7 @@ def pin(scene, depsgraph=None):
     from mathutils import Matrix
     scene.camera.matrix_world = Matrix([p["matrix"][i * 4:i * 4 + 4] for i in range(4)])
     scene.camera.data.lens = p["lens"]
+    scene["rt_px_angle"] = scene.camera.data.sensor_width / p["lens"] / scene.render.resolution_x   # flight_rt's, at the pinned lens
     sys.modules["gpu_terrain"].follow(scene, scene.camera.matrix_world.translation)
 
 
