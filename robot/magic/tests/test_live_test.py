@@ -110,6 +110,17 @@ class ClockTests(unittest.TestCase):
         self.assertEqual(lt.fps_numbers(ev("Fps", [(i, v) for i, v in enumerate([30, 31, 29, 30, 0.5])]))["min"], 29)
 
 
+class HeldProjectTests(unittest.TestCase):
+    def test_editor_title(self):
+        for wins, want in [(["show.magic - Editor", "Main"], "show.magic"), (["Main"], None), (None, None), ([], None)]:
+            with self.subTest(wins=wins):
+                self.assertEqual(lt.editor_title(wins), want)
+
+    def test_find_project_needs_exactly_one_file(self):
+        self.assertTrue(lt.find_project("show.magic").endswith(os.path.join("magic", "projects", "show.magic")))
+        self.assertIsNone(lt.find_project("no_such_project.magic"))
+
+
 class PictureTests(unittest.TestCase):
     def test_black_stale_and_spikes(self):
         v = [(10, 0.2, 0.0)] + [(10, 0.2, 1.0)] * 20 + [(0, 0.0, 9.0), (10, 0.2, 0.0), (10, 0.2, 1.0)]

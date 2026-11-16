@@ -3,6 +3,8 @@
     python3 robot/magic/live_test.py prepare MANIFEST          # track + project (robot_live_test.magic), nothing touches Magic
     python3 robot/magic/live_test.py run                      # Magic has the project loaded by the user; 90 s run, recording, event log
     python3 robot/magic/live_test.py analyze MANIFEST          # numbers from the last run
+    python3 robot/magic/live_test.py note                     # BEFORE the user loads the test project: records what Magic holds now (read-only)
+    python3 robot/magic/live_test.py restore                  # AFTER the run: loads that project back with magicproj load and confirms it
 
 The project is the show's robot.magic (generator defaults: auto cuts on, every Angle playing, Live World off through the heartbeat
 fallback) plus a Probe scene that sends the Globals below to 127.0.0.1:PROBE_PORT. The track is played with afplay to the default output
@@ -33,6 +35,7 @@ TRACK = os.path.join(LIVE, "robot_live_track.wav")
 PROJECT = os.path.join(LIVE, "robot_live_test.magic")
 VIDEO = os.path.join(ROOT, "docs", "video", "robot-live-test.mp4")
 FLAG = os.path.join(LIVE, "go.flag")
+HELD = os.path.join(LIVE, "held_project.txt")
 SYPHON_RECORD = os.path.join(ROOT, "tools", "syphon_record.py")
 FLICKER = os.path.join(ROOT, "blender", "review", "video_flicker.py")
 FFMPEG = "/opt/homebrew/bin/ffmpeg"
@@ -305,6 +308,44 @@ def cuts_off_cut_points(cuts, m):
     return bad
 
 
+# ------------------------------------------------------------ the project Magic holds before the test
+
+def editor_title(windows):
+    """The project file name of the editor window ("show.magic - Editor"), or None."""
+    return next((w[:-len(" - Editor")] for w in windows or [] if w.endswith(" - Editor")), None)
+
+
+def find_project(name):
+    """The one file of that name under the repo's magic/ folder, else None."""
+    hits = [os.path.join(d, name) for d, _dirs, files in os.walk(os.path.join(ROOT, "magic")) if name in files]
+    return hits[0] if len(hits) == 1 else None
+
+
+def note_held():
+    """Read-only: the project in Magic's editor window title, resolved to its path, written to HELD."""
+    import magicproj
+    wins = magicproj.magic_windows()
+    name = editor_title(wins)
+    path = find_project(name) if name else None
+    if not path:
+        raise SystemExit("cannot resolve Magic's project from its windows %s (Magic running? one file of that name under magic/?)" % wins)
+    os.makedirs(LIVE, exist_ok=True)
+    with open(HELD, "w") as f:
+        f.write(path + "\n")
+    print("Magic holds", path)
+
+
+def restore_held():
+    """Loads the noted project back with magicproj load: ok only when the editor title names it and no Error window is open."""
+    import magicproj
+    with open(HELD) as f:
+        path = f.read().strip()
+    ok, wins = magicproj.load(path)
+    errors = [w for w in wins if w.startswith("Error")]
+    print("restore %s: editor title %s, error windows %s, windows %s" % (path, "ok" if ok else "NOT confirmed", errors or "none", wins))
+    return 0 if ok and not errors else 1
+
+
 # ------------------------------------------------------------ run
 
 def parse_events(path):
@@ -372,6 +413,8 @@ def run():
     os.makedirs(os.path.dirname(VIDEO), exist_ok=True)
     if not os.path.exists(TRACK):
         raise SystemExit("no track: run prepare first")
+    if not os.path.exists(HELD):
+        raise SystemExit("no noted project to restore afterwards: run note while Magic still holds it, before the load")
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(("127.0.0.1", PROBE_PORT))
     sock.settimeout(0.2)
@@ -421,11 +464,15 @@ def analyze_cmd(manifest_path):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("command", choices=["prepare", "run", "analyze"])
+    ap.add_argument("command", choices=["prepare", "run", "analyze", "note", "restore"])
     ap.add_argument("manifest", nargs="?")
     a = ap.parse_args()
     if a.command == "run":
         return run()
+    if a.command == "note":
+        return note_held()
+    if a.command == "restore":
+        return restore_held()
     if not a.manifest:
         raise SystemExit("%s needs the MANIFEST" % a.command)
     if a.command == "prepare":
