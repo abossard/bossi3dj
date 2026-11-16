@@ -20,8 +20,9 @@ puts on the Planet, from a height map of the Planet's own surface. Started and f
   vertices and in the shading normal; beyond, the map alone.
 - The material: a copy of Terrain (land) and of Sea (water) with Vector Displacement in object space; the grid's own
   normals stay flat under displacement, so the land is lit by a normal from the map's slope and the noise's (smooth,
-  per pixel). Their geometry attributes come from the maps: pl_w, pl_depth, pl_flow; mirror and pl_city (site lights,
-  dropped) are 0. Water: a second grid at the water level where there is water and 2 m under the land elsewhere.
+  per pixel). Their geometry attributes come from the maps: pl_w, pl_depth, pl_flow (the land's pl_w shifted by its
+  triangle's error away from water, issue #10); mirror and pl_city (site lights, dropped) are 0. Water: a second
+  grid at the water level where there is water and 2 m under the land elsewhere.
 - Bounds: eight loose corner vertices round the whole Planet, so the grids are never culled.
 - Per frame flight_rt calls follow(): the camera's map longitude and latitude to rt_gt_lam, rt_gt_phi.
 """
@@ -54,6 +55,8 @@ REGION_M = 4.0              # m a texel of the regional map (at its equator)
 REGION_EDGE = 300.0         # m inside the regional map's border over which the shaders blend from the 12 m map to it
 FLOW_SPREAD = 150.0         # m: the flow, stored on the river's centre line, is spread this far over the water round it
 CACHE_V = "gt2"             # cache file prefix: gt2 holds the spread flow
+ZW_CLAMP = (12.0, 14.5)     # m of land over its water: the bake clamps dry land's water to 15 m under it away from
+#                             water; over this the land's zw is taken per pixel (issue #10, material())
 _state = {"axes": None}
 
 
@@ -482,11 +485,14 @@ def material(src, name, M, A, water):
     if not water:
         # Terrain hides land under its water by zw = altitude - pl_w, the altitude of the drawn triangle. A coarse
         # ring's triangles cut under a peak by tens of metres, past the 15 m the bake puts dry land's water under it:
-        # holes and a pale wet ring on ridges (issue #10, review/ridge_holes.py). Shifted by the triangle's own error,
-        # zw is the map's land over its water at this pixel.
+        # holes and a pale wet ring on ridges (issue #10, review/ridge_holes.py). Where the water is that clamp (no
+        # water near), pl_w is shifted by the triangle's own error, so zw is the map's land over its water at this
+        # pixel. Near water (rivers, shores, sandbars: the real level) the triangle's test stands: per pixel there, a
+        # far river under dry vertices showed the water sheet on its banks, a sandbar under the sea its dry land.
         geo = nb.node("ShaderNodeNewGeometry")
         alt = nb.math("SUBTRACT", nb.vmath("DISTANCE", geo.outputs["Position"], tuple(fl.CENTRE)), fl.R)
-        fix = nb.math("MULTIPLY", nb.math("SUBTRACT", alt, sf["h"]), 1.0)
+        far = nb.smooth(nb.math("SUBTRACT", sf["h"], sf["w"]), *ZW_CLAMP)
+        fix = nb.math("MULTIPLY", nb.math("MULTIPLY", nb.math("SUBTRACT", alt, sf["h"]), far), 1.0)
         fix.node.label = "gt_zw_fix"        # review/ridge_check.py sets 0 for the A/B
         pl_w = nb.math("ADD", sf["w"], fix)
     given = {"pl_w": pl_w, "pl_depth": nb.math("SUBTRACT", sf["w"], sf["h"]), "pl_flow": sf["flow"]}

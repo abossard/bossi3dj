@@ -97,6 +97,10 @@ def run():
         if not FIX:
             raise RuntimeError("no gt_zw_fix node: gpu_terrain without the issue #10 fix")
         BR.hold = {k for k in S.keys() if k.startswith("vj_")}
+        set_fix(0.0)            # the first switch recompiles the shader: done here, not in a shot's frames
+        yield from wait(4.0)
+        set_fix(1.0)
+        yield from wait(4.0)
         for shot in JOB["shots"]:
             set_fix(1.0)
             vals = dict(defaults)

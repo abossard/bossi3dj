@@ -5,8 +5,11 @@ water level"). On the GPU terrain alt is the drawn triangle's height (the ring's
 and pl_w the map's water level read per pixel; on dry land the bake puts the water 15 m under the land. Where a ring's
 cells are much wider than the map's texels the triangles cut under a peak by more than that: the pixel is hidden (a
 hole) or drawn as the wet bed (-SHALLOW < zw < 0, the pale ring).
-Per ring cell (24 to 384 m, and the morph band's twice that) over the box of the camera targets with a margin: the
-share of dry land hidden and wet-drawn, the chord's largest cut under the land, and the worst places in map metres.
+The fix (gpu_terrain.material) takes zw per pixel only where the water is the bake's clamp, h - w over ZW_CLAMP (no
+water near); near water the triangle's test stands, so rivers under dry vertices and sandbars under the sea draw as before.
+Per ring cell (24 to 384 m, and the morph band's twice that) over the box of the camera targets with a margin, before and
+after the fix: the share of dry land hidden and wet-drawn, the share of wet pixels drawn as land, the chord's largest cut
+under the land, and the worst places (before) in map metres.
 Both sides use the map B-spline prefiltered ([1 4 1] / 6, what EEVEE's Cubic gives at a texel centre)."""
 import json
 import os
@@ -19,6 +22,7 @@ W = 8192
 SHALLOW = 1.0
 BOX = ((-14000.0, 12000.0), (-16000.0, 14000.0))      # m along longitude, latitude: the targets and 4 km round them
 CELLS = (24.0, 48.0, 96.0, 192.0, 384.0)
+ZW_CLAMP = (12.0, 14.5)         # gpu_terrain.ZW_CLAMP
 TARGETS = {"pyramids": (138, -150), "lake": (-2307, 4920), "river": (-8073, -11939), "coast": (2562, 8029)}
 
 
@@ -66,12 +70,16 @@ def run(path, out):
     w, _, _ = window(ws)
     inb = ((lam * R >= BOX[0][0]) & (lam * R <= BOX[0][1]))[None, :] & ((phi * R >= BOX[1][0]) & (phi * R <= BOX[1][1]))[:, None]
     dry = (w - h < 0.0) & inb
+    wet = (w - h > 0.0) & inb
+    t = np.clip((h - w - ZW_CLAMP[0]) / (ZW_CLAMP[1] - ZW_CLAMP[0]), 0.0, 1.0)
+    far = t * t * (3.0 - 2.0 * t)
     land = dry.sum()
     res = {"cache": os.path.basename(path), "box_m": BOX, "dry_texels": int(land),
            "w_minus_h_on_dry_pct_1_50_99": [round(float(x), 2) for x in np.percentile((w - h)[dry], [1, 50, 99])], "cells": {}}
     for cell in CELLS:
         alt = chord(h, lam, phi, cell)
         zw = alt - w
+        zf = zw + far * (h - alt)
         hole = dry & (zw < -SHALLOW)
         wetd = dry & (zw >= -SHALLOW) & (zw < 0.0)
         cut = np.where(dry, h - alt, -np.inf)
@@ -92,6 +100,10 @@ def run(path, out):
                     break
         res["cells"]["%g" % cell] = {"hidden_share": round(float(hole.sum() / land), 5),
                                      "wet_drawn_share": round(float(wetd.sum() / land), 5),
+                                     "hidden_share_after": round(float((dry & (zf < -SHALLOW)).sum() / land), 5),
+                                     "wet_drawn_share_after": round(float((dry & (zf >= -SHALLOW) & (zf < 0.0)).sum() / land), 5),
+                                     "wet_as_land_share": round(float((wet & (zw > -SHALLOW)).sum() / wet.sum()), 5),
+                                     "wet_as_land_share_after": round(float((wet & (zf > -SHALLOW)).sum() / wet.sum()), 5),
                                      "cut_max_m": round(float(cut.max()), 1),
                                      "cut_p999_m": round(float(np.percentile(cut[dry], 99.9)), 2),
                                      "worst": worst}
@@ -104,5 +116,6 @@ if __name__ == "__main__":
     cache = sys.argv[1] if len(sys.argv) > 1 else "~/Library/Caches/swiftvj-flight/gt2-synthwave_planet-1794776634-8192.npz"
     o = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(__file__), "out", "issue10", "ridge_holes.json")
     r = run(os.path.expanduser(cache), o)
-    print(json.dumps({k: {kk: v[kk] for kk in ("hidden_share", "wet_drawn_share", "cut_max_m", "cut_p999_m")}
+    print(json.dumps({k: {kk: v[kk] for kk in ("hidden_share", "hidden_share_after", "wet_drawn_share", "wet_drawn_share_after", "wet_as_land_share",
+                                     "wet_as_land_share_after", "cut_max_m")}
                       for k, v in r["cells"].items()}, indent=1))
