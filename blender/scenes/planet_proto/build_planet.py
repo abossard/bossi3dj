@@ -4208,6 +4208,40 @@ if GRAFT:   # the island file embeds its runtime texts as last saved there, and 
         if os.path.exists(src_path):
             with open(src_path) as f_:
                 tx.from_string(f_.read())
+SKY_GROUPS = ("VJ_Sky", "VJ_SkyBase", "VJ_Meteor")           # a material that calls these draws sky
+SKY_NAMES = ("Atmosphere", "Sun", "Moon", "Star", "Nebula", "Meteor")
+
+
+def sky_without_hue():
+    """/vj/hue turns the land only (the user, 2026-11-16, issue #25: "Land only"): the worlds and the sky's materials
+    (the atmosphere's limb, sun, moon, stars, nebula, meteors) call VJ_Color_Sky, VJ_Color with its hue held at no
+    turn (0.5). Returns the names it swapped, for the build's log."""
+    col = bpy.data.node_groups["VJ_Color"]
+    sky = col.copy()
+    sky.name = "VJ_Color_Sky"
+    hs = next(n for n in sky.nodes if n.type == "HUE_SAT")
+    for ln in list(hs.inputs["Hue"].links):
+        sky.links.remove(ln)
+    hs.inputs["Hue"].default_value = 0.5
+    trees = [("world " + w.name, w.node_tree) for w in bpy.data.worlds if w.node_tree]
+    for m in bpy.data.materials:
+        nt = m.node_tree
+        if nt is None:
+            continue
+        calls = {n.node_tree.name for n in nt.nodes if n.type == "GROUP" and n.node_tree}
+        if any(g in calls for g in SKY_GROUPS) or any(k in m.name for k in SKY_NAMES):
+            trees.append((m.name, nt))
+    done = []
+    for name, nt in trees:
+        nodes = [n for n in nt.nodes if n.type == "GROUP" and n.node_tree == col]
+        for n in nodes:
+            n.node_tree = sky
+        if nodes:
+            done.append(name)
+    return done
+
+
+print("VJ_Color_Sky (no hue):", ", ".join(sky_without_hue()))
 for scr in bpy.data.screens:
     for area in scr.areas:
         if area.type == "VIEW_3D":

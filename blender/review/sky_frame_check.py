@@ -1,5 +1,5 @@
 """Issue #25, the SKY_FRAME variant (path_camera.sky_frame), without Blender: python3 blender/review/sky_frame_check.py
-On verify_paths.py's synthetic terrain, vantage and orbit on the moon and the sun at /vj/height 0, 0.3 and 1, 40 s each,
+On verify_paths.py's synthetic terrain, vantage, orbit and rise on the moon and the sun at /vj/height 0, 0.3 and 1, 40 s each,
 with the variant off and on: the least share of the frame's centre column on the planet, whether the body stays in the
 frame (its angle off the view over the vertical half field, at most 1), the view's largest turn (deg/s) and lens change
 (log per s), and how far the eye moves over 10 s (m).
@@ -23,7 +23,7 @@ def land(p, fwd, lens):
 
 for on in (False, True):
     pc.SKY_FRAME = on
-    for path in ("vantage", "orbit"):
+    for path in ("vantage", "orbit", "rise"):
         for target in ("moon", "sun"):
             for w in (0.0, 0.3, 1.0):
                 C = pc.PathCamera(TARGETS, T)

@@ -40,4 +40,8 @@ Falls and far hops go dark late because the keep's turn budget (`BLEND_LAND_TURN
 
 - Built: the kept view's land share is at most `BLEND_LAND_MAX` 0.8 (run 4's 2.2 km tile was 95 % land, no horizon). `SKY_FRAME` (still off) covers rise too. `PUSH_PERIOD` is read at each step, so 80 and 40 s can be compared live (`blend_live.py` "set").
 - Tried and dropped: a clearance gate for the keep (none under 300 m, full from 1 km) for run 4's hillside tile (236 m up, the plaza): it lost land at 1 km, where a level view already sees none (demo replay 5.0 -> 8.1 to 13.8 dark s). Low down the keep tips a level view by about 7 deg (`test_path_blends.py` KeepTests); the hillside is mostly the Director's own low path looking into the slope. Open: a check of the terrain along a blend's view on low hops, if run 5 still shows it.
-- Look questions for the user (orchestrator): the sky follows `/vj/hue` (teal and green at hue 0.76 to 0.84; the limb's mint glow too); `SKY_FRAME`; `PUSH_PERIOD` 80 or 40 s.
+- The user's decisions (2026-11-16, via the orchestrator):
+  - `/vj/hue` turns the land only ("Land only"): `build_planet.sky_without_hue()` gives the worlds and the sky's materials (any calling VJ_Sky, VJ_SkyBase or VJ_Meteor, or named Atmosphere, Sun, Moon, Star, Nebula, Meteor) `VJ_Color_Sky`, VJ_Color with its hue held at 0.5. The rebuild's log lists them ("VJ_Color_Sky (no hue): ..."). Not yet rebuilt or seen.
+  - `SKY_FRAME` on, rise included ("On, incl. rise"). `test_path_blends.py` SkyFrameTests: land at least 0.15 and the body in frame on orbit, vantage and rise for the moon and the sun at heights 0 and 0.3 (`sky_frame_check.py`: 0.22 to 0.31; at height 1 the sun keeps the body over the land). Demo replay: 0 blend s with land < 0.1 (least 0.26).
+  - `PUSH_PERIOD` stays 80 s ("Keep 80 s").
+- Next slot: `make blender-rebuild` (haze 58783e3, sky without hue), check the log's list, live A/B on the demo program, shot-reviewer.

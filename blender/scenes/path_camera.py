@@ -39,8 +39,7 @@ RISE_SHARE = 0.8                    # rise and descend: the climb's share of the
 BAND_RATE = 0.3                     # e-folds/s at most through the hand-over band: a crossing takes over 1 s
 BAND_CATCH = 3.0                    # e-folds/s at most while a held eye catches up with the blend outside the band
 PLANET_HALF = math.radians(32.0)    # the planet target's half field near the ground
-PUSH_PERIOD = 80.0                 # s at /vj/cam_speed 1: the vantage pushes in over half of it, out over the other (read
-#                                    at each step: set it live to compare, e.g. 40, review/blend_live.py "set"; issue #25)
+PUSH_PERIOD = 80.0                 # s at /vj/cam_speed 1: the vantage pushes in over half of it, out over the other
 BLEND_LAND = 0.35                   # share of the frame's centre column a blend keeps on the planet (0: off). The planet is
 #                                     small: the horizon dips 23 deg at 1.3 km, 52 at 10 km, and a blend's view stays near
 #                                     the end shots' level while the hump lifts it (issue #25: flat sky, black space)
@@ -50,7 +49,7 @@ BLEND_LAND_TURN = math.radians(25.0)   # rad/s the keep may add to the view's ow
 BLEND_TURN_MAX = math.radians(59.0)    # rad/s at /vj/blend DUR_MAX: a blend's view turns no faster with the keep (the
 #                                     Director's pace scales with DUR_MAX / blend; verify_paths 2c)
 BLEND_BY_HEIGHT = True              # a blend's fog and clip from its clearance (by_height); False: the Director's lerp
-SKY_FRAME = False                   # a variant (issue #25, the user's taste call): sky targets on orbit, vantage and rise frame
+SKY_FRAME = True                    # (the user, 2026-11-16, issue #25: "On, incl. rise") sky targets on orbit, vantage and rise frame
 #                                     the body on the upper third line and the horizon on the lower one (sky_frame)
 SKY_FRAME_HALF = math.radians(40.0)  # widest vertical half field it opens to
 RISE_DEPTH = 0.75                   # rise and descend: the share of the log height span it travels down from the top

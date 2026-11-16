@@ -112,6 +112,23 @@ class KeepTests(unittest.TestCase):
                 self.assertLessEqual(d, off)
 
 
+class SkyFrameTests(unittest.TestCase):
+    def test_sky_targets_frame_land(self):
+        """SKY_FRAME (on, the user's call of 2026-11-16): a sky body on orbit, vantage and rise keeps land in frame and
+        the body inside it."""
+        self.assertTrue(pc.SKY_FRAME)
+        for path in ("orbit", "vantage", "rise"):
+            for target in ("moon", "sun"):
+                for w in (0.0, 0.3):
+                    with self.subTest(path=path, target=target, height=w):
+                        C = pc.PathCamera(TARGETS, T)
+                        poses = [C.step(DT, path, target, w, 1.0, 30.0) for _ in range(int(20.0 / DT))][int(2.0 / DT):]
+                        self.assertGreaterEqual(min(land(q[0], q[1], q[3]) for q in poses), 0.15)
+                        off = max(fl.angle(q[1], fl.norm(fl.sub(pc.look_point(TARGETS[target], q[0], q[1]), q[0])))
+                                  / half_v(q[3]) for q in poses)
+                        self.assertLessEqual(off, 1.0, "the body in the frame (share of the half field)")
+
+
 class BlendTests(unittest.TestCase):
     def test_blends(self):
         for name, targets, prog, seconds, dark_max, turn_max in CASES:
