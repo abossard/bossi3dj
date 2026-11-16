@@ -45,10 +45,13 @@ def pin(scene, depsgraph=None):
     p = st.get("pose")
     if p is None or scene.camera is None:
         return
-    from mathutils import Matrix
+    from mathutils import Matrix, Vector
     scene.camera.matrix_world = Matrix([p["matrix"][i * 4:i * 4 + 4] for i in range(4)])
     scene.camera.data.lens = p["lens"]
     scene["rt_px_angle"] = scene.camera.data.sensor_width / p["lens"] / scene.render.resolution_x   # flight_rt's, at the pinned lens
+    rig = (scene.get("rt_cam_x", 0.0), scene.get("rt_cam_y", 0.0), scene.get("rt_cam_z", 0.0))
+    scene["rt_cam_x"], scene["rt_cam_y"], scene["rt_cam_z"] = tuple(scene.camera.matrix_world.translation)   # planet_tick's, at the pinned pose
+    st["rig_off"] = max(st.get("rig_off", 0.0), (scene.camera.matrix_world.translation - Vector(rig)).length)   # what pins before the fix missed
     sys.modules["gpu_terrain"].follow(scene, scene.camera.matrix_world.translation)
 
 
@@ -133,7 +136,7 @@ def run():
             png(base + "_before.png", b)
             png(base + "_diff.png", np.repeat(np.clip(d * 4.0, 0, 255)[:, :, None], 3, 2))
             rows.append({"shot": shot["name"], "set": shot["set"], "changed_share": round(float((d > CHANGE).mean()), 5),
-                         "aa_share": round(float((aa > CHANGE).mean()), 5), "pose": st["pose"], "px": S.get("rt_px_angle"),
+                         "aa_share": round(float((aa > CHANGE).mean()), 5), "pose": st["pose"], "px": S.get("rt_px_angle"), "rig_off_m": round(st.pop("rig_off", 0.0), 1),
                          "load": round(os.getloadavg()[0], 1)})
             st["pose"] = None
     finally:

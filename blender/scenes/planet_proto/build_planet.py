@@ -105,6 +105,8 @@ PYR_FOUND = 1.5                 # the site pyramids' foundation under the base, 
 #                                 review/pyramid_ground.py variants); 1.5: none on rings 3 to 5
 PYR_FOOT = 0.06                 # pz over which the pyramid's foot comes out of the land's shade
 PYR_EDGE_PX = 2.5               # the pyramids' edge width in pixels
+PYR_BASE_PX = 1.5               # the base band's reach over the base in pixels (issue #11): on the show's lenses about
+#                                 0.0012 x the distance, the land's rise over a base on ring 5 (up to 10 m at 6 to 12 km)
 PYR_PULSE = 3.0                 # the pyramids' emission gain at a full pulse (rt_pulse 1): +43 % luminance on
 #                                 the pyramids; the idle pulse swings them by about 10 % (review/pulse_check.py)
 PYR_SHADOWS = 4                 # the island's pyramids that cast a sun shadow on the ground (rt_pyr<i>_x/y/z base, a half base, h height)
@@ -2170,12 +2172,32 @@ def pyr_build(T):
     pos_e = geo.outputs["Position"]
     cam_e = T.comb(T.attr("rt_cam_x"), T.attr("rt_cam_y"), T.attr("rt_cam_z"))
     wf = T.node("ShaderNodeWireframe", use_pixel_size=False)
-    T.feed(wf.inputs["Size"], T.mul(T.vmath("DISTANCE", pos_e, cam_e), T.mul(T.attr("rt_px_angle"), PYR_EDGE_PX)))
+    dist_e = T.vmath("DISTANCE", pos_e, cam_e)
+    sw = T.mul(dist_e, T.mul(T.attr("rt_px_angle"), PYR_EDGE_PX))
+    T.feed(wf.inputs["Size"], sw)
+    # the base edge (issue #11): it lies along the ground, and on the GPU grid's coarse rings the land rises over the
+    # base by metres, growing with the distance (ring 5 buried p95 26 % of the height, review/pyramid_ground.py), so the
+    # land cut the 2.5 px strip into dashes. Instead a band glows from the land up to a level line PYR_BASE_PX pixels
+    # over the base: its top is straight, the land draws its bottom. Near, the pad (1 m over the base) hides
+    # it as it hid the edge. hb: m over the base (pyr_part), before the instance's 0.75 to 1.25 scale
+    hb = T.gattr("hb")
+    reach = T.mul(dist_e, T.mul(T.attr("rt_px_angle"), PYR_BASE_PX))
+    top = T.addf(sw, reach)
+    band = T.mul(T.sub(1.0, T.smooth(hb, T.sub(top, T.mul(sw, 0.5)), top)),
+                 T.smooth(hb, T.sub(T.mul(reach, -1.0), T.mul(sw, 0.5)), T.mul(reach, -1.0)))
+    # the wireframe gives way only where the band is: above it the ridges, below it an exposed foundation's edges stay
+    keep = T.math("MAXIMUM", T.smooth(hb, T.sub(top, sw), top),
+                  T.sub(1.0, T.smooth(hb, T.sub(T.mul(reach, -1.0), sw), T.sub(T.mul(reach, -1.0), T.mul(sw, 0.5)))))
+    edge_b = T.math("MAXIMUM", T.mul(wf.outputs["Fac"], keep), band)
+    sw_b = T.node("ShaderNodeValue")
+    sw_b.label = "pyr_base_band"            # review/ridge_check.py's switch sets 0 for the A/B (the round 17 edge)
+    sw_b.outputs[0].default_value = 1.0
+    edge = T.fmix(sw_b.outputs[0], wf.outputs["Fac"], edge_b)
     ecol = T.ramp(zl, [(0.0, (0.05, 0.85, 1.0)), (1.0, (1.0, 0.25, 0.95))])
     glow = T.addf(T.addf(2.6, T.mul(ph["Night"], 1.8)), T.mul(ph["Twilight"], 1.0))
     glow = T.mul(glow, T.mrange(ph["Night"], 0.0, 1.0, 1.0, 0.08))     # a slight glow at night, like the wires: white and cyan
     # outlines were too bright (CAM_2)
-    col = T.mix(wf.outputs["Fac"], col, T.scale(ecol, glow))
+    col = T.mix(edge, col, T.scale(ecol, glow))
     # /vj/pyramids raises them from the ground on the GPU (no geometry re-evaluation)
     vd_ = T.node("ShaderNodeVectorDisplacement", space="OBJECT")
     vd_.inputs["Midlevel"].default_value = 0.0
@@ -2477,6 +2499,7 @@ PYR_PARTS = ((0.0, 0.0, 46.0, 8.0), (82.0, 140.0, 36.0, -6.0), (-60.0, 235.0, 24
 def pyr_part(ox, oy, sz, rz):
     g_ = G.transform(unit_pyramid(), t=(ox, oy, -1.5), r=(0, 0, math.radians(rz)), s=(sz, sz, sz))
     g_ = G.store(g_, "rise", G.comb(0.0, 0.0, G.mul(G.sep(G.pos())[2], -1.0)), "FLOAT_VECTOR")
+    g_ = G.store(g_, "hb", G.addf(G.sep(G.pos())[2], 1.5))     # m over the base, a scalar: the instances turn "rise"
     sm = G.node("GeometryNodeSetMaterial")
     G.feed(sm.inputs["Geometry"], g_)
     sm.inputs["Material"].default_value = m_pyr

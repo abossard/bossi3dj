@@ -11,6 +11,10 @@ slices through a face). With the pads of gpu_terrain.pads the map is the padded 
 Variants (issue #12), without a rebuild: DN["pg_job"]["variants"] = [{"name": str, "pad_edge": [level, blend] m,
 "found_k": x}]: each scans the raw map padded with gpu_terrain.pads at that PAD_EDGE (default the built one), the
 foundation's depth scaled by found_k (default 1); out then {"variants": {name: scan}}.
+Base edges (issue #11), per ring seen from EDGE_D cells away (ring 5: 8.6 km): the edge strip is visible where the land
+under it lies below its top, PYR_EDGE_PX at the live rt_px_angle over the base (round 17's edge) or that plus
+PYR_BASE_PX at the same angle (the base band). dashed_old_n / dashed_band_n: pyramids with a side partly visible (cut into
+dashes); hidden_old / hidden_band: the share of base edge length the land hides.
 """
 import json
 import math
@@ -22,6 +26,8 @@ import numpy as np
 import flight as fl
 
 DN = bpy.app.driver_namespace
+EDGE_D = 90.0           # cells: the distance a ring's pyramids are seen from, for the base edge scan
+PYR_EDGE_PX, PYR_BASE_PX = 2.5, 1.5     # build_planet's
 JOB = DN["pg_job"]
 gt = sys.modules["gpu_terrain"]
 S = bpy.context.scene
@@ -79,7 +85,9 @@ def ring_height(lam, phi, l):
 
 def scan(rings, found_k=1.0):
     pyr = pyramids()
-    rows = {l: {"float_n": 0, "float_found_n": 0, "gap_max": 0.0, "buried_share": [], "cut_n": 0, "cut_max": 0.0} for l in rings}
+    rows = {l: {"float_n": 0, "float_found_n": 0, "gap_max": 0.0, "buried_share": [], "cut_n": 0, "cut_max": 0.0,
+                "dashed_old_n": 0, "dashed_band_n": 0, "hidden_old": [], "hidden_band": []} for l in rings}
+    px = float(S.get("rt_px_angle", 0.0))
     worst = []
     t = np.linspace(0.0, 1.0, 17)
     g = np.linspace(-0.95, 0.95, 9)
@@ -112,6 +120,12 @@ def scan(rings, found_k=1.0):
             r["float_found_n"] += int(gap.max() > found + 0.3)
             r["gap_max"] = max(r["gap_max"], float(gap.max()))
             r["buried_share"].append(max(0.0, float((-gap).max())) / hgt)
+            d = EDGE_D * gt.CELL_M * 2.0 ** l
+            sw = d * px * PYR_EDGE_PX
+            for key, topm in (("old", sw), ("band", d * px * (PYR_EDGE_PX + PYR_BASE_PX))):
+                vis = (-gap < topm).reshape(4, len(t))      # per side: the strip's top over the land
+                r["dashed_%s_n" % key] += int(any(0 < v.sum() < len(v) for v in vis))
+                r["hidden_%s" % key].append(1.0 - float(vis.mean()))
             cut = ring_height(il, ip, l) - face
             r["cut_n"] += int(cut.max() > 0.3)
             r["cut_max"] = max(r["cut_max"], float(cut.max()))
@@ -120,6 +134,8 @@ def scan(rings, found_k=1.0):
     out = {"pyramids": len(pyr), "rings": {}}
     for l, r in rows.items():
         b = np.array(r.pop("buried_share"))
+        for key in ("old", "band"):
+            r["hidden_" + key] = round(float(np.mean(r["hidden_" + key])), 4)
         r.update(buried_p50=round(float(np.median(b)), 4), buried_p95=round(float(np.percentile(b, 95)), 4),
                  buried_over_6pct=int((b > 0.06).sum()), gap_max=round(r["gap_max"], 2), cut_max=round(r["cut_max"], 2),
                  cell_m=gt.CELL_M * 2 ** l)
