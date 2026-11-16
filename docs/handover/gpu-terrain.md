@@ -241,7 +241,7 @@ The user: "yes regional water map". Rubric `blender/review/rubric-water-map.md`.
 1. River flow readable in motion (RW-RIPPLE): at 2.6 m/s the ripples drift 9 m in 3.5 s, but the grain is faint. Next: a river-only ripple scale and contrast, judged on a recording, not on stills.
 2. B's checker dither on banks and shores: check it with the day cycle frozen.
 3. `river_check.py` poses that see the river (the follow poses don't), and freezing the day cycle during a capture.
-4. The swiftvj-flight cache keeps every old bake (1.7 GB+); nothing prunes it.
+4. The swiftvj-flight cache: pruned (2026-11-16, issue #17). `tools/cache_prune.py` (`make cache-prune`, run by `make blender-open`) keeps only the bakes of the current .blend files and CACHE_V; the first run dropped 44 bakes, 2.1 GB, and left 188 MB.
 
 ## Holes on mountain ridges (2026-11-16, issue #10)
 

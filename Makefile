@@ -6,7 +6,7 @@ SCENE   ?= planet
 BLEND_planet = $(SCENES)/synthwave_planet.blend
 BLEND_island = $(SCENES)/synthwave_pyramids.blend
 
-.PHONY: help status lab test magic-test osc-test blender-test osc-sync qlc-fixture qlc-install osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-framing godot-hitch godot-warmup godot-ablate godot-cost godot-climb-light godot-grock-detail godot-fps godot-readme-pics godot-model-cost godot-models godot-wanderer-motion godot-wanderer-read godot-colossus-rig godot-shake-clips godot-shake-osc godot-import godot-lint \
+.PHONY: help status lab test cache-prune magic-test osc-test blender-test osc-sync qlc-fixture qlc-install osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-framing godot-hitch godot-warmup godot-ablate godot-cost godot-climb-light godot-grock-detail godot-fps godot-readme-pics godot-model-cost godot-models godot-wanderer-motion godot-wanderer-read godot-colossus-rig godot-shake-clips godot-shake-osc godot-import godot-lint \
         godot-open godot-kill blender-open blender-kill blender-check blender-prepare blender-rebuild blender-paths magic-build venv verify
 
 # Blender and Godot share one GPU: a live window of one refuses to start while the other runs.
@@ -59,6 +59,7 @@ help:
 	@echo "  blender-prepare   headless: island start state (loader text block, camera view, Rendered shading); run before blender-rebuild"
 	@echo "  blender-rebuild   headless: rebuild synthwave_planet.blend from the island scene (no Blender may run)"
 	@echo "  blender-paths     list the external files each .blend points at"
+	@echo "  cache-prune       drop the swiftvj-flight bakes no current .blend reads (blender-open runs it)"
 	@echo "  venv              .venv with numpy and Pillow for the verify scripts"
 	@echo "  verify            pure-model checks of the star system, the Director blends, the energy and the Path Camera (needs venv)"
 
@@ -222,6 +223,7 @@ godot-lint:
 blender-open:
 	@if $(BLENDER_RUNS); then echo "a Blender is already running (make status)"; exit 1; fi
 	@if $(GODOT_GUI_RUNS); then echo "a Godot window runs and shares the GPU: make godot-kill first (make status)"; exit 1; fi
+	@python3 tools/cache_prune.py
 	open -a /Applications/Blender.app --args --enable-autoexec "$(CURDIR)/$(BLEND_$(SCENE))"
 	python3 blender/review/start_check.py
 
@@ -243,6 +245,9 @@ blender-rebuild:
 blender-paths:
 	@if pgrep -f "Blender.app/Contents/MacOS/Blender" >/dev/null; then echo "a Blender is running: make blender-kill first"; exit 1; fi
 	@for f in $(BLEND_island) $(BLEND_planet); do $(BLENDER) -b --disable-autoexec $$f --python tools/blend_paths.py 2>/dev/null | sed -n 's/^BLEND_PATHS //p'; done
+
+cache-prune:
+	python3 tools/cache_prune.py $(ARGS)
 
 venv:
 	uv venv .venv
