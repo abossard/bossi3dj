@@ -36,7 +36,7 @@ Page: https://claude.ai/artifact/7D5wLjhFTi7hNr6xwecMP8 (source `robot/concept/r
 | R2 | OSC rows `/vj/clip`, `/vj/clip_frame`, `/vj/angle` into the contract, plus `/vj/live_layer` (Blender to Magic, udp 9202) | B11 via the main orchestrator | Sonnet 5.5 medium (B11) | done (716497d, 4535025) |
 | R3 | Pure Clip Graph model and Manifest validator (stdlib, parametrized tests), a fixture Render Package with placeholder Clips made by ffmpeg | R1 | Sonnet 5.5 medium | done (415f0c6) |
 | R4 | Magic generator: Manifest to `.magic` (VideoFile per Clip, InputSelector, Clip Graph and Angle cuts in Globals, Speed from BPM, SyphonClient `ROBOT_LIVE`, Mask and Blend, OSCSender for R2); `magicproj.py check`; codec spike (this ffmpeg has ProRes 4444, no Hap encoder) | R3 | Sonnet 5.5 medium (same session as R3) | done (415f0c6); missing live layer never black (78f3978); `LiveOn` follows the heartbeat (71988e4, b9674cb), proven with grabs |
-| R5 | Android, Moves and foundry set as a build script; pure Move key tables with tests first | R1 | Opus 5.5 high | pure part done (8eba3ae); holds the Blender slot for the build and a test Clip render |
+| R5 | Android, Moves and foundry set as a build script; pure Move key tables with tests first | R1 | Opus 5.5 high | done (8eba3ae, d262d61, 92ed1f9); idle_guard loops cleanly; idle_guard__front fails review R1 (camera too frontal); slot returned |
 | R6 | Render the v1 Clip Library (4 Moves x 2 Angles, beauty, Shadow, Depth, Clip Data) | R5, Blender slot (headless renders count) | R5 session | waits for the slot |
 | R7 | Live World scene in `robot/live/`: foundry set, beat-lit lamps, sparks at Hits, Syphon `ROBOT_LIVE`, reads R2 | R5, R2, Blender slot | R5 session | waits |
 | R8 | Load in Magic, 60 s recording with music, flicker numbers, the user judges | R4, R6, R7 | orchestrator | later |
@@ -48,7 +48,7 @@ Page: https://claude.ai/artifact/7D5wLjhFTi7hNr6xwecMP8 (source `robot/concept/r
 
 - Today the generator reads the beat clock and energy from `magic/synthwave_magic.py` Globals by name (`Beats`, `Bars`, `Phase`, `BPM`, `EnergyAvg`); the Intensity Tier is a threshold on `EnergyAvg`.
 - Offered by the mmv sessions, not wired: Music X-Ray (`~/Desktop/projects/mmv-skills/mmv-scene-recipes/scripts/music_xray_example.py`, section `State` intro/buildup/drop/breakdown, `Tension`, `DropPulse`, `BarPulse`) and `magic/edm_analysis_magic.py`. They overlap; one bank per show, read through Globals. Hand-over: `side-session-notes/local_90def09f-4bd9-4030-8c9d-76bdd3888738/robot-handover-mmv-audio.md`.
-- Open, the user's call: drive the Intensity Tier from X-Ray `State` (buildup = build, drop = drop) instead of the `EnergyAvg` threshold.
+- Decided by the user (2026-11-16, "Yes, use X-Ray"): the Intensity Tier follows X-Ray `State` (buildup = build, drop = drop, else calm), copied into `robot/magic/`; R3+R4 wires it.
 - Verified by them and useful here: `Freeze Frame` with `Freeze` driven per frame holds a frame; `load()` can time out on the window check while the load worked.
 
 ## Open checks for the user (Magic)
