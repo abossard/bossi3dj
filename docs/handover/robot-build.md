@@ -64,10 +64,18 @@ Review: `robot/build/review/rubric-r1.md` (frozen), sheets to `shot-reviewer`.
 - One F6 fail on the full-size jab_cross frame 29 ("no shadow discernible") is a review-backdrop artefact: the Shadow Pass alpha peaks at 0.97 under the feet (side Angle 0.97, passed R6), black over the near-black #2a2420 backdrop. Shadow strength is the user's taste call, to be judged over the Live World in Magic.
 - `review/round4.sh` reproduces the round; `review/full_render.sh idle|rest` renders the Clip Library.
 
+## v1 Clip Library render (R6, 2026-11-16)
+
+- `review/full_render.sh idle` then `rest`: 8 Clips x 58 frames at 64 samples, beauty qtrle `.mov`, Shadow PNG and Depth EXR frames, then export. 7414 s in all (2.1 h, about 16 s per frame, machine load 40 to 80).
+- Flicker at 64 against 128 samples, qtrle against qtrle, idle_guard__side: median step 0.00044 (128: 0.00043), seam 0.00013 (0.00012), last to first 0.00002 (0.00002).
+- `check-renders` (8-bit display values): last to first 0.00002 to 0.00009 on every Clip. The flagged "spikes" (steps over 3x the median) fall in runs around the Hits (frames 13 to 20 and 23 to 39), where the punches and the kick move fastest: motion, not flicker (flicker would be single frames).
+- Size: beauty qtrle 16.8 to 18.3 MB per side Clip, 29.7 to 31.3 MB per front Clip (the bigger figure), 212 MB in all; Shadow PNG frames 31 to 42 MB per Clip; Depth EXR frames 471 MB per Clip. Package 4.1 GB with the frame sequences (d5 budget 20 GB).
+- Validator (`robot/magic/manifest.py`): 16 errors, all `file missing` for `shadow/<clip>.mov` and `depth/<clip>.mov`; every beauty file is found. They wait for the encode step.
+- `make test`: exit 0 (python suites 59, 65, 66 OK; Godot 430 passed; feature check 22 effect, 0 error). `robot/build/tests` is not in it (7 tests OK on their own).
+
 ## Open items for the orchestrator
 
 - Encode step: frames to `<pass>/<clip>.mov` (codec from R4); the Depth Pass range in that video is not in `CONTRACTS.md` yet. The validator's only errors are the missing `.mov` files.
 - Camera names are `ShotCamera.front` and `ShotCamera.side` (the R3 fixture uses `CAM_FRONT`, close to the Avoid word `CAM_N`).
 - Cut Points come from the tables (idle_guard 0, jab_cross and take_hit 0 and 3, front_kick 0); the R3 fixture assumes `[0, 2]`.
-- Remaining Clips (front_kick, take_hit, jab_cross__front) not rendered yet.
 - No `make` target for these tests yet (`Makefile` is shared).
