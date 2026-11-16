@@ -80,6 +80,14 @@ Review: `robot/build/review/rubric-r1.md` (frozen), sheets to `shot-reviewer`.
 - Pass file sizes: shadow 3.1 to 3.3 MB, depth 3.4 to 4.7 MB per Clip; all 24 movies 244 MB.
 - Validator: `ok: 8 clips, 4 moves, 2 angles`, 0 errors. `make test` exit 0.
 
+## Many more Moves, phase 1 (issue #19, 2026-11-16)
+
+- `moves.py`: Key Poses guard, low, crouch; 18 Moves and 3 Idle Clips (table in DESIGN.md). Calm 5, build 6, drop 7; 9 at 1 bar, 8 at 2 bars, 1 at 4 bars. The 4 v1 Moves keep their tables, so their v1 renders stay valid.
+- Tests (12, parametrized by Move, frame, foot): frame counts per bars, Key Poses at both ends, no jump between frames (20° and 0.25 m per frame), Key Poses on both feet, planted ankles hold still, never sink, and stay within leg reach (0.862 m; low_charge reaches 0.862), Hits inside the Clip, one Idle Clip per Key Pose that loops, every Key Pose reaches every other within two Moves, a Move out of every Key Pose in every tier, 4 Moves per tier in 1, 2 and 4 bars.
+- `build_robot.py` follows each Move's `beats` (bake, export, Manifest `beats` and `frames`, a Camera Track as long as the longest Clip) and has `render --preview` (Eevee, half size, beauty only). Both untested in Blender. `review/full_render.sh` still names the v1 Clips.
+- Not checkable without Blender: hand reach (hands on the floor in crouch, ground_pound, leap_slam), knees, lowest point. `check` reports them after a build.
+- Budget, 1856 frames per Angle (1624 new): at 14 s per frame 7.2 h per Angle, 12.6 h for 2 Angles new only, 28.9 h for 4 Angles (all). v1 measured 16 s per frame, about 15% more. Preview: unmeasured, about 1 to 3 s per frame by estimate, 31 to 93 min per Angle.
+
 ## Open items for the orchestrator
 
 - Camera names are `ShotCamera.front` and `ShotCamera.side` (the R3 fixture uses `CAM_FRONT`, close to the Avoid word `CAM_N`).

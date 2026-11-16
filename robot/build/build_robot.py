@@ -6,7 +6,7 @@ that nobody edits by hand; renders Clips and exports Clip Data, Camera Tracks an
     $B -b --factory-startup -P robot/build/build_robot.py -- build [--out robot/build/robot.blend]
     $B -b robot/build/robot.blend -P robot/build/build_robot.py -- export --package robot/package/v1
     $B -b robot/build/robot.blend -P robot/build/build_robot.py -- render --package robot/package/v1 \\
-        [--clip jab_cross__side ...] [--samples 128] [--percent 100] [--frames 0-57]
+        [--clip jab_cross__side ...] [--samples 128] [--percent 100] [--frames 0-57] [--preview]
     $B -b robot/build/robot.blend -P robot/build/build_robot.py -- check [--out FILE]
     $B -b robot/build/robot.blend -P robot/build/build_robot.py -- check-renders --package robot/package/v1
 
@@ -464,7 +464,7 @@ def build(out):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     scene = bpy.context.scene
     scene.name = "Robot"
-    scene.frame_start, scene.frame_end = 0, moves.clip_frames() - 1
+    scene.frame_start, scene.frame_end = 0, _longest() - 1
     scene["robot_build"] = "robot/build/build_robot.py (generated, do not edit)"
     colls = {}
     for name in ("Android", "Set", "Lights", "Cameras"):
@@ -500,9 +500,13 @@ def _points():
     return {o["robot_point"]: o for o in bpy.data.objects if "robot_point" in o}
 
 
+def _longest():
+    return max(moves.move_frames(m) for m in moves.MOVES.values())
+
+
 def _use_move(scene, move):
     _arm().animation_data.action = bpy.data.actions["move." + move]
-    scene.frame_start, scene.frame_end = 0, moves.clip_frames() - 1
+    scene.frame_start, scene.frame_end = 0, moves.move_frames(moves.MOVES[move]) - 1
 
 
 def _project(scene, cam, co):
@@ -514,7 +518,7 @@ def export_clip_data(scene, clip_id, move, cam):
     _use_move(scene, move)
     pts = _points()
     frames = []
-    for f in range(moves.clip_frames()):
+    for f in range(moves.move_frames(moves.MOVES[move])):
         scene.frame_set(f)
         entry = {"f": f}
         entry.update({p: _project(scene, cam, pts[p].matrix_world.translation) for p in POINTS})
@@ -525,8 +529,9 @@ def export_clip_data(scene, clip_id, move, cam):
 
 
 def export_camera_track(scene, angle, cam):
+    """One entry per frame of the longest Clip, so every Clip finds its frame."""
     frames = []
-    for f in range(moves.clip_frames()):
+    for f in range(_longest()):
         scene.frame_set(f)
         loc, rot, _ = cam.matrix_world.decompose()
         frames.append({"f": f, "location": [round(v, 5) for v in loc], "rotation": [round(v, 6) for v in rot],
@@ -538,8 +543,8 @@ def manifest():
     clips = []
     for clip_id, move, angle, _cam in clip_list():
         m = moves.MOVES[move]
-        clips.append({"id": clip_id, "move": move, "angle": angle, "beats": moves.BEATS,
-                      "frames": moves.clip_frames(), "key_in": m.key_in, "key_out": m.key_out,
+        clips.append({"id": clip_id, "move": move, "angle": angle, "beats": m.beats,
+                      "frames": moves.move_frames(m), "key_in": m.key_in, "key_out": m.key_out,
                       "tier": m.tier, "idle": m.idle,
                       "cut_points": moves.cut_points(m),
                       "passes": {p: "%s/%s.mov" % (p, clip_id) for p in ("beauty", "shadow", "depth")},
@@ -570,13 +575,29 @@ def export(package):
 
 # ---------- render ----------
 
-def render(package, clip_ids, samples, percent, frame_range, beauty="qtrle"):
+def use_preview(scene):
+    """The cheap path for reviewing motion: Eevee at half size, beauty only (Shadow and Depth outputs muted).
+    Eevee has no Shadow Catcher, so the catcher floor shows as a plain floor."""
+    try:
+        scene.render.engine = "BLENDER_EEVEE"
+    except TypeError:
+        scene.render.engine = "BLENDER_EEVEE_NEXT"
+    scene.eevee.taa_render_samples = 16
+    scene.render.resolution_percentage = 50
+    for name in ("shadow", "depth"):
+        scene.compositing_node_group.nodes[name].mute = True
+
+
+def render(package, clip_ids, samples, percent, frame_range, beauty="qtrle", preview=False):
     """Beauty to <package>/beauty/<clip id>.mov (a movie, so --frames writes a movie of just those frames), or to
-    <package>/beauty/<clip id>/NNNN.png for png; Shadow and Depth Pass frames to <package>/<pass>/<clip id>/."""
+    <package>/beauty/<clip id>/NNNN.png for png; Shadow and Depth Pass frames to <package>/<pass>/<clip id>/.
+    --preview: see use_preview; write it to a review folder, not to the package."""
     scene = bpy.context.scene
     use_gpu()
     set_beauty_format(scene, beauty)
     scene.cycles.samples, scene.render.resolution_percentage = samples, percent
+    if preview:
+        use_preview(scene)
     tree = scene.compositing_node_group
     for clip_id, move, _angle, cam in clip_list():
         if clip_ids and clip_id not in clip_ids:
@@ -709,6 +730,7 @@ def main():
     r.add_argument("--percent", type=int, default=100)
     r.add_argument("--frames", default="")
     r.add_argument("--beauty", choices=sorted(BEAUTY_FORMATS), default="qtrle")
+    r.add_argument("--preview", action="store_true")
     c = sub.add_parser("check")
     c.add_argument("--out", default="")
     cr = sub.add_parser("check-renders")
@@ -721,7 +743,7 @@ def main():
         export(a.package)
     elif a.cmd == "render":
         fr = tuple(int(x) for x in a.frames.split("-")) if a.frames else None
-        render(a.package, set(a.clip), a.samples, a.percent, fr, a.beauty)
+        render(a.package, set(a.clip), a.samples, a.percent, fr, a.beauty, a.preview)
     else:
         result = check() if a.cmd == "check" else check_renders(a.package)
         text = json.dumps(result, indent=1)

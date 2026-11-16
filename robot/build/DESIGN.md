@@ -12,18 +12,40 @@ Look: Chrome Foundry (the user, 2026-11-15). Source of truth: [build_robot.py](b
 
 ## Moves ([moves.py](moves.py))
 
-All Moves: 4 beats at 124 BPM, 30 fps, 58 frames, start and end in the guard Key Pose, a small bob between beats so a held guard never freezes. Keys on a beat grid, smoothstep between keys, one key per frame baked into Blender.
+Key Poses (issue #19, 2026-11-16), all on both feet:
+- `guard`: orthodox boxing guard (above).
+- `low`: wide power stance squared to the front, hips at 0.76 m, fists low and wide.
+- `crouch`: landing crouch, hips at 0.50 m, staggered feet, rear fist down by the floor, lead arm back.
 
-| Move | Tier | Hits (frame, limb) | Cut Points |
-|---|---|---|---|
-| idle_guard (Idle Clip) | calm | none | 0 |
-| jab_cross | build | 15 hand_l 0.6, 29 hand_r 1.0 | 0, 3 |
-| front_kick | drop | 29 foot_l 1.0 | 0 |
-| take_hit | build | 15 head 1.0 | 0, 3 |
+Moves last 1, 2 or 4 bars (58, 116, 232 frames at 124 BPM, 30 fps) and start and end in their Key Poses. Keys on a beat grid, smoothstep between keys, one key per frame baked into Blender. A foot moves only off the ground.
 
-Cut Points are computed: a beat counts when its frame is within 0.5° and 5 mm of the guard.
+| Move | Tier | Bars | From > to | Hits |
+|---|---|---|---|---|
+| idle_guard, idle_low, idle_crouch (Idle Clips) | calm | 1 | each Key Pose | none |
+| guard_shuffle | calm | 2 | guard > guard | none: steps in, looks around, steps back |
+| settle_low | calm | 2 | guard > low | none |
+| rise_guard | calm | 1 | low > guard | none |
+| low_scan | calm | 4 | low > low | none: slow twist, arm flex |
+| stand_up | calm | 2 | crouch > guard | none |
+| jab_cross | build | 1 | guard > guard | jab, cross |
+| take_hit | build | 1 | guard > guard | head |
+| jab_jab_hook | build | 2 | guard > guard | jab, jab, hook, cross |
+| palm_strike | build | 1 | low > low | two double palm pushes |
+| elbow_rush | build | 2 | low > guard | step-in elbow |
+| crouch_strike | build | 1 | crouch > crouch | two low punches |
+| front_kick | drop | 1 | guard > guard | kick |
+| uppercut_combo | drop | 1 | guard > guard | uppercut, hook, uppercut |
+| leap_slam | drop | 2 | guard > crouch | leap 0.6 m up, fists slam on landing |
+| ground_pound | drop | 1 | crouch > crouch | three two-fist floor slams |
+| burst_rise | drop | 2 | crouch > low | jump up arms wide, land wide, four punches |
+| power_stomp | drop | 1 | low > low | three knee-high stomps |
+| low_charge | drop | 2 | low > guard | shoulder ram, two-fist hammer |
 
-The Idle Clip is the guard plus waves a·0.5·(1 − cos(2πk·f/57)): zero offset and zero speed at frames 0 and 57, so the identical first and last frames loop without a seam.
+Every Key Pose has a Move out in every tier, and reaches every other Key Pose within two Moves (low to crouch goes through guard).
+
+Cut Points are computed: a beat counts when its frame is within 0.5° and 5 mm of the Move's starting Key Pose.
+
+An Idle Clip is its Key Pose plus waves a·0.5·(1 − cos(2πk·f/57)): zero offset and zero speed at the first and last frame, so the identical first and last frames loop without a seam.
 
 ## Foundry set
 
