@@ -11,6 +11,9 @@ CLIP_BEATS = (4, 8, 16)
 PASSES = ("beauty", "shadow", "depth")
 MAX_ANGLES, MAX_CLIPS = 8, 256        # OSC wire: /vj/angle 0..7, /vj/clip 0..255
 MOVE_SHARED = ("beats", "frames", "key_in", "key_out", "tier", "cut_points", "idle")
+GIANT_POINTS = ("g_head", "g_core", "g_hammer", "g_claw", "g_foot_l", "g_foot_r")    # the giant machine's points, in an Exchange only
+POINTS = ("head", "eye_l", "eye_r", "hand_l", "hand_r", "foot_l", "foot_r")
+TARGETS = POINTS + GIANT_POINTS + ("floor",)
 
 
 class ManifestError(Exception):
@@ -140,6 +143,8 @@ def validate(data, base_dir=None):
         for k in ("key_in", "key_out"):
             if c[k] not in poses:
                 out.append("%s: %s %r is not a Key Pose" % (where, k, c[k]))
+        if not isinstance(c.get("opponent", False), bool):
+            out.append("%s: opponent must be true or false" % where)
         if not isinstance(c["idle"], bool):
             out.append("%s: idle must be true or false" % where)
         elif c["idle"] and c["key_in"] != c["key_out"]:
@@ -166,9 +171,20 @@ def validate(data, base_dir=None):
                         out.append("%s: clip data names clip %r" % (where, cd.get("clip")))
                     if len(cd.get("frames", [])) != c["frames"]:
                         out.append("%s: clip data has %d frames, the Clip %r" % (where, len(cd.get("frames", [])), c["frames"]))
+                    exchange = c.get("opponent") is True
+                    if exchange:
+                        bad = next(((e.get("f"), p) for e in cd.get("frames", []) for p in GIANT_POINTS
+                                    if not (isinstance(e.get(p), list) and len(e[p]) == 3 and all(isinstance(v, (int, float)) for v in e[p]))), None)
+                        if bad:
+                            out.append("%s: an Exchange needs the giant's points in every frame: frame %r lacks %s" % (where, bad[0], bad[1]))
                     for h in cd.get("hits", []):
                         if not (_is_int(h.get("f")) and 0 <= h["f"] < c["frames"]):
                             out.append("%s: hit outside the Clip: %r" % (where, h))
+                        if "target" in h and h["target"] not in TARGETS:
+                            out.append("%s: hit target %r is not a point or floor" % (where, h["target"]))
+                        giant = [k for k in ("limb", "target") if h.get(k) in GIANT_POINTS]
+                        if giant and not exchange:
+                            out.append("%s: hit %s %r is the giant's, but the Clip is not an Exchange (opponent)" % (where, giant[0], h[giant[0]]))
                 except (ValueError, AttributeError) as e:
                     out.append("%s: clip data unreadable: %s" % (where, e))
     idles = {}
@@ -182,6 +198,8 @@ def validate(data, base_dir=None):
             if len(found) != 1:
                 out.append("Key Pose %s, Angle %s: %d Idle Clips, exactly one needed" % (pose, a, len(found)))
     for move, group in by_move.items():
+        if len({g.get("opponent", False) is True for g in group}) > 1:
+            out.append("move %s: opponent differs across Angles" % move)
         for k in MOVE_SHARED:
             if len({json.dumps(g[k]) for g in group}) > 1:
                 out.append("move %s: %s differs across Angles" % (move, k))

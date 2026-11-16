@@ -96,6 +96,8 @@ class RejectTests(unittest.TestCase):
         ("idle differs across Angles", edit(("clips", 1, "idle"), False), "idle differs across Angles"),
         ("a Move lacks an Angle", lambda d: d["clips"].pop(1), "no Clip for Angle side"),
         ("duplicate id", lambda d: d["clips"].append(copy.deepcopy(d["clips"][0])), "duplicate id"),
+        ("opponent not a bool", edit(("clips", 2, "opponent"), "yes"), "opponent must be true or false"),
+        ("opponent differs across Angles", edit(("clips", 2, "opponent"), True), "opponent differs across Angles"),
         ("more angles than the wire", lambda d: d.update(angles=[{"id": "a%d" % i, "camera": "c"} for i in range(9)]), "/vj/angle holds 8"),
     ]
 
@@ -125,13 +127,58 @@ class FileTests(unittest.TestCase):
                  ("clip data is missing", lambda root, c: os.remove(os.path.join(root, c["clip_data"])), "file missing"),
                  ("camera track is missing", lambda root, c: os.remove(os.path.join(root, c["camera_track"])), "file missing"),
                  ("clip data has too few frames", lambda root, c: _shorten(os.path.join(root, c["clip_data"])), "clip data has 57 frames"),
-                 ("a hit is past the end", lambda root, c: _late_hit(os.path.join(root, c["clip_data"])), "hit outside the Clip")]
+                 ("a hit is past the end", lambda root, c: _late_hit(os.path.join(root, c["clip_data"])), "hit outside the Clip"),
+                 ("a hit target that is no point", lambda root, c: _hit(root, c, target="elbow"), "hit target 'elbow'"),
+                 ("a giant target outside an Exchange", lambda root, c: _hit(root, c, target="g_core"), "hit target 'g_core' is the giant's"),
+                 ("a giant limb outside an Exchange", lambda root, c: _hit(root, c, limb="g_hammer", target="head"), "hit limb 'g_hammer' is the giant's")]
         for name, damage, expect in cases:
             with self.subTest(name), tempfile.TemporaryDirectory() as tmp:
                 root = package_with_media(tmp)
                 damage(root, fixture_data()["clips"][2])
                 problems = mf.validate(fixture_data(), root)
                 self.assertTrue(any(expect in p for p in problems), problems)
+
+
+class ExchangeTests(unittest.TestCase):
+    """robot/CONTRACTS.md, the giant machine (#23): an Exchange (opponent true) carries the giant's points in every frame; a Hit may name a target."""
+    GIANT = {p: [0.5, 0.4, 9.0] for p in mf.GIANT_POINTS}
+
+    def exchange(self, root, frames_with=GIANT, hits=()):
+        d = fixture_data()
+        for c in d["clips"]:
+            if c["move"] == "front_kick":
+                c["opponent"] = True
+                _rewrite(os.path.join(root, c["clip_data"]), lambda cd: ([e.update(frames_with) for e in cd["frames"]], cd["hits"].extend(hits)))
+        return d
+
+    def test_accepted(self):
+        cases = [("an old Manifest, no opponent anywhere", None, ()),
+                 ("an Exchange with every giant point", self.GIANT, ()),
+                 ("the Android hits the giant", self.GIANT, [{"f": 10, "point": [0.5, 0.4, 9], "strength": 1, "limb": "hand_r", "target": "g_core"}]),
+                 ("the giant hits the Android", self.GIANT, [{"f": 20, "point": [0.5, 0.3, 3], "strength": 1, "limb": "g_hammer", "target": "head"}]),
+                 ("a Hit on the floor", self.GIANT, [{"f": 30, "point": [0.5, 0.9, 3], "strength": 0.5, "limb": "g_foot_l", "target": "floor"}]),
+                 ("a Hit without target", self.GIANT, [{"f": 40, "point": [0.5, 0.4, 3], "strength": 0.5, "limb": "foot_r"}])]
+        for name, frames_with, hits in cases:
+            with self.subTest(name), tempfile.TemporaryDirectory() as tmp:
+                root = package_with_media(tmp)
+                d = fixture_data() if frames_with is None else self.exchange(root, frames_with, hits)
+                self.assertEqual(mf.validate(d, root), [])
+
+    def test_rejected(self):
+        partial = {p: v for p, v in self.GIANT.items() if p != "g_claw"}
+        cases = [("an Exchange without the giant's points", {}, (), "lacks g_head"),
+                 ("an Exchange missing one point", partial, (), "lacks g_claw"),
+                 ("a giant point that is no triple", dict(self.GIANT, g_core=[0.5, 0.5]), (), "lacks g_core"),
+                 ("an unknown target in an Exchange", self.GIANT, [{"f": 1, "point": [0, 0, 0], "strength": 1, "limb": "hand_r", "target": "g_tail"}], "hit target 'g_tail'")]
+        for name, frames_with, hits, expect in cases:
+            with self.subTest(name), tempfile.TemporaryDirectory() as tmp:
+                root = package_with_media(tmp)
+                problems = mf.validate(self.exchange(root, frames_with, hits), root)
+                self.assertTrue(any(expect in p for p in problems), problems)
+
+
+def _hit(root, c, **fields):
+    _rewrite(os.path.join(root, c["clip_data"]), lambda d: d["hits"].append(dict({"f": 3, "point": [0, 0, 0], "strength": 1, "limb": "hand_r"}, **fields)))
 
 
 def _rewrite(path, fn):

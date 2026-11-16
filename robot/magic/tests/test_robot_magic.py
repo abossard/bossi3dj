@@ -393,6 +393,20 @@ class EffectTests(unittest.TestCase):
         broken = mf.Manifest(FIXTURE_DATA, tempfile.gettempdir() + "/no_such_package")
         self.assertEqual(rm.clip_hits(broken), [[] for _ in broken.clips])
 
+    def test_hits_with_a_target_flash_too(self):
+        """An Exchange's Hits name a target (the giant's point, the Android's, the floor): every Hit drives the flash and split, whoever strikes."""
+        for target in ("g_core", "head", "floor", None):
+            with self.subTest(target=target), tempfile.TemporaryDirectory() as tmp:
+                root = package_with_media(tmp)
+                clip = FIXTURE_DATA["clips"][self.m.clip_index("front_kick", "front")]
+                path = os.path.join(root, clip["clip_data"])
+                cd = json.load(open(path))
+                cd["hits"] = [dict({"f": 40, "point": [0.5, 0.4, 9], "strength": 1, "limb": "g_hammer"}, **({"target": target} if target else {}))]
+                with open(path, "w") as f:
+                    json.dump(cd, f)
+                hits = rm.clip_hits(mf.Manifest(FIXTURE_DATA, root))
+                self.assertEqual(hits[self.m.clip_index("front_kick", "front")], [40])
+
     def test_drivers(self):
         jab, idle = self.m.clip_index("jab_cross", "front"), self.m.clip_index("idle", "front")
         cases = [   # frames[i] is frame i + 1 of the drive; a Global reads the frame before
