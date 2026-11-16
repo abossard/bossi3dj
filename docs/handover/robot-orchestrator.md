@@ -37,7 +37,7 @@ Page: https://claude.ai/artifact/7D5wLjhFTi7hNr6xwecMP8 (source `robot/concept/r
 | R3 | Pure Clip Graph model and Manifest validator (stdlib, parametrized tests), a fixture Render Package with placeholder Clips made by ffmpeg | R1 | Sonnet 5.5 medium | done (415f0c6) |
 | R4 | Magic generator: Manifest to `.magic` (VideoFile per Clip, InputSelector, Clip Graph and Angle cuts in Globals, Speed from BPM, SyphonClient `ROBOT_LIVE`, Mask and Blend, OSCSender for R2); `magicproj.py check`; codec spike (this ffmpeg has ProRes 4444, no Hap encoder) | R3 | Sonnet 5.5 medium (same session as R3) | done (415f0c6); missing live layer never black (78f3978); `LiveOn` follows the heartbeat (71988e4, b9674cb), proven with grabs |
 | R5 | Android, Moves and foundry set as a build script; pure Move key tables with tests first | R1 | Opus 5.5 high | done (8eba3ae, d262d61, 92ed1f9); idle_guard loops cleanly; idle_guard__front fails review R1 (camera too frontal); slot returned |
-| R6 | Render the v1 Clip Library (4 Moves x 2 Angles, beauty, Shadow, Depth, Clip Data) | R5, Blender slot (headless renders count) | R5 session | waits for the slot |
+| R6 | Render the v1 Clip Library (4 Moves x 2 Angles, beauty, Shadow, Depth, Clip Data) | R5, Blender slot (headless renders count) | R5 session | running (2026-11-16, user "Yes, go ahead"): front camera fix with review, then the full set with beauty as QuickTime Animation (6865e68; decode numbers 56267f3) |
 | R7 | Live World scene in `robot/live/`: foundry set, beat-lit lamps, sparks at Hits, Syphon `ROBOT_LIVE`, reads R2 | R5, R2, Blender slot | R5 session | waits |
 | R8 | Load in Magic, 60 s recording with music, flicker numbers, the user judges | R4, R6, R7 | orchestrator | later |
 
