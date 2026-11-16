@@ -28,6 +28,7 @@ Each Clip:
 | `key_in`, `key_out` | Key Pose at the first and last frame |
 | `tier` | Intensity Tier: `calm`, `build` or `drop` |
 | `idle` | `true` for an Idle Clip: `key_in` equals `key_out`, first and last frames identical, Magic loops it; `false` for a Move Clip, which Magic restarts on each pick |
+| `opponent` | optional: `true` for an Exchange, a Clip with both the Android and the giant machine in the frame (`robot/build/GIANT.md`); missing or `false` for a Clip with the Android alone. `key_in`, `key_out`, `idle` and `cut_points` always describe the Android |
 | `cut_points` | beats inside the Clip where a switch is allowed, `[0]` at least |
 | `passes` | `{beauty, shadow, depth}`: file paths relative to the package; beauty carries the Matte as alpha |
 | `clip_data` | path of the Clip Data file |
@@ -52,8 +53,8 @@ Every Key Pose has exactly one Idle Clip per Angle. A Move Clip that ends with n
 | Field | Meaning |
 |---|---|
 | `clip` | Clip id |
-| `frames` | list, one entry per frame: `{f, head, eye_l, eye_r, hand_l, hand_r, foot_l, foot_r}`, each `[x, y, depth]` with x, y in 0..1 from the top left and depth in metres from the Shot Camera |
-| `hits` | list of Hits: `{f, point: [x, y, depth], strength: 0..1, limb}` |
+| `frames` | list, one entry per frame: `{f, head, eye_l, eye_r, hand_l, hand_r, foot_l, foot_r}`, and in an Exchange also `{g_head, g_core, g_hammer, g_claw, g_foot_l, g_foot_r}` (the giant's), each `[x, y, depth]` with x, y in 0..1 from the top left and depth in metres from the Shot Camera |
+| `hits` | list of Hits: `{f, point: [x, y, depth], strength: 0..1, limb}` and optional `target`; in an Exchange `limb` may be a giant point (`g_hammer`, ...) and `target` names the struck point of the other fighter or `floor`. A Hit without `target` is valid |
 
 ## Camera Track (`camera/<angle>.json`)
 
