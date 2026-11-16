@@ -66,6 +66,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 
 ## Decided by the user
 
+- Blender, 2026-11-16 (#25): `/vj/hue` shifts the land only, the sky and atmosphere limb keep their colours ("Land only"); sky shot framing (SKY_FRAME: moon or sun in the upper third, horizon in the lower third) is on by default, rise included ("On, incl. rise"); the vantage push stays at 80 s ("Keep 80 s").
 - Blender, 2026-11-15: the stronger idle pyramid pulse of round 18 (39ff3fc, 27 % swing by day) stands ("Stronger stands"; replaces "10% is fine" and "Keep 10 %"). The island gets `/vj/cam` back (option "a").
 
 - Blender, 2026-11-14, GPU terrain ([gpu-terrain.md](docs/handover/gpu-terrain.md), "Yes, all five"): (1) near detail under 3 m from fine noise in the shader on the 12 m map; (2) ground detail for the show's region (about 16 km round the valley), the globe for space; (3) river flow rebuilt, site lights dropped; (4) smooth relief shading; (5) the stream and what hangs on it go in one change.
