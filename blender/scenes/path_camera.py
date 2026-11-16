@@ -43,7 +43,7 @@ PUSH_PERIOD = 80.0                 # s at /vj/cam_speed 1: the vantage pushes in
 BLEND_LAND = 0.35                   # share of the frame's centre column a blend keeps on the planet (0: off). The planet is
 #                                     small: the horizon dips 23 deg at 1.3 km, 52 at 10 km, and a blend's view stays near
 #                                     the end shots' level while the hump lifts it (issue #25: flat sky, black space)
-BLEND_LAND_TURN = math.radians(10.0)   # rad/s the keep may add to the view's own turn (over the zenith, at a far blend's
+BLEND_LAND_TURN = math.radians(25.0)   # rad/s the keep may add to the view's own turn (over the zenith, at a far blend's
 #                                     end the kept view's heading or pitch can swing faster than that)
 BLEND_TURN_MAX = math.radians(59.0)    # rad/s at /vj/blend DUR_MAX: a blend's view turns no faster with the keep (the
 #                                     Director's pace scales with DUR_MAX / blend; verify_paths 2c)

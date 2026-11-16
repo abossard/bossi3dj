@@ -67,20 +67,20 @@ class Beat:
 CASES = [  # name, targets, program, seconds, most dark blend s, most turn deg/s (60 x DUR_MAX / blend). Dark s before the
     # keep (ea44a0b): 14.2, 6.5, 7.2, 16.6, 15.2, 2.2, 1.4
     ("change mid-blend", TARGETS, [(0, "orbit", "coast", 0.3, 30.0), (5, "orbit", "sun", 0.3, 30.0),
-                                   (13, "rise", "lake", 0.3, 30.0)], 45.0, 3.0, 72.0),
-    ("fall from space", TARGETS, [(0, "vantage", "planet", 1.0, 30.0), (3, "orbit", "river", 0.3, 30.0)], 40.0, 2.0, 72.0),
+                                   (13, "rise", "lake", 0.3, 30.0)], 45.0, 0.5, 72.0),
+    ("fall from space", TARGETS, [(0, "vantage", "planet", 1.0, 30.0), (3, "orbit", "river", 0.3, 30.0)], 40.0, 1.0, 72.0),
     ("cut mid-blend", TARGETS, [(0, "orbit", "coast", 0.3, 30.0), (5, "follow", "sun", 0.3, 30.0),
                                 (15, "vantage", "moon", 0.3, 0.0)], 20.0, 0.5, 72.0),
     ("far targets", FAR, [(0, "follow", "lake", 0.6, 30.0), (3, "follow", "coast", 0.6, 30.0),
-                          (27, "follow", "sun", 0.6, 30.0)], 50.0, 9.0, 72.0),
+                          (27, "follow", "sun", 0.6, 30.0)], 50.0, 1.5, 72.0),
     ("far change", FAR, [(0, "orbit", "moon", 0.6, 30.0), (3, "follow", "lake", 0.6, 30.0),
-                         (22.4, "orbit", "sun", 0.6, 30.0)], 45.0, 14.0, 72.0),
+                         (22.4, "orbit", "sun", 0.6, 30.0)], 45.0, 5.5, 72.0),
     ("far change, eye held", FAR, [(0, "follow", "lake", 0.6, 30.0), (3, "rise", "moon", 0.6, 30.0),
-                                   (9.9, "vantage", "moon", 0.6, 30.0)], 30.0, 12.0, 72.0),
+                                   (9.9, "vantage", "moon", 0.6, 30.0)], 30.0, 3.5, 72.0),
     ("far change, 15 s fade", FAR, [(0, "follow", "coast", 0.3, 15.0), (3, "follow", "moon", 0.3, 15.0),
-                                    (9.5, "orbit", "moon", 0.3, 15.0)], 30.0, 12.0, 144.0),
+                                    (9.5, "orbit", "moon", 0.3, 15.0)], 30.0, 1.0, 144.0),
     ("6 s blends", TARGETS, [(0, "vantage", "coast", 0.6, 6.0), (3, "follow", "lake", 0.6, 6.0)], 12.0, 2.5, 360.0),
-    ("6 s blends far", FAR, [(0, "vantage", "coast", 0.6, 6.0), (3, "follow", "lake", 0.6, 6.0)], 12.0, 1.5, 360.0),
+    ("6 s blends far", FAR, [(0, "vantage", "coast", 0.6, 6.0), (3, "follow", "lake", 0.6, 6.0)], 12.0, 1.0, 360.0),
 ]
 
 
@@ -92,7 +92,8 @@ class BlendTests(unittest.TestCase):
                 self.assertLessEqual(r["dark"], dark_max, "blend seconds with land under 0.1")
                 self.assertLessEqual(r["turn"], turn_max, "view turn (deg/s)")
                 self.assertGreater(r["kept"], 1.0, "the keep acts in this case (deg)")
-                self.assertLessEqual(r["end"], 0.5, "keep left on a blend's last frame (deg)")
+                self.assertLessEqual(r["end"], math.degrees(pc.BLEND_LAND_TURN) * DT + 0.05,
+                                     "keep left on a blend's last frame (deg): one frame of BLEND_LAND_TURN at most")
 
     def test_cut_mid_blend(self):
         r = run(*[c for c in CASES if c[0] == "cut mid-blend"][0][1:4])

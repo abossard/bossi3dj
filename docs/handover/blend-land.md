@@ -7,7 +7,7 @@
 
 ## The keep, as built
 
-- While the Director blends, the view turns toward the kept view by at most `BLEND_LAND_TURN` (10 deg/s) x the seconds from the blend's nearer end: none at either end, no weights or height terms (second review: they were not pinned, and the height term snapped on a change while banded() held the eye).
+- While the Director blends, the view turns toward the kept view by at most `BLEND_LAND_TURN` (25 deg/s) x the seconds from the blend's nearer end: none at either end, no weights or height terms (second review: they were not pinned, and the height term snapped on a change while banded() held the eye).
 - `turn_limited()`: the shown view turns at most the Director's own turn + `BLEND_LAND_TURN` + what empties a lag by the end, never over `BLEND_TURN_MAX` (59 deg/s) x DUR_MAX / blend unless the Director's own does; outside blends nothing is limited, so a cut is a cut (item 3).
 - The shown view is written back into `Director.pose`: a change mid-blend starts from it (items 1 and the 155 deg/s change frame, which was the guard's lag left out of the write-back); on a change the guard measures the Director's own turn from the view shown.
 - The heading: the view's own plus 0.25 x the end shots' forwards (over the zenith it flipped). The beat's accent goes on last (item 7).
@@ -34,4 +34,4 @@ Live: `blender/review/blend_live.py` (the demo program held against Magic, see i
 
 ## Proposal: the falls' last seconds (open item 1)
 
-Falls and far hops go dark late because the keep's turn budget (`BLEND_LAND_TURN` 10 deg/s x seconds to the nearer end) lets it out early on big gaps. Measured on `test_path_blends.py`'s cases (dark blend s / largest turn deg/s), budget 10 -> 25 deg/s: change mid-blend 2.5 -> 0.0, fall from space 1.7 -> 0.7, far targets 8.3 -> 0.8, far change 13.2 -> 4.9, far eye held 10.3 -> 2.7, 15 s fade 2.6 -> 0.6, 6 s blends 2.1 -> 2.0 and 1.1 -> 0.7; turns stay at most 71 at a 30 s fade (`turn_limited`'s cap), `verify_paths` 2c unchanged. Proposed: `BLEND_LAND_TURN` 25 deg/s, test thresholds tightened to those numbers, then a live A/B (the keep's turn in and out reads faster).
+Falls and far hops go dark late because the keep's turn budget (`BLEND_LAND_TURN` 10 deg/s x seconds to the nearer end) lets it out early on big gaps. Measured on `test_path_blends.py`'s cases (dark blend s / largest turn deg/s), budget 10 -> 25 deg/s (built, 2026-11-16): change mid-blend 2.5 -> 0.0, fall from space 1.7 -> 0.7, far targets 8.3 -> 0.8, far change 13.2 -> 4.9, far eye held 10.3 -> 2.7, 15 s fade 2.6 -> 0.6, 6 s blends 2.1 -> 2.0 and 1.1 -> 0.7; turns stay at most 71 at a 30 s fade (`turn_limited`'s cap), `verify_paths` 2c unchanged. Proposed: `BLEND_LAND_TURN` 25 deg/s, test thresholds tightened to those numbers, then a live A/B (the keep's turn in and out reads faster).
