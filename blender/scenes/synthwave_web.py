@@ -336,6 +336,8 @@ class Web:
             **page_model.page_state(controls(scene), *contract(), scene_kind(scene)),
             "values": {k: float(scene[k]) for k in scene.keys() if k.startswith(PREFIX)
                        and isinstance(scene[k], (int, float))},
+            "rt": {k: float(scene[k]) for k in scene.keys() if k.startswith("rt_")     # the runtime's derived state (sun, space, beat)
+                   and isinstance(scene[k], (int, float))},
         }
         sender = bpy.app.driver_namespace.get(SENDER_KEY)
         snap["syphon"] = {"frames": sender.frames, "failed": sender.failed} if sender is not None else None

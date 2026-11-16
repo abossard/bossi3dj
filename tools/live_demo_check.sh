@@ -11,7 +11,8 @@
 # osc     Magic must send: within OSC_GATE_S (default 10) s the bridge's OSC message count (/api/state osc.addresses) must grow, else the
 #         remaining steps are skipped and only stop runs
 # steer   tools/magic_steering_check.py: 180 s of path, target, height from Magic, then the height takeover
-# record  90 s of CAM_OUT, nothing held, then blender/review/video_flicker.py per 15 s stage
+# record  90 s of CAM_OUT, nothing held, then blender/review/video_flicker.py per 15 s stage; state.jsonl holds the
+#         scene's state once a second (tools/scene_state_log.py), t 0 = the recording's first frame
 # stop    stops afplay, then make blender-kill (the next session rebuilds)
 # Outputs: blender/review/out/demo-check-<date>/ (git-ignored), one log per step, summary.txt with each step's exit code.
 cd "$(dirname "$0")/.." || exit 1
@@ -59,8 +60,12 @@ for s in "${steps[@]}"; do
                                  awk "/mean_volume|max_volume/ {print} /mean_volume/ {m = \$5} END {exit (m != \"\" && m > -60 ? 0 : 1)}"' ;;
         osc)    run osc osc_gate; [ "$rc" -ne 0 ] && skip=1 ;;
         steer)  run steer python3 tools/magic_steering_check.py --observe 180 --key vj_height ;;
-        record) run record env PYTHONPATH="$HOME/.local/lib/python3.13/site-packages" python3.13 tools/syphon_record.py \
-                    --app Blender --server CAM_OUT --seconds 90 --fps 30 --size 960x540 --out "$OUT/unheld.mp4" --vflip
+        record) rm -f "$OUT/record.flag"
+                (sleep 2; python3 tools/scene_state_log.py --out "$OUT/state.jsonl" --seconds 92 --flag "$OUT/record.flag") & logpid=$!
+                run record env PYTHONPATH="$HOME/.local/lib/python3.13/site-packages" python3.13 tools/syphon_record.py \
+                    --app Blender --server CAM_OUT --seconds 90 --fps 30 --size 960x540 --out "$OUT/unheld.mp4" --vflip \
+                    --flag "$OUT/record.flag"
+                wait $logpid
                 run flicker .venv/bin/python blender/review/video_flicker.py "$OUT/unheld.mp4" 15 ;;
         stop)   [ -f "$OUT/afplay.pid" ] && kill "$(cat "$OUT/afplay.pid")" 2>/dev/null; rm -f "$OUT/afplay.pid"
                 run kill make blender-kill ;;
