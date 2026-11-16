@@ -44,6 +44,11 @@ Page: https://claude.ai/artifact/7D5wLjhFTi7hNr6xwecMP8 (source `robot/concept/r
 - Blender-free first: R3, R4 and the pure part of R5 run now; R5's Blender part, R6 and R7 ask the main orchestrator for the slot first.
 - Magic is the user's app: R4 proves the file with `magicproj.py check` and a fixture; loading it into Magic and the recording (R8) wait for the user.
 
+## Show machine (2026-11-16)
+
+- The user: "for the moment, assume it'll run on a dedicated macbook like this one". Target: Apple M1 Max, 10 cores, 64 GB, Magic alone with the Robot's live Blender layer.
+- So the decode-cost numbers from 4be1f12 (load 28 to 49, Magic held near 3 cores) are pessimistic. The 1 against 2 against 3 Angle decision waits for a re-run of `robot/magic/decode_cost.py` when `make status` says `fps_trustworthy`.
+
 ## Audio for the Clip Graph (2026-11-16)
 
 - Today the generator reads the beat clock and energy from `magic/synthwave_magic.py` Globals by name (`Beats`, `Bars`, `Phase`, `BPM`, `EnergyAvg`); the Intensity Tier is a threshold on `EnergyAvg`.
