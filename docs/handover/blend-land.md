@@ -2,45 +2,32 @@
 
 ## State
 
-- Committed 158d3c1: `BLEND_LAND` keep, `BLEND_BY_HEIGHT` fog, `SKY_FRAME` variant (off). Its independent review (orchestrator, 2026-11-16) found 3 high, 2 medium, 2 low; #25 stays open, `SKY_FRAME` waits for the user.
-- Uncommitted in `blender/scenes/path_camera.py` (working tree): a rework of the keep toward the reviewer's "plain rule". Not committed because item 5 below got worse.
-- The reviewer's replay scripts are in `blender/review/issue25_review/` (`sim.py` helpers; `a.py` fall from space, change mid-blend, cut mid-blend; `b.py SEED near|far FADE SECONDS` random programs; `c.py` old vs new on eight hard cases). Run from the repo root: `python3 blender/review/issue25_review/c.py`.
+- 158d3c1 had review findings (3 high, 2 medium, 2 low). The rework in `path_camera.py` answers 1 to 5 and 7; `SKY_FRAME` (off) still waits for the user.
+- The reviewer's replay scripts: `blender/review/issue25_review/` (`a.py`, `b.py`, `c.py`). Their cases run in `make test`: `blender/tests/test_path_blends.py`.
 
-## The rework (uncommitted)
+## The keep, as built
 
-- No rate-limited weight: while the Director blends, weight `k` = the lesser of an ease-in and an ease-out, each the greater of the blend's share (`BLEND_LAND_EASE[0]` 0.25) and the eye's log height over that end's eye (`BLEND_LAND_EASE[1]` 1 e-fold), so falls from a higher start are covered and `k` is 0 at both ends.
-- The kept view is written back into `Director.pose`, so a change mid-blend starts from the view shown.
-- After the Director ends while `banded()` still holds the eye, the keep goes out with height alone, with the last blend's ends.
-- The heading comes from the view plus 0.25 x the sum of the end shots' forwards.
-- `turn_limited()`: the shown view turns no faster than the view before the keep did plus `BLEND_LAND_TURN` (10 deg/s); a cut resets it.
-- The beat's accent now goes on after the keep (`en.accent` in `PathCamera.step`; the Director is stepped without the drive), so the dip is no longer swallowed (review item 7).
+- While the Director blends, weight `k` = the lesser of an ease-in and an ease-out, each the greater of the blend's share (`BLEND_LAND_EASE[0]` 0.25) and the eye's log height over that end's eye (`BLEND_LAND_EASE[1]` 1 e-fold); 0 at both ends. A fall from a higher start is covered.
+- The turn toward the kept view is at most `BLEND_LAND_TURN` (10 deg/s) x the blend's seconds to go, so the keep is gone by the Director's end (review item 5).
+- `turn_limited()`: the shown view turns at most the Director's own turn + `BLEND_LAND_TURN` + what empties a lag by the end, never over `BLEND_TURN_MAX` (59 deg/s) x DUR_MAX / blend unless the Director's own does; outside blends nothing is limited, so a cut is a cut (item 3).
+- The shown view is written back into `Director.pose`: a change mid-blend starts from it (items 1 and the 155 deg/s change frame, which was the guard's lag left out of the write-back).
+- The heading: the view's own plus 0.25 x the end shots' forwards (over the zenith it flipped). The beat's accent goes on last (item 7).
 
-## Numbers (working tree)
+## Numbers
 
-| check | 158d3c1 | rework |
-|---|---|---|
-| `a.py` fall from space (vantage planet h 1 -> orbit river): blend s with land < 0.1, max turn | 5.6 s (review) | 0.0 s, 19.7 deg/s |
-| `a.py` change mid-blend (coast -> sun -> rise lake): land < 0.1 | about 8 s (review) | 0.0 s |
-| `a.py` cut mid-blend: off the live view the frame after | 53 deg (review) | 0 |
-| `verify_paths.py` 2c change turn (limit 72) | 67.6 | 71.6 |
-| `verify_paths.py` 1b | fails (2.818, as before #25) | same |
-| `blend_horizon.py` demo replay: blend s with land < 0.1 | 1.9 | 1.5 |
-| `c.py` view off the live shot at a blend's end | up to 81 deg (review) | up to 91 deg |
+`test_path_blends.py` cases, blend seconds with land < 0.1, before the keep (ea44a0b) -> now: change mid-blend 14.2 -> 3.0, fall from space 6.5 -> 1.7, cut mid-blend 7.2 -> 0, far targets (24 km) 16.6 -> 7.7, far change 15.2 -> 12.8, 6 s blends 2.2 -> 1.9 and 1.4 -> 0.9. Every blend ends on the live view (0 deg), a cut's first frame is the live view. `verify_paths.py` 2c 70.8 deg/s (limit 72); 1b fails as before #25. Demo replay (`blend_horizon.py`) 11.5 -> 2.4 s.
 
 ## Open
 
-1. **The end of a blend (review item 5)**: with the turn limit the shown view still lags the live shot by up to 91 deg when the blend ends (c.py cases 2, 5, 6) and then catches up at 10 deg/s over seconds. The keep needs an end condition that is met by the Director's end: e.g. bring `k` out early enough that the kept view's gap closes within the turn budget (a duration-aware ease-out: the remaining time x budget >= the gap), or let the Director's duration include the keep's turn (needs the Director's `duration()`, shared with other scenes).
-2. `c.py` case 3 (vantage coast -> vantage river, rise pyramids at 4.7 s, far): 155 deg/s on the change frame; not traced.
-3. The 6 s fades (`c.py` last two) exceed 72 deg/s, but so does 158d3c1's base (178.8, 96.2); their own limit is 60 x PACE = 360.
-4. Add the reviewer's scenarios to `verify_paths.py` (mid-blend change, a fall from higher, a cut during a blend, far targets about 24 km, 6 s blends) and a "view on the live shot at the blend's end" check (review item 6).
-5. Live: 5 s of flat frames in orbit river and 4 s in rise lake at 4 to 7 km remain even with land in frame (`out/issue25/live_after.jsonl`): the land renders flat from there (shader side).
+1. Far hops keep less land: the 10 deg/s ease budget makes the keep go out early on big gaps.
+2. Live: 5 s in orbit river and 4 s in rise lake at 4 to 7 km rendered flat with land in frame (158d3c1's live run, `out/issue25/live_after.jsonl`): shader side.
 
 ## Commands
 
 ```bash
+python3 -m unittest blender/tests/test_path_blends.py
 python3 blender/review/verify_paths.py
 python3 blender/review/blend_horizon.py
-python3 blender/review/issue25_review/a.py
 python3 blender/review/issue25_review/c.py
 ```
 
