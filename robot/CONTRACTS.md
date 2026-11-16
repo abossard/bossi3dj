@@ -35,6 +35,16 @@ Each Clip:
 
 Clips of one Move share timing across Angles, so Magic may cut Angles at any frame.
 
+Pass files, one `.mov` per Clip and Pass, 1920x1080, 30 fps, the Clip's frame count:
+
+| Pass | Codec | Values |
+|---|---|---|
+| beauty | QuickTime Animation (qtrle), 8-bit RGBA | colour, alpha is the Matte |
+| shadow | ProRes 422, grey | the Shadow Pass coverage as in the render, 0 = no shadow |
+| depth | ProRes 422 HQ, 10-bit grey | distance from the Shot Camera in metres divided by 20, clamped to 0..1; 1 is 20 m or more and where the Android is absent |
+
+ProRes 4444 for beauty decoded below 30 fps at 3 Angles in Magic; qtrle holds 4 (docs/handover/robot-magic.md, 2026-11-16).
+
 Every Key Pose has exactly one Idle Clip per Angle. A Move Clip that ends with no next pick goes to the Idle Clip of its `key_out`; the Clip Graph leaves the Idle Clip on the next bar boundary into any Move with that `key_in`.
 
 ## Clip Data (`clip_data/<clip id>.json`)
