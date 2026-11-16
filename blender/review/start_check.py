@@ -8,7 +8,9 @@ Rendered shading, playing, the GPU terrain shown with its height map, values on 
 `problems` list is empty), Syphon frames moving, and pixels: mean and variance of the scene's preview frame (the same
 composite the Syphon texture holds) and mean colour and lit share of one frame grabbed from `CAM_OUT - Blender`
 (`magicproj.py grab`, the way Magic would get it). A black or flat frame fails. Exit 0: all ok, 1: something failed,
-2: Blender did not answer. Standard library only.
+2: Blender did not answer, 3: only the drawing is stuck (runtime clean and playing, the Syphon frame counter not
+moving): the window does not draw (issue #18, once after a rebuild); `make blender-open` reopens Blender once on it.
+Standard library only.
 """
 import argparse
 import json
@@ -23,6 +25,16 @@ BASE = "http://127.0.0.1:9210"
 BRIDGE_PORT = 9201
 MIN_VARIANCE = 50.0      # luminance variance of a frame with a picture in it (a flat or black frame has none)
 MIN_LIT = 0.05           # share of the grabbed frame that is not black
+DRAWING = ("Syphon sender", "preview pixels", "Syphon grab")     # the rows a window that does not draw fails
+
+
+def verdict(rows):
+    """Exit code from the rows {name: ok}: 0 all ok; 3 the Syphon sender stuck and nothing failed but the drawing's
+    rows (a reopen fixes it); 1 anything else."""
+    failed = {n for n, ok in rows.items() if not ok}
+    if not failed:
+        return 0
+    return 3 if "Syphon sender" in failed and failed <= set(DRAWING) else 1
 
 
 def get(path, timeout=15):
@@ -91,10 +103,10 @@ def main():
         print("no scene page on %s: make blender-open" % BASE)
         return 2
     health, state = wait_started(300.0)
-    rows = []
+    rows = {}
 
     def row(name, ok, detail):
-        rows.append(ok)
+        rows[name] = bool(ok)
         print("%-4s %-24s %s" % ("ok" if ok else "FAIL", name, detail))
 
     row("scene", True, "%s, camera %s" % (state["scene"], state["camera"]))
@@ -119,9 +131,9 @@ def main():
     grab = syphon_grab()
     row("Syphon grab", "error" not in grab and grab.get("lit", 0) > MIN_LIT,
         grab.get("error") or "%s, mean rgb %s, lit %s" % (grab["size"], grab["mean_rgb"], grab["lit"]))
-    ok = all(rows)
-    print("start state: %s" % ("ready" if ok else "NOT ready"))
-    return 0 if ok else 1
+    code = verdict(rows)
+    print("start state: %s" % ("ready" if code == 0 else "NOT ready" + (": the window does not draw" if code == 3 else "")))
+    return code
 
 
 if __name__ == "__main__":

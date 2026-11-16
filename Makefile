@@ -225,7 +225,14 @@ blender-open:
 	@if $(GODOT_GUI_RUNS); then echo "a Godot window runs and shares the GPU: make godot-kill first (make status)"; exit 1; fi
 	@python3 tools/cache_prune.py
 	open -a /Applications/Blender.app --args --enable-autoexec "$(CURDIR)/$(BLEND_$(SCENE))"
-	python3 blender/review/start_check.py
+	@python3 blender/review/start_check.py; rc=$$?; \
+	if [ $$rc -eq 3 ]; then \
+		echo "the window does not draw: reopening Blender once (issue #18)"; \
+		pkill -f "MacOS/Blender --enable-autoexec $(CURDIR)/$(BLEND_$(SCENE))"; \
+		while pgrep -f "MacOS/Blender --enable-autoexec $(CURDIR)/$(BLEND_$(SCENE))" >/dev/null; do sleep 1; done; \
+		open -a /Applications/Blender.app --args --enable-autoexec "$(CURDIR)/$(BLEND_$(SCENE))"; \
+		python3 blender/review/start_check.py; rc=$$?; \
+	fi; exit $$rc
 
 blender-check:
 	python3 blender/review/feature_check.py $(ARGS)
