@@ -95,8 +95,8 @@ CROSS_BACK = pose(GUARD, hips=(0.0, -0.01, 0.90), hips_rot=(0.0, -12.0, 0.0), sp
                   foot_r=(-0.15, 0.30, 0.12), foot_r_rot=(6.0, -25.0, 0.0))
 HOOK_LOAD = pose(GUARD, hips=(0.0, 0.01, 0.90), hips_rot=(0.0, -12.0, 0.0), spine_rot=(7.0, 0.0, 0.0),
                  hand_l=(0.24, -0.36, 1.48))
-HOOK = pose(GUARD, hips=(0.0, 0.0, 0.89), hips_rot=(0.0, -45.0, 0.0), spine_rot=(8.0, -15.0, 0.0),
-            chest_rot=(6.0, -10.0, 0.0), head_rot=(-8.0, 35.0, 0.0), hand_l=(-0.15, -0.55, 1.50))
+HOOK = pose(GUARD, hips=(0.0, 0.0, 0.89), hips_rot=(0.0, -50.0, 0.0), spine_rot=(8.0, -20.0, 0.0),
+            chest_rot=(6.0, -12.0, 0.0), head_rot=(-8.0, 38.0, 0.0), hand_l=(-0.02, -0.68, 1.46))
 HOOK_BACK = pose(GUARD, hips=(0.0, 0.01, 0.90), hips_rot=(0.0, -30.0, 0.0), hand_l=(0.10, -0.45, 1.50))
 # a fist raised overhead for the two-handed slams
 FLEX = dict(hand_l=(0.42, -0.05, 1.42), hand_r=(-0.42, -0.05, 1.42), chest_rot=(-6.0, 0.0, 0.0))
@@ -246,8 +246,8 @@ def _palm_strike():
 def _elbow_rush():
     step_in = pose(GUARD, hips=(0.0, -0.05, 0.84), hips_rot=(0.0, -20.0, 0.0), foot_r=LOW["foot_r"],
                    foot_r_rot=LOW["foot_r_rot"], hand_l=(0.18, -0.40, 1.45), hand_r=(-0.14, -0.22, 1.45))
-    elbow = pose(step_in, hips=(0.0, -0.08, 0.86), hips_rot=(0.0, 20.0, 0.0), spine_rot=(10.0, 15.0, 0.0),
-                 chest_rot=(6.0, 10.0, 0.0), head_rot=(-8.0, -5.0, 0.0), hand_r=(0.05, -0.35, 1.55))
+    elbow = pose(step_in, hips=(0.0, -0.08, 0.86), hips_rot=(0.0, 30.0, 0.0), spine_rot=(12.0, 22.0, 0.0),
+                 chest_rot=(6.0, 12.0, 0.0), head_rot=(-8.0, -5.0, 0.0), hand_r=(0.18, -0.30, 1.50))
     keys = [Key(0, LOW), Key(1, pose(LOW, hips=(-0.05, 0.0, 0.76))),
             Key(1.5, pose(LOW, hips=(-0.05, -0.02, 0.80), foot_l=(0.30, -0.25, 0.22), foot_l_rot=(0.0, 0.0, 0.0),
                           hand_l=(0.20, -0.36, 1.30), hand_r=(-0.20, -0.25, 1.30))),
@@ -322,10 +322,10 @@ def _leap_slam():
                 foot_r=(-0.24, 0.28, 0.60), foot_r_rot=(0.0, -30.0, 0.0))
     reach = pose(fall, hips=(0.0, 0.10, 0.95), spine_rot=(20.0, -5.0, 0.0), hand_l=(0.20, -0.40, 1.00),
                  hand_r=(-0.20, -0.40, 1.00), foot_l=(0.22, -0.22, 0.25), foot_r=(-0.24, 0.28, 0.25))
-    slam = pose(CROUCH, hips=(0.0, 0.10, 0.44), spine_rot=(32.0, -5.0, 0.0), head_rot=(-30.0, 0.0, 0.0),
-                hand_l=(0.16, -0.38, 0.30))
+    slam = pose(CROUCH, hips=(0.0, 0.10, 0.44), spine_rot=(40.0, -5.0, 0.0), head_rot=(-10.0, 0.0, 0.0),
+                hand_l=(0.30, -0.46, 0.30), hand_r=(-0.28, -0.46, 0.30))
     keys = [Key(0, GUARD), Key(1, BOB), Key(2, wind), Key(2.6, takeoff), Key(3.0, apex), Key(3.4, fall),
-            Key(3.7, reach), Key(4.0, slam), Key(4.4, pose(CROUCH, hips=(0.0, 0.10, 0.52), hand_l=(0.24, -0.20, 0.60))),
+            Key(3.7, reach), Key(4.0, slam), Key(4.4, pose(CROUCH, hips=(0.0, 0.10, 0.52), head_rot=(-20.0, 0.0, 0.0), hand_l=(0.30, -0.25, 0.55))),
             Key(5, pose(CROUCH, head_rot=(-40.0, 0.0, 0.0))), Key(6, pose(CROUCH, head_rot=(-35.0, 30.0, 0.0))),
             Key(7, pose(CROUCH, hips=(0.0, 0.10, 0.48))), Key(8, CROUCH)]
     return Move("leap_slam", "drop", 8, "guard", "crouch", keys, [Hit(4.0, "hand_r", 1.0), Hit(4.0, "foot_l", 0.8)])
@@ -370,8 +370,8 @@ def _power_stomp():
         foot, x = ("foot_r", -0.30) if side == "r" else ("foot_l", 0.30)
         return pose(LOW, hips=(0.08 if side == "r" else -0.08, 0.0, 0.80), spine_rot=(4.0, 0.0, 0.0),
                     **{foot: (x, -0.10, 0.55), foot + "_rot": (-20.0, 0.0, 0.0)}, **FLEX)
-    stomp = pose(LOW, hips=(0.0, 0.0, 0.70), spine_rot=(16.0, 0.0, 0.0),
-                 hand_l=(0.30, -0.28, 0.95), hand_r=(-0.30, -0.28, 0.95))
+    stomp = pose(LOW, hips=(0.0, 0.0, 0.66), spine_rot=(24.0, 0.0, 0.0), chest_rot=(8.0, 0.0, 0.0),
+                 head_rot=(-20.0, 0.0, 0.0), hand_l=(0.26, -0.36, 0.80), hand_r=(-0.26, -0.36, 0.80))
     keys = [Key(0, LOW), Key(0.5, knee("r")), Key(1.0, stomp), Key(1.5, knee("l")), Key(2.0, stomp),
             Key(2.5, knee("r")), Key(3.0, stomp), Key(3.5, pose(LOW, hips=(0.0, 0.0, 0.74))), Key(4, LOW)]
     return Move("power_stomp", "drop", 4, "low", "low", keys,
@@ -394,8 +394,8 @@ def _low_charge():
             Key(3.25, fwd),
             Key(4.0, pose(fwd, hips=(0.0, -0.27, 0.95), spine_rot=(-6.0, 0.0, 0.0), head_rot=(-15.0, 5.0, 0.0),
                           hand_l=(0.15, -0.40, 1.95), hand_r=(-0.15, -0.40, 1.95))),
-            Key(4.5, pose(fwd, hips=(0.0, -0.33, 0.84), spine_rot=(22.0, 0.0, 0.0), head_rot=(-15.0, 5.0, 0.0),
-                          hand_l=(0.10, -0.80, 1.10), hand_r=(-0.10, -0.75, 1.10))),
+            Key(4.5, pose(fwd, hips=(0.0, -0.36, 0.78), spine_rot=(35.0, 0.0, 0.0), chest_rot=(10.0, 0.0, 0.0),
+                          head_rot=(-25.0, 5.0, 0.0), hand_l=(0.08, -0.78, 0.85), hand_r=(-0.08, -0.78, 0.85))),
             Key(5.0, fwd),
             Key(5.5, pose(fwd, hips=(0.0, -0.20, 0.91), foot_r=(-0.18, 0.15, 0.20))),
             Key(6.0, pose(GUARD, hips=(0.0, -0.10, 0.90), hand_l=fwd["hand_l"], **planted)),
