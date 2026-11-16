@@ -181,7 +181,7 @@ Set M (the recording): R17-MOTION pass, no jump, jitter, strobe or loss of conta
 ### Open items and questions
 
 1. **The idle pulse's strength**: decided by the user (2026-11-15, "Stronger idle pulse"), built in round 18.
-2. **Holes on mountain ridges** (open item 6): see-through patches and a pale ring at peaks, not the ring cut. Next suspects: the map's cubic lookup overshooting at peaks, the slope normal at a peak.
+2. **Holes on mountain ridges**: fixed (2026-11-16, issue #10, below).
 3. **Far small base edges** read dashed (two in the final set): the base edge lies along the ground at a grazing angle.
 4. **Ring 5** (96 m cells, 6 to 12 km): 6 pyramids float past the foundation, buried p95 21.5 %.
 5. **Idle frame times**: not measured, `make status` load 40 to 87, `fps_trustworthy` false; the command under round 16's point 5.
@@ -242,3 +242,12 @@ The user: "yes regional water map". Rubric `blender/review/rubric-water-map.md`.
 2. B's checker dither on banks and shores: check it with the day cycle frozen.
 3. `river_check.py` poses that see the river (the follow poses don't), and freezing the day cycle during a capture.
 4. The swiftvj-flight cache keeps every old bake (1.7 GB+); nothing prunes it.
+
+## Holes on mountain ridges (2026-11-16, issue #10)
+
+- Not the cubic lookup: EEVEE's Cubic is a B-spline (weights all >= 0, `textureLod` 0), it never overshoots its 4 x 4 texels. Not the slope normal.
+- Cause: Terrain hides land under its water by `zw = alt - pl_w < -SHALLOW` (1 m). On the GPU land `alt` was the drawn triangle's height and `pl_w` the map's water read per pixel, which the bake puts 15 m under dry land. A coarse ring's triangles cut under a peak by more than 16 m: hidden (holes), or drawn as wet bed and fringe just above that (the pale rim).
+- Offline on the cached map (`blender/review/ridge_holes.py`, no Blender), dry land in the targets' box hidden per ring cell: 24 m 0.005 %, 48 m 0.51 %, 96 m 4.4 %, 192 m 12.5 %; worst peaks 1.7 to 3 km from the pyramids, cut up to 110 m on 96 m cells.
+- Fix (`gpu_terrain.material`, land only): `pl_w` shifted by the triangle's own error (`alt - h`), so `zw` is the map's land over its water at the pixel. Node `gt_zw_fix` (factor 1) switches it for the A/B.
+- Live A/B on the same frames (`blender/review/ridge_check.py`, controls held, pose pinned, `out/issue10/live/`): changed share / A/A noise: orbit pyramids 0.3 0.42 % / 0.22 %, rise pyramids 0.3 0.41 % / 0.38 %, orbit pyramids 0.15 0.20 % / 0.06 %, orbit lake 0.3 0.86 % / 0.13 %. The first toggle recompiles the shader: the first shot's first pass caught it (82 %) and was rerun at its pose.
+- Reviewer (`rubric-issue10.md`): all four pass I10-HOLE, I10-RING, I10-SAME, I10-COAST. Orbit lake 0.3 had see-through holes with a pale rim on four summits before, solid summits after; the other three shots have no peak in frame.

@@ -478,7 +478,18 @@ def material(src, name, M, A, water):
     nt.links.new(nb.node("ShaderNodeBsdfTransparent").outputs[0], mix.inputs[2])
     nt.links.new(mix.outputs[0], out.inputs["Surface"])
     sf = surface(nb, M, A)
-    given = {"pl_w": sf["w"], "pl_depth": nb.math("SUBTRACT", sf["w"], sf["h"]), "pl_flow": sf["flow"]}
+    pl_w = sf["w"]
+    if not water:
+        # Terrain hides land under its water by zw = altitude - pl_w, the altitude of the drawn triangle. A coarse
+        # ring's triangles cut under a peak by tens of metres, past the 15 m the bake puts dry land's water under it:
+        # holes and a pale wet ring on ridges (issue #10, review/ridge_holes.py). Shifted by the triangle's own error,
+        # zw is the map's land over its water at this pixel.
+        geo = nb.node("ShaderNodeNewGeometry")
+        alt = nb.math("SUBTRACT", nb.vmath("DISTANCE", geo.outputs["Position"], tuple(fl.CENTRE)), fl.R)
+        fix = nb.math("MULTIPLY", nb.math("SUBTRACT", alt, sf["h"]), 1.0)
+        fix.node.label = "gt_zw_fix"        # review/ridge_check.py sets 0 for the A/B
+        pl_w = nb.math("ADD", sf["w"], fix)
+    given = {"pl_w": pl_w, "pl_depth": nb.math("SUBTRACT", sf["w"], sf["h"]), "pl_flow": sf["flow"]}
     for n in [n for n in nt.nodes if n.type == "ATTRIBUTE" and n.attribute_type == "GEOMETRY" and not n.attribute_name.startswith("gt_")]:
         for o in n.outputs:
             for lk in list(o.links):
