@@ -11,6 +11,7 @@ The Clip Graph is Magic Globals (graph_globals), the same logic as clip_graph.py
 nested ifs written from the Manifest. Moves in the selectors are ordered move-major, Angle minor: input = move * angles + angle.
 """
 import argparse
+import json
 import math
 import os
 import sys
@@ -132,6 +133,60 @@ def graph_globals(m, seed=0, cut_rate=1.0):
     return out
 
 
+# ------------------------------------------------------------ effects
+
+# Switches (manual Globals, 1 on, 0 off): each effect is the identity of its modules at 0, so switching one off never changes the frame otherwise.
+FX = {"FxHit": 1, "FxDrop": 1, "FxStrobe": 1, "FxGrade": 1}
+GRADE = {"calm": (0.75, 0.95), "build": (1.05, 1.08), "drop": (1.3, 1.2)}     # tier: Saturation, Contrast of Color Controls
+HIT_DECAY, STROBE_DECAY, DROP_TAU, GRADE_TAU = 0.15, 0.06, 0.4, 0.5         # seconds
+SPLIT, HIT_FLASH, STROBE_FLASH, FLASH_MAX = 0.025, 0.35, 0.5, 0.6
+
+
+def clip_hits(m):
+    """Hit frames per Clip index from the Clip Data; a Clip whose Clip Data is missing or unreadable has none (no flash, never an error)."""
+    out = []
+    for c in m.clips:
+        try:
+            with open(m.path(c["clip_data"])) as f:
+                out.append(sorted({int(h["f"]) for h in json.load(f).get("hits", [])}))
+        except (OSError, ValueError, KeyError, TypeError):
+            out.append([])
+    return out
+
+
+def effect_globals(m, hits, fx=None):
+    """Globals of the MMV effects (name, value, source, mods). Reads OutClip, OutFrame, Angle, Tier, Section, Kick and Dt.
+    HitEnv: 1 for the 2 frames of a Clip Data Hit, then decays (flash and chromatic split). StrobeEnv: 1 in the frame after an Angle cut, then decays.
+    DropAmt: eases to 1 while X-Ray says drop (glow). GradeSat, GradeCon: ease to the tier's grade."""
+    fx = dict(FX, **(fx or {}))
+    hit = "0"
+    for i in range(len(hits) - 1, -1, -1):
+        if hits[i]:
+            hit = "if(OutClip == %d, if(%s, 1, 0), %s)" % (i, " or ".join("(OutFrame >= %d and OutFrame < %d)" % (f, f + 2) for f in hits[i]), hit)
+    ease = lambda target, tau: ex("y + ((%s) - y)*(1 - exp(-Dt/%s))" % (target, num(tau)))
+    tier = lambda vals: "if(Tier == 2, %s, if(Tier == 1, %s, %s))" % (num(vals[2]), num(vals[1]), num(vals[0]))
+    sat, con = [[GRADE[t][k] for t in ("calm", "build", "drop")] for k in (0, 1)]
+    return [(name, value, None, []) for name, value in sorted(fx.items())] + [
+        ("HitEnv", 0, "calc", [ex("max(%s, y*exp(-Dt/%s))" % (hit, num(HIT_DECAY)))]),
+        ("AngleLag", 0, "calc", [ex("Angle")]),
+        ("StrobeEnv", 0, "calc", [ex("max(if(Angle != AngleLag, 1, 0), y*exp(-Dt/%s))" % num(STROBE_DECAY))]),
+        ("DropAmt", 0, "calc", [ease("if(abs(Section - 3) < 0.5, 1, 0)", DROP_TAU)]),
+        ("GradeSat", 1, "calc", [ease(tier(sat), GRADE_TAU)]),
+        ("GradeCon", 1, "calc", [ease(tier(con), GRADE_TAU)]),
+    ]
+
+
+def effect_chain(scene, src):
+    """The effect modules after `src`, in order: chromatic split, grade, glow, flash. Each is the identity when its switch is 0 or its Global rests."""
+    split = scene.node("Chroma Zoom", {"Red_zoom": ("global:HitEnv", [ex("1 + %s*x*FxHit" % num(SPLIT))], 1),
+                                       "Blue_zoom": ("global:HitEnv", [ex("1 - %s*x*FxHit" % num(SPLIT))], 1)}, inputs=[src])
+    grade = scene.node("Color Controls", {"Saturation": ("global:GradeSat", [ex("1 + (x - 1)*FxGrade")], 1),
+                                          "Contrast": ("global:GradeCon", [ex("1 + (x - 1)*FxGrade")], 1)}, inputs=[split])
+    glow = scene.node("Bloom", {"Intensity": ("global:DropAmt", [ex("x*FxDrop*(0.5 + 0.5*Kick)")], 0)}, inputs=[grade])
+    return scene.node("Bright", {"Bright": ("global:HitEnv", [ex("min(%s, %s*x*FxHit + %s*StrobeEnv*FxStrobe)" % (num(FLASH_MAX), num(HIT_FLASH), num(STROBE_FLASH)))], 0)},
+                      inputs=[glow])
+
+
 # ------------------------------------------------------------ project
 
 def live_globals(timeout=LIVE_TIMEOUT):
@@ -145,14 +200,16 @@ def live_globals(timeout=LIVE_TIMEOUT):
     ]
 
 
-def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=None, project_dir=None, audio_device=None, osc_in=OSC_IN_PORT, clock=None, matte_pass=False, **graph):
+def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=None, project_dir=None, audio_device=None, osc_in=OSC_IN_PORT, clock=None, matte_pass=False,
+          effects=True, fx=None, **graph):
     """Builder (not yet built) of the Robot project for Manifest `m`. File params are relative to project_dir when given.
     `matte_pass`: the Matte is its own Pass ("matte" in each Clip's passes, grey) instead of the beauty's alpha (decode_cost.py measures both).
+    `effects`: the MMV effect modules after the composite (effect_chain), switched by the Fx Globals (`fx` overrides their start values).
     `clock` replaces the audio clock Globals (name, value, source, mods), for a test that drives Beats, BeatFrac, Section and Bpm itself."""
     b = mp.Builder(syphon=OUTPUT_SERVER, size=tuple(size or m.size), fps=m.fps, audio_device=audio_device, osc_in=osc_in)
     for name, value, source, mods in (clock if clock is not None else clock_globals()) + graph_globals(m, seed=seed, **graph):
         b.glob(name, value, source, mods)
-    for g in live_globals():
+    for g in live_globals() + (effect_globals(m, clip_hits(m), fx) if effects else []):
         b.glob(*g)
     robot, osc = b.scene("Robot"), b.scene("OSC Out")
 
@@ -180,7 +237,7 @@ def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=No
     osc_mod = robot.scene_module(osc)
     # A module wired to a missing Syphon server draws black, bypassed or not; an InputSelector only evaluates the input it draws.
     gate = robot.node("InputSelector", {"Input #": ("global:%s" % LIVE_GATE, [], 0)}, inputs=[matte, comp])
-    robot.output(gate, osc_mod)
+    robot.output(effect_chain(robot, gate) if effects else gate, osc_mod)
     senders = []
     for address, glob, top in OSC_ROWS:
         senders.append(osc.node("OSCSender", {"IP Addr.": osc_ip, "Port": osc_port, "Message": address,

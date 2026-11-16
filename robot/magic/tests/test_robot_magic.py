@@ -36,7 +36,7 @@ def _translate(expr):
     return re.sub(r"\bif\(", "_if(", expr)
 
 
-ENV = {"_if": lambda c, a, b: a if c else b, "floor": math.floor, "sin": math.sin, "min": min, "max": max, "abs": abs}
+ENV = {"_if": lambda c, a, b: a if c else b, "floor": math.floor, "sin": math.sin, "min": min, "max": max, "abs": abs, "exp": math.exp}
 
 
 def simulate(globals_, drive, frames):
@@ -362,9 +362,90 @@ def pass_layers(*hides):
 SNAPSHOT = {
     "Robot": [("SyphonClient", [], [])] + pass_layers("HideAngle0", "HideAngle1") + [("Blend", ["SyphonClient", "Null"], [])]
     + pass_layers("HideAngle0", "HideAngle1") + [("Mask", ["Null", "Null"], []),
-       ("Transparency", ["Mask", "Blend"], []), ("OSC Out", [], []), ("InputSelector", ["Mask", "Transparency"], ["Input #<-LiveOn"])],
+       ("Transparency", ["Mask", "Blend"], []), ("OSC Out", [], []), ("InputSelector", ["Mask", "Transparency"], ["Input #<-LiveOn"]),
+       ("Chroma Zoom", ["InputSelector"], ["Blue_zoom<-HitEnv", "Red_zoom<-HitEnv"]),
+       ("Color Controls", ["Chroma Zoom"], ["Contrast<-GradeCon", "Saturation<-GradeSat"]),
+       ("Bloom", ["Color Controls"], ["Intensity<-DropAmt"]), ("Bright", ["Bloom"], ["Bright<-HitEnv"])],
     "OSC Out": [("OSCSender", [], ["Value<-OutClip"]), ("OSCSender", [], ["Value<-OutFrame"]), ("OSCSender", [], ["Value<-OutAngle"])],
 }
+
+
+class EffectTests(unittest.TestCase):
+    """The MMV effects (robot_magic.effect_globals and effect_chain): what drives them, and that each is the identity when switched off."""
+    FPS = 60
+    IDENTITY = {"Red_zoom": 1, "Blue_zoom": 1, "Saturation": 1, "Contrast": 1, "Intensity": 0, "Bright": 0}
+    SWITCH = {"Red_zoom": "FxHit", "Blue_zoom": "FxHit", "Saturation": "FxGrade", "Contrast": "FxGrade", "Intensity": "FxDrop", "Bright": "FxHit FxStrobe"}
+
+    def setUp(self):
+        self.m = mf.Manifest(FIXTURE_DATA, os.path.join(HERE, "..", "..", "package", "fixture"))
+
+    def run_fx(self, drive, seconds, hits=None):
+        rows = rm.effect_globals(self.m, rm.clip_hits(self.m) if hits is None else hits)
+        def full(f):
+            return dict({"Dt": 1.0 / self.FPS, "Kick": 0, "Section": 0, "Tier": 0, "OutClip": 0, "OutFrame": 0, "Angle": 0}, **drive(f))
+        return list(simulate(rows, full, int(seconds * self.FPS)))
+
+    def test_clip_hits_come_from_the_clip_data_and_a_missing_file_gives_none(self):
+        hits = rm.clip_hits(self.m)
+        self.assertEqual(len(hits), len(self.m.clips))
+        jab = self.m.clip_index("jab_cross", "front")
+        self.assertEqual(hits[jab], [14, 29])
+        broken = mf.Manifest(FIXTURE_DATA, tempfile.gettempdir() + "/no_such_package")
+        self.assertEqual(rm.clip_hits(broken), [[] for _ in broken.clips])
+
+    def test_drivers(self):
+        jab, idle = self.m.clip_index("jab_cross", "front"), self.m.clip_index("idle", "front")
+        cases = [   # frames[i] is frame i + 1 of the drive; a Global reads the frame before
+            ("a Hit frame flashes, then decays", "HitEnv", lambda f: {"OutClip": jab, "OutFrame": f}, [(14, 1.0), (15, 1.0), (26, (0.2, 0.4)), (5, 0.0)]),
+            ("a Clip with no Hit does not", "HitEnv", lambda f: {"OutClip": idle, "OutFrame": f}, [(14, 0.0), (29, 0.0)]),
+            ("an Angle cut strobes for a few frames", "StrobeEnv", lambda f: {"Angle": 1 if f >= 30 else 0}, [(30, 1.0), (45, (0.0, 0.05)), (10, 0.0)]),
+            ("drop eases the glow in", "DropAmt", lambda f: {"Section": 3 if f >= 30 else 0}, [(20, 0.0), (90, (0.7, 1.0)), (200, (0.99, 1.0))]),
+            ("breakdown after a drop eases it out", "DropAmt", lambda f: {"Section": 3 if f < 120 else 4}, [(110, (0.9, 1.0)), (300, (0.0, 0.05))]),
+            ("calm grade", "GradeSat", lambda f: {"Tier": 0}, [(200, (0.74, 0.76))]),
+            ("build grade", "GradeSat", lambda f: {"Tier": 1}, [(200, (1.04, 1.06))]),
+            ("drop grade", "GradeCon", lambda f: {"Tier": 2}, [(200, (1.19, 1.21))]),
+        ]
+        for name, glob, drive, expect in cases:
+            with self.subTest(name):
+                frames = self.run_fx(drive, 6)
+                for f, want in expect:
+                    v = frames[int(f)][glob]
+                    lo, hi = want if isinstance(want, tuple) else (want, want)
+                    self.assertTrue(lo - 1e-9 <= v <= hi + 1e-9, (f, v, want))
+
+    def params(self):
+        """{param: modifier expression} of the effect modules' linked params."""
+        b = rm.build(self.m, project_dir=os.path.join(HERE, "..", "..", "package", "fixture"))
+        root = b.build()
+        names = mp.global_names(root)
+        out = {}
+        for n in mp.node_table(root, "Robot"):
+            if n["plugin"] in ("Chroma Zoom", "Color Controls", "Bloom", "Bright"):
+                for p in n["params"]:
+                    if p["name"] in self.IDENTITY and p["modifiers"]:
+                        out[p["name"]] = p["modifiers"][0][2]
+        return out
+
+    def test_each_effect_is_the_identity_when_switched_off(self):
+        exprs = self.params()
+        self.assertEqual(set(exprs), set(self.IDENTITY))
+        env = ENV
+        for switch in ("FxHit", "FxDrop", "FxStrobe", "FxGrade"):
+            for x in (0.0, 0.5, 1.0, 1.3):
+                with self.subTest(switch=switch, x=x):
+                    off = {s: 0 if s == switch else 1 for s in rm.FX}
+                    for param, expr in exprs.items():
+                        if self.SWITCH[param] == switch:
+                            got = eval(_translate(expr), env, dict(off, x=x, Kick=1, StrobeEnv=0))
+                            self.assertAlmostEqual(got, self.IDENTITY[param])
+                    if switch in ("FxHit", "FxStrobe"):
+                        all_off = dict(off, FxHit=0, FxStrobe=0)
+                        self.assertAlmostEqual(eval(_translate(exprs["Bright"]), env, dict(all_off, x=x, StrobeEnv=x)), 0)
+
+    def test_effects_off_leaves_the_composite_as_the_output(self):
+        b = rm.build(self.m, effects=False)
+        plugins = {n["plugin"] for n in mp.node_table(b.build(), "Robot")}
+        self.assertFalse(plugins & {"Chroma Zoom", "Color Controls", "Bloom", "Bright"})
 
 
 def with_angles(n):
