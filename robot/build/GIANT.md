@@ -37,13 +37,27 @@ Held: the user wants a rich, detailed, rigged model from the internet, not a scr
 | duel_idle | calm | 1 | guard > guard | both breathe; the core pulses, steam (Idle Clip) |
 | circle | calm | 2 | guard > guard | the giant shifts its weight and turns; the Android steps around in guard |
 | hammer_dodge | build | 1 | guard > low | overhead hammer into the floor; the Android sidesteps wide |
-| sweep_jump | build | 2 | low > crouch | low claw sweep; the Android jumps over it and lands |
+| sweep_jump | build | 1 | low > crouch | low claw sweep; the Android jumps over it and lands |
 | knee_combo | build | 1 | guard > guard | jab, cross to the giant's knee; the knee buckles |
 | hammer_hit | drop | 1 | guard > crouch | the hammer lands on the Android; it takes the hit and is driven into a crouch |
 | core_strike | drop | 2 | crouch > guard | the Android leaps (as leap_slam) and punches the chest core; the giant reels back, sparks |
 | quake_stomp | drop | 2 | low > low | the giant stomps; the floor shakes, the Android rides it out and answers with power_stomp |
 
 - Tests in the style of `test_moves.py`, parametrized: both Key Poses at both ends, no jump per frame (the giant's speed cap scaled by its size), planted ankles for both, and the contact rule: at every Hit the striking point is within 0.15 m of the struck body, and on a dodge it stays more than 0.4 m away. Points are the IK targets and a few body points, as now.
+
+Key tables: [exchanges.py](exchanges.py), tests in [tests/test_exchanges.py](tests/test_exchanges.py). The giant is written against named control points (`g_hips`, `g_hammer`, `g_claw`, `g_foot_l`, `g_foot_r` and three rotations), placed for a 6 m figure 2.5 m in front of the Android; the bone map of the imported model turns them into its IK targets. Contact uses point spheres (hammer 0.5 m, core 0.6 m, knee 0.35 m, the Android's fist 0.08 m, head 0.15 m): every Hit lands within 0.15 m of touching, every dodge clears by more than 0.4 m. The giant's speed cap is 0.6 m and 12° per frame.
+
+Proposed contract change (not applied):
+
+```diff
+ ## Clip Data (`clip_data/<clip id>.json`)
+-| `frames` | list, one entry per frame: `{f, head, eye_l, eye_r, hand_l, hand_r, foot_l, foot_r}`, each `[x, y, depth]` ... |
+-| `hits` | list of Hits: `{f, point: [x, y, depth], strength: 0..1, limb}` |
++| `frames` | list, one entry per frame: `{f, head, eye_l, eye_r, hand_l, hand_r, foot_l, foot_r}`, plus in an Exchange `{g_head, g_core, g_hammer, g_claw, g_foot_l, g_foot_r}`, each `[x, y, depth]` ... |
++| `hits` | list of Hits: `{f, point: [x, y, depth], strength: 0..1, limb, target}`; `limb` may be a giant point (`g_hammer` ...), `target` is the struck point or `floor` |
+ ## Manifest
++| `opponent` | Clip field: `true` for an Exchange (both fighters in the frame), `false` otherwise |
+```
 
 ## Composition
 

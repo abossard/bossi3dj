@@ -517,7 +517,7 @@ def _sample_keys(move, frame, bpm, fps):
                 return dict(move.keys[i].pose)
             t = EASES[move.keys[i].ease]((frame - kf[i - 1]) / (kf[i] - kf[i - 1]))
             a, b = move.keys[i - 1].pose, move.keys[i].pose
-            return {c: tuple(x + (y - x) * t for x, y in zip(a[c], b[c])) for c in CHANNELS}
+            return {c: tuple(x + (y - x) * t for x, y in zip(a[c], b[c])) for c in a}
     return dict(move.keys[-1].pose)
 
 
@@ -533,8 +533,8 @@ def hit_frames(move, bpm=BPM, fps=FPS):
 
 def pose_distance(a, b):
     """(largest rotation difference in degrees, largest position difference in metres)."""
-    rot = max(abs(x - y) for c in CHANNELS if is_rotation(c) for x, y in zip(a[c], b[c]))
-    pos = max(abs(x - y) for c in CHANNELS if not is_rotation(c) for x, y in zip(a[c], b[c]))
+    rot = max(abs(x - y) for c in a if is_rotation(c) for x, y in zip(a[c], b[c]))
+    pos = max(abs(x - y) for c in a if not is_rotation(c) for x, y in zip(a[c], b[c]))
     return rot, pos
 
 
