@@ -97,6 +97,8 @@ Review: `robot/build/review/rubric-r1.md` (frozen), sheets to `shot-reviewer`.
 - Rework of power_stomp and ground_pound (the user: "super realistic and brutal"): keys can ease "in" into an impact and "out" after it; strike speed cap 10 m/s. Round M4 (rubric-m1): both pass M1 to M4 on sheets and full-size frames; weakest reads ground_pound side 29 and 44 (fist close to the foot) and power_stomp front 44 (fists hip-high). Check: fists within 0.027 m of their floor targets, stomp soles 0.000/0.006/0.000 m at the Hits after lifts of 0.43 to 0.67 m. Short video `docs/video/robot-moves-m4.mp4`.
 - Full render: `review/library_render.sh` (resumable, one Clip per Blender run, ground_pound last, the 8 v1 Clips skipped as complete). Progress in `robot/build/probe/library/progress.txt`.
 
+- Render cut short (the user, 2026-11-17 00:10: done by 04:00): 12 Clips at 64 samples (idle_low, idle_crouch, guard_shuffle, settle_low, rise_guard, low_scan; plus the 8 v1 Clips), the rest at 16 samples with OIDN in the order palm_strike, power_stomp, stand_up, crouch_strike, ground_pound, leap_slam (crouch's exits before its entry, so crouch never becomes a dead end), uppercut_combo, jab_jab_hook, rush_cross, low_charge, burst_rise. No Clip starts that cannot end by 03:40; `review/manifest_complete.py` keeps only Moves complete on both Angles. `progress.txt` records the samples per Clip.
+
 ## Open items for the orchestrator
 
 - Camera names are `ShotCamera.front` and `ShotCamera.side` (the R3 fixture uses `CAM_FRONT`, close to the Avoid word `CAM_N`).
