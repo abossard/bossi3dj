@@ -80,3 +80,30 @@ All archives passed `unzip -t` / `7z t` and their sizes were stable over 30 s.
 ## Not decided here
 - The `.blend` files were not opened. Counts of objects, rig details and Blender-side materials wait for a Blender slot (`robot/build/inspect_asset.py` reads a `.blend` with auto-run off).
 - Store pages call M2000, Juno, Arclink and DUNE royalty-free, but the downloads ship no licence text; Luminara depends on its Cargo tier. Check each before a public video.
+
+## Mixamo clips (`mixamo/`)
+
+Copied, not moved, from `~/Downloads`: the loose FBXs there feed the Godot Colossus build (`make godot-models`, `tools/godot_mixamo_copy.py`), so they stay where they are. `mixamo/loose/` holds 30 loose clips (2026-11-11 and 16), `mixamo/packs/<pack>/extracted/` the three Mixamo packs: Free Test Pack (11), Locomotion Pack (12), Action Adventure Pack (22). `mixamo/fbx_info.jsonl` lists each clip, made with `robot/build/review/fbx_info.py` (reads binary FBX as data, no Blender).
+
+- Every clip uses the Mixamo rig (65 `mixamorig` bones). All but three carry no mesh (Standing Up, Standing Up-2 and Walking carry a skin).
+- Length in beats at 124 BPM (0.484 s per beat), the clips that could become Moves:
+
+| Clip | Seconds | Beats | Could be |
+|---|---|---|---|
+| back flip to uppercut | 5.83 | 12 (3 bars) | a drop Move, the one fight clip in the downloads |
+| hard landing | 2.0 | 4 | the end of a leap |
+| falling to roll | 1.8 | 3.7 | a dodge |
+| jump | 2.17 | 4.5 | a dodge over a sweep |
+| Kneeling Idle | 4.27 | 8.8 | hurt, after a hit |
+| Standing Up | 3.33 | 6.9 | getting up after a knock-down |
+| idle (2..5), Idle-2/3 | 2.3 to 16.6 | | calm Idle Clips |
+| samba dancing, gangnam style | 23.9, 12.4 | 49, 26 | a dance break between fights |
+| strafes, turns, runs, walks | 0.5 to 1.6 | 1 to 3 | circling in guard |
+| climbs and hangs | 1.2 to 4.7 | | climbing the giant (the Colossus Scene uses them) |
+
+- Missing for a fight: punches, kicks, blocks, hit reactions, knock-downs, a fight idle and a victory. Mixamo has these; downloading them needs the user's Mixamo login.
+- Which character can wear them:
+  - Juno: the store sells the "B" version rigged with Auto-Rig Pro for Mixamo, but the downloaded `ANDROID.fbx` has no armature (0 bones, 43 meshes). The rig, if present, is in `ANDROID.blend`; check in Blender. Without it, Mixamo's own auto-rigger can rig the mesh (uploading it needs the user's login and is the user's call, given the unknown licence).
+  - M2000: its own rig (74 bones in the FBX, root `ROOT`), not Mixamo. Clips need retargeting (bone map) in Blender.
+  - Today's scripted Android and the Security Bot: no Mixamo rig; retarget only.
+- How they fit our Moves: the Moves are key tables on a 124 BPM grid with contact tests (`robot/build/exchanges.py`). A Mixamo clip becomes a Move by retargeting, time-warping its key moments onto beats, and baking it; contact Moves (Exchanges) still need hand-placed Hits.
