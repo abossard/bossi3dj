@@ -243,19 +243,19 @@ def _palm_strike():
     return Move("palm_strike", "build", 4, "low", "low", keys, [Hit(1.0, "hand_l", 0.8), Hit(2.5, "hand_r", 0.8)])
 
 
-def _elbow_rush():
+def _rush_cross():
     step_in = pose(GUARD, hips=(0.0, -0.05, 0.84), hips_rot=(0.0, -20.0, 0.0), foot_r=LOW["foot_r"],
                    foot_r_rot=LOW["foot_r_rot"], hand_l=(0.18, -0.40, 1.45), hand_r=(-0.14, -0.22, 1.45))
-    elbow = pose(step_in, hips=(0.0, -0.08, 0.86), hips_rot=(0.0, 30.0, 0.0), spine_rot=(12.0, 22.0, 0.0),
-                 chest_rot=(6.0, 12.0, 0.0), head_rot=(-8.0, -5.0, 0.0), hand_r=(0.18, -0.30, 1.50))
+    cross = pose(step_in, hips=(0.0, -0.12, 0.84), hips_rot=(0.0, 15.0, 0.0), spine_rot=(14.0, 15.0, 0.0),
+                 chest_rot=(6.0, 10.0, 0.0), head_rot=(-8.0, -10.0, 0.0), hand_r=(-0.02, -0.92, 1.48))
     keys = [Key(0, LOW), Key(1, pose(LOW, hips=(-0.05, 0.0, 0.76))),
             Key(1.5, pose(LOW, hips=(-0.05, -0.02, 0.80), foot_l=(0.30, -0.25, 0.22), foot_l_rot=(0.0, 0.0, 0.0),
                           hand_l=(0.20, -0.36, 1.30), hand_r=(-0.20, -0.25, 1.30))),
-            Key(2.0, step_in), Key(2.5, elbow), Key(3.25, step_in),
+            Key(2.0, step_in), Key(2.5, cross), Key(3.25, step_in),
             Key(4.0, pose(step_in, foot_r=(-0.25, 0.10, 0.20), foot_r_rot=(0.0, -35.0, 0.0))),
             Key(4.75, pose(GUARD, hips=(0.0, 0.0, 0.89))), Key(5.5, pose(GUARD, head_rot=(-8.0, 35.0, 0.0))),
             Key(6, BOB), Key(7, GUARD), Key(7.5, BOB), Key(8, GUARD)]
-    return Move("elbow_rush", "build", 8, "low", "guard", keys, [Hit(2.5, "hand_r", 0.9)])
+    return Move("rush_cross", "build", 8, "low", "guard", keys, [Hit(2.5, "hand_r", 0.9)])
 
 
 def _crouch_strike():
@@ -335,8 +335,8 @@ def _ground_pound():
     up = pose(CROUCH, hips=(0.0, 0.08, 0.55), hips_rot=(10.0, -10.0, 0.0), spine_rot=(0.0, 0.0, 0.0),
               chest_rot=(-10.0, 0.0, 0.0), head_rot=(-20.0, 10.0, 0.0),
               hand_l=(0.25, -0.10, 1.40), hand_r=(-0.25, -0.10, 1.40))
-    down = pose(CROUCH, hips=(0.0, 0.10, 0.46), spine_rot=(35.0, 0.0, 0.0), head_rot=(-30.0, 0.0, 0.0),
-                hand_l=(0.16, -0.40, 0.28), hand_r=(-0.16, -0.38, 0.28))
+    down = pose(CROUCH, hips=(0.0, 0.14, 0.44), spine_rot=(50.0, 0.0, 0.0), chest_rot=(15.0, 0.0, 0.0),
+                head_rot=(-25.0, 0.0, 0.0), hand_l=(0.18, -0.42, 0.20), hand_r=(-0.18, -0.40, 0.20))
     keys = [Key(0, CROUCH), Key(0.5, up), Key(1.0, down), Key(1.5, up), Key(2.0, down), Key(2.5, up),
             Key(3.0, down), Key(3.5, pose(CROUCH, hips=(0.0, 0.10, 0.52))), Key(4, CROUCH)]
     return Move("ground_pound", "drop", 4, "crouch", "crouch", keys,
@@ -368,10 +368,10 @@ def _burst_rise():
 def _power_stomp():
     def knee(side):
         foot, x = ("foot_r", -0.30) if side == "r" else ("foot_l", 0.30)
-        return pose(LOW, hips=(0.08 if side == "r" else -0.08, 0.0, 0.80), spine_rot=(4.0, 0.0, 0.0),
-                    **{foot: (x, -0.10, 0.55), foot + "_rot": (-20.0, 0.0, 0.0)}, **FLEX)
-    stomp = pose(LOW, hips=(0.0, 0.0, 0.66), spine_rot=(24.0, 0.0, 0.0), chest_rot=(8.0, 0.0, 0.0),
-                 head_rot=(-20.0, 0.0, 0.0), hand_l=(0.26, -0.36, 0.80), hand_r=(-0.26, -0.36, 0.80))
+        return pose(LOW, hips=(0.08 if side == "r" else -0.08, 0.0, 0.82), spine_rot=(0.0, 0.0, 0.0),
+                    **{foot: (x, -0.12, 0.68), foot + "_rot": (-20.0, 0.0, 0.0)}, **FLEX)
+    stomp = pose(LOW, hips=(0.0, 0.0, 0.62), spine_rot=(30.0, 0.0, 0.0), chest_rot=(10.0, 0.0, 0.0),
+                 head_rot=(-25.0, 0.0, 0.0), hand_l=(0.42, -0.25, 0.62), hand_r=(-0.42, -0.25, 0.62))
     keys = [Key(0, LOW), Key(0.5, knee("r")), Key(1.0, stomp), Key(1.5, knee("l")), Key(2.0, stomp),
             Key(2.5, knee("r")), Key(3.0, stomp), Key(3.5, pose(LOW, hips=(0.0, 0.0, 0.74))), Key(4, LOW)]
     return Move("power_stomp", "drop", 4, "low", "low", keys,
@@ -406,7 +406,7 @@ def _low_charge():
 
 MOVES = {m.name: m for m in _idles() + [
     _guard_shuffle(), _settle_low(), _rise_guard(), _low_scan(), _stand_up(),
-    _jab_cross(), _take_hit(), _jab_jab_hook(), _palm_strike(), _elbow_rush(), _crouch_strike(),
+    _jab_cross(), _take_hit(), _jab_jab_hook(), _palm_strike(), _rush_cross(), _crouch_strike(),
     _front_kick(), _uppercut_combo(), _leap_slam(), _ground_pound(), _burst_rise(), _power_stomp(), _low_charge()]}
 
 

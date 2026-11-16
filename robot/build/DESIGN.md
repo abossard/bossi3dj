@@ -31,7 +31,7 @@ Moves last 1, 2 or 4 bars (58, 116, 232 frames at 124 BPM, 30 fps) and start and
 | take_hit | build | 1 | guard > guard | head |
 | jab_jab_hook | build | 2 | guard > guard | jab, jab, hook, cross |
 | palm_strike | build | 1 | low > low | two double palm pushes |
-| elbow_rush | build | 2 | low > guard | step-in elbow |
+| rush_cross | build | 2 | low > guard | step-in cross |
 | crouch_strike | build | 1 | crouch > crouch | two low punches |
 | front_kick | drop | 1 | guard > guard | kick |
 | uppercut_combo | drop | 1 | guard > guard | uppercut, hook, uppercut |

@@ -90,6 +90,8 @@ Review: `robot/build/review/rubric-r1.md` (frozen), sheets to `shot-reviewer`.
 
 - Preview round M1 (rubric-m1, frozen): 42 preview Clips in 1314 s (load 75 to 230), `docs/video/robot-moves-preview.mp4` (960x540 H.264, 3712 frames, 123.7 s, luma mean 118.8, frame means 117.5 to 121.4, Y 0 to 255). Verdict on 21 sheets: 13 pass; M2 fails on jab_jab_hook and uppercut_combo (the hook stays at the chin), power_stomp (the stomp reads as standing), leap_slam (the slam reads as the end crouch), low_charge (the hammer reads upright); elbow_rush, crouch_strike and ground_pound need full size. M3 and M4 pass everywhere; `check` puts the lowest point of every Move at 0 or above. The five impact poses and the elbow are exaggerated in moves.py and wait for a preview re-render (round M2).
 
+- Round M2 (same rubric, 6 re-rendered Moves plus full-size frames): jab_jab_hook, uppercut_combo, leap_slam, low_charge and crouch_strike (fists clear of the floor) pass. Fails: power_stomp (Hit tiles read as the low stance), ground_pound (fists hover about 20 px above the floor), elbow_rush side (reads as a guard; the arm's pole sends the elbow back and out, so a forward elbow cannot read). Fixed: the stomp drops lower and wider after a higher knee, the pound leans 50° to put the wrists at 0.20 m, and elbow_rush became rush_cross (a step-in cross). Hand reach of the new pound and stomp is unchecked until the next build.
+
 ## Open items for the orchestrator
 
 - Camera names are `ShotCamera.front` and `ShotCamera.side` (the R3 fixture uses `CAM_FRONT`, close to the Avoid word `CAM_N`).
