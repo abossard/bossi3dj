@@ -183,7 +183,7 @@ Set M (the recording): R17-MOTION pass, no jump, jitter, strobe or loss of conta
 1. **The idle pulse's strength**: decided by the user (2026-11-15, "Stronger idle pulse"), built in round 18.
 2. **Holes on mountain ridges**: fixed (2026-11-16, issue #10, below).
 3. **Far small base edges** read dashed (two in the final set): the base edge lies along the ground at a grazing angle.
-4. **Ring 5** (96 m cells, 6 to 12 km): 6 pyramids float past the foundation, buried p95 21.5 %.
+4. **Ring 5** (96 m cells, 6 to 12 km): floating past the foundation fixed (2026-11-16, issue #12, below); buried p95 26 % stays.
 5. **Idle frame times**: not measured, `make status` load 40 to 87, `fps_trustworthy` false; the command under round 16's point 5.
 6. Others' items unchanged: river flow (1), the fall below 800 m (3), B9 and B11's page and contract leftovers (5).
 
@@ -253,3 +253,11 @@ The user: "yes regional water map". Rubric `blender/review/rubric-water-map.md`.
 - Reviewer (`rubric-issue10.md`): all four pass I10-HOLE, I10-RING, I10-SAME, I10-COAST. Orbit lake 0.3 had see-through holes with a pale rim on four summits before, solid summits after; the other three shots have no peak in frame.
 - Review of 5aeddcb (#10 reopened): per pixel everywhere, a far river under dry vertices would hide its land and show the water grid at the bank chord, and a sandbar under the far sea would draw as dry land. The bake keeps the real water level on dry land near water and clamps it to 15 m under the land elsewhere (90 % of dry texels sit at the clamp). So the fix is gated: per pixel only where h - w is over ZW_CLAMP (12 to 14.5 m); near water the triangle's test stands. Model (`ridge_holes.py`, before / after): dry land hidden 48 m 0.51 % / 0.005 %, 96 m 4.4 % / 0.05 %, 192 m 12.5 % / 0.25 %; wet pixels drawn as land unchanged in every cell (96 m 1.52 % / 1.52 %).
 - Live A/B of the gated fix (`out/issue10/live2`, `live3`; `ridge_check.py` now switches once before the first shot, the recompile): changed / A/A: orbit lake 0.3 0.23 / 0.06 %, orbit river 0.3 0.10 / 0.03 %, follow river 0.15 0.05 / 0.05 %, orbit coast 0.15 1.55 / 0.03 %, follow coast 0.15 0.04 / 0.01 % (orbit coast 0.3 framed only sky). Reviewer: all pass; the holes on the lake peak and the notched, speckled ridge crests on the coast are solid after; nothing new at rivers, banks, shores, islets or in the sea.
+
+## Site pyramids floating on the far rings (2026-11-16, issue #12)
+
+- The site pyramids come from geometry nodes (PL_Sites): measured live, `pyramid_ground.py` now takes variants (pad widths through `gpu_terrain.pads`, the foundation's depth scaled) without a rebuild (`out/issue12/variants*.json`).
+- Ring 5 as built before: 7 of 1355 float past the foundation, gap up to 40 m. Wider pads made it worse (pads 100/300 m: ring 4 12, buried p95 42 %; overlapping pads on slopes); pads 60/240: 4. A deeper foundation: x1.5 2, x2 1, x2.5 none on rings 3 to 5.
+- Built: `build_planet.PYR_FOUND` 0.6 to 1.5 (the unit pyramid's depth 1.27), rebuilt. As built: no pyramid floats past its foundation on rings 0 to 5 (`out/issue12/ground_found15.json`); floating at the base and buried shares are the land's, unchanged (ring 5: 501, p95 26 %).
+- Live A/B on the same frames (the foundation's three cone nodes in PL_Sites switched 0.6 / 1.5 through `ridge_check.py`'s new `switch`; a 400 mm lens 8 km from the worst floater at (-1679, 3967, -434), `out/issue12/ab`): reviewer: before, its foot hung below the visible land; after, the faces run straight into the slope, no plinth or flare; the two other pyramids in frame unchanged. Three other poses had their pyramid hidden (no change).
+- Reviewer on the show shots (`out/issue12/frames`, rubric `rubric-issue12.md`): those frames show the island pyramids (Pyramid_A to D, no foundation) or look up from the water, so they say nothing about the change; the bowed base edge on orbit pyramids 0.3 is an island pyramid's.

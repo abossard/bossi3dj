@@ -8,6 +8,9 @@ A foundation under the base (build_planet.PYR_FOUND) shows where the land dips u
 pyramids whose base edge has the land lower than the foundation's depth (they float even so). Per ring: along the base edges, gap = base plane - terrain (> 0: the pyramid floats there) and buried = terrain - base
 plane (as a share of the pyramid's height); inside the footprint, cut = terrain - the pyramid's face (> 0: the ground
 slices through a face). With the pads of gpu_terrain.pads the map is the padded one.
+Variants (issue #12), without a rebuild: DN["pg_job"]["variants"] = [{"name": str, "pad_edge": [level, blend] m,
+"found_k": x}]: each scans the raw map padded with gpu_terrain.pads at that PAD_EDGE (default the built one), the
+foundation's depth scaled by found_k (default 1); out then {"variants": {name: scan}}.
 """
 import json
 import math
@@ -74,7 +77,7 @@ def ring_height(lam, phi, l):
     return np.where(lower, h00 + fx * (h10 - h00) + fy * (h11 - h10), h00 + fy * (h01 - h00) + fx * (h11 - h01))
 
 
-def scan(rings):
+def scan(rings, found_k=1.0):
     pyr = pyramids()
     rows = {l: {"float_n": 0, "float_found_n": 0, "gap_max": 0.0, "buried_share": [], "cut_n": 0, "cut_max": 0.0} for l in rings}
     worst = []
@@ -88,7 +91,7 @@ def scan(rings):
         base = gt.site_base(vs, up)
         bc = base.mean(0)
         hgt = float((apex - bc) @ up)
-        found = float((bc - vs[np.argmin(ht)]) @ up)      # the foundation's depth under the base (0 without one)
+        found = float((bc - vs[np.argmin(ht)]) @ up) * found_k     # the foundation's depth under the base (0 without one)
         ang = np.arctan2((base - bc) @ np.cross(up, base[0] - bc), (base - bc) @ (base[0] - bc))
         base = base[np.argsort(ang)]
         edge = np.concatenate([base[k] + np.outer(t, base[(k + 1) % 4] - base[k]) for k in range(4)])
@@ -126,6 +129,19 @@ def scan(rings):
     return out
 
 
-res = scan(JOB.get("rings", [0, 1, 2, 3, 4, 5]))
+RINGS = JOB.get("rings", [0, 1, 2, 3, 4, 5])
+if "variants" in JOB:
+    raw, pe0 = gt.bake(S, None)[0], gt.PAD_EDGE
+    res = {"variants": {}}
+    try:
+        for v in JOB["variants"]:
+            gt.PAD_EDGE = tuple(v.get("pad_edge", pe0))
+            H = gt.pads(S, raw, A)[0]
+            res["variants"][v["name"]] = dict(scan(RINGS, v.get("found_k", 1.0)), variant=v)
+    finally:
+        gt.PAD_EDGE = pe0
+        H = gt._state.get("h_padded")
+else:
+    res = scan(RINGS)
 json.dump(res, open(JOB["out"], "w"), indent=1)
 DN["pg_result"] = res

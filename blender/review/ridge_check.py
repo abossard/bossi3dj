@@ -7,6 +7,7 @@ stops (/vj/cam_speed 0) and is held at its pose (or the shot's "pose"), the idle
 with the fix (factor 1, after) and without (0, before). Out per shot: <name>_after.png, <name>_before.png (mean frames),
 <name>_diff.png (per-pixel luminance change, x4, grey) and in ridges.json the share of pixels the fix changes by over
 CHANGE of 255, the same between two halves of the after frames (the A/A noise), and the pose.
+Another switch: DN["rg_job"]["switch"] = a function of k (1 after, 0 before) in place of the gt_zw_fix factor.
 """
 import json
 import os
@@ -35,6 +36,9 @@ FIX = [n for m in bpy.data.materials if m.node_tree for n in m.node_tree.nodes i
 def set_fix(k):
     for n in FIX:
         n.inputs[1].default_value = k
+
+
+set_fix = JOB.get("switch", set_fix)
 
 
 def pin(scene, depsgraph=None):
@@ -94,7 +98,7 @@ def run():
     n = JOB.get("frames", 10)
     rows = []
     try:
-        if not FIX:
+        if not FIX and "switch" not in JOB:
             raise RuntimeError("no gt_zw_fix node: gpu_terrain without the issue #10 fix")
         BR.hold = {k for k in S.keys() if k.startswith("vj_")}
         set_fix(0.0)            # the first switch recompiles the shader: done here, not in a shot's frames

@@ -100,7 +100,9 @@ for k in ("rt_time", "rt_cam_phase", "rt_fog_phase", "rt_beat", "rt_pulse", "rt_
     if not GRAFT or k not in S:
         S[k] = 0.0
 S["rt_up_z"] = 1.0
-PYR_FOUND = 0.6                 # the site pyramids' foundation under the base, in the unit pyramid's depth (1.27)
+PYR_FOUND = 1.5                 # the site pyramids' foundation under the base, in the unit pyramid's depth (1.27). At 0.6
+#                                 7 floated past it on the GPU grid's 96 m cells, by up to 40 m (issue #12,
+#                                 review/pyramid_ground.py variants); 1.5: none on rings 3 to 5
 PYR_FOOT = 0.06                 # pz over which the pyramid's foot comes out of the land's shade
 PYR_EDGE_PX = 2.5               # the pyramids' edge width in pixels
 PYR_PULSE = 3.0                 # the pyramids' emission gain at a full pulse (rt_pulse 1): +43 % luminance on
