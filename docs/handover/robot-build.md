@@ -49,6 +49,14 @@ Review: `robot/build/review/rubric-r1.md` (frozen), sheets to `shot-reviewer`.
 - idle_guard__side: all lines pass.
 - idle_guard__front: R1 fails because the arms and legs stack along the body axis, so two of each can't be told apart at tile size. R3 can't be judged because left foot forward isn't readable from the front. The camera at (2.41, -3.44, 0.55) reads too frontal. Next round: move it further to the side for a real three-quarter view, then re-render.
 
+## Beauty Pass as qtrle (2026-11-16)
+
+- `render` writes the beauty Pass with Blender's FFmpeg writer as QuickTime Animation (qtrle, argb) to `beauty/<clip id>.mov`; `--beauty prores|png` for comparison. Shadow and Depth stay frame sequences.
+- Alpha proof (`robot/build/review/beauty_alpha_check.py`, jab_cross__side frames 13 to 16, 16 samples, decoded with ffmpeg against the PNG render of the same frames): alpha 0 wherever the PNG is 0, 255 wherever it is 255, edge pixels (4k to 7k per frame) within 1 step. RGB on covered pixels: qtrle mean 0.66, max 3 (of 255); ProRes 4444 mean 2.1, max 26.
+- Size per Clip, 58 frames (`robot/build/review/encode_sizes.py`: the same 128-sample PNG frames through Blender's writer): idle_guard__front qtrle 19.8 MB / ProRes 29.6 MB, idle_guard__side 16.7 / 29.1, jab_cross__side 17.6 / 29.3. qtrle is 0.57 to 0.67 of ProRes: the transparent background compresses well under run length coding.
+- `check-renders` and `clip_sheet.sh` decode the movie with ffmpeg. `check-renders` on a movie measures display values (8 bit), on PNG linear floats: compare ratios, not absolute numbers across the two.
+- The package Clips are still PNG frames; re-rendering them as qtrle takes about 28 s per frame.
+
 ## Open items for the orchestrator
 
 - Encode step: frames to `<pass>/<clip>.mov` (codec from R4); the Depth Pass range in that video is not in `CONTRACTS.md` yet. The validator's only errors are the missing `.mov` files.

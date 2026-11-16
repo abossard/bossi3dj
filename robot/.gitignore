@@ -1,2 +1,4 @@
 # decode_cost.py work folder: encoded clips and generated projects
 magic/decode/
+# build_robot.py qtrle probe renders and their decoded frames
+build/probe/

@@ -10,8 +10,8 @@ that nobody edits by hand; renders Clips and exports Clip Data, Camera Tracks an
     $B -b robot/build/robot.blend -P robot/build/build_robot.py -- check [--out FILE]
     $B -b robot/build/robot.blend -P robot/build/build_robot.py -- check-renders --package robot/package/v1
 
-Rendered frames land in <package>/<pass>/<clip id>/NNNN.<ext> (git-ignored); the Manifest names the encoded
-files <pass>/<clip id>.mov, made from those frames by the encode step (codec from R4).
+The beauty Pass is written as <package>/beauty/<clip id>.mov (qtrle, RGBA); Shadow and Depth Pass frames land in
+<package>/<pass>/<clip id>/NNNN.<ext> (git-ignored) and wait for the encode step to <pass>/<clip id>.mov.
 """
 import argparse
 import json
@@ -379,7 +379,7 @@ def setup_render(scene):
     r.fps, r.fps_base = moves.FPS, 1.0
     r.film_transparent = True
     r.use_motion_blur, r.motion_blur_shutter = True, 0.5
-    r.image_settings.file_format, r.image_settings.color_mode, r.image_settings.color_depth = "PNG", "RGBA", "16"
+    set_beauty_format(scene, "qtrle")
     scene.cycles.device = "GPU"
     scene.cycles.samples, scene.cycles.adaptive_threshold = 128, 0.02
     scene.cycles.use_denoising = True
@@ -392,6 +392,28 @@ def setup_render(scene):
     vl.use_pass_z = True
     vl.cycles.use_pass_shadow_catcher = True
     _setup_passes(scene)
+
+
+# Beauty Pass formats: qtrle is the Clip format (R4 decode cost, 2026-11-16); prores and png for comparison.
+BEAUTY_FORMATS = {"qtrle": ("QTRLE", None), "prores": ("PRORES", "4444"), "png": (None, None)}
+
+
+def set_beauty_format(scene, name):
+    """Beauty with alpha to the main output: an RGBA QuickTime movie, or a 16-bit PNG sequence for png."""
+    im, codec_profile = scene.render.image_settings, BEAUTY_FORMATS[name]
+    codec, profile = codec_profile
+    if codec is None:
+        im.media_type = "IMAGE"
+        im.file_format, im.color_mode, im.color_depth = "PNG", "RGBA", "16"
+        return
+    im.media_type = "VIDEO"
+    im.file_format = "FFMPEG"
+    ff = scene.render.ffmpeg
+    ff.format, ff.codec = "QUICKTIME", codec
+    if profile:
+        ff.ffmpeg_prores_profile = profile
+    ff.audio_codec = "NONE"
+    im.color_mode = "RGBA"
 
 
 def _setup_passes(scene):
@@ -548,9 +570,12 @@ def export(package):
 
 # ---------- render ----------
 
-def render(package, clip_ids, samples, percent, frame_range):
+def render(package, clip_ids, samples, percent, frame_range, beauty="qtrle"):
+    """Beauty to <package>/beauty/<clip id>.mov (a movie, so --frames writes a movie of just those frames), or to
+    <package>/beauty/<clip id>/NNNN.png for png; Shadow and Depth Pass frames to <package>/<pass>/<clip id>/."""
     scene = bpy.context.scene
     use_gpu()
+    set_beauty_format(scene, beauty)
     scene.cycles.samples, scene.render.resolution_percentage = samples, percent
     tree = scene.compositing_node_group
     for clip_id, move, _angle, cam in clip_list():
@@ -561,10 +586,15 @@ def render(package, clip_ids, samples, percent, frame_range):
             scene.frame_start, scene.frame_end = frame_range
         scene.camera = bpy.data.objects[cam]
         base = os.path.abspath(package)
-        scene.render.filepath = os.path.join(base, "beauty", clip_id, "####")
+        movie = beauty != "png"
+        scene.render.filepath = os.path.join(base, "beauty", clip_id + "_") if movie else \
+            os.path.join(base, "beauty", clip_id, "####")
         tree.nodes["shadow"].directory = os.path.join(base, "shadow", clip_id) + os.sep
         tree.nodes["depth"].directory = os.path.join(base, "depth", clip_id) + os.sep
         bpy.ops.render.render(animation=True)
+        if movie:   # Blender names a movie after its frame range; the Manifest names <clip id>.mov
+            written = scene.render.frame_path(frame=scene.frame_start)
+            os.replace(written, os.path.join(base, "beauty", clip_id + ".mov"))
         print("rendered", clip_id)
 
 
@@ -620,6 +650,25 @@ def _load_pixels(path):
     return px
 
 
+def _beauty_frames(package, clip_id):
+    """Beauty frames of a Clip as float RGBA arrays (0..1): decoded from <clip id>.mov with ffmpeg, else the PNG
+    sequence of a --beauty png render."""
+    import subprocess
+    import numpy as np
+    movie = os.path.join(package, "beauty", clip_id + ".mov")
+    if os.path.isfile(movie):
+        raw = subprocess.run(["ffmpeg", "-v", "error", "-i", movie, "-f", "rawvideo", "-pix_fmt", "rgba", "-"],
+                             check=True, capture_output=True).stdout
+        size = SIZE[0] * SIZE[1] * 4
+        for i in range(0, len(raw), size):
+            yield np.frombuffer(raw[i:i + size], dtype=np.uint8).astype(np.float32) / 255.0
+        return
+    folder = os.path.join(package, "beauty", clip_id)
+    if os.path.isdir(folder):
+        for fn in sorted(f for f in os.listdir(folder) if f.endswith(".png")):
+            yield _load_pixels(os.path.join(folder, fn))
+
+
 def check_renders(package):
     """Per rendered Clip: Key Pose match (mean abs pixel difference of last and first beauty frame, the loop step of
     an Idle Clip), the steps out of the first and into the last frame, and flicker
@@ -627,22 +676,18 @@ def check_renders(package):
     import numpy as np
     out = {}
     for clip_id, *_ in clip_list():
-        folder = os.path.join(package, "beauty", clip_id)
-        if not os.path.isdir(folder):
-            continue
-        files = sorted(f for f in os.listdir(folder) if f.endswith(".png"))
-        if len(files) < 2:
-            continue
-        prev, diffs, first = None, [], None
-        for fn in files:
-            px = _load_pixels(os.path.join(folder, fn))
+        prev, diffs, first, n = None, [], None, 0
+        for px in _beauty_frames(package, clip_id):
+            n += 1
             if first is None:
                 first = px
             if prev is not None:
                 diffs.append(float(np.mean(np.abs(px - prev))))
             prev = px
+        if n < 2:
+            continue
         med = float(np.median(diffs))
-        out[clip_id] = {"frames": len(files), "key_pose_end_diff": round(float(np.mean(np.abs(prev - first))), 5),
+        out[clip_id] = {"frames": n, "key_pose_end_diff": round(float(np.mean(np.abs(prev - first))), 5),
                         "seam_neighbours": [round(diffs[0], 5), round(diffs[-1], 5)],
                         "frame_diff_median": round(med, 5), "frame_diff_max": round(max(diffs), 5),
                         "spikes": [i + 1 for i, d in enumerate(diffs) if d > 3 * med and d > 0.005]}
@@ -663,6 +708,7 @@ def main():
     r.add_argument("--samples", type=int, default=128)
     r.add_argument("--percent", type=int, default=100)
     r.add_argument("--frames", default="")
+    r.add_argument("--beauty", choices=sorted(BEAUTY_FORMATS), default="qtrle")
     c = sub.add_parser("check")
     c.add_argument("--out", default="")
     cr = sub.add_parser("check-renders")
@@ -675,7 +721,7 @@ def main():
         export(a.package)
     elif a.cmd == "render":
         fr = tuple(int(x) for x in a.frames.split("-")) if a.frames else None
-        render(a.package, set(a.clip), a.samples, a.percent, fr)
+        render(a.package, set(a.clip), a.samples, a.percent, fr, a.beauty)
     else:
         result = check() if a.cmd == "check" else check_renders(a.package)
         text = json.dumps(result, indent=1)
