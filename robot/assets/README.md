@@ -23,24 +23,28 @@ All archives passed `unzip -t` / `7z t` and their sizes were stable over 30 s.
 - Contents: 1 `.blend`, 404 PNG (63 materials, 4K, PBR sets: ao, basecolor, height, metallic, normal, roughness), readme. Material names: white, gray and yellow metal panels, shiny metal, armored glass, holo colors, screens, emissive blue/green/gold, magnetic energy, cable, terrain, lawn, water.
 - 3ds Max Arnold and Unreal 6.x 2K archives: unused, in `_other_formats/`.
 - Preview: no renders in the pack; `_prev/minerva.jpg` is a swatch sheet of its materials.
-- Licence: KitBash3D kit licence (the pack ships no licence text, only a readme). Commercial use in finished work is the normal KitBash3D terms; not redistributable. Credit not stated. Check the account terms before publishing a video.
+- Seller: KitBash3D's free kit from October 2022, made for a community challenge (a settlement on a planet in the Minerva Galaxy): cargo ships, rovers, terraformers, community centres, modular habitats. KitBash3D lists 60 models and 63 PBR materials ([kit page](https://kitbash3d.com/pages/mission-to-minerva-free-kit), [CG Channel](https://www.cgchannel.com/?p=140648)).
+- Licence: free for individual artists, commercial use included, with a KitBash3D account. The pack ships no licence text. Tier depends on team size; no credit requirement found; AI training forbidden ([licences](https://kitbash3d.com/pages/licenses)). Not redistributable.
 - Use: arena and backdrop. Clean white and gray panels with emissive trim fit the Chrome Foundry steel look; the emissive colors can carry beat flashes. The 3.8 GB file is heavy: append only the needed objects, never open it whole in the live scene.
 
 ### Neo City (`neocity/`)
 - Contents: 1 `.blend`, 384 PNG (62 materials: galvanized steel, brass, painted metal, grating, neon lights, banners, letters, tinted glass, street tiles, asphalt), readme.
 - Preview: swatch sheet only.
-- Licence: KitBash3D, as above.
+- Seller: KitBash3D Mini Kit from 2020: street kiosks, apartment blocks and skyscrapers taken from Neo Tokyo, Neo Tokyo 2, Cyber Streets and Neo Shanghai ([kit page](https://kitbash3d.com/products/mini-kit-neo-city)).
+- Licence: KitBash3D, commercial use, as above.
 - Use: street-level backdrop (neon signs and glass give sodium and color light). Warmer and dirtier than Minerva, closer to a back-alley fight. Light enough to open (241 MB).
 
 ### Luminara (`luminara/`)
 - Contents: 428 PNG (69 materials: ancient brickwork, boulders, crystals, airship and boat atlases, canvas, rusted metal), no `.blend` yet.
 - Preview: swatch sheet only.
-- Licence: KitBash3D, as above.
+- Seller: KitBash3D's challenge kit: ancient temples, aqueducts, tombs and hidden treasure ([behind the kit](https://kitbash3d.com/a/blog/secrets-of-the-luminara-behind-the-kit)). Distributed through Cargo.
+- Licence: depends on the tier it was taken under. Cargo Basic and Personal assets are non-commercial ([Cargo FAQ](https://help.kitbash3d.com/en/articles/7939191-cargo-licensing-faqs)). Check before any public use.
 - Use: not usable until the `.blend` is downloaded. Fits a ruin or crystal-cavern arena, not the foundry look. Textures only; unused for now.
 
 ### Arclink City Megapolis (`arclink_megapolis/`)
 - Contents: 1 `.blend` (asset-browser library), `blender_assets.cats.txt`, 354 PNG in `textures/1K`, `2K`, `4K` (PBR with Emission, Alpha, Displacement). Catalog: GT_AL Bright and GT_AL Dark, each with Greebles, Large, Mid and Small Buildings, and Misc (Entrances, Ground Misc, Passageway, Road). Object counts need Blender.
 - Preview: swatch sheet (grayscale panels); the real city look is in the biome renders below.
+- Seller: Greeble Town on Superhive Market, Blender kitbash buildings for Blender 2.83 to 5.1, royalty-free. One review says it is below Greeble Town's usual quality ([store page](https://superhivemarket.com/products/arclink-city-data-megapolis-kitbash-buildings)).
 - Licence: Greeble Town "Commercial License" (readme text in `arclink_biomes/_zips/6fe73a6f...txt`). Geo-Scatter geometry nodes have their own terms (geoscatter.com/legal). Credit not stated.
 - Use: the Live World backdrop, a dark megacity behind both fighters, with the Dark set for the foundry mood. Instancing the greebles also adds detail scale cues for the giant machine's body.
 
@@ -52,7 +56,8 @@ All archives passed `unzip -t` / `7z t` and their sizes were stable over 30 s.
 ### DUNE (`dune/`)
 - Contents: 10 `.blend`, 11 PNG icons, `DUNE.zip` (kpack: `DUNE.blend`, `DUNE.png`), install note (KitOps dPack/kPack for SCI-FI FLEX).
 - Preview: `_prev/dune_*.jpg` (256 px icons: orange dune, mountain on sand).
-- Licence: none shipped; unknown. Ask or check the seller's page before video use.
+- Seller: DarioMac, "Dune - Simple Scifi & Scifi Flex dPack" on Superhive: geometry-node sand dunes, mountains and fog. The dPack needs the Simple Scifi or Flex addon; the 5 KitOps inserts (sands, mountains, fog) work alone in Cycles, because the mountains use displacement. Dune values, fog and sandstorm density are modifier settings ([store page](https://superhivemarket.com/products/dune--simple-scifi--scifi-flex-dpack)).
+- Licence: none shipped. The store sells it as a normal Superhive product; check the store terms before video use.
 - Use: an alternative open-air arena, desert floor with dust haze, for a scene idea that leaves the foundry. Light files except the dunes at 168 MB.
 
 ### HUMANOID M2000 (`humanoid_m2000/`)
@@ -60,17 +65,18 @@ All archives passed `unzip -t` / `7z t` and their sizes were stable over 30 s.
 - Geometry (OBJ): 151,558 vertices, 302,164 triangles, 20 objects (head, neck, chest, waist, hip, arm, forearm, hands, thigh, shin, foot, wires).
 - Rig (FBX strings): 95 `LimbNode` bones, 148 `Cluster` skin clusters, an Armature, IK-named nodes present. Weighting and IK need Blender to check.
 - Preview: `_prev/humanoid_m2000_blend.jpg` (128 px blend thumbnail).
-- Licence: none shipped; unknown.
+- Seller: sold on CGTrader and Superhive as a rigged and animated character, made in Blender 3.0 with a Cycles light setup, FBX with bones and materials, royalty-free ([CGTrader](https://www.cgtrader.com/3d-models/character/sci-fi-character/humanoid-m2000-rigged-character)).
+- Licence: royalty-free per the store page; no licence text shipped.
 - Use: candidate Android replacement for #28, or the opponent if scaled up. High-poly (300k triangles), so it needs a decimated or proxy copy for the live layer, and it renders fine in the pre-rendered Clips.
 
 ### ANDROID JUNO FEMALE B (`juno_android/`)
 - Contents: ANDROID `.blend`/`.fbx`/`.obj`, `env2.jpg` (an HDRI-like panorama), `W logo.jpg`.
 - Geometry (OBJ): 104,616 vertices, 206,874 triangles, 43 objects (head, ears, neck wires, body, arm, forearm, hand, 5 fingers each with separate objects, thumb, thigh, shin, foot).
-- Rig: not readable from the FBX text (zero bone names found); the `.blend` (Blender 3.3) must be inspected. Treat as unrigged until proven otherwise.
+- Rig: the store sells the "B" version rigged with Auto-Rig Pro for Mixamo, Unreal and Unity ([CGTrader](https://www.cgtrader.com/3d-models/character/sci-fi-character/android-juno-female-b-rigged-for-unreal-engine-unity-mixamo), [Superhive](https://superhivemarket.com/products/android-juno-female-b-auto-rig-pro-rigged-for-mixamo-unreal-engineunity)). The FBX string scan found no bone names, so verify the armature in the `.blend` (Blender 3.3).
 - Preview: `_prev/juno_android_blend.jpg` (white android with ear pieces, 128 px; the two thumbnails may be swapped in the packs, check in Blender).
-- Licence: none shipped; unknown.
-- Use: best-looking Android replacement for #28 (finger detail; thumbnail shows a white android with dark joints). If it has no rig, the part objects give a rigid-parts rig (parent each part to a bone) that suits our key-table Moves.
+- Licence: royalty-free per the store page; no licence text shipped.
+- Use: best-looking Android replacement for #28 (finger detail; thumbnail shows a white android with dark joints). Its Auto-Rig Pro rig maps to our channels; if the armature turns out missing, the part objects give a rigid-parts rig.
 
 ## Not decided here
 - The `.blend` files were not opened. Counts of objects, rig details and Blender-side materials wait for a Blender slot (`robot/build/inspect_asset.py` reads a `.blend` with auto-run off).
-- Video use and credit for DUNE, HUMANOID and JUNO are unknown.
+- Store pages call M2000, Juno, Arclink and DUNE royalty-free, but the downloads ship no licence text; Luminara depends on its Cargo tier. Check each before a public video.
