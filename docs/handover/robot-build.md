@@ -99,6 +99,9 @@ Review: `robot/build/review/rubric-r1.md` (frozen), sheets to `shot-reviewer`.
 
 - Render cut short (the user, 2026-11-17 00:10: done by 04:00): 12 Clips at 64 samples (idle_low, idle_crouch, guard_shuffle, settle_low, rise_guard, low_scan; plus the 8 v1 Clips), the rest at 16 samples with OIDN in the order palm_strike, power_stomp, stand_up, crouch_strike, ground_pound, leap_slam (crouch's exits before its entry, so crouch never becomes a dead end), uppercut_combo, jab_jab_hook, rush_cross, low_charge, burst_rise. No Clip starts that cannot end by 03:40; `review/manifest_complete.py` keeps only Moves complete on both Angles. `progress.txt` records the samples per Clip.
 
+- Low-quality library (the user, 2026-11-17: everything by 04:00, high quality later): `make robot-render QUALITY=low` rendered all 21 Moves x 2 Angles with Eevee at 1920x1080 (Shadow from Eevee's shadow pass, the catcher floor as a holdout) in 35 min (00:20 to 00:55, 30 to 110 s per Clip); the validator says `ok: 42 clips, 21 moves, 2 angles`; the Manifest says `"quality": "low"`. Resume tested: a run stopped mid-Clip and rerun skipped the 3 complete Clips and redid the cut one. The 64-sample Clips were deleted at the user's word. Movies 2.0 GB; the Depth EXR frames are 29 GB (needed only for resume and encode).
+- High quality later: `make robot-render QUALITY=high` (Cycles, 64 samples; about 15 h for both Angles at 16 s per frame), replacing the low Clips one by one, resumable; `FORCE=1` renders everything again.
+
 ## Open items for the orchestrator
 
 - Camera names are `ShotCamera.front` and `ShotCamera.side` (the R3 fixture uses `CAM_FRONT`, close to the Avoid word `CAM_N`).
