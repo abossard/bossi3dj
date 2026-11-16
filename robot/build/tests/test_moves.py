@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import moves  # noqa: E402
 
 STEP_LIMIT_DEG = 20.0   # per frame at 30 fps
-STEP_LIMIT_M = 0.25     # per frame at 30 fps, about 7.5 m/s: a fast kick
+STEP_LIMIT_M = 0.33     # per frame at 30 fps, about 10 m/s: a full-power strike landing
 REACH_SLACK_M = 0.005
 LIMBS = {"head", "hand_l", "hand_r", "foot_l", "foot_r"}
 TIERS = ("calm", "build", "drop")

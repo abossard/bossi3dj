@@ -17,7 +17,7 @@ Key Poses (issue #19, 2026-11-16), all on both feet:
 - `low`: wide power stance squared to the front, hips at 0.76 m, fists low and wide.
 - `crouch`: landing crouch, hips at 0.50 m, staggered feet, rear fist down by the floor, lead arm back.
 
-Moves last 1, 2 or 4 bars (58, 116, 232 frames at 124 BPM, 30 fps) and start and end in their Key Poses. Keys on a beat grid, smoothstep between keys, one key per frame baked into Blender. A foot moves only off the ground.
+Moves last 1, 2 or 4 bars (58, 116, 232 frames at 124 BPM, 30 fps) and start and end in their Key Poses. Keys on a beat grid, smoothstep between keys (or accelerating into an impact and settling after it), one key per frame baked into Blender. A foot moves only off the ground.
 
 | Move | Tier | Bars | From > to | Hits |
 |---|---|---|---|---|
@@ -36,9 +36,9 @@ Moves last 1, 2 or 4 bars (58, 116, 232 frames at 124 BPM, 30 fps) and start and
 | front_kick | drop | 1 | guard > guard | kick |
 | uppercut_combo | drop | 1 | guard > guard | uppercut, hook, uppercut |
 | leap_slam | drop | 2 | guard > crouch | leap 0.6 m up, fists slam on landing |
-| ground_pound | drop | 1 | crouch > crouch | three two-fist floor slams |
+| ground_pound | drop | 1 | crouch > crouch | right and left hammer fists into the floor, then a two-fist finisher |
 | burst_rise | drop | 2 | crouch > low | jump up arms wide, land wide, four punches |
-| power_stomp | drop | 1 | low > low | three knee-high stomps |
+| power_stomp | drop | 1 | low > low | three heel stomps on one spot ahead, the last the heaviest |
 | low_charge | drop | 2 | low > guard | shoulder ram, two-fist hammer |
 
 Every Key Pose has a Move out in every tier, and reaches every other Key Pose within two Moves (low to crouch goes through guard).
