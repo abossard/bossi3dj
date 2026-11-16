@@ -44,6 +44,13 @@ Page: https://claude.ai/artifact/7D5wLjhFTi7hNr6xwecMP8 (source `robot/concept/r
 - Blender-free first: R3, R4 and the pure part of R5 run now; R5's Blender part, R6 and R7 ask the main orchestrator for the slot first.
 - Magic is the user's app: R4 proves the file with `magicproj.py check` and a fixture; loading it into Magic and the recording (R8) wait for the user.
 
+## Audio for the Clip Graph (2026-11-16)
+
+- Today the generator reads the beat clock and energy from `magic/synthwave_magic.py` Globals by name (`Beats`, `Bars`, `Phase`, `BPM`, `EnergyAvg`); the Intensity Tier is a threshold on `EnergyAvg`.
+- Offered by the mmv sessions, not wired: Music X-Ray (`~/Desktop/projects/mmv-skills/mmv-scene-recipes/scripts/music_xray_example.py`, section `State` intro/buildup/drop/breakdown, `Tension`, `DropPulse`, `BarPulse`) and `magic/edm_analysis_magic.py`. They overlap; one bank per show, read through Globals. Hand-over: `side-session-notes/local_90def09f-4bd9-4030-8c9d-76bdd3888738/robot-handover-mmv-audio.md`.
+- Open, the user's call: drive the Intensity Tier from X-Ray `State` (buildup = build, drop = drop) instead of the `EnergyAvg` threshold.
+- Verified by them and useful here: `Freeze Frame` with `Freeze` driven per frame holds a frame; `load()` can time out on the window check while the load worked.
+
 ## Open checks for the user (Magic)
 
 - Answered by the user (2026-11-15): ProRes 4444 alpha plays; an unselected VideoFile keeps playing; a Mask with the same Child id on both pins is accepted.
