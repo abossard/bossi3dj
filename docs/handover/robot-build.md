@@ -73,9 +73,15 @@ Review: `robot/build/review/rubric-r1.md` (frozen), sheets to `shot-reviewer`.
 - Validator (`robot/magic/manifest.py`): 16 errors, all `file missing` for `shadow/<clip>.mov` and `depth/<clip>.mov`; every beauty file is found. They wait for the encode step.
 - `make test`: exit 0 (python suites 59, 65, 66 OK; Godot 430 passed; feature check 22 effect, 0 error). `robot/build/tests` is not in it (7 tests OK on their own).
 
+## Encode step (2026-11-16)
+
+- `nice .venv/bin/python robot/build/encode_passes.py --package robot/package/v1` (ffmpeg and numpy, no Blender): Shadow and Depth Pass frames to the `.mov` files of `CONTRACTS.md` (6124aff). The Depth EXRs are uncompressed one-channel FLOAT named `V`, which ffmpeg can't decode, so the script reads them itself. 26 s for all 8 Clips.
+- Pixel check (`robot/build/review/pass_check.py`, jab_cross__side and front_kick__front frame 29): shadow coverage matches the PNG alpha within 0.008 (mean 0.00008), at most 0.0046 where the source is 0. Depth matches metres/20 within 0.005 on the Android (mean 0.00002), 0.998 where it is absent (ProRes 10-bit limited range). Motion-blur edge pixels with partial alpha carry background depth and encode as 1.
+- Pass file sizes: shadow 3.1 to 3.3 MB, depth 3.4 to 4.7 MB per Clip; all 24 movies 244 MB.
+- Validator: `ok: 8 clips, 4 moves, 2 angles`, 0 errors. `make test` exit 0.
+
 ## Open items for the orchestrator
 
-- Encode step: frames to `<pass>/<clip>.mov` (codec from R4); the Depth Pass range in that video is not in `CONTRACTS.md` yet. The validator's only errors are the missing `.mov` files.
 - Camera names are `ShotCamera.front` and `ShotCamera.side` (the R3 fixture uses `CAM_FRONT`, close to the Avoid word `CAM_N`).
 - Cut Points come from the tables (idle_guard 0, jab_cross and take_hit 0 and 3, front_kick 0); the R3 fixture assumes `[0, 2]`.
 - No `make` target for these tests yet (`Makefile` is shared).
