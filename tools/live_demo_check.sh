@@ -8,7 +8,7 @@
 # page    tools/blender_page_test.py against 9210
 # artnet  osc/artnet_live_test.py
 # music   afplay MUSIC in the background, then 3 s of BlackHole's level (input :0) must be above -60 dB
-# osc     Magic must send: within 20 s the bridge's OSC message count (/api/state osc.addresses) must grow, else the
+# osc     Magic must send: within OSC_GATE_S (default 10) s the bridge's OSC message count (/api/state osc.addresses) must grow, else the
 #         remaining steps are skipped and only stop runs
 # steer   tools/magic_steering_check.py: 180 s of path, target, height from Magic, then the height takeover
 # record  90 s of CAM_OUT, nothing held, then blender/review/video_flicker.py per 15 s stage
@@ -37,12 +37,12 @@ osc_count() {   # OSC messages the bridge has received over all addresses
 osc_gate() {
     local n0 n
     n0=$(osc_count) || return 1
-    for _ in $(seq 20); do
+    for _ in $(seq "${OSC_GATE_S:-10}"); do
         sleep 1
         n=$(osc_count) || return 1
         [ "$n" -gt "$n0" ] && { echo "Magic sends: $((n - n0)) OSC messages since the gate started"; return 0; }
     done
-    echo "Magic sent no OSC to 9201 in 20 s: is its audio input BlackHole 2ch and is music playing?"
+    echo "Magic sent no OSC to 9201 in ${OSC_GATE_S:-10} s: is its audio input BlackHole 2ch and is music playing?"
     return 1
 }
 
