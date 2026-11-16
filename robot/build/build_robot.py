@@ -33,7 +33,7 @@ DEFAULT_BLEND = os.path.join(HERE, "robot.blend")
 POINTS = ("head", "eye_l", "eye_r", "hand_l", "hand_r", "foot_l", "foot_r")
 # Shot Cameras: id, camera name, location, aim point, focal length (mm). The Android stands at the origin, faces -Y.
 ANGLES = (
-    ("front", "ShotCamera.front", (2.41, -3.44, 0.55), (0.0, -0.20, 1.15), 28.0),   # low front three-quarter
+    ("front", "ShotCamera.front", (-2.32, -3.51, 0.55), (0.0, -0.20, 1.05), 32.0),   # low front, the guard's chest faces it (review/camera_sweep.py)
     ("side", "ShotCamera.side", (6.50, -0.35, 1.30), (0.0, -0.35, 1.00), 35.0),     # wide side, lead side
 )
 UP = Matrix.Rotation(math.radians(90.0), 4, "X")      # part frame: x width, y up, z forward (-Y)

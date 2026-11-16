@@ -57,6 +57,13 @@ Review: `robot/build/review/rubric-r1.md` (frozen), sheets to `shot-reviewer`.
 - `check-renders` and `clip_sheet.sh` decode the movie with ffmpeg. `check-renders` on a movie measures display values (8 bit), on PNG linear floats: compare ratios, not absolute numbers across the two.
 - The package Clips are still PNG frames; re-rendering them as qtrle takes about 28 s per frame.
 
+## Front Angle camera (rubric-r2, frozen, 2026-11-16)
+
+- Round 2 (-45°): fail F1/F2, figure small and its visible side dark. Round 3 (-70°, 32 mm, camera-side fill): fail F1/F2 (read as profile), F7 (the fill mirrored white in the polished head).
+- Round 4 (-35°, 32 mm, aim 1.05 m, no fill): all four sheets pass F1 to F7. `review/camera_sweep.py`: chest 3° off face-on, eye points 37 px apart, feet 259 px, hands 121 px, points inside x 783..1197, y 250..972.
+- One F6 fail on the full-size jab_cross frame 29 ("no shadow discernible") is a review-backdrop artefact: the Shadow Pass alpha peaks at 0.97 under the feet (side Angle 0.97, passed R6), black over the near-black #2a2420 backdrop. Shadow strength is the user's taste call, to be judged over the Live World in Magic.
+- `review/round4.sh` reproduces the round; `review/full_render.sh idle|rest` renders the Clip Library.
+
 ## Open items for the orchestrator
 
 - Encode step: frames to `<pass>/<clip>.mov` (codec from R4); the Depth Pass range in that video is not in `CONTRACTS.md` yet. The validator's only errors are the missing `.mov` files.
