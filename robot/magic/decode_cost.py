@@ -146,11 +146,12 @@ def run(root, config, angles, seconds, sock):
         raise SystemExit("load of %s not confirmed, stopping: %s" % (project, out.strip()))
     pid = magic_pid()
     time.sleep(5)
-    while True:
+    drain = time.time() + 1      # the probe sends every frame, so a read-until-quiet loop would never end
+    while time.time() < drain:
         try:
             sock.recvfrom(65535)
         except socket.timeout:
-            break
+            pass
     fps, cpus, gpus, end = [], [], [], time.time() + seconds
     while time.time() < end:
         cpus.append(cpu(pid))

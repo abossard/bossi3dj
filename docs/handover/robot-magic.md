@@ -116,3 +116,19 @@ Angle sweep, one round, same load (fps): ProRes 4444 / 422 1 Angle 33.9, 2 Angle
 - Alternative if more headroom is wanted: H.264 intra 4:2:0 colour (full range) plus a grey matte file as its own Pass (`passes.matte`, generator `matte_pass=True`, Mask `Use Alpha 0`). Fastest here (32.5 fps at 4 Angles, 47 MB) but it needs `matte` in the Manifest and CONTRACTS.md, 8-bit 4:2:0 colour, and Magic's CPU was about 2 cores (209 %), more than qtrle. Not recommended before the qtrle result is seen on a quiet machine.
 - Hap Alpha (GPU decode, probably the best): this ffmpeg has no Hap encoder (`-buildconf` has no libsnappy). It would need ffmpeg built with libsnappy (`brew install snappy` and an ffmpeg with `--enable-libsnappy`, for example the homebrew-ffmpeg tap) or Vidvox's hap-encoder tool. Nothing is installed; ask first.
 - Not measured: a quiet machine (rerun `python3 robot/magic/decode_cost.py --configs prores,qtrle,h264_matte --angles 1,2,3,4` when `make status` says `fps_trustworthy`), a real render, Hap, raw at 3 Angles. `python3 robot/magic/decode_cost.py --list` shows the configs.
+
+### Re-measurement with confirmed loads (2026-11-16)
+
+Every run now verifies the load (window title `<config>_<angles>.magic - Editor`, no `Error!` window) and stops otherwise. **All numbers under load 45 to 75, `fps_trustworthy` false, not trustworthy; ratios only.** Work files: `robot/magic/decode/` (git-ignored).
+
+| config | 1 Angle fps (2 rounds) | Magic CPU | 4 Angles fps (2 rounds) | Magic CPU |
+|---|---|---|---|---|
+| ProRes 4444 / 422 | 33.1 | 74 % | 21.1 | 138 % |
+| qtrle / 422 | 31.4 | 36 % | 29.3 | 61 % |
+| raw ARGB / 422 | 31.1 | 36 % | 28.6 | 64 % |
+| H.264 + grey matte | (not rerun) | | 27.0 (34.0 and 19.9: a noisy pair) | 191 % |
+
+- Confirmed: the qtrle and raw loads work and the numbers above are of those projects. The ratio 4 to 1 Angle: ProRes 0.64, qtrle 0.93, raw 0.92. The earlier table's qtrle, raw and H.264 rows are superseded by this one; the ProRes row is consistent with it.
+- Load failures (the "Project loading failed" and `Error!` dialog): not a /tmp path (repo paths failed the same), not the codec (`qtrle_1`, `raw_1` and `prores_1` all load from the repo). An open `Error!` dialog makes every later `magicproj load` fail ("NOT confirmed"). The dialog came back on the 26th or so load of the session, on the fixture `robot.magic` that loaded fine before, so the likeliest cause is Magic degrading after many loads of 48-VideoFile projects (a leak or a limit); a Magic restart is the untested remedy. Not proven.
+- A bug in `decode_cost.py` hung a run: the drain loop read the probe until quiet, and the probe sends every frame. Fixed (drain for 1 s).
+- Proposal unchanged and now supported by confirmed loads: beauty Pass as `qtrle` (RGBA .mov). H.264 plus matte is noisy under this load and needs a Manifest change; not recommended.
