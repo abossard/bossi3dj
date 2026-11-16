@@ -31,3 +31,7 @@ python3 blender/review/issue25_review/c.py
 ```
 
 Live: `blender/review/blend_live.py` (the demo program held against Magic, see its docstring), recordings with music `blender/review/sky_frame_record.sh`.
+
+## Proposal: the falls' last seconds (open item 1)
+
+Falls and far hops go dark late because the keep's turn budget (`BLEND_LAND_TURN` 10 deg/s x seconds to the nearer end) lets it out early on big gaps. Measured on `test_path_blends.py`'s cases (dark blend s / largest turn deg/s), budget 10 -> 25 deg/s: change mid-blend 2.5 -> 0.0, fall from space 1.7 -> 0.7, far targets 8.3 -> 0.8, far change 13.2 -> 4.9, far eye held 10.3 -> 2.7, 15 s fade 2.6 -> 0.6, 6 s blends 2.1 -> 2.0 and 1.1 -> 0.7; turns stay at most 71 at a 30 s fade (`turn_limited`'s cap), `verify_paths` 2c unchanged. Proposed: `BLEND_LAND_TURN` 25 deg/s, test thresholds tightened to those numbers, then a live A/B (the keep's turn in and out reads faster).
