@@ -101,7 +101,7 @@ Copied, not moved, from `~/Downloads`: the loose FBXs there feed the Godot Colos
 | strafes, turns, runs, walks | 0.5 to 1.6 | 1 to 3 | circling in guard |
 | climbs and hangs | 1.2 to 4.7 | | climbing the giant (the Colossus Scene uses them) |
 
-- Missing for a fight: punches, kicks, blocks, hit reactions, knock-downs, a fight idle and a victory. Mixamo has these; downloading them needs the user's Mixamo login.
+- Missing for a fight: punches, kicks, blocks, hit reactions, knock-downs, a fight idle and a victory. User decision of 2026-11-17: use only the clips already downloaded. Strikes and blocks stay hand-keyed in our key tables; the clips cover dodges, hurt and get-up, circling, idles and dance breaks.
 - Which character can wear them:
   - Juno: the store sells the "B" version rigged with Auto-Rig Pro for Mixamo, but the downloaded `ANDROID.fbx` has no armature (0 bones, 43 meshes). The rig, if present, is in `ANDROID.blend`; check in Blender. Without it, Mixamo's own auto-rigger can rig the mesh (uploading it needs the user's login and is the user's call, given the unknown licence).
   - M2000: its own rig (74 bones in the FBX, root `ROOT`), not Mixamo. Clips need retargeting (bone map) in Blender.
