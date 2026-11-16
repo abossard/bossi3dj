@@ -39,16 +39,18 @@ RISE_SHARE = 0.8                    # rise and descend: the climb's share of the
 BAND_RATE = 0.3                     # e-folds/s at most through the hand-over band: a crossing takes over 1 s
 BAND_CATCH = 3.0                    # e-folds/s at most while a held eye catches up with the blend outside the band
 PLANET_HALF = math.radians(32.0)    # the planet target's half field near the ground
-PUSH_PERIOD = 80.0                 # s at /vj/cam_speed 1: the vantage pushes in over half of it, out over the other
+PUSH_PERIOD = 80.0                 # s at /vj/cam_speed 1: the vantage pushes in over half of it, out over the other (read
+#                                    at each step: set it live to compare, e.g. 40, review/blend_live.py "set"; issue #25)
 BLEND_LAND = 0.35                   # share of the frame's centre column a blend keeps on the planet (0: off). The planet is
 #                                     small: the horizon dips 23 deg at 1.3 km, 52 at 10 km, and a blend's view stays near
 #                                     the end shots' level while the hump lifts it (issue #25: flat sky, black space)
+BLEND_LAND_MAX = 0.8                # and at most this share, so the horizon stays in frame (run 4: 95 % land, straight down)
 BLEND_LAND_TURN = math.radians(25.0)   # rad/s the keep may add to the view's own turn (over the zenith, at a far blend's
 #                                     end the kept view's heading or pitch can swing faster than that)
 BLEND_TURN_MAX = math.radians(59.0)    # rad/s at /vj/blend DUR_MAX: a blend's view turns no faster with the keep (the
 #                                     Director's pace scales with DUR_MAX / blend; verify_paths 2c)
 BLEND_BY_HEIGHT = True              # a blend's fog and clip from its clearance (by_height); False: the Director's lerp
-SKY_FRAME = False                   # a variant (issue #25, the user's taste call): sky targets on orbit and vantage frame
+SKY_FRAME = False                   # a variant (issue #25, the user's taste call): sky targets on orbit, vantage and rise frame
 #                                     the body on the upper third line and the horizon on the lower one (sky_frame)
 SKY_FRAME_HALF = math.radians(40.0)  # widest vertical half field it opens to
 RISE_DEPTH = 0.75                   # rise and descend: the share of the log height span it travels down from the top
@@ -226,7 +228,7 @@ def pose(path, target, home, phase, h, terrain):
         look = look_point(target, p, travel)
         fwd, up, _ = look_frame(p, look, 0.0)
         lens = planet_lens(p) if target.kind == "planet" else lens_to_fit(p, look, target.size)
-        framed = SKY_FRAME and target.kind == "sky" and path in ("orbit", "vantage")
+        framed = SKY_FRAME and target.kind == "sky" and path in ("orbit", "vantage", "rise")
         if framed:
             fwd, up, lens = sky_frame(p, look)
         if path == "vantage" and not framed:      # framed: the push alone moves it (the zoom lost the body off the top)
@@ -348,7 +350,7 @@ class PathCamera:
         return tuple(pose_[:4]) + (props,)
 
     def on_land(self, pose_, ends, near_end):
-        """The pose turned toward the kept view: pitched no higher than keeps BLEND_LAND of the frame's centre column on
+        """The pose turned toward the kept view: pitched so BLEND_LAND to BLEND_LAND_MAX of the frame's centre column see
         the planet at this eye's dip, its heading the view's own steadied by the end shots' (ends: the sum of their
         forwards; a view over the zenith flipped its heading in under a second), the roll carried over. The turn toward
         it is at most BLEND_LAND_TURN x near_end (the blend's seconds from its nearer end): none at either end."""
@@ -359,7 +361,7 @@ class PathCamera:
         pitch = math.asin(fl.clamp(fl.dot(fwd, u), -1.0, 1.0))
         dip = math.acos(fl.clamp(fl.R / (fl.R + max(hp, 0.0)), -1.0, 1.0))
         hv = math.atan(fl.SENSOR / 2.0 / fl.ASPECT / pose_[3])
-        pf = min(pitch, -dip + hv * (1.0 - 2.0 * BLEND_LAND))
+        pf = fl.clamp(pitch, -dip - hv * (1.0 - 2.0 * (1.0 - BLEND_LAND_MAX)), -dip + hv * (1.0 - 2.0 * BLEND_LAND))
         head = fl.tangent(u, fl.add(fwd, ends, 0.25))
         kept = fl.add(fl.scale(head, math.cos(pf)), u, math.sin(pf))
         gap = fl.angle(fwd, kept)

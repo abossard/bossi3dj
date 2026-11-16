@@ -70,7 +70,7 @@ CASES = [  # name, targets, program, seconds, most dark blend s, most turn deg/s
                                    (13, "rise", "lake", 0.3, 30.0)], 45.0, 0.5, 72.0),
     ("fall from space", TARGETS, [(0, "vantage", "planet", 1.0, 30.0), (3, "orbit", "river", 0.3, 30.0)], 40.0, 1.0, 72.0),
     ("cut mid-blend", TARGETS, [(0, "orbit", "coast", 0.3, 30.0), (5, "follow", "sun", 0.3, 30.0),
-                                (15, "vantage", "moon", 0.3, 0.0)], 20.0, 0.5, 72.0),
+                                (11, "vantage", "moon", 0.3, 0.0)], 16.0, 0.5, 72.0),
     ("far targets", FAR, [(0, "follow", "lake", 0.6, 30.0), (3, "follow", "coast", 0.6, 30.0),
                           (27, "follow", "sun", 0.6, 30.0)], 50.0, 1.5, 72.0),
     ("far change", FAR, [(0, "orbit", "moon", 0.6, 30.0), (3, "follow", "lake", 0.6, 30.0),
@@ -82,6 +82,34 @@ CASES = [  # name, targets, program, seconds, most dark blend s, most turn deg/s
     ("6 s blends", TARGETS, [(0, "vantage", "coast", 0.6, 6.0), (3, "follow", "lake", 0.6, 6.0)], 12.0, 2.5, 360.0),
     ("6 s blends far", FAR, [(0, "vantage", "coast", 0.6, 6.0), (3, "follow", "lake", 0.6, 6.0)], 12.0, 1.0, 360.0),
 ]
+
+
+def kept_view(pitch_deg, clearance):
+    """on_land's view for a pose over the plaza at clearance m looking pitch_deg over level, mid-blend (10 s to go):
+    the share of land in it and its angle off the given view (deg)."""
+    C = pc.PathCamera(TARGETS, T)
+    u = T.c
+    p = fl.add(fl.CENTRE, u, fl.R + T.surface(u) + clearance)
+    head = fl.tangent(u, (1.0, 0.0, 0.0))
+    fwd = fl.add(fl.scale(head, math.cos(math.radians(pitch_deg))), u, math.sin(math.radians(pitch_deg)))
+    pose = (p, fwd, fl.tangent(fwd, u), 24.0, {})
+    out = C.on_land(pose, fl.scale(fwd, 2.0), 10.0)
+    return land(out[0], out[1], out[3]), math.degrees(fl.angle(fwd, out[1]))
+
+
+class KeepTests(unittest.TestCase):
+    def test_kept_view(self):
+        cases = [  # pitch deg, clearance m, least land, most land, most deg off the view
+            (0.0, 3000.0, pc.BLEND_LAND - 1e-6, 1.0, 90.0),         # level from height: tipped down to land
+            (-89.0, 3000.0, 0.0, pc.BLEND_LAND_MAX + 1e-6, 90.0),    # straight down: lifted to keep the horizon
+            (-5.0, 100.0, 0.0, 1.0, 5.0),                            # low over the plaza: a few degrees at most
+        ]
+        for pitch, clear, lo, hi, off in cases:
+            with self.subTest(pitch=pitch, clearance=clear):
+                share, d = kept_view(pitch, clear)
+                self.assertGreaterEqual(share, lo)
+                self.assertLessEqual(share, hi)
+                self.assertLessEqual(d, off)
 
 
 class BlendTests(unittest.TestCase):

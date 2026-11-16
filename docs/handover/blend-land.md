@@ -35,3 +35,9 @@ Live: `blender/review/blend_live.py` (the demo program held against Magic, see i
 ## Proposal: the falls' last seconds (open item 1)
 
 Falls and far hops go dark late because the keep's turn budget (`BLEND_LAND_TURN` 10 deg/s x seconds to the nearer end) lets it out early on big gaps. Measured on `test_path_blends.py`'s cases (dark blend s / largest turn deg/s), budget 10 -> 25 deg/s (built, 2026-11-16): change mid-blend 2.5 -> 0.0, fall from space 1.7 -> 0.7, far targets 8.3 -> 0.8, far change 13.2 -> 4.9, far eye held 10.3 -> 2.7, 15 s fade 2.6 -> 0.6, 6 s blends 2.1 -> 2.0 and 1.1 -> 0.7; turns stay at most 71 at a 30 s fade (`turn_limited`'s cap), `verify_paths` 2c unchanged. Proposed: `BLEND_LAND_TURN` 25 deg/s, test thresholds tightened to those numbers, then a live A/B (the keep's turn in and out reads faster).
+
+## Run 4 (B11, 2026-11-16) follow-ups
+
+- Built: the kept view's land share is at most `BLEND_LAND_MAX` 0.8 (run 4's 2.2 km tile was 95 % land, no horizon). `SKY_FRAME` (still off) covers rise too. `PUSH_PERIOD` is read at each step, so 80 and 40 s can be compared live (`blend_live.py` "set").
+- Tried and dropped: a clearance gate for the keep (none under 300 m, full from 1 km) for run 4's hillside tile (236 m up, the plaza): it lost land at 1 km, where a level view already sees none (demo replay 5.0 -> 8.1 to 13.8 dark s). Low down the keep tips a level view by about 7 deg (`test_path_blends.py` KeepTests); the hillside is mostly the Director's own low path looking into the slope. Open: a check of the terrain along a blend's view on low hops, if run 5 still shows it.
+- Look questions for the user (orchestrator): the sky follows `/vj/hue` (teal and green at hue 0.76 to 0.84; the limb's mint glow too); `SKY_FRAME`; `PUSH_PERIOD` 80 or 40 s.
