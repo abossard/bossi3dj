@@ -2179,8 +2179,10 @@ def pyr_build(T):
     # base by metres, growing with the distance (ring 5 buried p95 26 % of the height, review/pyramid_ground.py), so the
     # land cut the 2.5 px strip into dashes. Instead a band glows from the land up to a level line PYR_BASE_PX pixels
     # over the base: its top is straight, the land draws its bottom. Near, the pad (1 m over the base) hides
-    # it as it hid the edge. hb: m over the base (pyr_part), before the instance's 0.75 to 1.25 scale
-    hb = T.gattr("hb")
+    # it as it hid the edge. hb: m over the base as drawn: pyr_part's times the instance's size (place: 0.75 to 1.25). Not
+    # times /vj/pyramids: at 0.3 a far site pyramid drew as at 1 (0.2 % of the pixels changed, review/out/i11/r4) while a
+    # band scaled by it grew to a 15 to 25 px collar
+    hb = T.mul(T.gattr("hb"), T.gattr("pk", kind="INSTANCER"))
     reach = T.mul(dist_e, T.mul(T.attr("rt_px_angle"), PYR_BASE_PX))
     top = T.addf(sw, reach)
     band = T.mul(T.sub(1.0, T.smooth(hb, T.sub(top, T.mul(sw, 0.5)), top)),
@@ -2462,7 +2464,7 @@ def place(G, pts, ok, dv, ground, inst, fixed=None):
     G.feed(iop.inputs["Instance"], inst)
     G.feed(iop.inputs["Rotation"], rr.outputs[0])
     G.feed(iop.inputs["Scale"], G.comb(sc_, sc_, sc_))
-    return iop.outputs[0]
+    return G.store(iop.outputs[0], "pk", sc_, domain="INSTANCE")     # the size, for the shaders (the pyramids' base band)
 
 
 # pyramid groups all over the planet, on dry flat lowland away from the rivers: static, evaluated once
