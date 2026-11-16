@@ -19,7 +19,7 @@
 ## Open
 
 1. Far hops keep less land: the 10 deg/s ease budget makes the keep go out early on big gaps.
-2. Live: 5 s in orbit river and 4 s in rise lake at 4 to 7 km rendered flat with land in frame (158d3c1's live run, `out/issue25/live_after.jsonl`): shader side.
+2. The haze from height (done, code only): `build_planet.fog_distance()`, applied in `planetize_fog()` to the island's `VJ_Fog` that the planet draws, grows the haze's distance by 3 m per m of eye height over 500 m (`FOG_D_RISE`, the Value node `fog_d_rise`). `/vj/haze` 0 cleared the demo's 9.75 flat seconds; A/B on the demo program 10.5 -> 1.25 flat s. Shot-reviewer (`rubric-issue25-haze.md`): t 9, 12, 28 and 34 pass; t 34 failed first on two different poses and passes at one pinned pose (`out/issue25/t34`, the haze changes 0.03 % there). Committed without the rebuilt `.blend` (the robot's render took Blender): `make blender-rebuild` in the next slot.
 
 ## Commands
 

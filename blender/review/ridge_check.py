@@ -51,6 +51,9 @@ def pin(scene, depsgraph=None):
     scene["rt_px_angle"] = scene.camera.data.sensor_width / p["lens"] / scene.render.resolution_x   # flight_rt's, at the pinned lens
     rig = (scene.get("rt_cam_x", 0.0), scene.get("rt_cam_y", 0.0), scene.get("rt_cam_z", 0.0))
     scene["rt_cam_x"], scene["rt_cam_y"], scene["rt_cam_z"] = tuple(scene.camera.matrix_world.translation)   # planet_tick's, at the pinned pose
+    fl = sys.modules["flight"]
+    alt = (scene.camera.matrix_world.translation - Vector(fl.CENTRE)).length - fl.R
+    scene["rt_space"] = min(max((alt - 2000.0) / 10000.0, 0.0), 1.0)       # planet_tick's, at the pinned pose
     st["rig_off"] = max(st.get("rig_off", 0.0), (scene.camera.matrix_world.translation - Vector(rig)).length)   # what pins before the fix missed
     sys.modules["gpu_terrain"].follow(scene, scene.camera.matrix_world.translation)
 

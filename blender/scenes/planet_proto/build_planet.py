@@ -396,6 +396,9 @@ def direction(az_deg, el_deg):
 SUN_R = (0.18, 0.30)
 MOON_C = direction(30.0, 22.0)
 FOG_D = 6500.0
+FOG_D_RISE = (500.0, 3.0)      # the haze distance grows by 3 m per m of eye height over 500 m (issue #25: from 4 to 7 km
+#                                up the land 5 to 20 km off hazed to 0.5 to 1 of the sky's colour, a flat frame tinted by
+#                                vj_hue; /vj/haze 0 cleared the demo's 9.75 flat seconds)
 FOG_TOP = 800.0                # m over the sea: the fog box's top (the fog lies on valley floors up to a few hundred m)
 FOG_TAIL = 0.06                # haze over the fog layer's top, as a share of its density
 FOG_TAIL_NIGHT = (0.12, 4.0)   # at night: its share and its height in layer tops (round 13; 0.3 and 6 filled the mid and far
@@ -856,6 +859,15 @@ def above_horizon(T, pos):
     return T.addf(T.dot(v, u_c), T.mul(T.vmath("LENGTH", v), sin_dip))
 
 
+def fog_distance(T, alt_c):
+    """The haze's distance scale (FOG_D) at a camera alt_c m over the sea, grown by FOG_D_RISE. The rise is a Value
+    node labelled fog_d_rise (review/blend_live.py's A/B sets 0: the haze as before issue #25)."""
+    rise_ = T.node("ShaderNodeValue")
+    rise_.label = "fog_d_rise"
+    rise_.outputs[0].default_value = FOG_D_RISE[1]
+    return T.addf(FOG_D, T.mul(T.math("MAXIMUM", T.sub(alt_c, FOG_D_RISE[0]), 0.0), rise_.outputs[0]))
+
+
 # --- VJ_Fog(Color): distance haze, but only over the stretch of the view ray inside the ATMO_H shell
 g_fog, T, gi, go = make_group("VJ_Fog", [("Color", "NodeSocketColor", None)], [("Color", "NodeSocketColor")])
 geo = T.node("ShaderNodeNewGeometry")
@@ -872,7 +884,7 @@ b_ = T.dot(eye, vd)
 c_ = T.sub(T.dot(eye, eye), (R + ATMO_H) ** 2)
 t_in = T.math("MAXIMUM", T.sub(T.mul(b_, -1.0), T.math("SQRT", T.math("MAXIMUM", T.sub(T.mul(b_, b_), c_), 0.0))), 0.0)
 t_in = T.mul(t_in, T.math("GREATER_THAN", c_, 0.0))      # camera inside the shell: haze from the eye on
-dn = T.math("DIVIDE", T.math("MAXIMUM", T.sub(dist, t_in), 0.0), FOG_D)
+dn = T.math("DIVIDE", T.math("MAXIMUM", T.sub(dist, t_in), 0.0), fog_distance(T, T.sub(T.vmath("LENGTH", eye), R)))
 f = T.math("SUBTRACT", 1.0, T.math("EXPONENT", T.mul(T.mul(dn, dn), -1.0)))
 f = T.mul(T.mul(f, T.mrange(pz, 0.0, 600.0, 1.0, 0.7)), T.math("MINIMUM", T.math("MAXIMUM", T.attr("vj_haze"), 0.0), 1.0))
 T.feed(go["Color"], T.mix(f, gi["Color"], fogc))
@@ -956,6 +968,9 @@ def planetize_fog(g):
     dist = next(n for n in T.n if n.type == "CAMERA").outputs["View Distance"]
     alt_p = planet_frame(T, P)[1]
     alt_c = planet_frame(T, T.vmath("ADD", P, T.vmath("SCALE", inc, scale=dist)))[1]
+    for n in [n for n in T.n if n.type == "MATH" and n.operation == "DIVIDE" and n.inputs[0].is_linked
+              and n.inputs[0].links[0].from_socket == dist and abs(n.inputs[1].default_value - FOG_D) < 1e-3]:
+        T.l.new(fog_distance(T, alt_c), n.inputs[1])        # the haze's distance grows with the eye's height (issue #25)
     for sep in [n for n in T.n if n.type == "SEPXYZ" and n.inputs[0].is_linked and n.inputs[0].links[0].from_socket == P]:
         for ln in list(sep.outputs[2].links):
             if ln.to_node.type == "MATH" and ln.to_node.operation == "ABSOLUTE":        # surface height

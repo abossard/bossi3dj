@@ -9,7 +9,7 @@ after), and "hold"'s controls at their values. The other vj_ controls stay with 
 Every 0.25 s one line: t, the Syphon frame's luminance mean and spread (std over a 160 x 90 grid, 0..255; the demo's
 fault map calls a frame flat under 15), rt_space, the Path Camera's blending and view. "nodes" sets the Value nodes of
 that label in materials and node groups for the run (restored after); "snap" saves the frame at those t as
-<out without .jsonl>_<t>.png.
+<out without .jsonl>_<t>.png. At the end DN["bl_pose"] holds the camera's pose (ridge_check.py's "pose").
 """
 import json
 import sys
@@ -100,6 +100,8 @@ def run():
                 nxt = t + 0.25
             yield 0.05
     finally:
+        cam = S.camera              # the pose at the program's end, for a pinned check (ridge_check's "pose")
+        DN["bl_pose"] = {"matrix": [x for row in cam.matrix_world for x in row], "lens": cam.data.lens}
         for k, v in old.items():
             setattr(PC, k, v)
         for n, v in vals0:
