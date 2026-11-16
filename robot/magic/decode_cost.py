@@ -1,6 +1,8 @@
 """Decode cost of the Robot's Angles in Magic: Clip formats and Angle counts at 1920x1080, 30 fps, alternating runs.
 
     python3 robot/magic/decode_cost.py --configs prores,raw --angles 4 [--rounds 2] [--seconds 15] [--keep DIR]
+
+Work files go to robot/magic/decode/ (git-ignored, about 2 GB), never to a temp folder.
     python3 robot/magic/decode_cost.py --list
 
 A config is the format of the Passes: beauty (colour and alpha), shadow, and an optional own matte. The fixture Moves run on a
@@ -19,7 +21,6 @@ import shutil
 import socket
 import subprocess
 import sys
-import tempfile
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -173,15 +174,15 @@ def main():
     ap.add_argument("--angles", default="1,2")
     ap.add_argument("--rounds", type=int, default=2)
     ap.add_argument("--seconds", type=int, default=15)
-    ap.add_argument("--keep")
+    ap.add_argument("--keep", default=os.path.join(HERE, "decode"), help="work folder (clips, projects, results), git-ignored; default robot/magic/decode")
     ap.add_argument("--list", action="store_true")
     a = ap.parse_args()
     if a.list:
         for k, v in CONFIGS.items():
             print("%-18s beauty %s, shadow %s, matte %s" % ((k,) + v))
         return
-    tmp = tempfile.TemporaryDirectory()
-    root = a.keep or tmp.name
+    root = a.keep
+    os.makedirs(root, exist_ok=True)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(("127.0.0.1", PORT))
     sock.settimeout(0.1)
