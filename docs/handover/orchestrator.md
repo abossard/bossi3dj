@@ -16,7 +16,13 @@ For the session that takes over orchestration. Where the work stands and what is
 | B9 Planet: night-edge guard | `local_bc25e601-456e-4cdc-a717-bc0703c56812` | Sonnet 5.5, medium | bridge, Art-Net, QLC+ fixture, README and manual generators, start-up guard |
 | B11 Handbook, control page, Magic | `local_849d7786-a4c9-457f-bb9a-5504ae4eb2f5` | Sonnet 5.5, medium | handbook, page on 9210, Magic generators and live proof |
 
+Workers (2026-11-16): the pooled workers are stopped (wrong model); send them nothing. The orchestrator starts its own workers when a task needs one, on the strongest model (Opus or Fable, effort high), and checks the model after the start.
+
 Every other session in the list is finished or parked (all Godot ones; notes in [godot-parked.md](godot-parked.md)).
+
+## Tracking
+
+Upcoming and ongoing planet work is a GitHub issue with the label `planet` (`gh issue list --label planet`). File new open items there, comment on the issue when a session starts it, close it with the commit. `STATE.md` keeps decisions and where things stand, not the task list.
 
 ## Mechanics learned the hard way
 

@@ -94,6 +94,10 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 - Godot low hero shot on the long walk keeps the Wanderer in frame, the giant may shrink below 60 px (2026-11-11).
 - `/vj/cam` N picks each scene's Nth shot (0-based, clamped to what the scene has). New `/vj/cam_auto` (0 or 1, default 1) hands the cuts to the scene's own director: Godot follows it, Blender ignores it.
 
+## Open work
+
+- Planet: GitHub issues with the label `planet` (#10 to #17 filed 2026-11-16 from the open items in [gpu-terrain.md](docs/handover/gpu-terrain.md)).
+
 ## Waiting for the user
 
 - Eclipse in space: the moon's shadow on the Planet, or lining up per space camera.
