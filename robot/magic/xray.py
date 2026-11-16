@@ -8,7 +8,9 @@ rows in Builder form. The Clip Graph reads only these names:
   Section   the one source of the Intensity Tier: 0 intro (also silence), 2 buildup, 3 drop, 4 breakdown. Today a link to State;
             point it at another source (an OSC address, a song structure) and nothing else changes.
   Beats     running beat count, a bar line is a multiple of 4
-  BeatFrac  0..1 inside the beat
+  BeatFrac  0..1 inside the beat. Beats and BeatFrac both come from Phase and step in the same frame: Beats follows Phase through
+            BeatInBar, BeatLag and BeatPulse (3 frames), so BeatFrac reads Phase through two lag Globals (live test 2026-11-16: read
+            straight from Phase it wrapped 2 frames before Beats stepped, and /vj/clip_frame fell back one beat for those frames)
   Bpm       tempo in beats per minute
 """
 SOURCE = "Source 0"
@@ -111,5 +113,7 @@ def globals_(src=SOURCE):
     g(SECTION, 0, "global:State")
     g(BEATS, 0, "calc", [ex(
         "if (BeatPulse > 0.5, if (BeatInBar < 0.5, 4*ceil((y + 1)/4 - 0.001), y + 1), y)")])   # a bar line is a multiple of 4, never backwards
-    g(BEAT_FRAC, 0, "calc", [ex("frac(Phase)")])
+    g("PhaseLag1", 0, "calc", [ex("Phase")])
+    g("PhaseLag2", 0, "calc", [ex("PhaseLag1")])
+    g(BEAT_FRAC, 0, "calc", [ex("frac(PhaseLag2)")])      # frame f holds frac(Phase(f-3)), as Beats does
     return rows

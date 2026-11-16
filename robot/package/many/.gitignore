@@ -1,0 +1,5 @@
+# regenerated: python3 robot/magic/fixture.py --many --media ; python3 robot/magic/robot_magic.py robot/package/many/manifest.json
+beauty/
+shadow/
+depth/
+robot.magic

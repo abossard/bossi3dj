@@ -101,6 +101,22 @@ class GraphGlobalsTests(unittest.TestCase):
                     self.assertEqual(v["Sel"], v["Move"] * 2 + v["Angle"])
                     self.assertEqual(v["OutClip"], model.clip_index(s), "beat %d" % beat)
 
+    def test_globals_match_the_model_with_3_key_poses_and_mixed_lengths(self):
+        """package/many: 21 Moves of 4, 8 and 16 beats over 3 Key Poses; every Move pick, Angle cut and Clip index of the Globals equals the model's."""
+        m = mf.Manifest(json.load(open(os.path.join(HERE, "..", "..", "package", "many", "manifest.json"))))
+        sections = ([0] * 8 + [2] * 24 + [3] * 32 + [4] * 8 + [2, 3] * 8 + [3] * 24 + [0] * 8) * 1
+        for seed, rate in [(0, 1.0), (4.5, 0.5)]:
+            with self.subTest(seed=seed, cut_rate=rate):
+                run = Run(m, sections, seed=seed, cut_rate=rate)
+                model = cg.ClipGraph(m, seed=seed, cut_rate=rate)
+                walk = model.walk(sections)
+                for beat in range(1, len(sections) + 1):
+                    v, s = run.settled(beat), walk[beat - 1]
+                    self.assertEqual((v["Move"], v["Angle"], v["MoveStart"]),
+                                     (m.moves.index(m.move(s.move)), m.angle_ids.index(s.angle), s.start), "beat %d" % beat)
+                    self.assertEqual(v["OutClip"], model.clip_index(s), "beat %d" % beat)
+                self.assertEqual({m.move(s.move).beats for s in walk if not m.move(s.move).idle}, {4, 8, 16})
+
     def test_section_steers_the_tier(self):
         for section, tier in [(0, "calm"), (1, "calm"), (2, "build"), (3, "drop"), (4, "calm")]:
             with self.subTest(section=section):

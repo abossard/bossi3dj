@@ -46,6 +46,18 @@ class ClipGraph:
         cands = [m.name for m in self.moves if not m.idle and m.key_in == key and m.tier == tier]
         return [c for c in cands if c != move] or cands
 
+    def exits(self):
+        """{(key pose, tier): names of the Moves that start in that Key Pose in that tier}, every pair listed."""
+        out = {(k, t): [] for k in self.manifest.key_poses for t in ("calm", "build", "drop")}
+        for m in self.moves:
+            if not m.idle:
+                out[(m.key_in, m.tier)].append(m.name)
+        return out
+
+    def dead_ends(self):
+        """(key pose, tier) pairs with no Move to leave the pose in that tier: the walk waits in the pose's Idle Clip there until the tier changes."""
+        return [k for k, v in self.exits().items() if not v]
+
     def pool(self, move, tier):
         """What the pick draws from: the candidates, else the Idle Clip of the Key Pose (an Idle Clip with no candidate stays)."""
         cands = self.candidates(move, tier)
