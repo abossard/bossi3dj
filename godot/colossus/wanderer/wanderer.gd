@@ -13,6 +13,8 @@ const CLIMB_SPEED := 1.4
 const FACE_SECONDS := 0.15
 ## Off the floor this long counts as falling (a step off a slope's edge does not).
 const AIR_SECONDS := 0.15
+## The body's mean speed while it reaches up to a grip (m/s).
+const REACH_SPEED := 4.0
 const CLOTH := Color("8f8a80")
 ## The prepared Nomad (not in git, see assets/MODELS.md); the stand-in takes its place without it.
 const MODEL := "res://assets/models/nomad/nomad.gltf"
@@ -35,6 +37,8 @@ var _len := 1.0
 var _swing := Vector2.ZERO
 var _reach_from := Vector3.ZERO
 var _air_t := 0.0
+var _reach_seconds := 0.45
+var _landing := false
 var _yaw_rate := 0.0
 
 
@@ -108,7 +112,7 @@ func _physics_process(delta: float) -> void:
 		State.GROUND:
 			_ground(delta)
 		State.REACHING:
-			_t = minf(_t + delta / 0.45, 1.0)
+			_t = minf(_t + delta / _reach_seconds, 1.0)
 			global_position = _reach_from.lerp(_hang_pos(grip), smoothstep(0.0, 1.0, _t))
 			_face(grip, delta)
 			if _t >= 1.0:
@@ -133,9 +137,15 @@ func _drive_body(delta: float) -> void:
 		var head := colossus.head_point()
 		look = head.global_position if head else colossus.center()
 	_air_t = _air_t + delta if state == State.GROUND and not is_on_floor() else 0.0
-	var airborne := _air_t > AIR_SECONDS
+	# Off the Colossus he falls from the first tick: a short stand between the climb and the fall
+	# would start a second cross-fade inside the first, which drops the blend (a pop).
+	var airborne := _air_t > AIR_SECONDS or (_landing and not is_on_floor())
 	var speed := Vector2(velocity.x, velocity.z).length() if state == State.GROUND else 0.0
 	var t := _t if state != State.HANGING else 1.0
+	if _landing and is_on_floor():
+		_landing = false
+		body.landed()
+	body.swing = absf(_swing.x)
 	body.drive(state, speed, airborne, _from, grip, t, look, delta)
 
 
@@ -160,12 +170,14 @@ func grab(p: GrabPoint) -> void:
 	_from = p
 	state = State.REACHING
 	_reach_from = global_position
+	# A long reach takes longer: at a fixed 0.45 s a 4 m leap whips the arms round.
+	_reach_seconds = clampf(global_position.distance_to(_hang_pos(p)) / REACH_SPEED, 0.45, 1.2)
 	_t = 0.0
 
 
 func let_go() -> void:
-	if body and state != State.GROUND:
-		body.landed()
+	# Off the Colossus he stands up once he is on the floor, not while he drops.
+	_landing = body != null and state != State.GROUND
 	state = State.GROUND
 	grip = null
 	_from = null

@@ -36,7 +36,7 @@ Branch `integration/presentable`, main checkout. Brief: bring the Nomad (Wandere
 - Climb frames on Grock are dark: over-shoulder luma 38, close grip 25 (near black 30 and 35%); the rubric passed them.
 - Grock without surface detail in the wide frames and not obviously 28 m without a reference (reviewer). Its derived normal map (median tilt 12°) was not judged separately.
 - Grock has no hand bones and no eyes; the stand-in's eye glints are gone.
-- Mixamo clips still to download: list in the report and in `MODELS.md`.
+- Mixamo: all eleven slots play their own clip since 2026-11-16 (`MODELS.md`). `make godot-wanderer-motion` still fails its 4 m/s bar at the reach into the hang (6.8 m/s, the forearm turning over 3 to 4 ticks), not a one-tick pop.
 - Titan (302 joints, 15 textures) and Golem (59 textures, licence unconfirmed): what their archives need is in the report.
 - `tests/*.gd.uid` of other sessions' probes (ablate, cost, framing, hitch, shake_osc, warmup) are left untracked.
 

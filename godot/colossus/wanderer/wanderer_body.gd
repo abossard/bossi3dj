@@ -7,7 +7,8 @@ extends Node3D
 ## a procedural pose (WandererPose) stands in for them. The Wanderer moves the body; this node
 ## only poses it.
 
-## Cross-fade between the ground, the climb and the fall (s): no pop at a state change.
+## Cross-fade between the ground, the climb, the fall and the stand up (s): no pop at a state
+## change.
 const MODE_BLEND := 0.35
 const CLIMB_BLEND := 0.25
 ## Smoothing of the speed that drives the walk blend (s).
@@ -18,12 +19,22 @@ const HAND_BLEND := 0.3
 const HAND_SPREAD := 0.18
 ## Time constant of the hang following the clip (s): shimmy and hop clips move it within a cycle.
 const HANG_SMOOTH := 0.4
+## Swing (radians) from which the free hang clip plays instead of the braced hang.
+const SWING_CLIP := 0.15
+## A move's clip goes on through a hang this short (s): the next move usually starts at once.
+const MOVE_HOLD := 0.25
 ## Left elbow pole in the body's space (m); the right one is its mirror.
 const ELBOW_POLE := Vector3(0.7, 1.5, -0.4)
 const CLIMB_SLOTS := [
 	"hang_idle", "shimmy_left", "shimmy_right", "climb_up", "climb_down", "hang_swing"
 ]
-const P_MODE := &"parameters/mode/transition_request"
+const P_TO := [
+	&"parameters/to_climb/blend_amount",
+	&"parameters/to_fall/blend_amount",
+	&"parameters/to_stand/blend_amount"
+]
+const P_STAND_SEEK := &"parameters/stand_seek/seek_request"
+const MODES := ["climb", "fall", "stand"]
 const P_CLIMB := &"parameters/climb/transition_request"
 const P_LOCO := &"parameters/loco/blend_position"
 const P_SCALE := &"parameters/loco_scale/scale"
@@ -40,11 +51,15 @@ var run_speed := 0.0
 ## far off the surface (m), following the hang fit of the clip's pose (WandererFeet) while he
 ## climbs.
 var hang_reach := 2.0
+## How far the Shake swings him (radians), set by the Wanderer: past SWING_CLIP he hangs free.
+var swing := 0.0
 var hang_out := 0.3
 
 var _source: Skeleton3D
 var _tree: AnimationTree
-var _mode := ""
+var _mode := "ground"
+## Weight of climb, fall and stand up (0..1), each ramping linearly over MODE_BLEND.
+var _mode_w := PackedFloat32Array([0.0, 0.0, 0.0])
 var _climb := ""
 var _speed := 0.0
 var _hand_w := 0.0
@@ -59,8 +74,11 @@ var _chest_look: LookAtModifier3D
 var _planter: WandererFeet
 var _pose: WandererPose
 var _stand_t := INF
-var _landing := false
 var _move_from: GrabPoint
+var _move_slot := "hang_idle"
+var _hands_off := Vector3.ZERO
+var _hands_off_r := Vector3.ZERO
+var _move_hold := 0.0
 var _move_to: GrabPoint
 var _right_leads := false
 var _stand_len := 1.0
@@ -138,7 +156,7 @@ func _load_clips() -> AnimationLibrary:
 			for b in _source.get_bone_count():
 				_source.set_bone_name(b, WandererClips.bone_name(_source.get_bone_name(b)))
 		scene.free()
-		loaded[slot] = _clean(anim)
+		loaded[slot] = _clean(anim, slot in WandererClips.KEEP_HEIGHT)
 	add_child(_source)
 	var lib := AnimationLibrary.new()
 	for s in WandererClips.SLOTS:
@@ -147,7 +165,9 @@ func _load_clips() -> AnimationLibrary:
 			continue
 		var anim: Animation = loaded[r[0]]
 		if r[1]:
-			anim = WandererClips.first_frame(anim)
+			anim = WandererClips.still_frame(anim)
+		elif r[0] in WandererClips.STILL_LAST:
+			anim = WandererClips.still_frame(anim, true)
 		elif s["slot"] != r[0]:
 			anim = anim.duplicate(true)
 		anim.loop_mode = (
@@ -158,7 +178,7 @@ func _load_clips() -> AnimationLibrary:
 
 
 ## Tracks renamed to the profile, scale tracks dropped, the Hips' net travel taken out.
-func _clean(anim: Animation) -> Animation:
+func _clean(anim: Animation, keep_height: bool) -> Animation:
 	for t in range(anim.get_track_count() - 1, -1, -1):
 		var path := String(anim.track_get_path(t))
 		var bone := WandererClips.bone_name(path.get_slice(":", 1))
@@ -167,7 +187,7 @@ func _clean(anim: Animation) -> Animation:
 			continue
 		anim.track_set_path(t, NodePath("Skeleton3D:" + bone))
 		if bone == "Hips" and anim.track_get_type(t) == Animation.TYPE_POSITION_3D:
-			WandererClips.in_place(anim, t)
+			WandererClips.in_place(anim, t, keep_height)
 		elif anim.track_get_type(t) == Animation.TYPE_POSITION_3D:
 			anim.remove_track(t)
 	return anim
@@ -199,21 +219,26 @@ func _build_tree(lib: AnimationLibrary) -> void:
 	root.add_node("climb", climb)
 	for i in CLIMB_SLOTS.size():
 		climb.add_input(CLIMB_SLOTS[i])
+		# Back to a climb clip it goes on where it was: a restart from frame 0 jumps the pose.
+		climb.set_input_reset(i, false)
 		root.add_node(CLIMB_SLOTS[i], _anim(CLIMB_SLOTS[i]))
 		root.connect_node("climb", i, CLIMB_SLOTS[i])
-	var mode := AnimationNodeTransition.new()
-	mode.xfade_time = MODE_BLEND
-	mode.xfade_curve = _ease()
-	root.add_node("mode", mode)
-	var inputs := [
-		["ground", "loco_scale"], ["climb", "climb"], ["fall", "fall_idle"], ["stand", "stand_up"]
-	]
-	for i in inputs.size():
-		mode.add_input(inputs[i][0])
-		if not root.has_node(inputs[i][1]):
-			root.add_node(inputs[i][1], _anim(inputs[i][1]))
-		root.connect_node("mode", i, inputs[i][1])
-	root.connect_node("output", 0, "mode")
+	# Ground, climb, fall and stand up as three Blend2 steps whose weights drive() ramps itself:
+	# a Transition node blends its inputs wrong for the one tick it switches (a jump of up to
+	# 2 m in a hand), and a second request inside a cross-fade drops the first.
+	root.add_node("fall_idle", _anim("fall_idle"))
+	root.add_node("stand_up", _anim("stand_up"))
+	root.add_node("stand_seek", AnimationNodeTimeSeek.new())
+	root.connect_node("stand_seek", 0, "stand_up")
+	var below := "loco_scale"
+	for step: Array in [
+		["to_climb", "climb"], ["to_fall", "fall_idle"], ["to_stand", "stand_seek"]
+	]:
+		root.add_node(step[0], AnimationNodeBlend2.new())
+		root.connect_node(step[0], 0, below)
+		root.connect_node(step[0], 1, step[1])
+		below = step[0]
+	root.connect_node("output", 0, below)
 	if lib.has_animation("stand_up"):
 		_stand_len = lib.get_animation("stand_up").length
 	_tree = AnimationTree.new()
@@ -358,8 +383,15 @@ func drive(
 		# The targets follow the grip even while the hands let go (standing on top): left
 		# behind, the fading hands would trail a point the giant carries away.
 		_place_hands(state, from, grip, t)
+		_hands_off = global_transform.affine_inverse() * _hand_l.global_position
+		_hands_off_r = global_transform.affine_inverse() * _hand_r.global_position
 		if not standing_on_top:
 			want_hands = t if state == Wanderer.State.REACHING else 1.0
+	elif _hand_w > 0.0:
+		# Let go: the fading hands keep their place on his body as he drops; a target left at
+		# the grip would swing through the arm and flip the elbow.
+		_hand_l.global_position = global_transform * _hands_off
+		_hand_r.global_position = global_transform * _hands_off_r
 	_hand_w = move_toward(_hand_w, want_hands, delta / HAND_BLEND)
 	if _tree and on_grip and not standing_on_top and _hand_w > 0.5:
 		var k := 1.0 - exp(-delta / HANG_SMOOTH)
@@ -367,9 +399,7 @@ func drive(
 		hang_out = lerpf(hang_out, _planter.hang_out, k)
 	_hands.influence = smoothstep(0.0, 1.0, _hand_w)
 	_stand_t += delta
-	if _landing and state == Wanderer.State.GROUND and not airborne:
-		_landing = false
-		_stand_t = 0.0
+	_move_hold -= delta
 	if _tree == null:
 		return
 	var mode := "ground"
@@ -380,9 +410,10 @@ func drive(
 		mode = "stand"
 	elif airborne:
 		mode = "fall"
-	if mode != _mode:
-		_mode = mode
-		_tree.set(P_MODE, mode)
+	_mode = mode
+	for i in MODES.size():
+		_mode_w[i] = move_toward(_mode_w[i], 1.0 if mode == MODES[i] else 0.0, delta / MODE_BLEND)
+		_tree.set(P_TO[i], smoothstep(0.0, 1.0, _mode_w[i]))
 	_tree.set(P_LOCO, minf(_speed, Wanderer.RUN))
 	_tree.set(P_SCALE, _loco_scale(_speed))
 
@@ -411,9 +442,11 @@ func upper_body() -> PackedVector3Array:
 	)
 
 
-## He let go of the Colossus: stand up once he is on the ground.
+## He let go of the Colossus and is on the floor: stand up (once).
 func landed() -> void:
-	_landing = true
+	_stand_t = 0.0
+	if _tree:
+		_tree.set(P_STAND_SEEK, 0.0)
 
 
 ## Time scale of the walk blend: each clip at the speed whose planted foot does not slide.
@@ -424,12 +457,18 @@ func _loco_scale(v: float) -> float:
 
 
 func _climb_slot(state: int, from: GrabPoint, grip: GrabPoint) -> String:
+	if state == Wanderer.State.HANGING and _move_hold > 0.0:
+		# Between two moves he hangs for a tick: the move's clip goes on.
+		return _move_slot
 	if state != Wanderer.State.MOVING or from == null or from == grip:
-		return "hang_idle"
+		return "hang_swing" if swing > SWING_CLIP else "hang_idle"
 	var d := from.global_transform.basis.inverse() * (grip.global_position - from.global_position)
+	_move_hold = MOVE_HOLD
 	if absf(d.y) >= absf(d.x):
-		return "climb_up" if d.y > 0.0 else "climb_down"
-	return "shimmy_right" if d.x > 0.0 else "shimmy_left"
+		_move_slot = "climb_up" if d.y > 0.0 else "climb_down"
+	else:
+		_move_slot = "shimmy_right" if d.x > 0.0 else "shimmy_left"
+	return _move_slot
 
 
 ## Hands on the grip, apart along the surface. Moving between grips the leading hand goes first

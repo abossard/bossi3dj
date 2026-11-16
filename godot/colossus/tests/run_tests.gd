@@ -39,6 +39,7 @@ func _init() -> void:
 	_test_clip_bone_names()
 	_test_clip_in_place()
 	_test_stride_speed()
+	_test_clip_keep_height_and_still()
 	print("%d passed, %d failed" % [_passed, _failed])
 	quit(1 if _failed > 0 else 0)
 
@@ -826,3 +827,26 @@ func _test_clear_height() -> void:
 			snappedf(Director.clear_height(cam, target, c[1], 0.2), 0.001),
 			c[2]
 		)
+
+
+func _test_clip_keep_height_and_still() -> void:
+	# A clip that gets up: its rise stays, its sideways travel goes.
+	var a := Animation.new()
+	var t := a.add_track(Animation.TYPE_POSITION_3D)
+	for k in 3:
+		a.track_insert_key(
+			t, k * 0.5, [Vector3(0, 0.2, 0), Vector3(0.5, 0.6, 0), Vector3(1, 1, 0)][k]
+		)
+	WandererClips.in_place(a, t, true)
+	var cases := [
+		["rise stays", a.track_get_key_value(t, 2), Vector3(0, 1, 0)],
+		["middle keeps its height", a.track_get_key_value(t, 1), Vector3(0, 0.6, 0)],
+		["still first", WandererClips.still_frame(a).track_get_key_value(0, 0), Vector3(0, 0.2, 0)],
+		[
+			"still last",
+			WandererClips.still_frame(a, true).track_get_key_value(0, 0),
+			Vector3(0, 1, 0)
+		],
+	]
+	for c in cases:
+		_check("clip %s" % c[0], c[1], c[2])

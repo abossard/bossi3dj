@@ -40,18 +40,18 @@ Export settings for every clip: Format FBX Binary, Skin "Without Skin", Frames p
 
 The Wanderer's animation slots look for these files in `assets/mixamo/`. `make godot-models` copies each download that is there (`tools/godot_mixamo_copy.py`); a clip dropped in by hand under the slot's file name works the same, at the next start, with no code change. A slot without its file plays its fallback (`wanderer/clips.gd`); with no clip at all the Wanderer takes a procedural pose (arms down, legs swinging with his stride).
 
-| Slot | File in `assets/mixamo/` | Mixamo download (`~/Downloads`) | Status on 2026-11-11 | Fallback |
+| Slot | File in `assets/mixamo/` | Mixamo download (`~/Downloads`) | Status on 2026-11-16 | Fallback |
 |---|---|---|---|---|
 | idle | `idle.fbx` | `Idle.fbx` | copied | procedural pose |
 | walk | `walk.fbx` | `Walking-2.fbx` (the same walk as `Walking.fbx`, without skin) | copied | idle |
 | run | `run.fbx` | `Fast Run.fbx` (fits the 4.5 m/s run; `Slow Run.fbx` slides) | copied | walk |
-| hang idle | `hang_idle.fbx` | `Braced Hang.fbx` | to download | first frame of shimmy left, held |
-| shimmy left | `shimmy_left.fbx` | `Braced Hang Shimmy.fbx` (in place; leads with the left hand) | copied | hang idle |
-| shimmy right | `shimmy_right.fbx` | `Right Braced Hang Shimmy.fbx` (or Braced Hang Shimmy with Mirror ticked, saved under that name) | to download | hang idle |
-| climb up | `climb_up.fbx` | `Climbing Up Wall.fbx` (a looping climb; `Braced Hang Hop Up.fbx` is a one-shot ledge hop and pops when looped) | to download | hang idle |
-| climb down | `climb_down.fbx` | `Climbing Down Wall.fbx` | to download | hang idle |
-| hang swing | `hang_swing.fbx` | `Hanging Idle.fbx` (free hang) | to download | hang idle |
-| fall idle | `fall_idle.fbx` | `Falling Idle.fbx` | to download | idle |
-| stand up | `stand_up.fbx` | `Standing Up.fbx` | to download | idle |
+| hang idle | `hang_idle.fbx` | `Braced Hang.fbx` (drops into the hang and settles: the slot holds its last frame) | copied | first frame of shimmy left, held |
+| shimmy left | `shimmy_left.fbx` | `Braced Hang Shimmy-3.fbx` (travels to the character's left; root motion taken out at load) | copied | hang idle |
+| shimmy right | `shimmy_right.fbx` | `Braced Hang Shimmy.fbx` (in place; the same motion as `-4`, which travels to the character's right; `-3` is its mirror) | copied | hang idle |
+| climb up | `climb_up.fbx` | `Climbing Up Wall.fbx` (a looping climb; `Braced Hang Hop Up.fbx` is a one-shot ledge hop and pops when looped) | copied | hang idle |
+| climb down | `climb_down.fbx` | `Climbing Down Wall.fbx` | copied | hang idle |
+| hang swing | `hang_swing.fbx` | `Hanging Idle.fbx` (free hang; plays while a Shake swings him more than 0.15 rad) | copied | hang idle |
+| fall idle | `fall_idle.fbx` | `Falling Idle.fbx` (keeps its height) | copied | idle |
+| stand up | `stand_up.fbx` | `Standing Up.fbx` (carries a skin mesh: imports as 1.1 MB, only its clip is used; keeps its rise from lying) | copied | idle |
 
-Also in `~/Downloads`, not used: `Idle-2.fbx`, `Idle-3.fbx`, `Kneeling Idle.fbx`, `Walking.fbx` (carries a skin), `Walking-3.fbx`, `Walking-4.fbx`, `Walking Backwards.fbx`, `Walk In Circle.fbx`, `Sneak Walk.fbx`, `Slow Run.fbx`, `Braced Hang Shimmy-2.fbx` (root motion), `Braced Hang Hop Up.fbx`.
+Also in `~/Downloads`, not used: `Idle-2.fbx`, `Idle-3.fbx`, `Kneeling Idle.fbx`, `Walking.fbx` (carries a skin), `Walking-3.fbx`, `Walking-4.fbx`, `Walking Backwards.fbx`, `Walk In Circle.fbx`, `Sneak Walk.fbx`, `Slow Run.fbx`, `Braced Hang Shimmy-2.fbx` and `-4.fbx` (root motion), `Braced Hang Hop Up.fbx`, `Climbing Up Wall-2.fbx`, `Climbing Down Wall-2.fbx`, `Hanging Idle-2.fbx`, `Hanging Idle-3.fbx`, `Hanging.fbx`, `Standing Up-2.fbx` (also with skin, 183 frames).

@@ -105,6 +105,7 @@ func _sample(seconds: float) -> Array[Dictionary]:
 					"pos": main.wanderer.global_position,
 					"yaw": main.wanderer.rotation.y,
 					"t": main.wanderer._t,
+					"mode": body._mode,
 				}
 			)
 		)
@@ -352,5 +353,24 @@ func _run() -> void:
 	for k: String in fall_tr:
 		print("  fall %s: largest velocity jump %.1f m/s" % [k, fall_tr[k]])
 	print("fall joints: %s" % _joints(fall))
+	var worst_fall := 1
+	for i in range(1, fall.size()):
+		if fall[i]["joint"] > fall[worst_fall]["joint"]:
+			worst_fall = i
+	for i in range(maxi(worst_fall - 2, 1), mini(worst_fall + 2, fall.size())):
+		print(
+			(
+				"  fall tick %d %s state %d mode %s hand w %.2f jump %.1f: body moved %.3f m"
+				% [
+					i,
+					fall[i]["bone"],
+					fall[i]["state"],
+					fall[i]["mode"],
+					fall[i]["hand_w"],
+					fall[i]["joint"],
+					(fall[i]["pos"] as Vector3).distance_to(fall[i - 1]["pos"]),
+				]
+			)
+		)
 	print("wanderer_motion: %s" % ("passed" if _failed == 0 else "%d failed" % _failed))
 	quit(1 if _failed > 0 else 0)

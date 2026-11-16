@@ -19,6 +19,12 @@ const SLOTS: Array[Dictionary] = [
 	{"slot": "fall_idle", "file": "fall_idle.fbx", "fallback": "idle", "hold": false},
 	{"slot": "stand_up", "file": "stand_up.fbx", "fallback": "idle", "hold": false},
 ]
+## Slots whose clip moves the hips up or down for real (getting up, falling): only their sideways
+## travel is taken out, their height stays.
+const KEEP_HEIGHT := ["fall_idle", "stand_up"]
+## Slots whose own clip is a move into a pose, not a loop ("Braced Hang" drops into the hang):
+## they hold the clip's last frame.
+const STILL_LAST := ["hang_idle"]
 ## Slots that loop; the others play once (stand_up) or loop as the state holds.
 const ONE_SHOT := ["stand_up"]
 ## Mixamo bone (after Godot's FBX import turns ':' into '_') to the humanoid profile name.
@@ -92,13 +98,16 @@ static func bone_name(mixamo: String) -> String:
 
 ## Removes the clip's net travel: the Hips position track drifts linearly from its first key to
 ## its last over the clip, and that drift is taken out, so walking, shimmying and hopping clips
-## play in place and the scene moves the body. Bumps inside the cycle stay.
-static func in_place(anim: Animation, hips_track: int) -> void:
+## play in place and the scene moves the body. Bumps inside the cycle stay. `keep_height` leaves
+## the up and down drift (a clip that gets up from the ground).
+static func in_place(anim: Animation, hips_track: int, keep_height := false) -> void:
 	var n := anim.track_get_key_count(hips_track)
 	if n < 2:
 		return
 	var first: Vector3 = anim.track_get_key_value(hips_track, 0)
 	var drift: Vector3 = anim.track_get_key_value(hips_track, n - 1) - first
+	if keep_height:
+		drift.y = 0.0
 	var length := maxf(anim.track_get_key_time(hips_track, n - 1), 0.001)
 	for k in n:
 		var t := anim.track_get_key_time(hips_track, k)
@@ -106,8 +115,8 @@ static func in_place(anim: Animation, hips_track: int) -> void:
 		anim.track_set_key_value(hips_track, k, v - drift * (t / length))
 
 
-## A clip that holds the first frame of `anim` (a still pose, for a slot whose clip is missing).
-static func first_frame(anim: Animation) -> Animation:
+## A clip that holds the first (or the last) frame of `anim`: a still pose.
+static func still_frame(anim: Animation, last := false) -> Animation:
 	var still := Animation.new()
 	still.length = 1.0
 	still.loop_mode = Animation.LOOP_LINEAR
@@ -116,7 +125,8 @@ static func first_frame(anim: Animation) -> Animation:
 			continue
 		var i := still.add_track(anim.track_get_type(t))
 		still.track_set_path(i, anim.track_get_path(t))
-		still.track_insert_key(i, 0.0, anim.track_get_key_value(t, 0))
+		var k := anim.track_get_key_count(t) - 1 if last else 0
+		still.track_insert_key(i, 0.0, anim.track_get_key_value(t, k))
 	return still
 
 

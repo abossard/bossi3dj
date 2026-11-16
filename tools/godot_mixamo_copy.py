@@ -16,15 +16,18 @@ CLIPS = {
     "idle.fbx": "Idle.fbx",
     "walk.fbx": "Walking-2.fbx",
     "run.fbx": "Fast Run.fbx",
+    # Drops into the hang and settles: the slot holds its last frame (wanderer/clips.gd STILL_LAST).
     "hang_idle.fbx": "Braced Hang.fbx",
-    # Leads with the left hand (checked against "Braced Hang Shimmy-2", the same move with root motion).
-    "shimmy_left.fbx": "Braced Hang Shimmy.fbx",
-    "shimmy_right.fbx": "Right Braced Hang Shimmy.fbx",
+    # Same hand motion as "Braced Hang Shimmy-3" mirrored; its root-motion twin "-4" travels to the
+    # character's right. "-3" (and "-2") travel left; the root motion is taken out at load.
+    "shimmy_left.fbx": "Braced Hang Shimmy-3.fbx",
+    "shimmy_right.fbx": "Braced Hang Shimmy.fbx",
     # A looping climb: "Braced Hang Hop Up" is a one-shot hop onto a ledge and pops when it loops.
     "climb_up.fbx": "Climbing Up Wall.fbx",
     "climb_down.fbx": "Climbing Down Wall.fbx",
     "hang_swing.fbx": "Hanging Idle.fbx",
     "fall_idle.fbx": "Falling Idle.fbx",
+    # Carries a skin mesh; only its clip is used (the mesh is dropped at load).
     "stand_up.fbx": "Standing Up.fbx",
 }
 

@@ -74,7 +74,9 @@ The Nomad replaces the stand-in when its model is present (`assets/MODELS.md`); 
 
 Clip slots, the file each expects and its fallback: `godot/colossus/assets/MODELS.md`. Played now: idle (`Idle.fbx`), walk (`Walking-2.fbx`), run (`Fast Run.fbx`), shimmy left (`Braced Hang Shimmy.fbx`). On a fallback: hang idle (the shimmy's first frame, held), shimmy right, climb up, climb down, hang swing (hang idle), fall idle and stand up (idle).
 
-Mixamo clips still to download (FBX Binary, Without Skin, 30 fps, In Place for walk and run), with the file name `make godot-models` copies:
+Update 2026-11-16: all the clips below are downloaded and every slot plays its own clip (table in `assets/MODELS.md`). The in-place `Braced Hang Shimmy` travels to the character's right (its hand motion equals the root-motion `-4`, which moves right), not left as written above: it is the right shimmy now, `Braced Hang Shimmy-3` the left. Wiring them showed three faults, now fixed: a climb clip restarted from frame 0 when the move went on after a one-tick hang (a 1.7 m foot jump); the mode cross-fade jumped up to 2 m in a hand on the tick it switched (Godot's Transition node; ground, climb, fall and stand up are now Blend2 steps with weights ramped in code); the stand up began in the air at the let go. `make godot-wanderer-motion` after the fixes: climb moves 2.9 to 3.7 m/s, let go 3.1 m/s, hands on the grip 0.0 cm median; the reach into the hang still turns the forearm at up to 6.8 m/s over 3 to 4 ticks (the probe's bar is 4), with the reach now timed by distance (4 m/s, 0.45 to 1.2 s; it was a fixed 0.45 s).
+
+Mixamo clips that were missing on 2026-11-11 (FBX Binary, Without Skin, 30 fps, In Place for walk and run), with the file name `make godot-models` copies:
 
 | Slot | Mixamo clip | File name |
 |---|---|---|

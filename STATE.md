@@ -99,7 +99,7 @@ Updated 2026-11-11. Keep this file short and current: where each stream stands, 
 - Eclipse in space: the moon's shadow on the Planet, or lining up per space camera.
 - Bend the straight show valley, or keep it.
 - Keep godot-mcp, or remove the addon and autoload.
-- Seven Mixamo clips (Braced Hang, Right Braced Hang Shimmy, Climbing Up Wall, Climbing Down Wall, Hanging Idle, Falling Idle, Standing Up); Scenario OAuth.
+- Scenario OAuth. (The Wanderer's Mixamo clips are all in since 2026-11-16, every slot plays its own clip: `godot/colossus/assets/MODELS.md`.)
 
 ## Checked after the import (2026-11-10)
 
