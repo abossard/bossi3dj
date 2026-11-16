@@ -10,7 +10,7 @@
 # music   afplay MUSIC in the background, then 3 s of BlackHole's level (input :0) must be above -60 dB
 # steer   tools/magic_steering_check.py: 180 s of path, target, height from Magic, then the height takeover
 # record  90 s of CAM_OUT, nothing held, then blender/review/video_flicker.py per 15 s stage
-# stop    stops afplay; Blender stays open (make blender-kill is the caller's)
+# stop    stops afplay, then make blender-kill (the next session rebuilds)
 # Outputs: blender/review/out/demo-check-<date>/ (git-ignored), one log per step, summary.txt with each step's exit code.
 cd "$(dirname "$0")/.." || exit 1
 MUSIC=${MUSIC:-$HOME/Music/Tapes/drowning.mp3}
@@ -41,7 +41,8 @@ for s in "${steps[@]}"; do
         record) run record env PYTHONPATH="$HOME/.local/lib/python3.13/site-packages" python3.13 tools/syphon_record.py \
                     --app Blender --server CAM_OUT --seconds 90 --fps 30 --size 960x540 --out "$OUT/unheld.mp4" --vflip
                 run flicker .venv/bin/python blender/review/video_flicker.py "$OUT/unheld.mp4" 15 ;;
-        stop)   [ -f "$OUT/afplay.pid" ] && kill "$(cat "$OUT/afplay.pid")" 2>/dev/null; rm -f "$OUT/afplay.pid" ;;
+        stop)   [ -f "$OUT/afplay.pid" ] && kill "$(cat "$OUT/afplay.pid")" 2>/dev/null; rm -f "$OUT/afplay.pid"
+                run kill make blender-kill ;;
         *)      echo "unknown step $s"; exit 2 ;;
     esac
 done
