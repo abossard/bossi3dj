@@ -1,9 +1,10 @@
 """Clip Graph: the pure model of what Magic walks (Moves joined by Key Poses, Angle cuts at Cut Points). Stdlib only.
 
-State is (move, angle, start): the Move on air, the Angle on air and the beat count at which the Move began. `step` is called
-once per beat with the running beat count and the music's energy:
+State is (move, angle, start, tier): the Move on air, the Angle on air, the beat count at which the Move began and the Intensity
+Tier. `step` is called once per beat with the running beat count and the music's section (Music X-Ray State: 2 buildup is build,
+3 drop is drop, anything else calm). The tier follows the section only on a bar boundary, so a section change mid-bar waits:
 - when a Move Clip has run its beats (always on a bar, since Clips are 4, 8 or 16 beats), pick the next Move among the
-  non-idle Moves whose key_in equals the current key_out, in the Intensity Tier the energy is in, not the current Move unless it
+  non-idle Moves whose key_in equals the current key_out, in the Intensity Tier, not the current Move unless it
   is the only one; the pick comes from the bar number. With no pick the Android goes to the Idle Clip of that Key Pose;
 - an Idle Clip loops (Magic does that) and is left on the next bar boundary, once it has played, into such a pick; with no pick it stays;
 - at a Cut Point of the Move on air (offset in beats since its start), cut to another Angle with probability `cut_rate`.
@@ -13,8 +14,9 @@ into Magic Globals; tests/test_robot_magic.py runs those Globals beside this mod
 import math
 from collections import namedtuple
 
-State = namedtuple("State", "move angle start")
+State = namedtuple("State", "move angle start tier", defaults=("calm",))
 SALT_MOVE, SALT_CUT, SALT_ANGLE = 0, 1, 2
+SECTION_BUILDUP, SECTION_DROP = 2, 3      # Music X-Ray State: 0 intro, 2 buildup, 3 drop, 4 breakdown; everything else is calm
 
 
 def hash01(n, seed, salt):
@@ -24,14 +26,19 @@ def hash01(n, seed, salt):
 
 
 class ClipGraph:
-    def __init__(self, manifest, seed=0, tier_build=0.25, tier_drop=0.55, cut_rate=1.0):
+    def __init__(self, manifest, seed=0, cut_rate=1.0):
         self.manifest, self.seed = manifest, seed
-        self.tier_build, self.tier_drop, self.cut_rate = tier_build, tier_drop, cut_rate
+        self.cut_rate = cut_rate
         self.moves = manifest.moves
         self.angles = manifest.angle_ids
 
-    def tier(self, energy):
-        return "calm" if energy < self.tier_build else "build" if energy < self.tier_drop else "drop"
+    @staticmethod
+    def tier(section):
+        return "drop" if section == SECTION_DROP else "build" if section == SECTION_BUILDUP else "calm"
+
+    def latch(self, tier, beat, section):
+        """The tier after beat `beat`: it takes the section's tier on a bar boundary only."""
+        return self.tier(section) if beat % 4 == 0 else tier
 
     def candidates(self, move, tier):
         """Names of the Move Clips that may follow `move` in `tier`: same Key Pose, current Move left out unless it is alone. May be empty."""
@@ -59,26 +66,27 @@ class ClipGraph:
         return self.angles[(i + 1 + int(math.floor(hash01(beat, self.seed, SALT_ANGLE) * (n - 1)))) % n]
 
     def start(self):
-        return State(self.moves[0].name, self.angles[0], 0)
+        return State(self.moves[0].name, self.angles[0], 0, "calm")
 
-    def step(self, state, beat, energy):
-        move, angle, start = state
+    def step(self, state, beat, section):
+        move, angle, start, _tier = state
+        tier = self.latch(state.tier, beat, section)
         offset = beat - start
         m = self.manifest.move(move)
         if m.idle:
-            leave = beat % 4 == 0 and offset > 0 and self.next_move(move, beat // 4, self.tier(energy)) != move
+            leave = beat % 4 == 0 and offset > 0 and self.next_move(move, beat // 4, tier) != move
         else:
             leave = offset >= m.beats
         if leave:
-            move, start, offset = self.next_move(move, beat // 4, self.tier(energy)), beat, 0
+            move, start, offset = self.next_move(move, beat // 4, tier), beat, 0
         if offset % self.manifest.move(move).beats in self.manifest.move(move).cut_points:
             angle = self.next_angle(angle, beat)
-        return State(move, angle, start)
+        return State(move, angle, start, tier)
 
-    def walk(self, energies):
-        """States after beats 1..len(energies), one energy per beat; the state before is `start()`."""
+    def walk(self, sections):
+        """States after beats 1..len(sections), one section per beat; the state before is `start()`."""
         out, s = [], self.start()
-        for beat, e in enumerate(energies, 1):
+        for beat, e in enumerate(sections, 1):
             s = self.step(s, beat, e)
             out.append(s)
         return out

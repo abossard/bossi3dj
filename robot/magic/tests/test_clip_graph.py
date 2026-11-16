@@ -48,11 +48,26 @@ def long_moves(d):
 
 
 class TierTests(unittest.TestCase):
-    def test_tier_of_energy(self):
-        g = cg.ClipGraph(manifest())
-        for energy, tier in [(0, "calm"), (0.24, "calm"), (0.25, "build"), (0.54, "build"), (0.55, "drop"), (1, "drop")]:
-            with self.subTest(energy=energy):
-                self.assertEqual(g.tier(energy), tier)
+    def test_tier_of_section(self):
+        for section, tier in [(0, "calm"), (1, "calm"), (2, "build"), (3, "drop"), (4, "calm")]:
+            with self.subTest(section=section):
+                self.assertEqual(cg.ClipGraph.tier(section), tier)
+
+    def test_tier_changes_only_on_a_bar_boundary(self):
+        g = cg.ClipGraph(manifest(), seed=3)
+        for name, sections in [("every section in turn", [0, 2, 3, 4, 2, 3, 0] * 12), ("a change every beat", [3, 0, 2, 4] * 20),
+                               ("a change just after a bar", [0] * 5 + [3] * 7 + [2] * 6 + [0] * 6)]:
+            with self.subTest(name):
+                prev = g.start()
+                for beat, s in enumerate(g.walk(sections), 1):
+                    if s.tier != prev.tier:
+                        self.assertEqual(beat % 4, 0, beat)
+                        self.assertEqual(s.tier, g.tier(sections[beat - 1]))
+                    prev = s
+
+    def test_a_section_change_mid_bar_waits_for_the_next_bar(self):
+        walk = cg.ClipGraph(manifest()).walk([0] * 5 + [3] * 7)
+        self.assertEqual([s.tier for s in walk], ["calm"] * 7 + ["drop"] * 5)
 
 
 class CandidateTests(unittest.TestCase):
@@ -86,18 +101,18 @@ class CandidateTests(unittest.TestCase):
 
 
 class WalkTests(unittest.TestCase):
-    ENERGIES = {"calm": 0.1, "build": 0.4, "drop": 0.9}
+    SECTIONS = {"calm": 0, "build": 2, "drop": 3}
 
     def test_deterministic_with_a_seed(self):
-        energies = [0.1, 0.4, 0.9, 0.3] * 20
+        sections = [0, 2, 3, 4] * 20
         for seed in (0, 1, 42.5):
             with self.subTest(seed=seed):
                 m = manifest()
-                self.assertEqual(cg.ClipGraph(m, seed=seed).walk(energies), cg.ClipGraph(m, seed=seed).walk(energies))
+                self.assertEqual(cg.ClipGraph(m, seed=seed).walk(sections), cg.ClipGraph(m, seed=seed).walk(sections))
 
     def test_seeds_differ(self):
         m = manifest()
-        runs = {tuple(cg.ClipGraph(m, seed=s, cut_rate=0.5).walk([0.4] * 80)) for s in range(6)}
+        runs = {tuple(cg.ClipGraph(m, seed=s, cut_rate=0.5).walk([2] * 80)) for s in range(6)}
         self.assertGreater(len(runs), 3)
 
     def test_moves_change_only_on_a_bar_and_after_their_beats(self):
@@ -106,7 +121,7 @@ class WalkTests(unittest.TestCase):
                 m = manifest(mutate)
                 g = cg.ClipGraph(m, seed=5)
                 prev = g.start()
-                for beat, s in enumerate(g.walk([0.1, 0.4, 0.9] * 30), 1):
+                for beat, s in enumerate(g.walk([0, 2, 3] * 30), 1):
                     if s.move != prev.move or s.start != prev.start:
                         self.assertEqual(beat % 4, 0)
                         self.assertEqual(s.start, beat)
@@ -118,27 +133,27 @@ class WalkTests(unittest.TestCase):
 
     def test_tier_picks_a_move_of_that_tier(self):
         m = manifest()
-        for tier, energy in self.ENERGIES.items():
+        for tier, section in self.SECTIONS.items():
             with self.subTest(tier=tier):
                 g = cg.ClipGraph(m, seed=2)
-                moves = {s.move for s in g.walk([energy] * 64)[4:]}
+                moves = {s.move for s in g.walk([section] * 64)[4:]}
                 self.assertTrue(all(m.move(x).tier == tier for x in moves), moves)
 
     def test_a_move_with_no_next_pick_goes_to_the_idle_clip_and_leaves_on_a_bar(self):
         cases = [
-            ("build Move, then calm: idle from the bar the Move ends", [0.4] * 7 + [0.1] * 13,
+            ("build Move, then calm: idle from the bar the Move ends", [2] * 7 + [0] * 13,
              {7: "build", 8: "idle", 12: "idle", 19: "idle"}),
-            ("calm all along: idle never leaves", [0.1] * 40, {1: "idle", 20: "idle", 39: "idle"}),
-            ("build arrives mid-bar: the Idle Clip is left on the next bar", [0.1] * 5 + [0.4] * 11,
+            ("calm all along: idle never leaves", [0] * 40, {1: "idle", 20: "idle", 39: "idle"}),
+            ("build arrives mid-bar: the Idle Clip is left on the next bar", [0] * 5 + [2] * 11,
              {5: "idle", 6: "idle", 7: "idle", 8: "build", 11: "build"}),
-            ("build is there at the start: left on the first bar after it began", [0.4] * 12, {3: "idle", 4: "build"}),
-            ("drop Move repeats itself (alone in its tier), calm then idles", [0.9] * 8 + [0.1] * 8,
+            ("build is there at the start: left on the first bar after it began", [2] * 12, {3: "idle", 4: "build"}),
+            ("drop Move repeats itself (alone in its tier), calm then idles", [3] * 8 + [0] * 8,
              {8: "drop", 11: "drop", 12: "idle", 16: "idle"}),
         ]
         m = manifest()
-        for name, energies, expect in cases:
+        for name, sections, expect in cases:
             with self.subTest(name):
-                walk = cg.ClipGraph(m, seed=1).walk(energies)
+                walk = cg.ClipGraph(m, seed=1).walk(sections)
                 for beat, kind in expect.items():
                     mv = m.move(walk[beat - 1].move)
                     self.assertEqual("idle" if mv.idle else mv.tier, kind, (beat, walk[beat - 1]))
@@ -146,9 +161,9 @@ class WalkTests(unittest.TestCase):
     def test_an_idle_clip_is_left_only_into_a_move_that_starts_in_its_pose(self):
         m = manifest(with_poses)
         g = cg.ClipGraph(m, seed=2)
-        # build energy from the start: idle (guard) leaves to jab_cross (guard to crouch), which has no build Move to go on with
+        # build section from the start: idle (guard) leaves to jab_cross (guard to crouch), which has no build Move to go on with
         # but take_hit (starts in crouch); at calm the pose's Idle Clip is crouch_idle, left again once build returns
-        walk = g.walk([0.4] * 8 + [0.1] * 8 + [0.4] * 8)
+        walk = g.walk([2] * 8 + [0] * 8 + [2] * 8)
         names = [s.move for s in walk]
         self.assertEqual((names[2], names[3]), ("idle", "jab_cross"))
         self.assertEqual(names[7], "take_hit")
@@ -161,7 +176,7 @@ class WalkTests(unittest.TestCase):
         g = cg.ClipGraph(m, seed=9)
         prev = g.start()
         changes = 0
-        for beat, s in enumerate(g.walk([0.4] * 64), 1):
+        for beat, s in enumerate(g.walk([2] * 64), 1):
             if s.angle != prev.angle:
                 changes += 1
                 self.assertIn((beat - s.start) % m.move(s.move).beats, m.move(s.move).cut_points)
@@ -172,7 +187,7 @@ class WalkTests(unittest.TestCase):
         m = manifest()
         for rate, expect in [(0.0, lambda n: n == 0), (1.0, lambda n: n >= 30), (0.5, lambda n: 8 <= n <= 28)]:
             with self.subTest(cut_rate=rate):
-                walk = cg.ClipGraph(m, seed=4, cut_rate=rate).walk([0.4] * 64)
+                walk = cg.ClipGraph(m, seed=4, cut_rate=rate).walk([2] * 64)
                 changes = sum(1 for a, b in zip(walk, walk[1:]) if a.angle != b.angle)
                 self.assertTrue(expect(changes), changes)
 
@@ -180,7 +195,7 @@ class WalkTests(unittest.TestCase):
         def one_angle(d):
             d["angles"] = d["angles"][:1]
             d["clips"] = [c for c in d["clips"] if c["angle"] == "front"]
-        walk = cg.ClipGraph(manifest(one_angle)).walk([0.4] * 32)
+        walk = cg.ClipGraph(manifest(one_angle)).walk([2] * 32)
         self.assertEqual({s.angle for s in walk}, {"front"})
 
     def test_first_state(self):

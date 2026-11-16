@@ -40,7 +40,7 @@ ENV = {"_if": lambda c, a, b: a if c else b, "floor": math.floor, "sin": math.si
 
 
 def simulate(globals_, drive, frames):
-    """Yield the value dict of each frame. `drive(frame)` gives the externally driven Globals (Beats, Bars, Phase, EnergyAvg, BPM)."""
+    """Yield the value dict of each frame. `drive(frame)` gives the externally driven Globals (Beats, BeatFrac, Section, Bpm)."""
     code = {}
     for name, value, source, mods in globals_:
         code[name] = [compile(_translate(e), name, "eval") for kind, e in mods]
@@ -62,21 +62,21 @@ def simulate(globals_, drive, frames):
 
 
 class Run:
-    """A simulated walk: beats at a fixed frame interval, one energy per beat, graph Globals only."""
+    """A simulated walk: beats at a fixed frame interval, one section per beat, graph Globals only."""
     FRAMES_PER_BEAT = 29
 
-    def __init__(self, m, energies, **graph):
-        self.m, self.energies = m, energies
+    def __init__(self, m, sections, **graph):
+        self.m, self.sections = m, sections
         self.globals = rm.graph_globals(m, **graph)
-        self.frames = list(simulate(self.globals, self.drive, self.FRAMES_PER_BEAT * (len(energies) + 1)))
+        self.frames = list(simulate(self.globals, self.drive, self.FRAMES_PER_BEAT * (len(sections) + 1)))
 
     def beat_of(self, f):
         return f // self.FRAMES_PER_BEAT
 
     def drive(self, f):
         beat = self.beat_of(f)
-        e = self.energies[min(max(0, beat - 1), len(self.energies) - 1)]
-        return {"Beats": beat, "Bars": beat // 4, "Phase": (f % self.FRAMES_PER_BEAT) / self.FRAMES_PER_BEAT, "EnergyAvg": e, "BPM": 124}
+        e = self.sections[min(max(0, beat - 1), len(self.sections) - 1)]
+        return {"Beats": beat, "BeatFrac": (f % self.FRAMES_PER_BEAT) / self.FRAMES_PER_BEAT, "Section": e, "Bpm": 124}
 
     def settled(self, beat):
         """Values just before the next beat: the pipeline has run."""
@@ -88,28 +88,28 @@ class GraphGlobalsTests(unittest.TestCase):
         self.m = mf.Manifest(json.load(open(os.path.join(HERE, "..", "..", "package", "fixture", "manifest.json"))))
 
     def test_globals_match_the_model(self):
-        energies = ([0.1] * 8 + [0.4] * 8 + [0.9] * 8 + [0.4, 0.1, 0.9, 0.3] * 4) * 2
+        sections = ([0] * 8 + [2] * 8 + [3] * 8 + [2, 0, 3, 4] * 4) * 2
         for seed, rate in [(0, 1.0), (1, 1.0), (7.5, 0.5), (3, 0.0)]:
             with self.subTest(seed=seed, cut_rate=rate):
-                run = Run(self.m, energies, seed=seed, cut_rate=rate)
+                run = Run(self.m, sections, seed=seed, cut_rate=rate)
                 model = cg.ClipGraph(self.m, seed=seed, cut_rate=rate)
-                walk = model.walk(energies)
-                for beat in range(1, len(energies) + 1):
+                walk = model.walk(sections)
+                for beat in range(1, len(sections) + 1):
                     v, s = run.settled(beat), walk[beat - 1]
                     self.assertEqual((v["Move"], v["Angle"], v["MoveStart"]),
                                      (self.m.moves.index(self.m.move(s.move)), self.m.angle_ids.index(s.angle), s.start), "beat %d" % beat)
                     self.assertEqual(v["Sel"], v["Move"] * 2 + v["Angle"])
                     self.assertEqual(v["OutClip"], model.clip_index(s), "beat %d" % beat)
 
-    def test_energy_steers_the_tier(self):
-        for energy, tier in [(0.1, "calm"), (0.4, "build"), (0.9, "drop")]:
-            with self.subTest(tier=tier):
-                run = Run(self.m, [energy] * 20)
+    def test_section_steers_the_tier(self):
+        for section, tier in [(0, "calm"), (1, "calm"), (2, "build"), (3, "drop"), (4, "calm")]:
+            with self.subTest(section=section):
+                run = Run(self.m, [section] * 20)
                 moves = {self.m.moves[int(v["Move"])].name for v in run.frames[4 * 29 * 2:]}
-                self.assertTrue(all(self.m.move(x).tier == tier for x in moves), moves)
+                self.assertTrue(all(self.m.move(x).tier == tier or self.m.move(x).idle for x in moves), moves)
 
     def test_start_pulse_is_two_frames_at_each_move_change(self):
-        run = Run(self.m, [0.4] * 24, seed=2)
+        run = Run(self.m, [2] * 24, seed=2)
         pulses = [i for i, v in enumerate(run.frames) if v["StartPulse"] > 0.5]
         changes = [i for i in range(1, len(run.frames)) if run.frames[i]["MoveStart"] != run.frames[i - 1]["MoveStart"]]
         self.assertEqual(len(changes), 6)
@@ -122,7 +122,7 @@ class GraphGlobalsTests(unittest.TestCase):
 
     def test_pipeline_latency_is_under_six_frames(self):
         """From the frame the beat count changes to the frame Move and Angle are latched."""
-        run = Run(self.m, [0.4] * 24, seed=2)
+        run = Run(self.m, [2] * 24, seed=2)
         for beat in (4, 8, 12, 16):
             f0 = beat * run.FRAMES_PER_BEAT
             changed = next(i for i in range(f0, f0 + 20) if run.frames[i]["MoveStart"] == beat) - f0
@@ -131,7 +131,7 @@ class GraphGlobalsTests(unittest.TestCase):
 
     def test_idle_clip_stays_on_air_and_its_frame_wraps(self):
         """Calm music from the start: the Idle Clip runs on, Move never changes, OutFrame counts up and wraps every 4 beats."""
-        run = Run(self.m, [0.1] * 20)
+        run = Run(self.m, [0] * 20)
         idle = self.m.moves.index(self.m.move("idle"))
         self.assertEqual({int(v["Move"]) for v in run.frames}, {idle})
         self.assertEqual({v["StartPulse"] for v in run.frames}, {0})
@@ -141,18 +141,26 @@ class GraphGlobalsTests(unittest.TestCase):
         self.assertEqual(max(frames), self.m.move("idle").frames - 1)
 
     def test_clip_frame_counts_from_the_clip_start(self):
-        energies = [0.4] * 12
-        run = Run(self.m, energies, seed=2)
+        sections = [2] * 12
+        run = Run(self.m, sections, seed=2)
         model = cg.ClipGraph(self.m, seed=2)
-        walk = model.walk(energies)
+        walk = model.walk(sections)
         for beat in range(1, 12):
             for f in range(beat * run.FRAMES_PER_BEAT + 6, (beat + 1) * run.FRAMES_PER_BEAT - 1):
                 with self.subTest(frame=f):
                     expect = model.frame(walk[beat - 1], beat, (f % run.FRAMES_PER_BEAT) / run.FRAMES_PER_BEAT)
                     self.assertLessEqual(abs(run.frames[f]["OutFrame"] - expect), 1)
 
+    def test_tier_changes_only_on_a_bar_line(self):
+        run = Run(self.m, [0] * 5 + [3] * 7 + [0] * 8)
+        tiers = [(i // run.FRAMES_PER_BEAT, v["Tier"]) for i, v in enumerate(run.frames)]
+        changes = {tiers[i][0] for i in range(1, len(tiers)) if tiers[i][1] != tiers[i - 1][1]}
+        self.assertEqual(changes, {8, 16})
+        self.assertEqual([t for b, t in tiers if b == 7][-1], 0)
+        self.assertEqual([t for b, t in tiers if b == 10][-1], 2)
+
     def test_speed_ratio_is_bpm_over_manifest_bpm(self):
-        run = Run(self.m, [0.4] * 4)
+        run = Run(self.m, [2] * 4)
         self.assertAlmostEqual(run.settled(2)["SpeedRatio"], 1.0)
 
 
@@ -288,9 +296,24 @@ class ProjectTests(unittest.TestCase):
             self.assertTrue(reaches(second, "SyphonClient"))
             self.assertEqual(float(mp.find_global(root, rm.LIVE_GATE).get("value")), 0)
 
-    def test_clock_globals_exist_in_the_audio_source(self):
-        names = {g[0] for g in rm.sm.GLOBALS}
-        self.assertEqual([n for n in rm.CLOCK_GLOBALS if n not in names], [])
+    def test_the_graph_reads_only_what_the_audio_source_names(self):
+        """Every name the graph's expressions read is a graph Global or one of the audio Globals."""
+        m = mf.Manifest(FIXTURE_DATA)
+        have = {g[0].lower() for g in rm.clock_globals() + rm.graph_globals(m)}
+        used = {w.lower() for g in rm.graph_globals(m) for _k, e in g[3] for w in re.findall(r"[A-Za-z_]\w*", e)}
+        funcs = {"if", "floor", "sin", "min", "max", "abs", "x", "y", "and", "or"}
+        self.assertEqual(sorted(used - have - funcs), [])
+
+    def test_audio_globals_do_not_share_a_name_in_any_case(self):
+        names = [g[0].lower() for g in rm.clock_globals() + rm.graph_globals(mf.Manifest(FIXTURE_DATA))]
+        self.assertEqual(sorted({n for n in names if names.count(n) > 1}), [])
+
+    def test_the_tier_reads_one_section_global(self):
+        sources = {g[0]: g[2] for g in rm.clock_globals()}
+        self.assertEqual(sources[rm.xray.SECTION], "global:State")
+        tier = next(e for g in rm.graph_globals(mf.Manifest(FIXTURE_DATA)) if g[0] == "Tier" for _k, e in g[3])
+        self.assertIn("Section", tier)
+        self.assertNotIn("State", tier.replace("Section", ""))
 
 
 def snapshot(root):
@@ -362,14 +385,14 @@ class AllAnglesPlayTests(unittest.TestCase):
                 self.assertEqual(selectors.count("Move"), 2 * n)
 
     def test_the_off_air_angles_are_hidden_and_the_on_air_one_is_not(self):
-        energies = [0.1] * 6 + [0.4] * 10 + [0.9] * 8 + [0.4, 0.1] * 6
+        sections = [0] * 6 + [2] * 10 + [3] * 8 + [2, 0] * 6
         for n in (1, 2, 3):
             with self.subTest(angles=n):
                 m = with_angles(n)
-                run = Run(m, energies, cut_rate=1.0)
-                walk = cg.ClipGraph(m, cut_rate=1.0).walk(energies)
+                run = Run(m, sections, cut_rate=1.0)
+                walk = cg.ClipGraph(m, cut_rate=1.0).walk(sections)
                 cuts = 0
-                for beat in range(1, len(energies) + 1):
+                for beat in range(1, len(sections) + 1):
                     v = run.settled(beat)
                     on = m.angle_ids.index(walk[beat - 1].angle)
                     self.assertEqual([v["HideAngle%d" % i] for i in range(n)], [0 if i == on else 1 for i in range(n)], "beat %d" % beat)
@@ -381,7 +404,7 @@ class AllAnglesPlayTests(unittest.TestCase):
         for n in (2, 3):
             with self.subTest(angles=n):
                 m = with_angles(n)
-                run = Run(m, [0.4] * 24, seed=2, cut_rate=1.0)
+                run = Run(m, [2] * 24, seed=2, cut_rate=1.0)
                 pulses = [i for i, v in enumerate(run.frames) if v["StartPulse"] > 0.5]
                 self.assertEqual(len(pulses) % 2, 0)
                 for i in pulses[::2]:

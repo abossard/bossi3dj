@@ -6,8 +6,8 @@ Scene "Robot": a VideoFile per Clip (beauty and Shadow Pass) into two InputSelec
 the Android: Blend multiplies the Shadow Pass onto the Live World, Mask applies the Matte (the beauty's alpha), Transparency
 composites the Android in front. Scene "OSC Out": OSCSenders for the Robot rows.
 
-The Clip Graph is Magic Globals (graph_globals), the same logic as clip_graph.py: beat clock and energy come from Magic's audio
-(the Globals of magic/synthwave_magic.py, picked by name), Move and Angle are latched on the beat, the tables of the graph are
+The Clip Graph is Magic Globals (graph_globals), the same logic as clip_graph.py: beat clock and section come from Magic's audio
+(the Globals of xray.py: Beats, BeatFrac, Bpm and Section, whose Music X-Ray State sets the Intensity Tier), Move and Angle are latched on the beat, the tables of the graph are
 nested ifs written from the Manifest. Moves in the selectors are ordered move-major, Angle minor: input = move * angles + angle.
 """
 import argparse
@@ -19,7 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "..", "..", "magic"))
 import magicproj as mp  # noqa: E402
-import synthwave_magic as sm  # noqa: E402
+import xray  # noqa: E402
 from clip_graph import SALT_ANGLE, SALT_CUT, SALT_MOVE  # noqa: E402
 from manifest import load  # noqa: E402
 
@@ -35,24 +35,10 @@ HIDE_ANGLE = "HideAngle"                   # HideAngle<i>: 1 while Angle i is of
 LIVE_TIMEOUT = 1.5                         # seconds without a toggle until LiveOn falls back to 0
 BLEND_MULTIPLY = 3                         # Blend Mode values, modules.md
 
-# Names taken from synthwave_magic.GLOBALS: audio bands, Clock, onsets, kick, beat clock (Phase, Tick, Beats, Bars, BPM), energy.
-CLOCK_GLOBALS = ["Gain", "Sub", "Low", "Mid", "HiMid", "Air", "ClockPrev", "Clock", "Dt", "SubAvg", "HiMidAvg", "AirAvg", "KickBand",
-                 "KFast", "KSlow", "KRef", "KRaw", "KOn", "Period", "GapAtKick", "KickT", "KickGap", "Kick", "Lock", "PhasePrev",
-                 "Phase", "Tick", "Pulse", "BPM", "Beats", "Bars", "EnergyNow", "EnergyAvg"]
-FREQ_NAMES = ["20-80 Hz", "80-320 Hz", "320-1.2k Hz", "1.2k-5k Hz", "5k-20k Hz"]
-
 
 def clock_globals():
-    """(name, value, source, mods) in Builder form for CLOCK_GLOBALS, read from the synthwave table."""
-    by_name = {g[0]: g for g in sm.GLOBALS}
-    out = []
-    for name in CLOCK_GLOBALS:
-        _n, src, value, ops = by_name[name]
-        if isinstance(src, tuple):
-            src = "audio:Source 0:Freq. Range:%s" % FREQ_NAMES[src[2]] if src[0] == "audio" else "global:%s" % src[1]
-        mods = [(kind, expr if kind == "Expression" else param) for kind, param, expr in ops]
-        out.append((name, value, src, mods))
-    return out
+    """(name, value, source, mods) of the audio analysis: beat clock and section, see xray.py."""
+    return xray.globals_()
 
 
 # ------------------------------------------------------------ expression writing
@@ -86,8 +72,8 @@ def ex(expr):
     return ("Expression", expr)
 
 
-def graph_globals(m, seed=0, tier_build=0.25, tier_drop=0.55, cut_rate=1.0):
-    """The Clip Graph of Manifest `m` as Globals (name, value, source, mods). Reads Beats, Bars, Phase, EnergyAvg, BPM.
+def graph_globals(m, seed=0, cut_rate=1.0):
+    """The Clip Graph of Manifest `m` as Globals (name, value, source, mods). Reads Beats, BeatFrac, Section, Bpm.
 
     Every Global reads the previous frame, so the graph runs as a pipeline after the beat count changes (b = the frame it changes):
     BeatEv b+1, Wrap and NxtMove b+3 (the pick needs PickH and PickNext first), Move and Angle b+4, Sel b+5.
@@ -113,13 +99,12 @@ def graph_globals(m, seed=0, tier_build=0.25, tier_drop=0.55, cut_rate=1.0):
     out = [
         ("Seed", seed, None, []),
         ("CutRate", cut_rate, None, []),
-        ("TierBuild", tier_build, None, []),
-        ("TierDrop", tier_drop, None, []),
         ("BeatsPrev", 0, "calc", [ex("Beats")]),
         ("BeatEv", 0, "calc", [ex("if(Beats > BeatsPrev, 1, 0)")]),
         ("BeatEv2", 0, "calc", [ex("BeatEv")]),
         ("BeatEv3", 0, "calc", [ex("BeatEv2")]),
-        ("Tier", 0, "calc", [ex("if(EnergyAvg < TierBuild, 0, if(EnergyAvg < TierDrop, 1, 2))")]),
+        # the Intensity Tier follows the section on a bar line only, in the frame BeatEv is (the pick reads it one frame later); 2 buildup is build (1), 3 drop is drop (2), the rest calm (0)
+        ("Tier", 0, "calc", [ex("if(Beats > BeatsPrev and Beats - floor(Beats/4)*4 == 0, if(abs(Section - 3) < 0.5, 2, if(abs(Section - 2) < 0.5, 1, 0)), y)")]),
         ("MoveBeats", 0, "calc", [ex(table("Move", [mv.beats for mv in m.moves]))]),
         ("MoveFrames", 0, "calc", [ex(table("Move", [mv.frames for mv in m.moves]))]),
         ("IsIdle", 0, "calc", [ex(table("Move", [1 if mv.idle else 0 for mv in m.moves]))]),
@@ -138,9 +123,9 @@ def graph_globals(m, seed=0, tier_build=0.25, tier_drop=0.55, cut_rate=1.0):
         ("Sel", 0, "calc", [ex("Move*%d + Angle" % A)]),
     ] + [(HIDE_ANGLE + str(a), 1, "calc", [ex("if(Angle == %d, 0, 1)" % a)]) for a in range(A)] + [
         ("StartPulse", 0, "calc", [ex("max(Wrap, WrapPrev)")]),
-        ("SpeedRatio", 1, "calc", [ex("BPM/%s" % num(m.bpm))]),
+        ("SpeedRatio", 1, "calc", [ex("%s/%s" % (xray.BPM, num(m.bpm)))]),
         ("OutClip", 0, "calc", [ex(table("Sel", [m.clip_index(mv.name, a) for mv in m.moves for a in m.angle_ids]))]),
-        ("OutFrame", 0, "calc", [ex("if(IsIdle > 0.5, max(0, floor((Beats - MoveStart + Phase)*%s)) %% max(1, MoveFrames), max(0, min(MoveFrames - 1, floor((Beats - MoveStart + Phase)*%s))))"
+        ("OutFrame", 0, "calc", [ex("if(IsIdle > 0.5, max(0, floor((Beats - MoveStart + BeatFrac)*%s)) %% max(1, MoveFrames), max(0, min(MoveFrames - 1, floor((Beats - MoveStart + BeatFrac)*%s))))"
                                     % (num(per_beat), num(per_beat)))]),
         ("OutAngle", 0, "calc", [ex("Angle")]),
     ]
@@ -162,7 +147,7 @@ def live_globals(timeout=LIVE_TIMEOUT):
 
 def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=None, project_dir=None, audio_device=None, osc_in=OSC_IN_PORT, clock=None, **graph):
     """Builder (not yet built) of the Robot project for Manifest `m`. File params are relative to project_dir when given.
-    `clock` replaces the audio clock Globals (name, value, source, mods), for a test that drives Beats, Phase, EnergyAvg and BPM itself."""
+    `clock` replaces the audio clock Globals (name, value, source, mods), for a test that drives Beats, BeatFrac, Section and Bpm itself."""
     b = mp.Builder(syphon=OUTPUT_SERVER, size=tuple(size or m.size), fps=m.fps, audio_device=audio_device, osc_in=osc_in)
     for name, value, source, mods in (clock if clock is not None else clock_globals()) + graph_globals(m, seed=seed, **graph):
         b.glob(name, value, source, mods)

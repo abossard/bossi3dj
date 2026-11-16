@@ -33,9 +33,9 @@ ANGLE_MARK = {"front": 0, "side": 120}
 PY313 = {"PYTHONPATH": os.path.expanduser("~/.local/lib/python3.13/site-packages")}
 
 
-def energy(beat):
-    """Calm, build from beat 13, calm from 19, build from 29: idle to a Move on bar 16, the Move ends on 20, idle again, out on 32."""
-    return 0.4 if 13 <= beat < 19 or beat >= 29 else 0.1
+def section(beat):
+    """Intro, buildup (State 2) from beat 13, intro from 19, buildup from 29: idle to a Move on bar 16, the Move ends on 20, idle again, out on 32."""
+    return 2 if 13 <= beat < 19 or beat >= 29 else 0
 
 
 def counter_clip(path, clip):
@@ -64,8 +64,8 @@ def make_package(folder):
 
 
 def make_project(folder, port, cut_rate):
-    clock = [("Beats", 0, "osc:/test/beats", []), ("Phase", 0, "osc:/test/phase", []), ("EnergyAvg", 0.1, "osc:/test/energy", []),
-             ("BPM", BPM, "osc:/test/bpm", []), ("Dt", 1.0 / FPS, None, [])]
+    clock = [("Beats", 0, "osc:/test/beats", []), ("BeatFrac", 0, "osc:/test/phase", []), ("Section", 0, "osc:/test/section", []),
+             ("Bpm", BPM, "osc:/test/bpm", []), ("Dt", 1.0 / FPS, None, [])]
     path = os.path.join(folder, "idle_check.magic")
     rm.build_project(os.path.join(folder, "manifest.json"), path, osc_in=port, clock=clock, cut_rate=cut_rate)
     return path
@@ -186,7 +186,7 @@ def main():
             break
         beats = t / SPB
         for addr, v in (("/test/beats", math.floor(beats)), ("/test/phase", beats - math.floor(beats)),
-                        ("/test/energy", energy(int(beats))), ("/test/bpm", BPM)):
+                        ("/test/section", section(int(beats))), ("/test/bpm", BPM)):
             sock.sendto(osc_float(addr, v), ("127.0.0.1", a.port))
         time.sleep(1 / 60)
     lines = [first] + proc.stdout.read().splitlines()
