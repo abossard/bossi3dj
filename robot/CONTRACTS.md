@@ -15,6 +15,7 @@ One per Render Package. Written by `build/`, read by `magic/` and `live/`.
 | `key_poses` | list of Key Pose names, e.g. `["guard"]` |
 | `angles` | list of `{id, camera}`: Angle id and its Shot Camera name |
 | `clips` | list of Clips, below |
+| `quality` | optional: `low` (Eevee, for judging motion), `high` (Cycles) or `mixed`; missing means `high` |
 
 Each Clip:
 
@@ -28,6 +29,7 @@ Each Clip:
 | `key_in`, `key_out` | Key Pose at the first and last frame |
 | `tier` | Intensity Tier: `calm`, `build` or `drop` |
 | `idle` | `true` for an Idle Clip: `key_in` equals `key_out`, first and last frames identical, Magic loops it; `false` for a Move Clip, which Magic restarts on each pick |
+| `quality` | optional: this Clip's render quality, `low` or `high`; missing means `high` |
 | `opponent` | optional: `true` for an Exchange, a Clip with both the Android and the giant machine in the frame (`robot/build/GIANT.md`); missing or `false` for a Clip with the Android alone. `key_in`, `key_out`, `idle` and `cut_points` always describe the Android |
 | `cut_points` | beats inside the Clip where a switch is allowed, `[0]` at least |
 | `passes` | `{beauty, shadow, depth}`: file paths relative to the package; beauty carries the Matte as alpha |
