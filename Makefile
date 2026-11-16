@@ -7,7 +7,7 @@ BLEND_planet = $(SCENES)/synthwave_planet.blend
 BLEND_island = $(SCENES)/synthwave_pyramids.blend
 
 .PHONY: help status lab test cache-prune magic-test osc-test blender-test osc-sync qlc-fixture qlc-install osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-framing godot-hitch godot-warmup godot-ablate godot-cost godot-climb-light godot-grock-detail godot-fps godot-readme-pics godot-model-cost godot-models godot-wanderer-motion godot-wanderer-read godot-colossus-rig godot-shake-clips godot-shake-osc godot-import godot-lint \
-        godot-open godot-kill blender-open blender-kill blender-check blender-prepare blender-rebuild blender-paths magic-build venv verify
+        godot-open godot-kill blender-open blender-kill blender-check blender-prepare blender-rebuild blender-paths magic-build venv verify robot-render
 
 # Blender and Godot share one GPU: a live window of one refuses to start while the other runs.
 BLENDER_RUNS   = pgrep -f "Blender.app/Contents/MacOS/Blender" >/dev/null
@@ -58,6 +58,7 @@ help:
 	@echo "  blender-check     feature check of the running scene: one row per control, contract cross-check, JSON in blender/review/out (ARGS=--only vj_fog)"
 	@echo "  blender-prepare   headless: island start state (loader text block, camera view, Rendered shading); run before blender-rebuild"
 	@echo "  blender-rebuild   headless: rebuild synthwave_planet.blend from the island scene (no Blender may run)"
+	@echo "  robot-render      Robot Clip Library into robot/package/v1: QUALITY=low (Eevee, minutes) or high (Cycles, hours); rerun resumes, FORCE=1 renders all"
 	@echo "  blender-paths     list the external files each .blend points at"
 	@echo "  cache-prune       drop the swiftvj-flight bakes no current .blend reads (blender-open runs it)"
 	@echo "  venv              .venv with numpy and Pillow for the verify scripts"
@@ -257,3 +258,10 @@ verify:
 	.venv/bin/python docs/research/synthwave-star-system/verify_star_system.py
 	.venv/bin/python docs/research/synthwave-flight/verify_flight.py
 	.venv/bin/python blender/review/verify_paths.py
+
+# Robot Scene Clip Library: build, check, render each Clip in its own headless Blender, encode, export, validate.
+# Resumable: a Clip complete at this QUALITY is skipped. Progress in robot/build/probe/library/progress.txt.
+QUALITY ?= low
+robot-render:
+	@if $(BLENDER_RUNS); then echo "a Blender runs; one at a time"; exit 1; fi
+	QUALITY=$(QUALITY) FORCE=$(FORCE) nice -n 5 zsh robot/build/review/library_render.sh

@@ -1,5 +1,7 @@
 #!/bin/zsh
-# library_render.sh [MOVE...]: the Clip Library into robot/package/v1 (SAMPLES, default 64), resumable: one Clip per Blender run, a
+# library_render.sh [MOVE...]: the Clip Library into robot/package/v1, resumable; QUALITY=low (Eevee, minutes) or
+# high (Cycles at SAMPLES, default 64; hours). <package>/quality/<clip> records each Clip's quality, and a Clip counts
+# as complete only at the quality asked for, so a high run replaces a low package Clip by Clip; FORCE=1 renders all: one Clip per Blender run, a
 # Clip already complete (review/clip_complete.py) is skipped, so a stop costs at most one Clip. Order: moves.py order
 # with ground_pound last. Builds and checks first and stops on a failed check; stops when another Blender runs.
 # Named Moves render in that order instead. DEADLINE=HH:MM: no Clip starts that the last measured seconds per frame
@@ -10,7 +12,9 @@ cd "${0:A:h}/../../.."
 setopt null_glob
 B=/Applications/Blender.app/Contents/MacOS/Blender; PKG=robot/package/v1; P=robot/build/probe/library
 mkdir -p $P; rm -f $P/DONE $P/STOPPED
-SAMPLES=${SAMPLES:-64}; spf=${SPF:-16}
+SAMPLES=${SAMPLES:-64}; spf=${SPF:-16}; QUALITY=${QUALITY:-high}   # low: Eevee (build_robot.use_low); high: Cycles
+mkdir -p $PKG/quality
+complete() { [[ -z $FORCE ]] && python3 robot/build/review/clip_complete.py $PKG $1 $2 && [[ "$(cat $PKG/quality/$1 2>/dev/null)" == $QUALITY ]]; }
 deadline=0; [[ -n $DEADLINE ]] && deadline=$(date -j -f "%Y-%m-%d %H:%M" "$(date +%Y-%m-%d) $DEADLINE" +%s)
 stop() { echo "$(date +%T) $1" | tee -a $P/progress.txt > $P/STOPPED; exit 1; }
 pgrep -i blender >/dev/null && stop "another Blender runs"
@@ -25,17 +29,20 @@ echo "$(date +%T) start" >> $P/progress.txt
 while read -u 3 m n; do
   for a in front side; do
     c=${m}__$a
-    python3 robot/build/review/clip_complete.py $PKG $c $n && { echo "$(date +%T) skip $c" >> $P/progress.txt; continue; }
+    complete $c $n && { echo "$(date +%T) skip $c" >> $P/progress.txt; continue; }
     pgrep -i blender >/dev/null && stop "another Blender runs before $c"
     if (( deadline && $(date +%s) + n * spf + 30 > deadline )); then echo "$(date +%T) cut $c (needs $(( n * spf )) s)" >> $P/progress.txt; continue; fi
+    rm -f $PKG/quality/$c
     rm -rf $PKG/beauty/$c $PKG/beauty/$c.mov $PKG/beauty/${c}_[0-9]*.mov $PKG/shadow/$c $PKG/shadow/$c.mov $PKG/depth/$c $PKG/depth/$c.mov
     t0=$(date +%s)
-    $B -b robot/build/robot.blend -P robot/build/build_robot.py -- render --package $PKG --clip $c --samples $SAMPLES >> $P/render.log 2>&1 < /dev/null \
+    $B -b robot/build/robot.blend -P robot/build/build_robot.py -- render --package $PKG --clip $c --samples $SAMPLES --quality $QUALITY >> $P/render.log 2>&1 < /dev/null \
       || stop "render failed on $c"
     nice -n 10 .venv/bin/python robot/build/encode_passes.py --package $PKG --clip $c >> $P/encode.log 2>&1 || stop "encode failed on $c"
     python3 robot/build/review/clip_complete.py $PKG $c $n || stop "$c incomplete after render"
+    echo $QUALITY > $PKG/quality/$c
     took=$(( $(date +%s) - t0 )); spf=$(( (took + n - 1) / n ))
-    echo "$(date +%T) done $c $n frames $took s at $SAMPLES samples" >> $P/progress.txt
+    label=$QUALITY; [[ $QUALITY == high ]] && label="high, $SAMPLES samples"
+    echo "$(date +%T) done $c $n frames $took s ($label)" >> $P/progress.txt
   done
 done 3< $P/order.txt
 $B -b robot/build/robot.blend -P robot/build/build_robot.py -- export --package $PKG > $P/export.log 2>&1 || stop "export failed"

@@ -588,7 +588,23 @@ def use_preview(scene):
         scene.compositing_node_group.nodes[name].mute = True
 
 
-def render(package, clip_ids, samples, percent, frame_range, beauty="qtrle", preview=False):
+def use_low(scene):
+    """The low quality path for a whole Clip Library: Eevee at full size, all three Passes. The Shadow Catcher floor
+    turns into a holdout (transparent in the beauty) and the Shadow Pass comes from Eevee's shadow pass on it."""
+    try:
+        scene.render.engine = "BLENDER_EEVEE"
+    except TypeError:
+        scene.render.engine = "BLENDER_EEVEE_NEXT"
+    scene.eevee.taa_render_samples = 8
+    bpy.data.objects["floor_catcher"].is_holdout = True
+    scene.view_layers[0].use_pass_shadow = True
+    tree = scene.compositing_node_group
+    rl = next(n for n in tree.nodes if n.bl_idname == "CompositorNodeRLayers")
+    bw = next(n for n in tree.nodes if n.bl_idname == "CompositorNodeRGBToBW")
+    tree.links.new(rl.outputs["Shadow"], bw.inputs[0])
+
+
+def render(package, clip_ids, samples, percent, frame_range, beauty="qtrle", preview=False, quality="high"):
     """Beauty to <package>/beauty/<clip id>.mov (a movie, so --frames writes a movie of just those frames), or to
     <package>/beauty/<clip id>/NNNN.png for png; Shadow and Depth Pass frames to <package>/<pass>/<clip id>/.
     --preview: see use_preview; write it to a review folder, not to the package."""
@@ -598,6 +614,8 @@ def render(package, clip_ids, samples, percent, frame_range, beauty="qtrle", pre
     scene.cycles.samples, scene.render.resolution_percentage = samples, percent
     if preview:
         use_preview(scene)
+    elif quality == "low":
+        use_low(scene)
     tree = scene.compositing_node_group
     for clip_id, move, _angle, cam in clip_list():
         if clip_ids and clip_id not in clip_ids:
@@ -731,6 +749,7 @@ def main():
     r.add_argument("--frames", default="")
     r.add_argument("--beauty", choices=sorted(BEAUTY_FORMATS), default="qtrle")
     r.add_argument("--preview", action="store_true")
+    r.add_argument("--quality", choices=("low", "high"), default="high")
     c = sub.add_parser("check")
     c.add_argument("--out", default="")
     cr = sub.add_parser("check-renders")
@@ -743,7 +762,7 @@ def main():
         export(a.package)
     elif a.cmd == "render":
         fr = tuple(int(x) for x in a.frames.split("-")) if a.frames else None
-        render(a.package, set(a.clip), a.samples, a.percent, fr, a.beauty, a.preview)
+        render(a.package, set(a.clip), a.samples, a.percent, fr, a.beauty, a.preview, a.quality)
     else:
         result = check() if a.cmd == "check" else check_renders(a.package)
         text = json.dumps(result, indent=1)
