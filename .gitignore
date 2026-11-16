@@ -25,3 +25,4 @@ blender/local/
 docs/video/*.mp4
 # Robot Scene build output (robot/build/build_robot.py)
 robot/build/robot.blend
+robot/assets/
