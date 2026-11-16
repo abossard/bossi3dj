@@ -21,7 +21,7 @@ def run(prog, secs, tag, every=1.0):
         l=land(*out[:2],out[3]); 
         if C.blending() and l<0.1: dark+=DT
         if abs(t/every-round(t/every))<DT/every/2 and t>=prog[1][0]-1:
-            print("t %5.1f %-14s eye %6.0f land %.2f k %.2f bl %d off-live %5.1f deg turn %5.1f"%(t,path+" "+target,dr.spherical(out[0])[1],l,getattr(C,"land_k",0),C.blending(),math.degrees(fl.angle(out[1],live[1])),tr))
+            print("t %5.1f %-14s eye %6.0f land %.2f k %.2f bl %d off-live %5.1f deg turn %5.1f"%(t,path+" "+target,dr.spherical(out[0])[1],l,(math.degrees(fl.angle(*C.views)) if C.views else 0),C.blending(),math.degrees(fl.angle(out[1],live[1])),tr))
         prev=out; t+=DT
     print("max turn %.1f deg/s, blend s land<0.1: %.1f"%(mt,dark))
 sys.argv=ARGV

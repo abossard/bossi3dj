@@ -17,8 +17,8 @@ while time.time()-t0<float(sys.argv[4]):
         cutframe = i==0 or abs(t-t2)<DT/2 and fade==0
         out=C.step(DT,*s,w,1.0,fade)
         tr=math.degrees(fl.angle(prev[1],out[1]))/DT
-        if tr>mt[0]: mt=(round(tr,1),round(t,2),round(getattr(C,"land_k",0),2),int(C.blending()),round(dr.spherical(out[0])[1]))
-        if was and not C.blending(): kend.append((round(getattr(C,"land_k",0),3),shots,w,round(t2,1)))
+        if tr>mt[0]: mt=(round(tr,1),round(t,2),round(math.degrees(fl.angle(*C.views)) if C.views else 0,2),int(C.blending()),round(dr.spherical(out[0])[1]))
+        if was and not C.blending(): kend.append((round(math.degrees(fl.angle(*C.views)) if C.views else 0,3),shots,w,round(t2,1)))
         was=C.blending(); prev=out
     best.append((mt,shots,w,round(t2,1)))
 best.sort(reverse=True); kend.sort(reverse=True)

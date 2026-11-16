@@ -43,9 +43,6 @@ PUSH_PERIOD = 80.0                 # s at /vj/cam_speed 1: the vantage pushes in
 BLEND_LAND = 0.35                   # share of the frame's centre column a blend keeps on the planet (0: off). The planet is
 #                                     small: the horizon dips 23 deg at 1.3 km, 52 at 10 km, and a blend's view stays near
 #                                     the end shots' level while the hump lifts it (issue #25: flat sky, black space)
-BLEND_LAND_EASE = (0.25, 1.0)       # the keep comes in over this share of a blend or these e-folds of height over the
-#                                     start shot's eye, whichever is first, and goes out the same way toward the end shot
-#                                     (none at the ends: the blend starts and ends on the shots' own views)
 BLEND_LAND_TURN = math.radians(10.0)   # rad/s the keep may add to the view's own turn (over the zenith, at a far blend's
 #                                     end the kept view's heading or pitch can swing faster than that)
 BLEND_TURN_MAX = math.radians(59.0)    # rad/s at /vj/blend DUR_MAX: a blend's view turns no faster with the keep (the
@@ -317,26 +314,21 @@ class PathCamera:
         tr = self.D.tr
         if tr is not None:
             out = self.by_height(out) if BLEND_BY_HEIGHT else out
-            s_ = tr.t / tr.d if tr.d > 0.0 else 1.0
-            le = math.log(dr.spherical(out[0])[1] + dr.H0)
-            ramp = lambda share, eye: fl.smootherstep(max(share / BLEND_LAND_EASE[0],
-                                                          (le - math.log(eye + dr.H0)) / BLEND_LAND_EASE[1]))
-            k = min(ramp(s_, dr.spherical(tr.a[0])[1]), ramp(1.0 - s_, dr.spherical(target_pose[0])[1]))
-            out = self.on_land(out, k, fl.add(tr.a[1], target_pose[1]), max(tr.d - tr.t, 0.0))
-        out = self.turn_limited(base, out, dt, cut, max(tr.d - tr.t, 0.0) if tr is not None else None, blend_s)
+            out = self.on_land(out, fl.add(tr.a[1], target_pose[1]), min(tr.t, max(tr.d - tr.t, 0.0)))
+        out = self.turn_limited(base, out, dt, cut, max(tr.d - tr.t, 0.0) if tr is not None else None, blend_s, changed)
         if tr is not None:
             self.D.pose = (self.D.pose[0],) + tuple(out[1:])     # a change mid-blend starts from the view shown
         return en.accent(out, drive) if drive is not None else out
 
-    def turn_limited(self, base, out, dt, cut, left, blend_s):
+    def turn_limited(self, base, out, dt, cut, left, blend_s, changed):
         """While blending (left: the blend's seconds to go), the shown view turns no faster than the view before the keep
         did this frame plus BLEND_LAND_TURN, plus what empties a lag by the blend's end, and never faster than
         BLEND_TURN_MAX at /vj/blend blend_s unless the view before the keep does. Outside blends, a cut and the first
-        frame pass."""
+        frame pass. On a change the Director starts from the view shown, so its own turn is measured from that."""
         prev, self.views = self.views, (base[1], out[1])
         if prev is None or cut or dt <= 0.0 or left is None or left <= dt:
             return out
-        own = fl.angle(prev[0], base[1])
+        own = fl.angle(prev[1] if changed else prev[0], base[1])
         allowed = own + BLEND_LAND_TURN * dt + fl.angle(prev[1], prev[0]) * dt / left
         allowed = min(allowed, max(own, BLEND_TURN_MAX * dr.DUR_MAX / max(blend_s, 1e-3) * dt))
         d = fl.angle(prev[1], out[1])
@@ -355,14 +347,14 @@ class PathCamera:
         props.update(props_at(clear), clip=clip_at(clear))
         return tuple(pose_[:4]) + (props,)
 
-    def on_land(self, pose_, k, ends, left):
-        """The pose turned by weight k (0..1) toward the kept view: pitched no higher than keeps BLEND_LAND of the frame's
-        centre column on the planet at this eye's dip, its heading the view's own steadied by the end shots' (ends: the
-        sum of their forwards; a view over the zenith flipped its heading in under a second), the roll carried over.
-        The turn toward it is at most BLEND_LAND_TURN x left (the blend's seconds to go), so it is gone by the end."""
+    def on_land(self, pose_, ends, near_end):
+        """The pose turned toward the kept view: pitched no higher than keeps BLEND_LAND of the frame's centre column on
+        the planet at this eye's dip, its heading the view's own steadied by the end shots' (ends: the sum of their
+        forwards; a view over the zenith flipped its heading in under a second), the roll carried over. The turn toward
+        it is at most BLEND_LAND_TURN x near_end (the blend's seconds from its nearer end): none at either end."""
         p, fwd, up = pose_[0], pose_[1], pose_[2]
         u, hp = dr.spherical(p)
-        if k <= 0.0 or BLEND_LAND <= 0.0:
+        if near_end <= 0.0 or BLEND_LAND <= 0.0:
             return pose_
         pitch = math.asin(fl.clamp(fl.dot(fwd, u), -1.0, 1.0))
         dip = math.acos(fl.clamp(fl.R / (fl.R + max(hp, 0.0)), -1.0, 1.0))
@@ -371,7 +363,9 @@ class PathCamera:
         head = fl.tangent(u, fl.add(fwd, ends, 0.25))
         kept = fl.add(fl.scale(head, math.cos(pf)), u, math.sin(pf))
         gap = fl.angle(fwd, kept)
-        new = fl.slerp(fwd, kept, min(k, BLEND_LAND_TURN * left / gap) if gap > 1e-6 else k)
+        if gap < 1e-6:
+            return pose_
+        new = fl.slerp(fwd, kept, min(1.0, BLEND_LAND_TURN * near_end / gap))
         level = fl.tangent(fwd, u)
         roll = math.atan2(fl.dot(fl.cross(level, up), fwd), fl.dot(level, up))
         return (p, new, fl.rot(new, roll, fl.tangent(new, u))) + tuple(pose_[3:])

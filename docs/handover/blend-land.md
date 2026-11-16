@@ -7,15 +7,14 @@
 
 ## The keep, as built
 
-- While the Director blends, weight `k` = the lesser of an ease-in and an ease-out, each the greater of the blend's share (`BLEND_LAND_EASE[0]` 0.25) and the eye's log height over that end's eye (`BLEND_LAND_EASE[1]` 1 e-fold); 0 at both ends. A fall from a higher start is covered.
-- The turn toward the kept view is at most `BLEND_LAND_TURN` (10 deg/s) x the blend's seconds to go, so the keep is gone by the Director's end (review item 5).
+- While the Director blends, the view turns toward the kept view by at most `BLEND_LAND_TURN` (10 deg/s) x the seconds from the blend's nearer end: none at either end, no weights or height terms (second review: they were not pinned, and the height term snapped on a change while banded() held the eye).
 - `turn_limited()`: the shown view turns at most the Director's own turn + `BLEND_LAND_TURN` + what empties a lag by the end, never over `BLEND_TURN_MAX` (59 deg/s) x DUR_MAX / blend unless the Director's own does; outside blends nothing is limited, so a cut is a cut (item 3).
-- The shown view is written back into `Director.pose`: a change mid-blend starts from it (items 1 and the 155 deg/s change frame, which was the guard's lag left out of the write-back).
+- The shown view is written back into `Director.pose`: a change mid-blend starts from it (items 1 and the 155 deg/s change frame, which was the guard's lag left out of the write-back); on a change the guard measures the Director's own turn from the view shown.
 - The heading: the view's own plus 0.25 x the end shots' forwards (over the zenith it flipped). The beat's accent goes on last (item 7).
 
 ## Numbers
 
-`test_path_blends.py` cases, blend seconds with land < 0.1, before the keep (ea44a0b) -> now: change mid-blend 14.2 -> 3.0, fall from space 6.5 -> 1.7, cut mid-blend 7.2 -> 0, far targets (24 km) 16.6 -> 7.7, far change 15.2 -> 12.8, 6 s blends 2.2 -> 1.9 and 1.4 -> 0.9. Every blend ends on the live view (0 deg), a cut's first frame is the live view. `verify_paths.py` 2c 70.8 deg/s (limit 72); 1b fails as before #25. Demo replay (`blend_horizon.py`) 11.5 -> 2.4 s.
+`test_path_blends.py` (in `make test`), blend seconds with land < 0.1, before the keep (ea44a0b) -> now: change mid-blend 14.2 -> 2.5, fall from space 6.5 -> 1.7, cut mid-blend 7.2 -> 0, far targets (24 km) 16.6 -> 8.3, far change 15.2 -> 13.2, 6 s blends 2.2 -> 2.1 and 1.4 -> 1.1; far changes with the eye held 10.3 and 2.6 s at 66 and 39 deg/s (the second review: 522 and 427). Keep left on a blend's last frame at most 0.31 deg (17.9 with the time cap removed); a cut's frame is the live view after a kept frame (33.9 deg); the beat's dip stays on the kept view. `verify_paths.py` 2c 70.8 deg/s (limit 72); 1b fails as before #25. The review's fuzz (`issue25_review/fuzz.py 3 90 fixed`): no turn over the limit at 15 and 30 s fades; the 60 s fade's overs are the same with the keep off.
 
 ## Open
 

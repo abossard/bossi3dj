@@ -17,7 +17,7 @@ def case(mod,shots,w,t2,fade,far,tag):
         over+= tr>72
         if tr>mt[0]: mt=(round(tr,1),round(t,2),round(dr.spherical(out[0])[1]))
         if was and not C.blending():
-            live=C.live(*s,math.exp(C.lh)); ends.append((round(t,2),round(getattr(C,"land_k",0),3),round(math.degrees(fl.angle(out[1],live[1])),1)))
+            live=C.live(*s,math.exp(C.lh)); ends.append((round(t,2),round(math.degrees(fl.angle(*C.views)) if C.views else 0,3),round(math.degrees(fl.angle(out[1],live[1])),1)))
         was=C.blending(); prev=out
     print(tag,"max turn",mt,"frames>72:",over,"blend ends (t,k,deg off live):",ends)
 for shots,w,t2,fade,far in [
