@@ -39,7 +39,7 @@ Page: https://claude.ai/artifact/7D5wLjhFTi7hNr6xwecMP8 (source `robot/concept/r
 | R5 | Android, Moves and foundry set as a build script; pure Move key tables with tests first | R1 | Opus 5.5 high | done (8eba3ae, d262d61, 92ed1f9); idle_guard loops cleanly; idle_guard__front fails review R1 (camera too frontal); slot returned |
 | R6 | Render the v1 Clip Library (4 Moves x 2 Angles, beauty, Shadow, Depth, Clip Data) | R5, Blender slot (headless renders count) | R5 session | running (2026-11-16, user "Yes, go ahead"): front camera fix with review, then the full set with beauty as QuickTime Animation (6865e68; decode numbers 56267f3) |
 | R7 | Live World scene in `robot/live/`: foundry set, beat-lit lamps, sparks at Hits, Syphon `ROBOT_LIVE`, reads R2 | R5, R2, Blender slot | R5 session | waits |
-| R8 | Load in Magic, 60 s recording with music, flicker numbers, the user judges | R4, R6, R7 | orchestrator | later |
+| R8 | Load in Magic, 60 s recording with music, flicker numbers, the user judges | R4, R6, R7 | orchestrator | pulled forward without R7 (2026-11-16, the user asked for a live test): R3+R4 preps generator, audio, `live_test.py`, `rubric-live.md`; gates: R6 done, quiet machine, the user restarts Magic and gives the one load; 90 s recorded to `docs/video/robot-live-test.mp4` |
 
 - Blender-free first: R3, R4 and the pure part of R5 run now; R5's Blender part, R6 and R7 ask the main orchestrator for the slot first.
 - Magic is the user's app: R4 proves the file with `magicproj.py check` and a fixture; loading it into Magic and the recording (R8) wait for the user.
