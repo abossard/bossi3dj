@@ -124,7 +124,8 @@ class DeviceTests(unittest.TestCase):
 
 class HeldProjectTests(unittest.TestCase):
     def test_editor_title(self):
-        for wins, want in [(["show.magic - Editor", "Main"], "show.magic"), (["Main"], None), (None, None), ([], None)]:
+        for wins, want in [(["show.magic - Editor", "Main"], "show.magic"), (["Magic - Master", "show.magic - Editor - Master"], "show.magic"),
+                           (["(Untitled) - Editor - Scene 0"], None), (["Main"], None), (None, None), ([], None)]:
             with self.subTest(wins=wins):
                 self.assertEqual(lt.editor_title(wins), want)
 

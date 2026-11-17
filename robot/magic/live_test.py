@@ -367,8 +367,8 @@ def cuts_off_cut_points(cuts, m):
 # ------------------------------------------------------------ the project Magic holds before the test
 
 def editor_title(windows):
-    """The project file name of the editor window ("show.magic - Editor"), or None."""
-    return next((w[:-len(" - Editor")] for w in windows or [] if w.endswith(" - Editor")), None)
+    """The project file name of the editor window ("show.magic - Editor", Magic 3 adds " - <scene>"), or None."""
+    return next((w.split(" - Editor")[0] for w in windows or [] if " - Editor" in w and not w.startswith("(Untitled)")), None)
 
 
 def find_project(name):
