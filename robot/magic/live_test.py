@@ -267,6 +267,29 @@ def video_series(path, fps=FPS, w=192, h=108):
     return out
 
 
+def beat_pulse(v, events, fps=FPS, bins=8):
+    """Mean luma of the video by beat phase (time since Magic's last Beats step over the beat period), per tier: (max - min) / mean of the bins.
+    The drop glow follows the kick, so it shows as a pulse at the beat in the drop tier and none in calm."""
+    beats, tier = changes(series(events, "Beats")), series(events, "Tier")
+    if len(beats) < 3:
+        return {}
+    period = statistics.median(b[0] - a[0] for a, b in zip(beats, beats[1:]))
+    acc = {}
+    for i, (luma, _lit, _d) in enumerate(v):
+        t = i / fps
+        last = max((tb for tb, _ in beats if tb <= t), default=None)
+        if last is None or t - last >= period:
+            continue
+        k = int((t - last) / period * bins)
+        acc.setdefault(int(value_at(tier, t)), [[] for _ in range(bins)])[k].append(luma)
+    out = {}
+    for tr, rows in acc.items():
+        means = [statistics.mean(r) for r in rows if r]
+        if len(means) == bins:
+            out[tr] = round((max(means) - min(means)) / statistics.mean(means), 3)
+    return out
+
+
 def picture_numbers(v, cut_ts=(), fps=FPS, black_lit=0.001, stale_diff=0.02):
     """Black frames (no lit pixel above the threshold share), stale frames (no change to the one before) and diff spikes of a video series.
     A spike within 0.15 s of a cut or Move change (cut_ts, s on the video clock) is expected; the others count as unexplained."""
@@ -303,7 +326,7 @@ def analyze(events, m, t_audio=0.0, video=None):
     checked, bad = tier_vs_state(events)
     out = {
         "fps": fps_numbers(events),
-        "move_changes": len(moves), "cuts": len(cuts) - len(moves),
+        "move_changes": len(moves), "cuts": len(cuts) - len(moves), "angle_changes": len(changes(series(events, "Angle"))) - 1,
         "move_latency_frames": {"median": round(statistics.median([c[2] for c in moves]), 1), "max": round(max(c[2] for c in moves), 1)} if moves else {},
         "moves_on_bar_line": sum(1 for c in moves if c[3] % 4 == 0), "moves_off_bar_line": [(round(c[0], 2), c[3]) for c in moves if c[3] % 4],
         "cuts_off_cut_points": cuts_off_cut_points(cuts, m),
@@ -320,6 +343,7 @@ def analyze(events, m, t_audio=0.0, video=None):
     if video is not None:
         out["picture"] = picture_numbers(video, [c[0] for c in cuts])
         out["seams"] = seam_numbers(video, seams)
+        out["beat_pulse"] = beat_pulse(video, events)
     else:
         out["seams"] = {"seams": len(seams)}
     return out

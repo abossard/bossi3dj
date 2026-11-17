@@ -175,3 +175,21 @@ Every run now verifies the load (window title `<config>_<angles>.magic - Editor`
 - `robot_magic.build(..., effects=True, fx=None)` puts four modules after the composite: Chroma Zoom (chromatic split on Hits), Color Controls (grade per tier), Bloom (glow on drops), Bright (flash on Hits, strobe on Angle cuts). Driven by `effect_globals`: `HitEnv` from the Clip Data Hits (`clip_hits`, a missing or unreadable Clip Data file gives no Hits), `StrobeEnv` on an Angle change, `DropAmt` easing to 1 while X-Ray says drop (times 0.5 + 0.5 Kick), `GradeSat` and `GradeCon` easing to the tier's grade (calm 0.75 / 0.95, build 1.05 / 1.08, drop 1.3 / 1.2). Switches: manual Globals `FxHit`, `FxDrop`, `FxStrobe`, `FxGrade` (1 on); at 0 each module sits at its identity value. No module reads a Pass, so no Pass can black the frame.
 - Depth fog or tint: not built. It needs the depth Pass as a third VideoFile per Clip and Angle (42 more on `package/many`); not cheap.
 - Live check (Magic 3 beta, under load about 74, no music so the tier is calm): `package/many/robot.magic` (99 Globals, 104 modules, 84 VideoFiles, 63-entry nested-if tables) loaded first time, editor title confirmed, no Error window. 4 Syphon grabs 3 s apart, 480x270, mean RGB 45.7/43.8/44.7, 30.6/40.0/36.1, 36.6/29.0/28.8, 43.5/41.1/42.9 (frames move). Shot-reviewer (round 1, `robot/build/review/rubric-fx.md`): X1 to X4 pass. Not seen live: a Hit flash, a cut strobe, the drop glow (needs music). `show.magic` loaded back and confirmed.
+
+### R8 live test, run of 2026-11-17 (package v1: 21 Moves, low-quality Eevee, effects on)
+
+**Under load 58 to 130 (`fps_trustworthy` false); fps is context only.** Magic freshly started (Untitled), one load of `robot_live_test.magic`, test track straight into BlackHole (Spotify not playing), recorded upright (`--vflip`) to `docs/video/robot-live-test.mp4`; `show.magic` loaded back, title confirmed, no Error window. Numbers: `robot/magic/live/numbers.json`. Review: `robot/build/review/rubric-live-r2.md`, round 2.
+
+| | Result |
+|---|---|
+| fps | median 127, p5 97, min 93 (context) |
+| picture | 0 black frames; 287 of 2,700 repeated (11 %); largest frame difference 11.6; flicker mean 0.94, p95 3.0, over30 0 |
+| Move changes | 31, all on bar lines, shown 1.0 frames (median), 1.7 (max) after the Beats event |
+| Angle changes | 32: the drop Moves have cut point 0 only, so the Angle changes with each Move; 1 cut inside a Move (`guard_shuffle`, flagged off its cut points by the analysis, which takes the offset modulo the Move's beats) |
+| tier | drop 75 s (38.8 bars, 0.67 Move changes per bar), calm 7.7 s (0.5), build 6.3 s (0.61); 0 tier changes off a bar line, 0 mismatches with the jitter window (2 literal) |
+| `/vj/clip_frame` | no one-beat dips any more (jump sizes 1 to 3 frames from frame pacing, and 114 at a Move that restarts itself); the BeatFrac fix holds in Magic |
+| beat pulse (luma by beat phase, (max - min) / mean) | drop 0.68, calm 0.43, build 0.36: a stronger pulse in the drop, where the glow follows the kick; the calm figure is the Clips' own motion, only 4 bars of it |
+| X-Ray | State 3 at 1.4 s (the music after silence read as a drop), then 4 at 57.3, 2 at 64.9, 3 at 71.2: the first breakdown and buildup (23 to 39 s) were missed and the bar grid was set by that first false drop, so Magic's bar lines sat 381 ms (median), up to 966 ms, off the track's (the 2026-11-16 run: 48 ms, all sections read). An X-Ray start-up issue, not the graph's |
+
+- Review (shot-reviewer on Opus, plain and gamma-lifted sheets): L1, L2, L3, L4, L6 pass; E2 glow and E3 effects pass (a soft bloom on drop tiles, none on calm tile 1; the colour split shows as a thin fringe on Hit tiles 3, 9, 10, 16, 30, nothing washed out). Need a full-size frame: L5 (dark side-view tiles 2, 15, 18, 24, 32, 36: dark lighting or a black part) and E1 (the calm grade is only slightly duller than the drop's at tile size). Note: brightness swings hard between drop tiles (silver against near black).
+- Effects in motion: the colour split and the glow are visible in the recording's stills; the beat pulse is stronger in the drop; the cut strobe and the Hit flash are not measured on their own (no probe for HitEnv or StrobeEnv).
