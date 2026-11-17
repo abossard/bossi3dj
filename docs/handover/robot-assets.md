@@ -98,7 +98,11 @@ The Clips' beauty Pass holds only the fighters. The set is invisible to the came
 
 - The biomes need the Geo-Scatter addon (the free Biome Reader, per the pack's readme). Installing an addon needs the user's yes.
 - **Reliable route that needs no addon**: hand-place the Arclink Dark large and mid buildings in a ring 15 to 60 m behind the Angles, as instances with 1K textures. This gives the same dark city as `biome_1.jpg`.
-- **With the user's yes**: run one biome preset (`arclink_city_1`, the dark blue-lit one) once in a build step, realise it to instances, and save it into the scene, so the live Blender never runs Geo-Scatter.
+- **User decision of 2026-11-17: install the Biome Reader.**
+  - The free download is a form on https://www.geoscatter.com/download.html (name, profession, email, the terms, a security check). The user fills it in; agents don't. The site says other sources aren't legitimate.
+  - Install once the user has the archive and the orchestrator gives a Blender slot: Preferences > Add-ons (or Get Extensions) > Install from Disk, depending on what the archive turns out to be.
+  - Licence (geoscatter.com/legal): the engine is free, renders need no extra licence, and the scripts are GPL-3.0.
+- **Then**: run one biome preset (`arclink_city_1`, the dark blue-lit one) once in a build step, realise it to instances, and save it into the scene, so the live Blender never runs Geo-Scatter.
 - **Live World budget**: instances only, a triangle cap. Judge fps only when `make status` says `fps_trustworthy`.
 
 ### 5. City fill (wide Angles)
@@ -164,6 +168,6 @@ Before any slot: script work of about one session per step. After the slots: `ma
 
 ## Open questions for the user
 
-1. Install the Geo-Scatter Biome Reader for the backdrop (step 4), or use the hand-placed ring?
+1. Answered 2026-11-17: install the Biome Reader (step 4).
 2. Retire the molten channel with the foundry hall (rated 1 star), or keep it as an accent?
 3. Should the Security Bot use Gun Mode in some Exchanges?
