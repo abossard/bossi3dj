@@ -222,3 +222,18 @@ Before any slot: script work of about one session per step. After the slots: `ma
   - Slot: `python3 robot/backdrop/render_plates.py render chipset_04 greeble_01 --angles front duel_low`.
   - Then, without Blender: `encode chipset_04 greeble_01 --angles front duel_low`, the reel, and review P2 of those 4 composites with `rubric-backdrops.md`.
   - Until then Magic can use arclink_city_1 and greeble_03.
+- **Fix P3, prepared without Blender: variants for the 3 failing plates, picked by review.**
+  - New plate options:
+    - `seed`: another random layout.
+    - `sky`: a dim warm haze in the world, so dark structures read as silhouettes.
+    - `rim` and `fill`: low suns from behind the biome and from the camera's side.
+  - `--set k=v --tag _x` renders a variant without touching the plate, `preview` makes its 480 px composite, and `promote` makes it the plate.
+  - Slot, about 5 min (8 short Blender runs):
+    - `render chipset_04 --angles front --set sky=0.03 --tag _a`
+    - `render chipset_04 --angles front --set sky=0.03 rim=3 --tag _b`
+    - `render chipset_04 --angles front --set sky=0.03 rim=3 fill=1 scale=20 'area=[120,120]' --tag _c`
+    - `render greeble_01 --angles front --set y0=16 seed=N --tag _sN`, for N = 1, 2, 3
+    - `render greeble_01 --angles duel_low --set scale=16 'area=[800,800]' y0=15 sky=0.03 --tag _a`
+    - `render greeble_01 --angles duel_low --set scale=12 'area=[600,600]' y0=20 sky=0.03 rim=3 --tag _b`
+  - Then without Blender: `preview` each variant, review P3, `promote` the winners, `encode`, `reel`. Write the winning settings into `BIOMES` so a re-render reproduces them.
+  - Optional, about 8 min more: re-render all 16 on the current `robot.blend`, so every plate comes from one build.

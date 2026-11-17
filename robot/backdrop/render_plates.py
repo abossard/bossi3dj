@@ -3,6 +3,9 @@ for Magic to draw behind the Clips. The Shot Cameras are locked, so one plate pe
 
     python3 robot/backdrop/render_plates.py render [BIOME...] [--angles ANGLE...]   # Blender slot: base and glow stills
     python3 robot/backdrop/render_plates.py encode [BIOME...] [--angles ANGLE...]   # no Blender: loops, luma, composites
+    python3 robot/backdrop/render_plates.py render BIOME --angles A... --set seed=2 sky=0.03 rim=2 --tag _v1   # a variant
+    python3 robot/backdrop/render_plates.py preview BIOME --angles A... --tag _v1   # 480 px composites of a variant
+    python3 robot/backdrop/render_plates.py promote BIOME --angles A... --tag _v1   # the variant becomes the plate
     python3 robot/backdrop/render_plates.py manifest              # the Manifest's `backdrops` from the plates on disk
     python3 robot/backdrop/render_plates.py reel                  # no Blender: docs/video/robot-backdrops.mp4
 
@@ -15,6 +18,7 @@ Needs the Biome Reader set up (robot/build/review/biome_reader_setup.py) with th
 """
 import json
 import os
+import shutil
 import subprocess
 import sys
 
@@ -59,13 +63,15 @@ def _run(cmd):
     subprocess.run(cmd, check=True)
 
 
-def render(names, angles):
+def render(names, angles, sets, tag):
+    """sets: overrides for every Angle of this run (a variant), applied over BIOMES and its per_angle."""
     for name in names:
         b = BIOMES[name]
         out = os.path.join(PROBE, name)
         os.makedirs(out, exist_ok=True)
-        job = dict(b, biome=os.path.join(LIB, b["biome"]), angles=angles, out=out, glow=GLOW)
-        path = os.path.join(out, "job.json")
+        per = {a: dict(b.get("per_angle", {}).get(a, {}), **sets) for a in angles}
+        job = dict(b, biome=os.path.join(LIB, b["biome"]), angles=angles, out=out, glow=GLOW, per_angle=per, tag=tag)
+        path = os.path.join(out, "job%s.json" % tag)
         with open(path, "w") as f:
             json.dump(job, f, indent=1)
         _run([BLENDER, "-b", BLEND, "-P", os.path.join(ROOT, "robot", "backdrop", "plates_blender.py"), "--", path])
@@ -112,6 +118,27 @@ def encode(names, angles):
     print(json.dumps({n: report[n] for n in names}, indent=1))
 
 
+def preview(names, angles, tag):
+    """No encode: the Angle's first beauty frame over the variant's base still, a 480 px tile for the reviewer."""
+    for name in names:
+        src = os.path.join(PROBE, name)
+        for angle in angles:
+            beauty = os.path.join(PACKAGE, "beauty", SHOWCASE[angle] + ".mov")
+            _run(["ffmpeg", "-v", "error", "-y", "-i", os.path.join(src, angle + tag + "_base.png"), "-i", beauty,
+                  "-filter_complex", "[0][1]overlay,scale=480:-2", "-frames:v", "1",
+                  os.path.join(src, angle + tag + "_composite_480.png")])
+
+
+def promote(names, angles, tag):
+    """Make a reviewed variant the plate: copy its stills and report over the untagged names (then run encode)."""
+    for name in names:
+        src = os.path.join(PROBE, name)
+        for angle in angles:
+            for suffix in ("_base.png", "_glow.png", ".json"):
+                shutil.copyfile(os.path.join(src, angle + tag + suffix), os.path.join(src, angle + suffix))
+            print("promoted", name, angle, tag)
+
+
 def manifest():
     """Set the Manifest's `backdrops` from the plates on disk: one entry per biome that has a plate for every Angle,
     in BIOMES order. Other keys stay as they are. build_robot.py rewrites manifest.json without it: run this after."""
@@ -149,13 +176,17 @@ def reel():
 
 def main():
     cmd, rest = sys.argv[1], sys.argv[2:]
-    angles = _angles()
-    if "--angles" in rest:
-        i = rest.index("--angles")
-        rest, angles = rest[:i], rest[i + 1:]
+    opts = {"--angles": _angles(), "--set": [], "--tag": [""]}
+    for flag in sorted(opts, key=lambda k: -rest.index(k) if k in rest else 0):   # parse flags from the right
+        if flag in rest:
+            i = rest.index(flag)
+            rest, opts[flag] = rest[:i], rest[i + 1:]
+    angles, tag = opts["--angles"], opts["--tag"][0]
+    sets = {k: json.loads(v) for k, v in (s.split("=", 1) for s in opts["--set"])}
     names = rest or list(BIOMES)
-    {"render": lambda: render(names, angles), "encode": lambda: encode(names, angles), "manifest": manifest,
-     "reel": reel}[cmd]()
+    {"render": lambda: render(names, angles, sets, tag), "encode": lambda: encode(names, angles),
+     "preview": lambda: preview(names, angles, tag), "promote": lambda: promote(names, angles, tag),
+     "manifest": manifest, "reel": reel}[cmd]()
 
 
 main()

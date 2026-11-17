@@ -3,7 +3,9 @@ Angle's Shot Camera as two stills, `base` and `glow` (the biome's emission times
 
     $B -b robot/build/robot.blend -P robot/backdrop/plates_blender.py -- JOB.json
 
-JOB.json: {"biome": path, "scale": S, "area": [W, D], "y0": Y, "angles": [...], "out": dir, "glow": G}.
+JOB.json: {"biome": path, "scale": S, "area": [W, D], "y0": Y, "angles": [...], "out": dir, "glow": G}, optional
+"per_angle": {angle: overrides}, "seed" (added to the scatter seeds), "sky", "rim", "fill" (see _light), "tag"
+(suffix of the output names, for variants).
 Per Angle it reopens robot.blend, hides every mesh and curve but the floor (the fighters, the giant, the foundry hall),
 adds the emitter plane, scatters the biome on it, then turns, scales and moves the plane so it lies behind the Shot
 Camera's target along the camera's view, wide enough to fill the lens. Compositing is off, so the package's Pass
@@ -56,7 +58,7 @@ def _placement(cam, area, y0):
     width = max(w, 2.2 * math.tan(hfov / 2.0) * (near + d))
     centre = Vector((loc.x, loc.y, 0.0)) + flat * (near + d / 2.0)
     yaw = math.atan2(flat.y, flat.x) - math.pi / 2.0      # the plane's local +Y points along the view
-    return centre, yaw, width
+    return centre, yaw, width, flat
 
 
 def _scatter(scene, biome, scale, width, depth):
@@ -95,6 +97,35 @@ def _emission_inputs(mats):
     return out
 
 
+SEEDS = ("s_distribution_seed", "s_distribution_stable_seed", "s_distribution_clump_seed")
+
+
+def _reseed(plane, seed):
+    """Another random layout of the same biome: add `seed` to every scatter layer's distribution seeds."""
+    for p in plane.scatter5.particle_systems:
+        for attr in SEEDS:
+            if hasattr(p, attr):
+                setattr(p, attr, getattr(p, attr) + seed)
+
+
+def _light(scene, flat, sky, rim, fill):
+    """Plates only: `sky` lifts the world to a dim warm haze so dark structures read as silhouettes; `rim` is a low
+    sun from behind the biome towards the camera, `fill` a low sun from the camera's side, energies in W/m2."""
+    bg = scene.world.node_tree.nodes.get("Background") if scene.world and scene.world.node_tree else None
+    if bg and sky > 0.0:
+        bg.inputs["Color"].default_value = (sky, sky * 0.72, sky * 0.5, 1.0)
+    yaw = math.atan2(flat.y, flat.x)
+    for name, energy, toward in (("plate_rim", rim, -1.0), ("plate_fill", fill, 1.0)):
+        if energy <= 0.0:
+            continue
+        sun = bpy.data.objects.new(name, bpy.data.lights.new(name, "SUN"))
+        sun.data.energy, sun.data.color = energy, (1.0, 0.78, 0.55)
+        scene.collection.objects.link(sun)
+        d = Vector((math.cos(yaw), math.sin(yaw), 0.0)) * toward      # the direction the light travels, flat
+        d = (d + Vector((0.0, 0.0, -0.15))).normalized()                # 8 degrees down
+        sun.rotation_euler = d.to_track_quat("-Z", "Y").to_euler()
+
+
 def _render(scene, path):
     scene.render.filepath = path
     bpy.ops.render.render(write_still=True)
@@ -116,25 +147,29 @@ def plate(job, angle):
     scene.camera = cam
     scene.frame_set(0)
     _hide_all_but_floor()
-    centre, yaw, width = _placement(cam, job["area"], job["y0"])
+    centre, yaw, width, flat = _placement(cam, job["area"], job["y0"])
     s = job["scale"]
     plane = _scatter(scene, job["biome"], s, width, job["area"][1])
+    _reseed(plane, int(job.get("seed", 0)))
     plane.scale = (s, s, s)
     plane.rotation_euler = (0.0, 0.0, yaw)
     plane.location = centre
+    _light(scene, flat, job.get("sky", 0.0), job.get("rim", 0.0), job.get("fill", 0.0))
     bpy.context.view_layer.update()
     dg = bpy.context.evaluated_depsgraph_get()
     count = sum(1 for i in dg.object_instances if i.is_instance)
-    out = job["out"]
-    _render(scene, os.path.join(out, angle + "_base.png"))
+    out, tag = job["out"], job.get("tag", "")
+    _render(scene, os.path.join(out, angle + tag + "_base.png"))
     sockets = _emission_inputs(_biome_materials(job["biome"]))
     for sk in sockets:
         sk.default_value *= job["glow"]
-    _render(scene, os.path.join(out, angle + "_glow.png"))
-    rep = {"angle": angle, "camera": cam.name, "scale": s, "y0": job["y0"], "lens": cam.data.lens, "size": [r.resolution_x, r.resolution_y],
+    _render(scene, os.path.join(out, angle + tag + "_glow.png"))
+    rep = {"angle": angle, "tag": tag, "camera": cam.name, "scale": s, "y0": job["y0"],
+           "seed": job.get("seed", 0), "sky": job.get("sky", 0.0), "rim": job.get("rim", 0.0),
+           "fill": job.get("fill", 0.0), "lens": cam.data.lens, "size": [r.resolution_x, r.resolution_y],
            "plane_centre": [round(c, 2) for c in centre], "plane_yaw_deg": round(math.degrees(yaw), 1),
            "plane_size_m": [round(width, 1), job["area"][1]], "instances": count, "emission_inputs": len(sockets)}
-    with open(os.path.join(out, angle + ".json"), "w") as f:
+    with open(os.path.join(out, angle + tag + ".json"), "w") as f:
         json.dump(rep, f, indent=1)
     print("plate", rep)
 
