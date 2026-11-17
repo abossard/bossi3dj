@@ -81,6 +81,25 @@ All archives passed `unzip -t` / `7z t` and their sizes were stable over 30 s.
 - The `.blend` files were not opened. Counts of objects, rig details and Blender-side materials wait for a Blender slot (`robot/build/inspect_asset.py` reads a `.blend` with auto-run off).
 - Store pages call M2000, Juno, Arclink and DUNE royalty-free, but the downloads ship no licence text; Luminara depends on its Cargo tier. Check each before a public video.
 
+## Geo-Scatter Biome Reader (`geoscatter/`)
+
+The free Biome Reader from geoscatter.com, downloaded by the user on 2026-11-17 to place the Arclink biomes. The archive is in `_zips/`, the unpacked files in `extracted/`.
+
+- File: `Biome-Reader_5.6.4_for_b3d_5.2.zip` (85 MB, 413 files). It passed `unzip -t` and its size was stable over 30 s. One empty translation stub, `Fran?ais.csv.wip`, did not extract because of its file-name encoding; it has no effect.
+- Type: a Blender extension, not a legacy add-on (`blender_manifest.toml`):
+  - id `biome_reader`, version 5.6.4, `blender_version_min = "5.2.0"`;
+  - this machine's Blender is 5.3.0;
+  - permissions `files` and `network`.
+- Network: `gpl_script/ui/ui_biome_library.py` fetches scatpack store previews and a version number from `raw.githubusercontent.com/DB3D/scatter-fetch`. It runs on its own after the number of days set in its preferences (`fetch_automatic_daycount`). No other network calls were found.
+- Licence (`LICENSES.txt`, `non_gpl/blends/GEOSCATTER_ENGINE_BIOMEREADER_INDIVIDUAL.license`, geoscatter.com/legal):
+  - The Python code is GPL-3.0.
+  - The Geo-Scatter engine (`non_gpl/blends/engine.blend`) is under the vendor's EULA. It is free to use and render with, but may not be redistributed or modified.
+  - Valid only when downloaded from geoscatter.com/download, which is where the user got it.
+- Install: needs a Blender slot.
+  - Extensions install into `~/Library/Application Support/Blender/5.3/extensions/user_default/biome_reader/` (from Preferences, or `blender --command extension install-file -r user_default --enable <zip>`).
+  - Enabling it saves the user preferences.
+  - Placing the Arclink biomes also means pointing the Biome Reader's library path at `arclink_biomes/extracted/_biomes_`, one more preference change.
+
 ## Mixamo clips (`mixamo/`)
 
 Only the three Mixamo packs, copied from `~/Downloads` into `mixamo/packs/<pack>/extracted/`: Free Test Pack (11 clips), Locomotion Pack (12), Action Adventure Pack (22). The loose FBXs in `~/Downloads` belong to the Godot Colossus Scene (`make godot-models`) and are not used here (user decision of 2026-11-17). `mixamo/fbx_info.jsonl` lists each clip, made with `robot/build/review/fbx_info.py` (reads binary FBX as data, no Blender).

@@ -100,7 +100,8 @@ The Clips' beauty Pass holds only the fighters. The set is invisible to the came
 - **Reliable route that needs no addon**: hand-place the Arclink Dark large and mid buildings in a ring 15 to 60 m behind the Angles, as instances with 1K textures. This gives the same dark city as `biome_1.jpg`.
 - **User decision of 2026-11-17: install the Biome Reader.**
   - The free download is a form on https://www.geoscatter.com/download.html (name, profession, email, the terms, a security check). The user fills it in; agents don't. The site says other sources aren't legitimate.
-  - Install once the user has the archive and the orchestrator gives a Blender slot: Preferences > Add-ons (or Get Extensions) > Install from Disk, depending on what the archive turns out to be.
+  - Downloaded 2026-11-17: Biome Reader 5.6.4, a Blender extension for Blender 5.2 or later (this machine has 5.3.0), in `robot/assets/geoscatter/`. Details and its network fetch: [robot/assets/README.md](../../robot/assets/README.md).
+  - Install once the orchestrator gives a Blender slot: Preferences > Add-ons (or Get Extensions) > Install from Disk, depending on what the archive turns out to be.
   - Licence (geoscatter.com/legal): the engine is free, renders need no extra licence, and the scripts are GPL-3.0.
 - **Then**: run one biome preset (`arclink_city_1`, the dark blue-lit one) once in a build step, realise it to instances, and save it into the scene, so the live Blender never runs Geo-Scatter.
 - **Live World budget**: instances only, a triangle cap. Judge fps only when `make status` says `fps_trustworthy`.
