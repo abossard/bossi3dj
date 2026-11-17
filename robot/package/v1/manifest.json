@@ -1441,5 +1441,47 @@
    "quality": "low"
   }
  ],
- "quality": "low"
+ "quality": "low",
+ "backdrops": [
+  {
+   "id": "arclink_city_1",
+   "frames": 232,
+   "angles": {
+    "front": "backdrop/arclink_city_1/front.mov",
+    "side": "backdrop/arclink_city_1/side.mov",
+    "duel_wide": "backdrop/arclink_city_1/duel_wide.mov",
+    "duel_low": "backdrop/arclink_city_1/duel_low.mov"
+   }
+  },
+  {
+   "id": "chipset_04",
+   "frames": 232,
+   "angles": {
+    "front": "backdrop/chipset_04/front.mov",
+    "side": "backdrop/chipset_04/side.mov",
+    "duel_wide": "backdrop/chipset_04/duel_wide.mov",
+    "duel_low": "backdrop/chipset_04/duel_low.mov"
+   }
+  },
+  {
+   "id": "greeble_01",
+   "frames": 232,
+   "angles": {
+    "front": "backdrop/greeble_01/front.mov",
+    "side": "backdrop/greeble_01/side.mov",
+    "duel_wide": "backdrop/greeble_01/duel_wide.mov",
+    "duel_low": "backdrop/greeble_01/duel_low.mov"
+   }
+  },
+  {
+   "id": "greeble_03",
+   "frames": 232,
+   "angles": {
+    "front": "backdrop/greeble_03/front.mov",
+    "side": "backdrop/greeble_03/side.mov",
+    "duel_wide": "backdrop/greeble_03/duel_wide.mov",
+    "duel_low": "backdrop/greeble_03/duel_low.mov"
+   }
+  }
+ ]
 }

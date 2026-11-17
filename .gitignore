@@ -25,5 +25,7 @@ blender/local/
 docs/video/*.mp4
 # Robot Scene build output (robot/build/build_robot.py)
 robot/build/robot.blend
+# Backdrop Plates (robot/backdrop/render_plates.py)
+robot/package/v1/backdrop/
 robot/assets/*
 !robot/assets/README.md

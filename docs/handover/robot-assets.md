@@ -193,3 +193,23 @@ Before any slot: script work of about one session per step. After the slots: `ma
 1. Answered 2026-11-17: install the Biome Reader (step 4).
 2. Retire the molten channel with the foundry hall (rated 1 star), or keep it as an accent?
 3. Should the Security Bot use Gun Mode in some Exchanges?
+
+## Backdrop Plates for Magic (2026-11-17)
+
+- `robot/backdrop/render_plates.py` (`render`, `encode`, `manifest`, `reel`) and `plates_blender.py`:
+  - One plate per biome and Angle, rendered from the Angle's locked Shot Camera at 1920x1080 with Eevee at 32 samples. Compositing is off, so the package's Pass outputs are never touched.
+  - The plate holds the floor and the biome. The biome is scattered on a plane behind the fighters along the camera's view, made wide enough to fill the lens.
+  - Two stills per plate: `base`, and `glow` with the biome's emission times 3. They blend into a 232-frame loop (4 bars), one slow swell. The swell is faint: mean luma moves by less than 2 of 255.
+  - Encoded as H.264 at full range to `robot/package/v1/backdrop/<biome>/<angle>.mov`, which is git-ignored.
+  - `manifest` writes the Manifest field `backdrops` (agreed with the orchestrator; R3+R4 add it to CONTRACTS.md and the generator). `build_robot.py` rewrites manifest.json without it, so rerun `manifest` after each package write.
+- Slot: about 2 min per biome for 4 Angles. Encoding all 16 plates takes about 10 min, mostly ffmpeg's blend expression. The reel takes 15 s: `docs/video/robot-backdrops.mp4`, 64 s, 4 s per biome and Angle, with the Angle's idle Clip over the plate.
+- Checks: none of the 16 loops is black (mean luma 25 to 52), and the loop seam is at most 0.05 luma. One composite per plate (`robot/build/probe/backdrop/<biome>/<angle>_composite.png`) is the first beauty frame over the plate, without the Shadow Pass.
+- Review P1 (`robot/build/review/rubric-backdrops.md`): 12 of 16 pass.
+  - **Pass on all 4 Angles:** arclink_city_1 and greeble_03.
+  - **chipset_04** fails front and duel_low: a thin dark band on the horizon.
+  - **greeble_01** fails front and duel_low at y0 30 (thin, barely visible). At y0 8, front passed, but side had a pipe behind the head and duel_low had one slab across the fighters.
+  - No shot shows floating feet, a plane edge, or a structure cutting through a fighter.
+- Next fix, one slot of about 5 min: a per-Angle `y0` (and scale) in `BIOMES`.
+  - greeble_01: front y0 8, side and duel_wide y0 30, duel_low about 15.
+  - chipset_04: front and duel_low at a larger scale or a closer y0.
+  - Until then Magic can use arclink_city_1 and greeble_03.
