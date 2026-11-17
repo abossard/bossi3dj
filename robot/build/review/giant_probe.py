@@ -21,7 +21,9 @@ import moves  # noqa: E402
 
 ASSET = os.path.join(HERE, "..", "..", "assets", "security_bot", "security_bot_v1", "security_bot_release_v1.blend")
 RIG = "RIG-security_bot"
-HEIGHT_M = 6.0
+HEIGHT_M = float(os.environ.get("GIANT_H", "6.0"))
+# a smaller giant stands closer (GIANT_Y) and its control points shrink about its root by GIANT_H / 6
+GIANT_Y = float(os.environ.get("GIANT_Y", "-2.5"))
 # giant control point -> Security Bot bone (IK targets and the torso; rotations on Torso and Chest)
 BONE_MAP = {"g_hips": "Torso", "g_hammer": "IK-Wrist.R", "g_claw": "IK-Wrist.L",
             "g_foot_l": "IK-TGT-Ankle.L", "g_foot_r": "IK-TGT-Ankle.R"}
@@ -65,7 +67,7 @@ def place(rig, coll):
     s = HEIGHT_M / (z1 - z0)
     rig.scale = (s, s, s)
     rig.rotation_euler = (0.0, 0.0, math.pi)          # the bot faces -Y; the giant faces the Android (+Y)
-    rig.location = (0.0, -2.5, -z0 * s)
+    rig.location = (0.0, GIANT_Y, -z0 * s)
     bpy.context.view_layer.update()
     return {"native_height_m": round(z1 - z0, 3), "scale": round(s, 3)}
 
@@ -122,6 +124,11 @@ def main():
     arm = br._arm()
     arm.animation_data.action = None
     seq = X.frames(ex)
+    k = HEIGHT_M / 6.0
+    if k != 1.0 or GIANT_Y != -2.5:
+        def shrink(g):
+            return {c: v if c.endswith("_rot") else (v[0] * k, GIANT_Y + (v[1] + 2.5) * k, v[2] * k) for c, v in g.items()}
+        seq = [(a, shrink(g)) for a, g in seq]
     for f, (a, g) in enumerate(seq):
         br.apply_pose(arm, a)
         for ch, (bone, kind) in br.CHANNEL_BONES.items():
@@ -139,6 +146,7 @@ def main():
     br.use_preview(scene)
     br.set_beauty_format(scene, "qtrle")
     scene.render.filepath = os.path.join(out, ex.name + "_")
+    rep["giant_height_m"], rep["giant_y"] = HEIGHT_M, GIANT_Y
     t = time.time()
     bpy.ops.render.render(animation=True)
     rep["preview_s"] = round(time.time() - t, 1)

@@ -46,19 +46,21 @@ MOLTEN = (1.0, 0.32, 0.06)
 
 def _rig_bones():
     """(name, head, tail, parent, deform, connected) in rest pose, metres."""
+    # the HUMANOID M2000's proportions at its import scale (import_m2000): shoulders at 1.54 m as the Move tables
+    # assume, hips at 1.094 m, head top at 1.92 m; legs straight down at x 0.11 like before, 0.477 m per bone
     b = [("root", (0, 0, 0), (0, 0, 0.3), None, False, False),
-         ("hips", (0, 0, 1.00), (0, 0, 1.12), "root", True, False),
-         ("spine", (0, 0, 1.12), (0, 0, 1.36), "hips", True, True),
-         ("chest", (0, 0, 1.36), (0, 0, 1.62), "spine", True, True),
-         ("neck", (0, 0, 1.62), (0, 0, 1.70), "chest", True, True),
-         ("head", (0, 0, 1.70), (0, 0, 1.98), "neck", True, True)]
+         ("hips", (0, 0, 1.094), (0, 0, 1.109), "root", True, False),
+         ("spine", (0, 0, 1.109), (0, 0, 1.244), "hips", True, True),
+         ("chest", (0, 0, 1.244), (0, 0, 1.595), "spine", True, True),
+         ("neck", (0, 0, 1.595), (0, 0, 1.727), "chest", True, True),
+         ("head", (0, 0, 1.727), (0, 0, 1.918), "neck", True, True)]
     for s, sfx in ((1, ".L"), (-1, ".R")):
-        b += [("upperarm" + sfx, (0.25 * s, 0, 1.54), (0.27 * s, 0.04, 1.25), "chest", True, False),
-              ("forearm" + sfx, (0.27 * s, 0.04, 1.25), (0.27 * s, 0, 0.97), "upperarm" + sfx, True, True),
-              ("hand" + sfx, (0.27 * s, 0, 0.97), (0.27 * s, 0, 0.87), "forearm" + sfx, True, True),
-              ("thigh" + sfx, (0.11 * s, 0, 0.96), (0.11 * s, -0.03, 0.53), "hips", True, False),
-              ("shin" + sfx, (0.11 * s, -0.03, 0.53), (0.11 * s, 0, moves.ANKLE_Z), "thigh" + sfx, True, True),
-              ("hand_ik" + sfx, (0.27 * s, 0, 0.97), (0.27 * s, 0, 1.07), "root", False, False),
+        b += [("upperarm" + sfx, (0.138 * s, 0, 1.540), (0.148 * s, 0.04, 1.229), "chest", True, False),
+              ("forearm" + sfx, (0.148 * s, 0.04, 1.229), (0.148 * s, 0, 0.949), "upperarm" + sfx, True, True),
+              ("hand" + sfx, (0.148 * s, 0, 0.949), (0.148 * s, 0, 0.875), "forearm" + sfx, True, True),
+              ("thigh" + sfx, (0.11 * s, 0, 1.054), (0.11 * s, -0.03, 0.577), "hips", True, False),
+              ("shin" + sfx, (0.11 * s, -0.03, 0.577), (0.11 * s, 0, moves.ANKLE_Z), "thigh" + sfx, True, True),
+              ("hand_ik" + sfx, (0.148 * s, 0, 0.949), (0.148 * s, 0, 1.049), "root", False, False),
               ("foot_ik" + sfx, (0.11 * s, 0, moves.ANKLE_Z), (0.11 * s, 0, 0.20), "root", False, False),
               ("foot" + sfx, (0.11 * s, 0, moves.ANKLE_Z), (0.11 * s, -0.16, 0.03), "foot_ik" + sfx, True, False),
               ("elbow_pole" + sfx, (0.55 * s, 0.45, 1.0), (0.55 * s, 0.45, 1.1), "root", False, False),
@@ -230,12 +232,112 @@ def build_parts(coll, arm, mats):
         P("foot" + sfx, "foot" + sfx, _mesh_box("foot", 0.12, 0.27, 0.10), at(FWD, 0.11 * s, -0.06, 0.05), steel)
 
 
+# ---------- the Android model: HUMANOID M2000 ----------
+
+M2000_BLEND = os.path.join(HERE, "..", "assets", "humanoid_m2000", "extracted", "HUMANOID M2000", "DROID.blend")
+M2000_SCALE, M2000_DY = 0.1133, 0.508       # its shoulders at 1.54 m, centred on Y; it faces +Y, so it turns 180
+# M2000 piece -> (its bone, our bone, how it lands on our bone). keep: the torso already matches our rest pose;
+# turn: its bone's direction onto ours about the joint; foot: its ankle onto ours, the sole on the floor
+M2000_PIECES = {"HIP": ("HIP", "hips", "keep"), "WAIST": ("WAIST", "spine", "keep"),
+                "CHEST": ("CHEST", "chest", "keep"), "NECK": ("NECK", "neck", "keep"),
+                "NECK.001": ("NECK.001", "neck", "keep"), "HEAD": ("HEAD", "head", "keep"),
+                "ARM": ("Bone.031", "upperarm.R", "turn"), "ARM.001": ("Bone.011", "upperarm.L", "turn"),
+                "FOREARM": ("Bone.032", "forearm.R", "turn"), "FOREARM.001": ("Bone.012", "forearm.L", "turn"),
+                "HAND.R": ("Bone.033", "hand.R", "turn"), "HAND.L": ("Bone.013", "hand.L", "turn"),
+                "THIGH.002": ("THIGH L", "thigh.R", "turn"), "THIGH.001": ("THIGH R", "thigh.L", "turn"),
+                "SHIN": ("Bone.010", "shin.R", "turn"), "SHIN.001": ("Bone.008", "shin.L", "turn"),
+                "FOOT": ("LEG.001", "foot.R", "foot"), "FOOT.001": ("LEG", "foot.L", "foot")}
+
+
+def _split_x(me, keep_positive):
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if (v.co.x > 0) != keep_positive], context="VERTS")
+    out = me.copy()
+    bm.to_mesh(out)
+    bm.free()
+    return out
+
+
+def import_m2000(coll, arm):
+    """Append the M2000's pieces, bake each (its skinned hands and neck in their saved pose), turn and scale them
+    into our rest pose and parent each to our bone. Its own armature, floor, environment and wires are dropped."""
+    with bpy.data.libraries.load(M2000_BLEND, link=False) as (src, dst):
+        dst.objects = [n for n in src.objects if n not in ("FLOOR", "ENV", "WIRES")]
+    tmp = bpy.data.collections.new("m2000_source")
+    bpy.context.scene.collection.children.link(tmp)
+    for o in dst.objects:
+        tmp.objects.link(o)
+    bpy.context.view_layer.update()
+    dg = bpy.context.evaluated_depsgraph_get()
+    rig = next(o for o in dst.objects if o.type == "ARMATURE")
+    g = Matrix.Rotation(math.pi, 4, "Z") @ Matrix.Scale(M2000_SCALE, 4) @ Matrix.Translation((0, M2000_DY, 0))
+
+    def its(bone):
+        pb = rig.pose.bones[bone]
+        return g @ (rig.matrix_world @ pb.head), g @ (rig.matrix_world @ pb.tail)
+
+    meshes = {}
+    for o in dst.objects:
+        if o.type == "MESH":
+            ev = o.evaluated_get(dg)
+            me = bpy.data.meshes.new_from_object(ev)
+            me.transform(g @ ev.matrix_world)
+            meshes[o.name] = me
+    hands = meshes.pop("HANDS")
+    meshes["HAND.L"], meshes["HAND.R"] = _split_x(hands, True), _split_x(hands, False)
+    parts = []
+    for name, (their, ours, mode) in M2000_PIECES.items():
+        hb, tb = (arm.matrix_world @ arm.data.bones[ours].head_local, arm.matrix_world @ arm.data.bones[ours].tail_local)
+        if mode == "keep":
+            world = Matrix.Identity(4)
+        elif mode == "turn":
+            h, t = its(their)
+            world = Matrix.Translation(hb) @ (t - h).rotation_difference(tb - hb).to_matrix().to_4x4() \
+                @ Matrix.Translation(-h)
+        else:
+            world = Matrix.Translation(hb - its(their)[0])
+        me = meshes[name]
+        if mode == "foot":
+            world = Matrix.Translation((0, 0, -min((world @ v.co).z for v in me.vertices))) @ world
+        obj = bpy.data.objects.new("m2000." + name, me)
+        coll.objects.link(obj)
+        obj["robot_part"] = ours
+        _bone_parent(obj, arm, ours, world)
+        parts.append(obj)
+    for o in list(dst.objects):
+        bpy.data.objects.remove(o)
+    bpy.data.collections.remove(tmp)
+    shell = bpy.data.materials.get("body")
+    if shell and shell.node_tree:     # its file shows the shell white only at +4.5 EV; lift its ramp for our exposure
+        ramp = next(n for n in shell.node_tree.nodes if n.bl_idname == "ShaderNodeValToRGB"
+                    and n.outputs["Color"].links and n.outputs["Color"].links[0].to_socket.name == "Base Color")
+        ramp.color_ramp.elements[0].color = (0.15, 0.15, 0.15, 1.0)
+        ramp.color_ramp.elements[-1].color = (0.80, 0.80, 0.80, 1.0)
+    for m in {s.material for p in parts for s in p.material_slots if s.material}:
+        for n in (m.node_tree.nodes if m.node_tree else []):
+            if n.bl_idname == "ShaderNodeBsdfPrincipled" and not n.inputs["Roughness"].is_linked \
+                    and n.inputs["Metallic"].default_value > 0.5 and n.inputs["Roughness"].default_value < 0.25:
+                n.inputs["Roughness"].default_value = 0.25    # hold light instead of mirroring a black world
+    return parts
+
+
 def build_points(coll, arm):
     """Empties whose positions become Clip Data; found by the custom property robot_point."""
-    spots = {"head": ("head", (0, -0.02, 1.84)), "eye_l": ("head", (0.05, -0.125, 1.855)),
-             "eye_r": ("head", (-0.05, -0.125, 1.855)), "hand_l": ("hand.L", (0.27, 0, 0.92)),
-             "hand_r": ("hand.R", (-0.27, 0, 0.92)), "foot_l": ("foot.L", (0.11, -0.12, 0.05)),
-             "foot_r": ("foot.R", (-0.11, -0.12, 0.05))}
+    def box(part):
+        o = bpy.data.objects["m2000." + part]
+        cs = [o.matrix_world @ v.co for v in o.data.vertices]
+        return Vector([min(c[i] for c in cs) for i in range(3)]), Vector([max(c[i] for c in cs) for i in range(3)])
+
+    bpy.context.view_layer.update()
+    (h0, h1), (l0, l1), (r0, r1) = box("HEAD"), box("HAND.L"), box("HAND.R")
+    hc, eye_z = (h0 + h1) / 2, h0.z + 0.6 * (h1.z - h0.z)
+    ankle = {s: arm.matrix_world @ arm.data.bones["foot" + s].head_local for s in (".L", ".R")}
+    spots = {"head": ("head", tuple(hc)), "eye_l": ("head", (0.035, h0.y + 0.01, eye_z)),
+             "eye_r": ("head", (-0.035, h0.y + 0.01, eye_z)), "hand_l": ("hand.L", tuple((l0 + l1) / 2)),
+             "hand_r": ("hand.R", tuple((r0 + r1) / 2)),
+             "foot_l": ("foot.L", (ankle[".L"].x, ankle[".L"].y - 0.12, 0.05)),
+             "foot_r": ("foot.R", (ankle[".R"].x, ankle[".R"].y - 0.12, 0.05))}
     for name, (bone, co) in spots.items():
         e = bpy.data.objects.new("point." + name, None)
         e.empty_display_size = 0.03
@@ -472,7 +574,7 @@ def build(out):
         scene.collection.children.link(colls[name])
     mats = build_materials()
     arm = build_rig(colls["Android"])
-    build_parts(colls["Android"], arm, mats)
+    import_m2000(colls["Android"], arm)
     build_points(colls["Android"], arm)
     calibrate_poles(arm)
     build_set(colls["Set"], mats)
@@ -595,7 +697,7 @@ def use_low(scene):
         scene.render.engine = "BLENDER_EEVEE"
     except TypeError:
         scene.render.engine = "BLENDER_EEVEE_NEXT"
-    scene.eevee.taa_render_samples = 8
+    scene.eevee.taa_render_samples = 32
     bpy.data.objects["floor_catcher"].is_holdout = True
     scene.view_layers[0].use_pass_shadow = True
     tree = scene.compositing_node_group
