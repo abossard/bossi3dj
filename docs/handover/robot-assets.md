@@ -111,12 +111,12 @@ The Clips' beauty Pass holds only the fighters. The set is invisible to the came
 - **Preview round B1** (`biome_preview.py`, front Shot Camera, Eevee half size, 5 min for 3 frames; rubric `robot/build/review/rubric-biomes.md`; frames in `robot/build/probe/biomes/`, git-ignored):
   - `arclink_city_1.png` passes: a dark megastructure city with cyan trims fills about 45 % of the frame behind the figure.
   - `chipset_01.png` and `chipset_04.png` fail: the BinaryFrame parts are at real mainboard scale, so they show as specks on the horizon (about 2 % of the frame). To use BinaryFrame as a megastructure, scale its instances up about 100 to 200 times, or scatter it on a small plane close behind the duel and scale that. This needs one more slot.
-- **BinaryFrame fix, planned for the next short slot** (`biome_preview.py` now takes `--scale`, `--area`, `--y0`, `--tag`, `--measure`):
-  1. Measure, no render, about 1 min: `$B -b robot/build/robot.blend -P robot/build/review/biome_preview.py -- robot/build/probe/biomes --measure "$L/Binary Frames/chipset_01.biome"`. This writes the instance sizes in metres and the instance count.
-  2. Pick S so the median part is about 8 m tall (around 100 to 200 if the parts are at mainboard scale). Scaling the emitter object, not applied, scales positions, spacing and sizes together, because Geo-Scatter's scale and density spaces default to "local".
-  3. Render, about 4 min: `-- robot/build/probe/biomes --scale S --area 120 120 --y0 8 --tag _mega "$L/Binary Frames/chipset_01.biome" "$L/Binary Frames/chipset_04.biome"`. A 120 m patch starting 8 m behind the Android, so the board rises as towers around the duel.
-  4. If the measured count shows the patch is nearly empty at that scale (the density is per local square metre), raise `--area` or lower S, measure again, then render.
-  5. Review with `rubric-biomes.md` as round B2.
+- **BinaryFrame megastructure, round B2** (2026-11-17 12:22, 3 min of Blender; `biome_preview.py` takes `--scale`, `--area`, `--y0`, `--tag`, `--measure`):
+  - Measured at scale 1, the median part is 0.45 m (chipset_01) and 0.37 m (chipset_04), so S = 20, not the 100 to 200 guessed in B1. Scaling the emitter object without applying it scales positions, spacing and sizes together, because Geo-Scatter's scale and density spaces default to "local".
+  - At `--scale 20 --area 120 120 --y0 8`, the median part is 9.0 m and 7.3 m, and the largest are 41 m and 19 m. That gives 171 instances (chipset_01) and 763 (chipset_04).
+  - `chipset_04_mega.png` passes, marginally: tall lit fins and big cylinders behind the figure read as power-plant machinery and fill about 25 % of the frame. The right third is still dark.
+  - `chipset_01_mega.png` fails: the scale now reads big, but 171 instances are too sparse (about 5 % of the frame) and mostly black on black. Next try is a bigger `--area` (e.g. 240 240) or S 12, measure first.
+  - Command: `$B -b robot/build/robot.blend -P robot/build/review/biome_preview.py -- robot/build/probe/biomes [--measure] --scale 20 --area 120 120 --y0 8 --tag _mega "$L/Binary Frames/chipset_01.biome" "$L/Binary Frames/chipset_04.biome"`, with `L="$HOME/Library/Application Support/Blender/data/scatter library/_biomes_/GreebleTown"`.
 - **Then**: run one biome preset (`arclink_city_1`, the dark blue-lit one) once in a build step, realise it to instances, and save it into the scene, so the live Blender never runs Geo-Scatter.
 - **Live World budget**: instances only, a triangle cap. Judge fps only when `make status` says `fps_trustworthy`.
 
