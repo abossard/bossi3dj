@@ -13,12 +13,16 @@ ends where it starts and still moves while the capture moves. Feet: a foot count
 the floor and nearly still; a planted run holds its ankle at one spot on the floor, blending in and out over
 `LOCK_BLEND` frames.
 
+Weight (weight.py) on top: a hold at each Hit with the catch-up (`warp`), and in retarget.py the recoil after it
+and the dip after a stomp. No ballistic layer and no landing dip: the capture flies and lands by itself.
+
     python3 -m unittest discover robot/build/tests
 """
 import math
 from collections import namedtuple
 
 import moves
+import weight
 
 PACKS = "robot/assets/mixamo/packs"
 LOOP_FRAMES = 12
@@ -69,6 +73,19 @@ def hits(clip):
 
 def frames(clip):
     return moves.clip_frames(clip.beats)
+
+
+def stops(clip):
+    """[(frame, limb, strength)] of the Hits, for weight.py."""
+    return [(moves.beat_frame(h.beat), h.limb, h.strength) for h in hits(clip)]
+
+
+def warp(clip):
+    """Source frame per Clip frame: weight.py's hit-stop (hold at each Hit, catch up by the next beat) through the
+    Anchors' time map."""
+    s = weight.time_warp(frames(clip), [(h, st) for h, _l, st in stops(clip)],
+                         [moves.beat_frame(b) for b in range(clip.beats + 1)])
+    return [src_frame(clip, f) for f in s]
 
 
 def key_weight(clip, frame):

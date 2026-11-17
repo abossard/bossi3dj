@@ -9,6 +9,7 @@ import unittest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 import mocap  # noqa: E402
 import moves  # noqa: E402
+import weight  # noqa: E402
 
 FPB = moves.frames_per_beat()
 
@@ -33,6 +34,16 @@ class TimeMapTests(unittest.TestCase):
             with self.subTest(clip=name, hit=i):
                 self.assertAlmostEqual(mocap.hits(clip)[i].beat, beat)
                 self.assertEqual(moves.beat_frame(mocap.hits(clip)[i].beat), frame)
+
+    def test_hits_hold_then_catch_up(self):
+        for clip in mocap.CLIPS.values():
+            src = mocap.warp(clip)
+            for h, _limb, strength in mocap.stops(clip):
+                with self.subTest(clip=clip.name, frame=h):
+                    hold = src[h:h + weight.hold_frames(strength) + 1]
+                    self.assertEqual(hold, [mocap.src_frame(clip, h)] * len(hold))
+            with self.subTest(clip=clip.name, end="last"):
+                self.assertAlmostEqual(src[-1], mocap.src_frame(clip, mocap.frames(clip) - 1))
 
     def test_clips_last_whole_bars(self):
         for clip in mocap.CLIPS.values():

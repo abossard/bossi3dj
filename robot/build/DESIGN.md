@@ -41,6 +41,8 @@ Moves last 1, 2 or 4 bars (58, 116, 232 frames at 124 BPM, 30 fps) and start and
 | power_stomp | drop | 1 | low > low | three heel stomps on one spot ahead, the last the heaviest |
 | low_charge | drop | 2 | low > guard | shoulder ram, two-fist hammer |
 
+Weight ([weight.py](weight.py), #31, docs/research/weighted-animation.md steps 1, 3, 4): `moves.frames()` puts physical layers on the key tables. A Hit holds the Clip still for round(1 + 2·strength) frames; the time then catches up by the next beat, faster where the key table is slow. An Exchange's fighters share one warp. In flight the hips follow a parabola under g, cut at contacts and Dodges in the air; hands and feet move with them. After the hold the fist springs back along its approach, and the hips take a smaller level reaction. Touch-downs from flight and stomps dip the hips and hands, starting at the falling speed. Recoils and dips fade out over the last 10 frames, and the hips give way where a planted leg would lose its foot. `python3 robot/build/weight.py` prints the research's check per Move (hips acceleration in flight, ground force per kg, friction), before and after.
+
 Every Key Pose has a Move out in every tier, and reaches every other Key Pose within two Moves (low to crouch goes through guard).
 
 Cut Points are computed: a beat counts when its frame is within 0.5° and 5 mm of the Move's starting Key Pose.
@@ -86,4 +88,5 @@ The user, 2026-11-17: the key-table Moves look mechanical. Mixamo captures repla
 - Arms and legs keep their IK: the targets sit on the captured wrist and ankle, the poles beside the captured elbow and knee each frame. Hands take the captured rotation relative to the solved forearm.
 - A foot near the floor and nearly still is planted. It holds at one spot, flat, blending over 3 frames. No foot part goes below the floor.
 - The time map runs through Anchors (beat, source frame), so contacts land on beats. Hits name their source frame. The first and last beat blend into the Key Poses; an Idle Clip blends its last 12 frames into its first. Net travel is taken out in proportion to the hips' path.
+- Weight on top: the hit-stop through the time map, the fist recoil and the stomp dip. No ballistic layer or landing dip: the capture flies and lands by itself. An ankle target past the leg's reach follows the leg.
 - `review/mocap_check.py` gives the numbers, `review/mocap_proof.py` the low renders, `review/mocap_reel.sh` the reel beside the hand-keyed Clips.

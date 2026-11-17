@@ -524,9 +524,25 @@ def _sample_keys(move, frame, bpm, fps):
     return dict(move.keys[-1].pose)
 
 
-def frames(move, bpm=BPM, fps=FPS):
-    """One Pose per frame of the Clip."""
-    return [sample(move, f, bpm, fps) for f in range(move_frames(move, bpm, fps))]
+def stops(move, bpm=BPM, fps=FPS):
+    """[(frame, limb, strength)] of the Move's Hits, for weight.py."""
+    return [(h["f"], h["limb"], h["strength"]) for h in hit_frames(move, bpm, fps)]
+
+
+def beat_frames(move, bpm=BPM, fps=FPS):
+    return [beat_frame(b, bpm, fps) for b in range(move.beats + 1)]
+
+
+def frames(move, bpm=BPM, fps=FPS, weighted=True, hits=None, warp=None, dodges=()):
+    """One Pose per frame of the Clip: the key table, with weight.py's layers unless `weighted` is False. `hits`
+    ([(frame, limb, strength)], default the Move's), `warp` (a shared time warp) and `dodges` (frames to hold) are
+    for Exchanges."""
+    n = move_frames(move, bpm, fps)
+    if not weighted:
+        return [sample(move, f, bpm, fps) for f in range(n)]
+    import weight
+    return weight.weigh(lambda f: sample(move, f, bpm, fps), n, stops(move, bpm, fps) if hits is None else hits,
+                        beat_frames(move, bpm, fps), hip_joint, LEG_M, warp, dodges)
 
 
 def hit_frames(move, bpm=BPM, fps=FPS):
@@ -544,9 +560,10 @@ def pose_distance(a, b):
 def cut_points(move, bpm=BPM, fps=FPS, tol_deg=0.5, tol_m=0.005):
     """Beats inside the Clip whose frame shows the Clip's Key Pose, so Magic may switch there."""
     key = KEY_POSES[move.key_in]
+    seq = frames(move, bpm, fps)
     out = []
     for beat in range(move.beats):
-        rot, pos = pose_distance(sample(move, beat_frame(beat, bpm, fps), bpm, fps), key)
+        rot, pos = pose_distance(seq[beat_frame(beat, bpm, fps)], key)
         if rot <= tol_deg and pos <= tol_m:
             out.append(beat)
     return out

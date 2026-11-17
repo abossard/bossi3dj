@@ -7,6 +7,7 @@ own bone lengths gives the joints. The torso bones (hips, spine, chest, neck, he
 legs keep their IK, driven by the wrist and ankle and by a pole set beside the captured elbow and knee each frame, so
 the IK solves the captured limb; the hands then take the captured hand rotation relative to the solved forearm and
 the feet the captured foot rotation (flat on the floor while planted). Hips travel scales with the leg length.
+weight.py's hit-stop comes through mocap.warp; its fist recoil moves the wrist targets, its stomp dip the hips.
 """
 import os
 
@@ -15,6 +16,7 @@ from mathutils import Matrix, Quaternion, Vector
 
 import mocap
 import moves
+import weight
 
 PACKS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "mixamo", "packs")
 SIDES = ((".L", "Left"), (".R", "Right"))
@@ -147,27 +149,49 @@ def _flat(q, rest):
     return Quaternion((0.0, 0.0, 1.0), yaw) @ rest
 
 
-def _controls(rt, frames):
+def _impacts(rt, frames, travel, locked, stops):
+    """weight.py's fist recoil and stomp dip as world offsets {frame: {"hips" | "hand.L" | "hand.R": Vector}}, faded out
+    at the Clip's end."""
+    seq = [{"hips": tuple(P["hips"].translation + t), "hand_l": tuple(rt.tail(P, "forearm.L") + t),
+            "hand_r": tuple(rt.tail(P, "forearm.R") + t), "foot_l": locked[".L"][0][f], "foot_r": locked[".R"][0][f]}
+           for f, ((P, _), t) in enumerate(zip(frames, travel))]
+    at = lambda f: seq[int(f)]  # noqa: E731
+    out = {}
+    hand_recoil = [o for o in weight.recoil(seq, at, stops) if o[1] != "hips"]   # the capture's body reacts itself
+    for f, ch, d in hand_recoil + weight.dip(seq, at, stops, landings=False):
+        bone = {"hips": "hips", "hand_l": "hand.L", "hand_r": "hand.R"}[ch]
+        o = out.setdefault(f, {})
+        o[bone] = o.get(bone, Vector()) + Vector(d) * weight._end_weight(f, len(seq))
+    return out
+
+
+def _controls(rt, frames, stops=()):
     """Per frame {bone: (location, rotation)} for the control bones, plus the world hand rotations."""
     hips_xy = [(P["hips"].translation.x, P["hips"].translation.y) for P, _ in frames]
     travel = [Vector((x, y, 0.0)) for x, y in mocap.travel_offsets(hips_xy)]
     ankles = {s: [rt.tail(P, "shin" + s) + t for (P, _), t in zip(frames, travel)] for s, _ in SIDES}
     locked = {s: mocap.lock_feet([tuple(a) for a in ankles[s]]) for s, _ in SIDES}
+    impacts = _impacts(rt, frames, travel, locked, stops)
     out, hands, prev = [], [], {}
     for f, ((P, feet), t) in enumerate(zip(frames, travel)):
         c = {}
+        hit = impacts.get(f, {})
         L = rt.local(P, "hips")
-        c["hips"] = (L.translation + rt.A["hips"].to_3x3().inverted() @ t, L.to_quaternion())
+        c["hips"] = (L.translation + rt.A["hips"].to_3x3().inverted() @ (t + hit.get("hips", Vector())),
+                     L.to_quaternion())
         for b in ("spine", "chest", "neck", "head"):
             c[b] = (Vector(), rt.local(P, b).to_quaternion())
         for s, _ in SIDES:
             shoulder, elbow, wrist = P["upperarm" + s].translation + t, rt.tail(P, "upperarm" + s) + t, \
                 rt.tail(P, "forearm" + s) + t
-            c["hand_ik" + s] = (rt.at("hand_ik" + s, wrist), Quaternion())
+            c["hand_ik" + s] = (rt.at("hand_ik" + s, wrist + hit.get("hand" + s, Vector())), Quaternion())
             pole, prev["e" + s] = _pole(shoulder, elbow, wrist, prev.get("e" + s), Vector((0.0, 1.0, 0.0)))
             c["elbow_pole" + s] = (rt.at("elbow_pole" + s, pole), Quaternion())
             hip, knee = P["thigh" + s].translation + t, rt.tail(P, "thigh" + s) + t
             ankle = Vector(locked[s][0][f])
+            reach = rt.length["thigh" + s] + rt.length["shin" + s] - 0.001
+            if (ankle - hip).length > reach:      # a lock spot past the leg's reach: the foot follows the leg
+                ankle = hip + (ankle - hip).normalized() * reach
             pole, prev["k" + s] = _pole(hip, knee, ankle, prev.get("k" + s), Vector((0.0, -1.0, 0.0)))
             c["knee_pole" + s] = (rt.at("knee_pole" + s, pole), Quaternion())
             rest = _rot(rt.A["foot" + s])
@@ -215,9 +239,9 @@ def bake(arm, clip):
     src = Source(os.path.join(PACKS, clip.fbx))
     rt = Retarget(arm, src)
     n = mocap.frames(clip)
-    frames = [rt.fk(src.pose(mocap.src_frame(clip, f))) for f in range(n)]
+    frames = [rt.fk(src.pose(s)) for s in mocap.warp(clip)]
     src.remove()
-    controls, hands = _controls(rt, frames)
+    controls, hands = _controls(rt, frames, mocap.stops(clip))
     keys = {k: _key_controls(arm, k) for k in (clip.key_in, clip.key_out) if k}
     act = bpy.data.actions.new("mocap." + clip.name)
     act.use_fake_user = True

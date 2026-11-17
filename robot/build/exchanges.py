@@ -289,5 +289,16 @@ EXCHANGES = {e.name: e for e in (_duel_idle("duel_idle", "idle_guard"), _duel_id
 
 
 def frames(ex):
-    """[(Android Pose, giant Pose)] per frame."""
-    return list(zip(moves.frames(ex.android), moves.frames(ex.giant)))
+    """[(Android Pose, giant Pose)] per frame, weighted (weight.py) with one time warp for both fighters: every
+    Strike and Android Hit holds the whole Exchange."""
+    import weight
+    n = moves.move_frames(ex.android)
+    hits = sorted({(moves.beat_frame(s.beat), s.point, s.strength) for s in ex.hits} | set(moves.stops(ex.android)))
+    firsts = {}
+    for f, limb, strength in hits:
+        firsts[f] = max(firsts.get(f, 0.0), strength)
+    raw = list(zip(moves.frames(ex.android, weighted=False), moves.frames(ex.giant, weighted=False)))
+    fast = [max(a, g) for a, g in zip(weight.speeds([a for a, _g in raw]), weight.speeds([g for _a, g in raw]))]
+    warp = weight.time_warp(n, sorted(firsts.items()), moves.beat_frames(ex.android), fast)
+    dodges = [moves.beat_frame(d.beat) for d in ex.dodges]
+    return list(zip(moves.frames(ex.android, hits=hits, warp=warp, dodges=dodges), moves.frames(ex.giant, warp=warp)))
