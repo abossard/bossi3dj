@@ -103,6 +103,14 @@ The Clips' beauty Pass holds only the fighters. The set is invisible to the came
   - Downloaded 2026-11-17: Biome Reader 5.6.4, a Blender extension for Blender 5.2 or later (this machine has 5.3.0), in `robot/assets/geoscatter/`. Details and its network fetch: [robot/assets/README.md](../../robot/assets/README.md).
   - Install once the orchestrator gives a Blender slot: Preferences > Add-ons (or Get Extensions) > Install from Disk, depending on what the archive turns out to be.
   - Licence (geoscatter.com/legal): the engine is free, renders need no extra licence, and the scripts are GPL-3.0.
+- **Installed 2026-11-17, about 10:15** (orchestrator slot after R5), with `robot/build/review/biome_reader_setup.py`. Preferences diff (`robot/build/probe/biomes/before.json` against `after.json`):
+  - `bl_ext.user_default.biome_reader` was added to the enabled add-ons;
+  - its own preferences: `fetch_automatic_allow` off, `blend_environment_path_allow` on, and two search paths (`arclink_megapolis/extracted/`, `binaryframe_biomes/kit/`);
+  - nothing else changed: other add-ons, extension repositories, asset libraries and online access are as before.
+  - Files written: `~/Library/Application Support/Blender/5.3/extensions/user_default/biome_reader/` and `config/userpref.blend`. The Arclink, BinaryFrame and FutureScratch biomes were copied into `~/Library/Application Support/Blender/data/scatter library/_biomes_/GreebleTown/`.
+- **Preview round B1** (`biome_preview.py`, front Shot Camera, Eevee half size, 5 min for 3 frames; rubric `robot/build/review/rubric-biomes.md`; frames in `robot/build/probe/biomes/`, git-ignored):
+  - `arclink_city_1.png` passes: a dark megastructure city with cyan trims fills about 45 % of the frame behind the figure.
+  - `chipset_01.png` and `chipset_04.png` fail: the BinaryFrame parts are at real mainboard scale, so they show as specks on the horizon (about 2 % of the frame). To use BinaryFrame as a megastructure, scale its instances up about 100 to 200 times, or scatter it on a small plane close behind the duel and scale that. This needs one more slot.
 - **Then**: run one biome preset (`arclink_city_1`, the dark blue-lit one) once in a build step, realise it to instances, and save it into the scene, so the live Blender never runs Geo-Scatter.
 - **Live World budget**: instances only, a triangle cap. Judge fps only when `make status` says `fps_trustworthy`.
 
