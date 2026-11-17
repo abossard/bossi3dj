@@ -43,6 +43,7 @@ def dump(out):
         rep["biome_reader"] = {
             "fetch_automatic_allow": ap.fetch_automatic_allow,
             "fetch_automatic_daycount": ap.fetch_automatic_daycount,
+            "blend_environment_path_allow": ap.blend_environment_path_allow,
             "library_path": ap.library_path,
             "blend_environment_paths": [p.blend_folder for p in ap.blend_environment_paths],
         }
@@ -58,6 +59,7 @@ def configure(paths):
     if ap is None:
         sys.exit("biome_reader is not enabled; install it first")
     ap.fetch_automatic_allow = False
+    ap.blend_environment_path_allow = True     # off by default: the kit folders below are searched only with it on
     for p in paths:
         if p.endswith(".scatpack"):
             bpy.ops.scatter5.install_package(filepath=os.path.abspath(p), popup_menu=False)

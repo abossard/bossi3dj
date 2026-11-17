@@ -53,6 +53,8 @@ def preview(blend, biome, out_dir):
     scene.frame_set(0)
     name = os.path.splitext(os.path.basename(biome))[0]
     scene.render.filepath = os.path.join(os.path.abspath(out_dir), name + ".png")
+    if hasattr(scene.render.image_settings, "media_type"):   # robot.blend renders movies; Blender 5 splits media type
+        scene.render.image_settings.media_type = "IMAGE"
     scene.render.image_settings.file_format = "PNG"
     bpy.ops.render.render(write_still=True)
     print("rendered", scene.render.filepath)
