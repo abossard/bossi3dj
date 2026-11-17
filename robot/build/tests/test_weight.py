@@ -1,5 +1,5 @@
 """Weight layers (weight.py): hit-stop warp holds and lands the next beat, flight is ballistic, Hits keep their
-frame and limb, touch-downs dip. Also keeps the research's measurement of the key tables (docs/research/
+frame and limb, touch-downs dip, the spring and its pins behave. Also keeps the research's measurement of the key tables (docs/research/
 weighted-animation.md, section 1) as a check. No Blender.
 Run: python3 -m unittest discover robot/build/tests"""
 import math
@@ -88,6 +88,40 @@ class HitTests(unittest.TestCase):
                     continue
                 with self.subTest(move=name, frame=h, limb=limb):
                     self.assertLessEqual(math.dist(seq[h][limb], moves.sample(move, h)[limb]), HIT_TOL_M)
+
+
+class SpringTests(unittest.TestCase):
+    def test_step_response(self):
+        """A step from 0 to 1: critically damped settles without overshoot, under-damped overshoots, a positive
+        initial response jumps ahead, a negative one starts the wrong way (anticipation)."""
+        step = [(0.0,)] * 3 + [(1.0,)] * 57
+        cases = [("critical", (3.0, 1.0, 0.0), lambda y: max(y) <= 1.0 + 1e-9 and abs(y[-1] - 1.0) < 0.01),
+                 ("under-damped", (3.0, 0.4, 0.0), lambda y: max(y) > 1.05),
+                 ("anticipation", (3.0, 0.5, -2.0), lambda y: min(y) < -0.01)]
+        for name, (hz, zeta, r), ok in cases:
+            y = [v[0] for v in weight.second_order(step, hz, zeta, r)]
+            with self.subTest(case=name):
+                self.assertTrue(ok(y))
+
+    def test_pins_meet_their_target(self):
+        ys = [(0.1 * f,) for f in range(30)]
+        target = [(0.0,)] * 30
+        out = weight.pin(ys, target, weight._windows([12], 30))
+        for f in (0, 12, 29):
+            with self.subTest(frame=f):
+                self.assertAlmostEqual(out[f][0], 0.0)
+        self.assertEqual(out[19], ys[19])
+
+    def test_spring_spares_idles_and_planted_feet(self):
+        for name, move in moves.MOVES.items():
+            seq, raw = moves.frames(move), moves.frames(move, weighted=False)
+            with self.subTest(move=name):
+                if move.idle:
+                    self.assertEqual(seq, raw)
+                for f, (p, q) in enumerate(zip(seq, raw)):
+                    for foot in ("foot_l", "foot_r"):
+                        if q[foot][2] <= moves.ANKLE_Z + weight.AIR_M and p[foot][2] <= moves.ANKLE_Z + weight.AIR_M:
+                            self.assertEqual(p[foot][2], q[foot][2])
 
 
 class DipTests(unittest.TestCase):

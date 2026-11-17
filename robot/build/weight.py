@@ -8,6 +8,11 @@ docs/research/weighted-animation.md section 4, steps 1, 3 and 4). Pure, no bpy.
 - Recoil: after the hold, the striking limb springs back along its approach and the hips take a smaller reaction
   (a damped sine, `recoil`).
 - Landing dip: at a touch-down after flight and at a stomp the hips and hands sink and spring back (`dip`).
+- Succession and spring (step 2, `springy`): each chain samples the key table a few frames early or late (the hips
+  lead, the head trails) and follows it through a second-order spring (heavy chains slow and damped, fists fast with
+  overshoot), never further than DEPART from the key table. Pins put the keyed value back at the first and last frame and at each Hit (every channel, so the strike reaches); a planted foot keeps
+  its keyed place. It runs on the key table's own timeline, before the hit-stop, so a hold stays still. Not on Idle
+  Clips (their waves are smooth already) and not on Mocap Clips.
 Recoils and dips fade out over the Clip's last END_FRAMES frames, so its last frame is still its Key Pose, and the
 hips give way where a planted leg would no longer reach its foot.
 
@@ -18,6 +23,7 @@ an estimated centre of mass (the floor pushes, never pulls; no skating).
 """
 import bisect
 import math
+from collections import namedtuple
 
 G = 9.81
 FPS = 30
@@ -29,6 +35,26 @@ DIP = (3.0, 0.5)                                                   # Hz, damping
 DIP_M = (0.0, 0.06)
 HAND_FLOOR_M = (0.15, 0.45)    # a hand this low takes none of the dip, this high all of it
 MU = 0.8
+
+
+# a fighter's channels for the weight layers: hips channel, feet and their rotation channels, planted ankle height,
+# hip_joint(pose, "l" | "r") and leg length for the reach clamp, and the spring per channel
+Body = namedtuple("Body", "hips feet foot_rots ankle_z hip_joint leg_m chains strike strike_limbs")
+# (lead frames, Hz, damping, initial response): research section 4, step 2; `strike` for a hand that has a Hit
+CHAINS = {"hips": (-3, 2.0, 0.8, 0.0), "hips_rot": (-3, 2.0, 0.8, 0.0), "spine_rot": (-2, 2.5, 0.7, 0.0),
+          "chest_rot": (-1, 3.0, 0.6, 0.5), "head_rot": (2, 3.0, 0.4, 0.0),
+          "hand_l": (1, 3.5, 0.7, 0.0), "hand_r": (1, 3.5, 0.7, 0.0),
+          "foot_l": (0, 5.0, 1.0, 0.0), "foot_r": (0, 5.0, 1.0, 0.0),
+          "foot_l_rot": (0, 5.0, 1.0, 0.0), "foot_r_rot": (0, 5.0, 1.0, 0.0)}
+STRIKE = (0, 4.5, 0.6, 1.0)
+# the giant: about three times the size, so slower springs (0.6x) and longer leads
+GIANT_CHAINS = {"g_hips": (-4, 1.2, 0.8, 0.0), "g_hips_rot": (-4, 1.2, 0.8, 0.0), "g_chest_rot": (-2, 1.8, 0.6, 0.5),
+                "g_head_rot": (3, 1.8, 0.4, 0.0), "g_hammer": (1, 2.1, 0.7, 0.0), "g_claw": (1, 2.1, 0.7, 0.0),
+                "g_foot_l": (0, 3.0, 1.0, 0.0), "g_foot_r": (0, 3.0, 1.0, 0.0)}
+GIANT_STRIKE = (0, 2.7, 0.6, 1.0)
+PIN_END = 10
+PIN_HIT = 6
+DEPART = (0.06, 10.0)      # the spring keeps a channel within this of the key table (m, degrees per axis)
 
 
 def hold_frames(strength):
@@ -79,9 +105,9 @@ def speeds(seq):
     return [max(math.dist(a[c], b[c]) for c in a if not c.endswith("_rot")) for a, b in zip(seq, seq[1:])]
 
 
-def flights(seq):
+def flights(seq, feet=("foot_l", "foot_r"), ankle_z=ANKLE_Z):
     """[(take-off, touch-down)]: the frames around each run with both feet in the air."""
-    air = [p["foot_l"][2] > ANKLE_Z + AIR_M and p["foot_r"][2] > ANKLE_Z + AIR_M for p in seq]
+    air = [all(p[ft][2] > ankle_z + AIR_M for ft in feet) for p in seq]
     out, f = [], 1
     while f < len(seq):
         if air[f] and not air[f - 1]:
@@ -185,12 +211,12 @@ def _end_weight(f, n):
     return 1.0 if d >= END_FRAMES else 0.5 * (1 - math.cos(math.pi * d / END_FRAMES))
 
 
-def _reach_ok(p, hip_joint, leg_m):
-    return all(math.dist(hip_joint(p, s), p["foot_" + s]) <= leg_m
-               for s in ("l", "r") if p["foot_" + s][2] <= ANKLE_Z + AIR_M)
+def _reach_ok(p, body):
+    return all(math.dist(body.hip_joint(p, side), p[foot]) <= body.leg_m
+               for side, foot in zip("lr", body.feet) if p[foot][2] <= body.ankle_z + AIR_M)
 
 
-def apply_offsets(seq, offsets, hip_joint, leg_m):
+def apply_offsets(seq, offsets, body):
     """Add offsets, faded out at the Clip's end; where the hips would leave a planted foot out of reach they move
     back toward their keyed place, in quarters."""
     by_frame = {}
@@ -206,7 +232,7 @@ def apply_offsets(seq, offsets, hip_joint, leg_m):
             p = dict(base)
             for ch, d in items:
                 _add(p, ch, d, w * (k if ch == "hips" else 1.0))
-            if k == 0.0 or _reach_ok(p, hip_joint, leg_m):
+            if k == 0.0 or _reach_ok(p, body):
                 break
         seq[f] = p
 
@@ -216,17 +242,115 @@ def pins(stops, dodges=()):
     return sorted({f for h, _l, s in stops for f in range(h, h + hold_frames(s) + 1)} | set(dodges))
 
 
-def weigh(sample, n, stops, beat_frames, hip_joint, leg_m, warp=None, dodges=()):
+def second_order(xs, hz, zeta, r):
+    """The research's second-order system (t3ssel8r): y follows x like a mass on a spring; semi-implicit Euler at
+    FPS, clamped stable. xs: tuples, one per frame."""
+    T = 1.0 / FPS
+    k1, k2, k3 = zeta / (math.pi * hz), 1.0 / (2 * math.pi * hz) ** 2, r * zeta / (2 * math.pi * hz)
+    k2s = max(k2, T * T / 2 + T * k1 / 2, T * k1)
+    y, yd, out = list(xs[0]), [0.0] * len(xs[0]), [tuple(xs[0])]
+    for a, b in zip(xs, xs[1:]):
+        for i in range(len(y)):
+            xd = (b[i] - a[i]) / T
+            y[i] += T * yd[i]
+            yd[i] += T * (b[i] + k3 * xd - y[i] - k1 * yd[i]) / k2s
+        out.append(tuple(y))
+    return out
+
+
+def pin(ys, target, pins):
+    """Offset blending: at each pin (frame, half window, side) add the residual back with a raised cosine, so ys
+    meets target there and nothing jumps; side -1 only before the frame, +1 only after, 0 both."""
+    ys = [list(y) for y in ys]
+    for p, w, side in pins:
+        e = [t - y for t, y in zip(target[p], ys[p])]
+        for d in range(-w + 1, w):
+            f = p + d
+            if 0 <= f < len(ys) and (side == 0 or d * side >= 0):
+                k = 0.5 * (1 + math.cos(math.pi * d / w))
+                ys[f] = [y + c * k for y, c in zip(ys[f], e)]
+    return [tuple(y) for y in ys]
+
+
+def _windows(frames, n):
+    """(frame, half window, side) per pin: PIN_HIT, each window at most half the gap to the next pin; then the
+    Clip's ends one-sided over PIN_END, applied last so the first and last frame are exact."""
+    frames = sorted(set(frames) - {0, n - 1})
+    out = []
+    for i, p in enumerate(frames):
+        gaps = [abs(p - q) for q in frames[max(i - 1, 0):i + 2] if q != p]
+        out.append((p, max(1, min([PIN_HIT] + [g // 2 for g in gaps])), 0))
+    return out + [(0, PIN_END, 1), (n - 1, PIN_END, -1)]
+
+
+def _near(y, t, ch):
+    """y moved toward t until it lies within DEPART of it."""
+    if ch.endswith("_rot"):
+        return tuple(b + min(max(a - b, -DEPART[1]), DEPART[1]) for a, b in zip(y, t))
+    d = math.dist(y, t)
+    k = DEPART[0] / d if d > DEPART[0] else 1.0
+    return tuple(b + (a - b) * k for a, b in zip(y, t))
+
+
+def springy(sample, n, stops, body):
+    """A sampler of the key table with step 2 on it: per channel the lead, the spring, the pins; planted feet keep
+    the key table. Fractional frames interpolate the filtered frames."""
+    raw = [sample(f) for f in range(n)]
+    out = [dict(p) for p in raw]
+    strikers = {limb for _h, limb, _s in stops}
+    air = flights(raw, body.feet, body.ankle_z)          # in flight the key table holds, for the ballistic layer
+    flying = {f for t0, t1 in air for f in range(t0, t1 + 1)}
+    air_pins = [f for t0, t1 in air for f in (t0, t1)]
+    for ch, params in body.chains.items():
+        lead, hz, zeta, r = body.strike if ch in strikers and ch in body.strike_limbs else params
+        led = [sample(min(max(f + lead, 0), n - 1))[ch] for f in range(n)]
+        ys = second_order(led, hz, zeta, r)
+        pinned = [h for h, _l, _s in stops] + air_pins       # the whole body at contact: the strike reaches
+        foot = next((ft for ft, fr in zip(body.feet, body.foot_rots) if ch in (ft, fr)), None)
+        if foot:
+            planted = [p[foot][2] <= body.ankle_z + AIR_M for p in raw]
+            pinned += [f for f in range(n) if planted[f] and ((f > 0 and not planted[f - 1]) or
+                                                             (f < n - 1 and not planted[f + 1]))]
+        target = [p[ch] for p in raw]
+        ys = [_near(y, t, ch) for y, t in zip(ys, target)]
+        ys = pin(ys, target, _windows(pinned, n))
+        ys[0], ys[-1] = target[0], target[-1]          # exact, not within rounding
+        for f in range(n):
+            if (foot and planted[f]) or f in flying:
+                continue
+            v = ys[f]
+            if ch == foot:
+                v = (v[0], v[1], max(v[2], body.ankle_z + 2 * AIR_M))
+            out[f][ch] = v
+    for f in range(n):                    # hips give way where a planted leg would lose its foot
+        for k in (0.75, 0.5, 0.25, 0.0):
+            if _reach_ok(out[f], body):
+                break
+            for ch in (body.hips, body.hips + "_rot"):
+                out[f][ch] = tuple(a + (b - a) * (1 - k) for a, b in zip(out[f][ch], raw[f][ch]))
+
+    def at(s):
+        i = int(s)
+        if i >= n - 1 or s == i:
+            return dict(out[min(i, n - 1)])
+        t = s - i
+        return {c: tuple(a + (b - a) * t for a, b in zip(out[i][c], out[i + 1][c])) for c in out[i]}
+    return at
+
+
+def weigh(sample, n, stops, beat_frames, body, warp=None, dodges=(), idle=False):
     """The weighted Pose sequence. `sample(frame)` gives the key table's Pose at a (fractional) frame; `stops`:
     [(frame, limb, strength)] of the Hits; `warp` overrides the time warp (an Exchange shares one); `dodges`: frames
-    whose keyed pose must hold."""
+    whose keyed pose must hold; `idle`: no spring."""
+    if not idle:
+        sample = springy(sample, n, stops, body)
     if warp is None:
         warp = time_warp(n, [(h, s) for h, _l, s in stops], beat_frames, speeds([sample(f) for f in range(n)]))
     seq = [sample(s) for s in warp]
-    if "hips" not in seq[0]:
+    if body.hips != "hips":
         return seq
     ballistic(seq, pins(stops, dodges))
-    apply_offsets(seq, recoil(seq, sample, stops) + dip(seq, sample, stops), hip_joint, leg_m)
+    apply_offsets(seq, recoil(seq, sample, stops) + dip(seq, sample, stops), body)
     return seq
 
 

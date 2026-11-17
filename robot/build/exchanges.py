@@ -290,7 +290,7 @@ EXCHANGES = {e.name: e for e in (_duel_idle("duel_idle", "idle_guard"), _duel_id
 
 def frames(ex):
     """[(Android Pose, giant Pose)] per frame, weighted (weight.py) with one time warp for both fighters: every
-    Strike and Android Hit holds the whole Exchange."""
+    Strike and Android Hit holds the whole Exchange. The giant gets the spring only (`body`)."""
     import weight
     n = moves.move_frames(ex.android)
     hits = sorted({(moves.beat_frame(s.beat), s.point, s.strength) for s in ex.hits} | set(moves.stops(ex.android)))
@@ -301,4 +301,12 @@ def frames(ex):
     fast = [max(a, g) for a, g in zip(weight.speeds([a for a, _g in raw]), weight.speeds([g for _a, g in raw]))]
     warp = weight.time_warp(n, sorted(firsts.items()), moves.beat_frames(ex.android), fast)
     dodges = [moves.beat_frame(d.beat) for d in ex.dodges]
-    return list(zip(moves.frames(ex.android, hits=hits, warp=warp, dodges=dodges), moves.frames(ex.giant, warp=warp)))
+    return list(zip(moves.frames(ex.android, hits=hits, warp=warp, dodges=dodges),
+                    moves.frames(ex.giant, hits=[h for h in hits if h[1].startswith("g_")], warp=warp)))
+
+
+def body():
+    """The giant for weight.py: its spring only."""
+    import weight
+    return weight.Body("g_hips", ("g_foot_l", "g_foot_r"), (), G_ANKLE_Z, g_hip_joint, G_THIGH + G_SHIN,
+                       weight.GIANT_CHAINS, weight.GIANT_STRIKE, ("g_hammer", "g_claw"))

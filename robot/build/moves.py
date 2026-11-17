@@ -533,16 +533,24 @@ def beat_frames(move, bpm=BPM, fps=FPS):
     return [beat_frame(b, bpm, fps) for b in range(move.beats + 1)]
 
 
+def body():
+    """The Android for weight.py."""
+    import weight
+    return weight.Body("hips", ("foot_l", "foot_r"), ("foot_l_rot", "foot_r_rot"), ANKLE_Z, hip_joint, LEG_M,
+                       weight.CHAINS, weight.STRIKE, ("hand_l", "hand_r"))
+
+
 def frames(move, bpm=BPM, fps=FPS, weighted=True, hits=None, warp=None, dodges=()):
     """One Pose per frame of the Clip: the key table, with weight.py's layers unless `weighted` is False. `hits`
     ([(frame, limb, strength)], default the Move's), `warp` (a shared time warp) and `dodges` (frames to hold) are
-    for Exchanges."""
+    for Exchanges. A giant's Move (channels g_*) gets the giant's Body."""
     n = move_frames(move, bpm, fps)
     if not weighted:
         return [sample(move, f, bpm, fps) for f in range(n)]
     import weight
+    who = __import__("exchanges").body() if "g_hips" in move.keys[0].pose else body()
     return weight.weigh(lambda f: sample(move, f, bpm, fps), n, stops(move, bpm, fps) if hits is None else hits,
-                        beat_frames(move, bpm, fps), hip_joint, LEG_M, warp, dodges)
+                        beat_frames(move, bpm, fps), who, warp, dodges, move.idle)
 
 
 def hit_frames(move, bpm=BPM, fps=FPS):
