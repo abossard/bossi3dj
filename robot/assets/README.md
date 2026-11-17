@@ -96,7 +96,15 @@ On 2026-11-17 at 09:32 the user downloaded four PDFs and nothing else. Each PDF 
 - Store pages for the two packs to get first (free, Superhive login, linked from geoscatter.com/biomes.html):
   - FutureScratch: https://blendermarket.com/products/free-future-scratch-sci-fi-sketches---scifi-kitbash-greeble-assets
   - BinaryFrame: https://blendermarket.com/products/free-binary-frame-computer-mainboards---abstract-motherboard-kitbash-greeble-assets
-- Missing for every pack: the biome files (`.biome`, `.preset`, `.scatpack` or zip) and the partner models they scatter. Nothing can be placed until those are downloaded, from the same store pages as the brochures.
+- Downloaded 2026-11-17 09:44 to 09:46, checked with `unzip -t` and stable sizes:
+  - BinaryFrame is complete:
+    - `binaryframe_biomes/_zips/greebletown_binaryframe_geoscatter_biomes.zip`, 8 biomes, 53 presets, unpacked in `extracted/`; a `.scatpack` copy sits beside it for the Biome Reader.
+    - The kit `GT Binary Frames Computer Mainboards.zip` (795 MB): one zstd `.blend` plus 225 PNG textures, unpacked in `kit/`.
+    - A `1K Packed.zip` variant (53 MB, one `.blend` with packed 1K textures), left zipped.
+    - Each biome scatters up to 9 layers (Big, Chips, Slots, Round, Heatsink, Resistors, Large Resistors, Blocky Resistors, Pins) from that `.blend`.
+  - FutureScratch has only its biomes: `futurescratch_biomes/_zips/greebletown_futurescratch_geoscatter_biomes.zip`, 8 biomes, 37 presets, plus a `.scatpack` copy. They scatter up to 6 layers (Main Greebles, Pipes, Cables, Blocks, Circular, Cylindrical) from `GT Future Scratch SciFi Sketches.blend`, the kit from its store page, which is not downloaded yet.
+  - No biome file holds a `script` entry (the Biome Reader would run one), and no pack holds any `.py`.
+- Still missing for Spring Grass and Plant Library: the biome files (`.biome`, `.preset`, `.scatpack` or zip) and the partner models they scatter. Nothing can be placed until those are downloaded, from the same store pages as the brochures.
 - Fit for the Robot Scene: FutureScratch (foundry mood) and BinaryFrame (a megastructure under the duel) are arena and backdrop candidates. Wasteland and Rockplain could make an open-air floor. The lawns, grass and forests don't fit a robot duel; offered only.
 
 ## Geo-Scatter Biome Reader (`geoscatter/`)

@@ -5,12 +5,12 @@ Runs in Blender with the user's preferences loaded (no --factory-startup), in a 
     B=/Applications/Blender.app/Contents/MacOS/Blender
     $B -b -P robot/build/review/biome_reader_setup.py -- dump OUT_DIR/before.json
     $B -b --command extension install-file -r user_default --enable robot/assets/geoscatter/_zips/Biome-Reader_5.6.4_for_b3d_5.2.zip
-    $B -b -P robot/build/review/biome_reader_setup.py -- configure SCATPACK MEGAPOLIS_DIR
+    $B -b -P robot/build/review/biome_reader_setup.py -- configure SCATPACK... KIT_DIR...
     $B -b -P robot/build/review/biome_reader_setup.py -- dump OUT_DIR/after.json
 
-`configure` turns the automatic store fetch off, installs the Arclink biomes (SCATPACK, a .scatpack copy of
-greebletown_arclinkcity_geoscatter_biomes.zip) into the Biome Reader's scatter library, adds MEGAPOLIS_DIR as a
-search path for the biomes' .blend, and saves the user preferences. `dump` writes the preferences that matter here
+`configure` turns the automatic store fetch off, installs each SCATPACK (a .scatpack copy of a pack's biome zip,
+e.g. robot/assets/arclink_biomes/_zips/arclink_city_biomes.scatpack) into the Biome Reader's scatter library, adds
+each KIT_DIR (the folder of a kit's .blend) as a search path for the biomes' assets, and saves the user preferences. `dump` writes the preferences that matter here
 as JSON, so before and after can be diffed with jq.
 """
 import json
@@ -52,19 +52,24 @@ def dump(out):
     print("dumped", out)
 
 
-def configure(scatpack, megapolis_dir):
+def configure(paths):
+    """paths: .scatpack files to install, and folders holding the kits' .blend files to add as search paths."""
     ap = _addon_prefs()
     if ap is None:
         sys.exit("biome_reader is not enabled; install it first")
     ap.fetch_automatic_allow = False
-    bpy.ops.scatter5.install_package(filepath=os.path.abspath(scatpack), popup_menu=False)
-    folder = os.path.abspath(megapolis_dir) + os.sep
-    if folder not in [p.blend_folder for p in ap.blend_environment_paths]:
-        item = ap.blend_environment_paths.add()
-        item.name = "Arclink Megapolis"
-        item.blend_folder = folder
+    for p in paths:
+        if p.endswith(".scatpack"):
+            bpy.ops.scatter5.install_package(filepath=os.path.abspath(p), popup_menu=False)
+            print("installed", p)
+            continue
+        folder = os.path.abspath(p) + os.sep
+        if folder not in [b.blend_folder for b in ap.blend_environment_paths]:
+            item = ap.blend_environment_paths.add()
+            item.name = os.path.basename(os.path.dirname(folder))
+            item.blend_folder = folder
+            print("search path", folder)
     bpy.ops.wm.save_userpref()
-    print("configured", scatpack, folder)
 
 
 def main():
@@ -72,9 +77,9 @@ def main():
     if args[0] == "dump":
         dump(args[1])
     elif args[0] == "configure":
-        configure(args[1], args[2])
+        configure(args[1:])
     else:
-        sys.exit("usage: -- dump OUT.json | configure SCATPACK MEGAPOLIS_DIR")
+        sys.exit("usage: -- dump OUT.json | configure SCATPACK... KIT_DIR...")
 
 
 main()
