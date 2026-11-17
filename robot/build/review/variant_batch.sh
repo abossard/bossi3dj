@@ -22,7 +22,10 @@ for m in $clips; do
   done
 done
 for m in idle_guard idle_low idle_crouch; do
-  for a in front side; do for p in beauty shadow depth; do cp $V/$p/${m}__$a.mov $O/$p/; done; done
+  for a in front side; do
+    for p in beauty shadow depth; do cp $V/$p/${m}__$a.mov $O/$p/; done
+    for p in shadow depth; do rm -rf "${O:?}/${p:?}/${m:?}__${a:?}"; cp -R $V/$p/${m}__$a $O/$p/; done
+  done
 done
 nice -n 5 $B -b robot/build/robot.blend -P robot/build/review/mocap_proof.py -- mocap_flip_uppercut mocap_flip_uppercut_v2 \
   mocap_flip_uppercut_v3 >> $O/render.log 2>&1
