@@ -27,6 +27,7 @@ from mathutils import Matrix, Vector
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import exchanges as X  # noqa: E402
+import manifest_io  # noqa: E402
 import moves  # noqa: E402
 import retarget  # noqa: E402
 
@@ -856,7 +857,8 @@ def export(package):
     for clip_id, move, _angle, cam in clip_list():
         _write_json(os.path.join(package, "clip_data", clip_id + ".json"),
                     export_clip_data(scene, clip_id, move, bpy.data.objects[cam]))
-    _write_json(os.path.join(package, "manifest.json"), manifest())
+    path = os.path.join(package, "manifest.json")
+    _write_json(path, manifest_io.merged(path, manifest()))      # keys other sessions add (backdrops) stay
     print("exported", package)
 
 
