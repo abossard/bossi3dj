@@ -295,11 +295,14 @@ def frames(ex):
     n = moves.move_frames(ex.android)
     hits = sorted({(moves.beat_frame(s.beat), s.point, s.strength) for s in ex.hits} | set(moves.stops(ex.android)))
     firsts = {}
-    for f, limb, strength in hits:
-        firsts[f] = max(firsts.get(f, 0.0), strength)
+    for f, limb, strength in hits:            # one hold per frame: the longest of its Hits
+        old = firsts.get(f)
+        if old is None or weight.hold_frames(strength, limb) > weight.hold_frames(old[0], old[1]):
+            firsts[f] = (strength, limb)
     raw = list(zip(moves.frames(ex.android, weighted=False), moves.frames(ex.giant, weighted=False)))
     fast = [max(a, g) for a, g in zip(weight.speeds([a for a, _g in raw]), weight.speeds([g for _a, g in raw]))]
-    warp = weight.time_warp(n, sorted(firsts.items()), moves.beat_frames(ex.android), fast)
+    warp = weight.time_warp(n, [(f, st, limb) for f, (st, limb) in sorted(firsts.items())], moves.beat_frames(ex.android),
+                            fast)
     dodges = [moves.beat_frame(d.beat) for d in ex.dodges]
     return list(zip(moves.frames(ex.android, hits=hits, warp=warp, dodges=dodges),
                     moves.frames(ex.giant, hits=[h for h in hits if h[1].startswith("g_")], warp=warp)))

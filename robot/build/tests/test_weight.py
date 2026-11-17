@@ -14,6 +14,7 @@ import weight  # noqa: E402
 
 AIR_TOL = 1.5          # m/s² around -g
 HIT_TOL_M = 0.02
+MIN_FZ = 0.0           # vertical ground force per kg, m/s²
 HOLD_DRIFT_M = 0.02     # recoils and dips of earlier events still fade during a hold
 
 
@@ -32,8 +33,9 @@ SEQS = _sequences()
 class TimeWarpTests(unittest.TestCase):
     def test_hold_then_catch_up_to_the_beat(self):
         beats = [0, 15, 29, 44, 58]
-        cases = [("one hit", 59, [(15, 1.0)], 15, 3, 29), ("light hit", 59, [(29, 0.2)], 29, 1, 44),
-                 ("two hits", 59, [(15, 0.6), (29, 1.0)], 29, 3, 44)]
+        cases = [("one hit: two beats", 59, [(15, 1.0)], 15, 3, 44), ("light hit", 59, [(29, 0.2)], 29, 1, 58),
+                 ("two hits", 59, [(15, 0.6), (29, 1.0)], 29, 3, 58),
+                 ("stomps: shorter hold, done by the next", 59, [(15, 1.0, "foot_r"), (29, 1.0, "foot_r")], 15, 2, 29)]
         for name, n, stops, h, hold, b in cases:
             s = weight.time_warp(n, stops, beats)
             with self.subTest(case=name):
@@ -77,7 +79,7 @@ class HitTests(unittest.TestCase):
                 if limb not in seq[0]:
                     continue
                 with self.subTest(clip=name, frame=h, limb=limb):
-                    hold = seq[h:h + weight.hold_frames(strength) + 1]
+                    hold = seq[h:h + weight.hold_frames(strength, limb) + 1]
                     self.assertLessEqual(max(math.dist(p[limb], hold[0][limb]) for p in hold), HOLD_DRIFT_M)
 
     def test_hits_keep_their_place(self):
@@ -92,18 +94,18 @@ class HitTests(unittest.TestCase):
 
 class GroundTests(unittest.TestCase):
     def test_floor_only_pushes(self):
-        """Standing, the hips (the research's stand-in for the centre of mass) never fall faster than g: the floor
-        pushes, it cannot pull. Not inside the pin windows around Hits nor around flights (research 4: ground
-        test). The stomp rebound of the key tables broke this (power_stomp about -97 m/s² at f76f78c)."""
+        """Standing, the vertical ground force per kg on the hips (the research's stand-in for the centre of mass)
+        stays above 0: the floor pushes, it cannot pull. Everywhere but Hit holds (a stylised time stop) and flights
+        with their take-off and touch-down. The stomp rebound of the key tables broke this (power_stomp about
+        -97 m/s² at f76f78c)."""
         for name, seq, stops, _d in SEQS:
-            skip = weight.hit_windows(stops, weight.PIN_HIT) | {f for t0, t1 in weight.flights(seq)
-                                                                for f in range(t0 - 1, t1 + 2)}
+            skip = weight.hit_windows(stops) | {f for t0, t1 in weight.flights(seq) for f in range(t0 - 1, t1 + 2)}
             z = [p["hips"][2] for p in seq]
             for f in range(1, len(seq) - 1):
                 if f in skip:
                     continue
                 with self.subTest(clip=name, frame=f):
-                    self.assertGreaterEqual((z[f + 1] - 2 * z[f] + z[f - 1]) * weight.FPS ** 2, -weight.G)
+                    self.assertGreaterEqual((z[f + 1] - 2 * z[f] + z[f - 1]) * weight.FPS ** 2 + weight.G, MIN_FZ)
 
 
 class SpringTests(unittest.TestCase):

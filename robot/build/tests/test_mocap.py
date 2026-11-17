@@ -38,9 +38,9 @@ class TimeMapTests(unittest.TestCase):
     def test_hits_hold_then_catch_up(self):
         for clip in mocap.CLIPS.values():
             src = mocap.warp(clip)
-            for h, _limb, strength in mocap.stops(clip):
+            for h, limb, strength in mocap.stops(clip):
                 with self.subTest(clip=clip.name, frame=h):
-                    hold = src[h:h + weight.hold_frames(strength) + 1]
+                    hold = src[h:h + weight.hold_frames(strength, limb) + 1]
                     self.assertEqual(hold, [mocap.src_frame(clip, h)] * len(hold))
             with self.subTest(clip=clip.name, end="last"):
                 self.assertAlmostEqual(src[-1], mocap.src_frame(clip, mocap.frames(clip) - 1))

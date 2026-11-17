@@ -83,7 +83,7 @@ def stops(clip):
 def warp(clip):
     """Source frame per Clip frame: weight.py's hit-stop (hold at each Hit, catch up by the next beat) through the
     Anchors' time map."""
-    s = weight.time_warp(frames(clip), [(h, st) for h, _l, st in stops(clip)],
+    s = weight.time_warp(frames(clip), [(h, st, limb) for h, limb, st in stops(clip)],
                          [moves.beat_frame(b) for b in range(clip.beats + 1)])
     return [src_frame(clip, f) for f in s]
 

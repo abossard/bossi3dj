@@ -1,8 +1,9 @@
 """Weight: physical layers on a key table's Pose sequence, applied by `moves.frames()` (#31,
 docs/research/weighted-animation.md section 4, steps 1, 3 and 4). Pure, no bpy.
 
-- Hit-stop: the Clip holds still for round(1 + 2·strength) frames from each Hit frame, then plays faster until the
-  next beat, so the next beat still lands on its frame (`time_warp`). An Exchange's two fighters share one warp.
+- Hit-stop: the Clip holds still for round(1 + 2·strength) frames from each Hit frame (a stomp round(1 + strength)),
+  then plays faster over the next two beats (up to the next Hit), so the beats still land on their frames
+  (`time_warp`). An Exchange's two fighters share one warp.
 - Ballistic flight: while both feet are off the floor the hips follow a parabola under g through the take-off and
   touch-down frames; hands and feet move with them, so the body keeps its keyed shape (`ballistic`).
 - Recoil: after the hold, the striking limb springs back along its approach and the hips take a smaller reaction
@@ -55,14 +56,16 @@ GIANT_CHAINS = {"g_hips": (-4, 1.2, 0.8, 0.0), "g_hips_rot": (-4, 1.2, 0.8, 0.0)
                 "g_foot_l": (0, 3.0, 1.0, 0.0), "g_foot_r": (0, 3.0, 1.0, 0.0)}
 GIANT_STRIKE = (0, 2.7, 0.6, 1.0)
 FALL_G = 0.9               # standing, the hips fall at most this fraction of g (the rest of the body adds a little)
-ITER = 400
+ITER = 2000
 PIN_END = 10
 PIN_HIT = 6
 DEPART = (0.06, 10.0)      # the spring keeps a channel within this of the key table (m, degrees per axis)
 
 
-def hold_frames(strength):
-    return int(round(1 + 2 * strength))
+def hold_frames(strength, limb=""):
+    """Frames a Hit holds: round(1 + 2·strength); a stomp (a foot Hit) round(1 + strength), so stomps on
+    consecutive beats keep their pace."""
+    return int(round(1 + (1 if "foot" in limb else 2) * strength))
 
 
 def _catch_up(h, b, out0, speeds):
@@ -80,19 +83,22 @@ def _catch_up(h, b, out0, speeds):
 
 
 def time_warp(n, stops, beat_frames, speeds=None):
-    """Source frame (float) per output frame for a Clip of n frames. `stops`: [(hit frame, strength)];
+    """Source frame (float) per output frame for a Clip of n frames. `stops`: [(hit frame, strength[, limb])];
     `beat_frames`: the frames of the beats; `speeds`: the key table's largest position change from each frame to
-    the next. After a hold the catch-up ends at the next beat (or the next stop) that leaves at least 2 frames to
-    catch up in; a stop with no such beat is skipped."""
+    the next. After a hold the catch-up spreads to the second beat after it, or ends at the next stop if that comes
+    first, leaving at least 2 frames to catch up in; a stop with no room is skipped."""
     s = [float(f) for f in range(n)]
-    stops = sorted(stops)
-    marks = sorted(set(beat_frames) | {h for h, _ in stops} | {n - 1})
-    for i, (h, strength) in enumerate(stops):
-        hold = hold_frames(strength)
+    stops = sorted(tuple(st) + ("",) * (3 - len(st)) for st in stops)
+    marks = sorted(set(beat_frames) | {st[0] for st in stops} | {n - 1})
+    for i, (h, strength, limb) in enumerate(stops):
+        hold = hold_frames(strength, limb)
         nxt = stops[i + 1][0] if i + 1 < len(stops) else n - 1
-        b = next((m for m in marks if h + hold + 2 <= m <= nxt), None)
-        if b is None:
+        ok = [m for m in marks if h + hold + 2 <= m <= nxt]
+        if not ok:
             continue
+        later = [m for m in sorted(beat_frames) if m >= h + hold + 2]
+        b = max(m for m in ok if m <= (later[1] if len(later) > 1 else n - 1)) if any(
+            m <= (later[1] if len(later) > 1 else n - 1) for m in ok) else ok[0]
         t = _catch_up(h, b, h + hold, speeds)
         for f in range(h, b + 1):
             if f <= h + hold:
@@ -177,7 +183,7 @@ def recoil(seq, raw_at, stops):
         a, b = raw_at(h - 1)[limb], raw_at(h)[limb]
         u = _unit(tuple(y - x for x, y in zip(a, b)))
         uh = _unit((u[0], u[1], 0.0))
-        start = h + hold_frames(strength)
+        start = h + hold_frames(strength, limb)
         for f in range(start + 1, len(seq)):
             t = (f - start) / FPS
             for ch, uu, key in ((limb, u, "limb"), ("hips", uh, "hips")):
@@ -193,7 +199,7 @@ def dip(seq, raw_at, stops, landings=True):
     the fall instead of stopping it. `landings` False: stomps only (a capture lands by itself). Returns the offsets [(frame, channel, (0, 0, dz))]."""
     w_d = 2 * math.pi * DIP[0] * math.sqrt(1 - DIP[1] ** 2)
     events = [(t1, (seq[t1 - 1]["hips"][2] - seq[t1]["hips"][2]) * FPS) for _t0, t1 in flights(seq)] if landings else []
-    events += [(h + hold_frames(st), (raw_at(h - 1)["hips"][2] - raw_at(h)["hips"][2]) * FPS)
+    events += [(h + hold_frames(st, limb), (raw_at(h - 1)["hips"][2] - raw_at(h)["hips"][2]) * FPS)
                for h, limb, st in stops if limb.startswith("foot")]
     out = []
     for start, fall in events:
@@ -243,7 +249,7 @@ def apply_offsets(seq, offsets, body):
 
 def pins(stops, dodges=()):
     """Frames whose keyed pose holds in the air: each Hit and its hold, each Dodge."""
-    return sorted({f for h, _l, s in stops for f in range(h, h + hold_frames(s) + 1)} | set(dodges))
+    return sorted({f for h, limb, s in stops for f in range(h, h + hold_frames(s, limb) + 1)} | set(dodges))
 
 
 def second_order(xs, hz, zeta, r):
@@ -349,7 +355,7 @@ def weigh(sample, n, stops, beat_frames, body, warp=None, dodges=(), idle=False)
     if not idle:
         sample = springy(sample, n, stops, body)
     if warp is None:
-        warp = time_warp(n, [(h, s) for h, _l, s in stops], beat_frames, speeds([sample(f) for f in range(n)]))
+        warp = time_warp(n, [(h, s, limb) for h, limb, s in stops], beat_frames, speeds([sample(f) for f in range(n)]))
     seq = [sample(s) for s in warp]
     if body.hips != "hips":
         return seq
@@ -363,13 +369,13 @@ def hit_windows(stops, half=0):
     """A Hit and its hold, widened by `half` - 1 frames on each side (PIN_HIT: the research's pin window, where the
     ground check does not look)."""
     w = max(half - 1, 0)
-    return {f for h, _l, s in stops for f in range(h - w, h + hold_frames(s) + w + 1)}
+    return {f for h, limb, s in stops for f in range(h - w, h + hold_frames(s, limb) + w + 1)}
 
 
 def fall_limit(seq, body, held=()):
     """Standing, the floor can only push: the hips' acceleration stays at or above -FALL_G·g. A frame where the keys
-    bend down harder (a drop faster than a fall, a rebound stopped harder than gravity can) is lowered, so the drop
-    starts earlier and the crest is rounder; where such a frame is fixed its free neighbours rise instead. Fixed:
+    bend down harder (a drop faster than a fall, a rise stopped harder than gravity can) is projected back onto the
+    limit with its free neighbours (the smallest change), so the drop starts earlier and the crest is rounder. Fixed:
     flights and their take-off and touch-down frames, Hit windows (`held`), the first and last frame. Hands move
     with the hips. Repeated until no frame breaks the limit (or ITER sweeps)."""
     n = len(seq)
@@ -384,13 +390,13 @@ def fall_limit(seq, body, held=()):
             if d2 >= -c - 1e-12:
                 continue
             e = -c - d2
+            grad = [(g, k) for g, k in ((f - 1, 1.0), (f, -2.0), (f + 1, 1.0)) if g not in fixed]
+            norm = sum(k * k for _g, k in grad)
+            if not norm:
+                continue
             worst = max(worst, e)
-            if f not in fixed:
-                z[f] -= e / 2
-            else:
-                free = [g for g in (f - 1, f + 1) if g not in fixed]
-                for g in free:
-                    z[g] += e / len(free)
+            for g, k in grad:              # the smallest change of the free frames that meets this frame's limit
+                z[g] += e * k / norm
         if worst < 1e-9:
             break
     for f in range(n):
