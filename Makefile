@@ -6,7 +6,7 @@ SCENE   ?= planet
 BLEND_planet = $(SCENES)/synthwave_planet.blend
 BLEND_island = $(SCENES)/synthwave_pyramids.blend
 
-.PHONY: help status lab test cache-prune magic-test osc-test blender-test osc-sync qlc-fixture qlc-install osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-framing godot-hitch godot-warmup godot-ablate godot-cost godot-climb-light godot-grock-detail godot-fps godot-readme-pics godot-model-cost godot-models godot-wanderer-motion godot-wanderer-read godot-colossus-rig godot-shake-clips godot-shake-osc godot-import godot-lint \
+.PHONY: help status lab test cache-prune magic-test osc-test blender-test robot-test osc-sync qlc-fixture qlc-install osc-sweep godot-test godot-smoke godot-check godot-page-test godot-capture godot-look godot-framing godot-hitch godot-warmup godot-ablate godot-cost godot-climb-light godot-grock-detail godot-fps godot-readme-pics godot-model-cost godot-models godot-wanderer-motion godot-wanderer-read godot-colossus-rig godot-shake-clips godot-shake-osc godot-import godot-lint \
         godot-open godot-kill blender-open blender-kill blender-check blender-prepare blender-rebuild blender-paths magic-build venv verify robot-render
 
 # Blender and Godot share one GPU: a live window of one refuses to start while the other runs.
@@ -18,10 +18,11 @@ help:
 	@echo ""
 	@echo "  status            what runs now: Blender, bridge, Syphon, Godot, Magic, relay, lock, load"
 	@echo "  lab               optional OSC debug relay and page: udp 9200 -> the scene on 9201, http 8765 (the show sends to 9201 directly)"
-	@echo "  test              magic-test + osc-test + blender-test + godot-test + godot-check (no GUI, no GPU)"
+	@echo "  test              magic-test + osc-test + blender-test + robot-test + godot-test + godot-check (no GUI, no GPU)"
 	@echo "  magic-test        Magic project tooling and generator unit tests"
 	@echo "  osc-test          contract table, CONTROLS.md and sweep tests"
 	@echo "  blender-test      the bridge's wire-to-scene scaling, without Blender"
+	@echo "  robot-test        Robot Manifest, Clip Graph, Magic generator and Move build tests, without Blender or Magic"
 	@echo "  magic-build       regenerate magic/projects/*.magic from the generators (synthwave_pyramids for Blender, show for both scenes), then the generated tables of docs/handbook.md"
 	@echo "  osc-sync          rewrite the CONTROLS.md table and the bridge's SCALES block from osc/contract.json"
 	@echo "  qlc-fixture       write the QLC+ fixture and workspace (qlc/) for Art-Net and the channel table in docs/artnet-qlc.md from the contract"
@@ -70,7 +71,7 @@ status:
 lab:
 	@python3 osc/lab.py
 
-test: magic-test osc-test blender-test godot-test godot-check
+test: magic-test osc-test blender-test robot-test godot-test godot-check
 
 magic-test:
 	python3 -m unittest discover magic/tests
@@ -80,6 +81,10 @@ osc-test:
 
 blender-test:
 	python3 -m unittest discover blender/tests
+
+robot-test:
+	python3 -m unittest discover -s robot/magic/tests
+	python3 -m unittest discover robot/build/tests
 
 osc-sync:
 	python3 osc/contract.py sync
