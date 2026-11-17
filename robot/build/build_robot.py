@@ -813,7 +813,8 @@ def manifest():
         clips.append(clip)
     return {"version": 1, "bpm": moves.BPM, "fps": moves.FPS, "size": list(SIZE),
             "key_poses": list(moves.KEY_POSES),
-            "angles": [{"id": a, "camera": cam} for a, cam, *_ in ANGLES + DUEL_ANGLES], "clips": clips}
+            "angles": [{"id": a, "camera": cam} for a, cam, *_ in ANGLES] +
+                      [{"id": a, "camera": cam, "opponent": True} for a, cam, *_ in DUEL_ANGLES], "clips": clips}
 
 
 def _write_json(path, data):
