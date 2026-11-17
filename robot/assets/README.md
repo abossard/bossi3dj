@@ -93,6 +93,9 @@ On 2026-11-17 at 09:32 the user downloaded four PDFs and nothing else. Each PDF 
 | Geo-Scatter Plant Library | `plant_library_biomes/` | 31: Lawn 01 to 07, Wild Grass 01 to 04, Forest 01 to 06, Autumn 01 to 04, Wasteland 01 to 06, Rockplain 01 to 04 | vegetation | the biome archive plus the free Plant Library (Blender 3.4 or later) |
 
 - Requirements from every brochure: Geo-Scatter or Biome Reader 5.3.1 or later (we have 5.6.4) and Blender 3.3 LTS or later.
+- Store pages for the two packs to get first (free, Superhive login, linked from geoscatter.com/biomes.html):
+  - FutureScratch: https://blendermarket.com/products/free-future-scratch-sci-fi-sketches---scifi-kitbash-greeble-assets
+  - BinaryFrame: https://blendermarket.com/products/free-binary-frame-computer-mainboards---abstract-motherboard-kitbash-greeble-assets
 - Missing for every pack: the biome files (`.biome`, `.preset`, `.scatpack` or zip) and the partner models they scatter. Nothing can be placed until those are downloaded, from the same store pages as the brochures.
 - Fit for the Robot Scene: FutureScratch (foundry mood) and BinaryFrame (a megastructure under the duel) are arena and backdrop candidates. Wasteland and Rockplain could make an open-air floor. The lawns, grass and forests don't fit a robot duel; offered only.
 
