@@ -166,7 +166,8 @@ def plate(job, angle):
     _render(scene, os.path.join(out, angle + tag + "_glow.png"))
     rep = {"angle": angle, "tag": tag, "camera": cam.name, "scale": s, "y0": job["y0"],
            "seed": job.get("seed", 0), "sky": job.get("sky", 0.0), "rim": job.get("rim", 0.0),
-           "fill": job.get("fill", 0.0), "lens": cam.data.lens, "size": [r.resolution_x, r.resolution_y],
+           "fill": job.get("fill", 0.0), "lens": cam.data.lens,
+           "camera_location": [round(v, 3) for v in cam.matrix_world.translation], "size": [r.resolution_x, r.resolution_y],
            "plane_centre": [round(c, 2) for c in centre], "plane_yaw_deg": round(math.degrees(yaw), 1),
            "plane_size_m": [round(width, 1), job["area"][1]], "instances": count, "emission_inputs": len(sockets)}
     with open(os.path.join(out, angle + tag + ".json"), "w") as f:
