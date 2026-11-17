@@ -351,13 +351,13 @@ def springy(sample, n, stops, body):
 
 def seeded(n, seed, stops):
     """A variant's seeded layer (variants.seeded_waves): offsets [(frame, channel, delta)], 0 at the Clip's ends and
-    at each Hit (faded over PIN_HIT frames), so Key Poses and contacts stay keyed."""
+    at each Hit (faded over 2·PIN_HIT frames), so Key Poses and contacts stay keyed and a strike keeps its reach."""
     import variants
     out = []
     for f in range(n):
         env = 1.0
         for h, _l, _s in stops:
-            env *= _smooth(min(abs(f - h) / PIN_HIT, 1.0))
+            env *= _smooth(min(abs(f - h) / (2 * PIN_HIT), 1.0))     # quiet while the strike is out
         for ch, axis, amp, harmonic in variants.seeded_waves(seed, n):
             d = [0.0, 0.0, 0.0]
             d[axis] = variants.wave(amp, harmonic, f, n) * env
