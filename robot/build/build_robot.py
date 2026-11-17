@@ -832,6 +832,8 @@ def manifest():
                 "clip_data": "clip_data/%s.json" % clip_id, "camera_track": "camera/%s.json" % angle}
         if move in X.EXCHANGES:
             clip["opponent"] = True
+        if getattr(m, "variant_of", None):
+            clip["variant_of"] = m.variant_of
         clips.append(clip)
     return {"version": 1, "bpm": moves.BPM, "fps": moves.FPS, "size": list(SIZE),
             "key_poses": list(moves.KEY_POSES),

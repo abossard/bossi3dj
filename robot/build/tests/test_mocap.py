@@ -45,6 +45,16 @@ class TimeMapTests(unittest.TestCase):
             with self.subTest(clip=clip.name, end="last"):
                 self.assertAlmostEqual(src[-1], mocap.src_frame(clip, mocap.frames(clip) - 1))
 
+    def test_variants_share_their_base_way(self):
+        for clip in mocap.CLIPS.values():
+            if clip.variant_of:
+                base = mocap.CLIPS[clip.variant_of]
+                with self.subTest(clip=clip.name):
+                    self.assertIsNone(base.variant_of)
+                    self.assertEqual((clip.key_in, clip.key_out, clip.tier, clip.idle),
+                                     (base.key_in, base.key_out, base.tier, base.idle))
+                    self.assertNotEqual(clip.anchors, base.anchors)
+
     def test_clips_last_whole_bars(self):
         for clip in mocap.CLIPS.values():
             with self.subTest(clip=clip.name):

@@ -31,8 +31,8 @@ PLANT_SPEED_M = 0.012      # per frame at 30 fps (0.36 m/s)
 PLANT_MIN_FRAMES = 3
 LOCK_BLEND = 3
 
-MocapClip = namedtuple("MocapClip", "name tier beats key_in key_out fbx anchors hits idle",
-                       defaults=(False,))
+MocapClip = namedtuple("MocapClip", "name tier beats key_in key_out fbx anchors hits idle variant_of",
+                       defaults=(False, None))
 SourceHit = namedtuple("SourceHit", "src limb strength")
 
 CLIPS = {c.name: c for c in [
@@ -43,6 +43,13 @@ CLIPS = {c.name: c for c in [
     MocapClip("mocap_flip_uppercut", "drop", 8, "guard", "guard", "free_test_pack/extracted/back flip to uppercut.fbx",
               ((0, 9), (5, 106), (6, 121), (8, 160)),     # drops the held guard at both ends: 1.34x, 1x, 1.34x
               (SourceHit(106, "hand_l", 0.8), SourceHit(121, "hand_r", 1.0))),
+    # its takes (#32): the same capture on other anchors, so the flip, the rush and the uppercuts fall elsewhere
+    MocapClip("mocap_flip_uppercut_v2", "drop", 8, "guard", "guard", "free_test_pack/extracted/back flip to uppercut.fbx",
+              ((0, 9), (4, 106), (5, 121), (8, 165)),    # earlier strikes, a longer settle
+              (SourceHit(106, "hand_l", 0.8), SourceHit(121, "hand_r", 1.0)), False, "mocap_flip_uppercut"),
+    MocapClip("mocap_flip_uppercut_v3", "drop", 8, "guard", "guard", "free_test_pack/extracted/back flip to uppercut.fbx",
+              ((0, 13), (5.5, 106), (6.5, 121), (8, 158)),    # a slower flip, off-beat strikes, a quick settle
+              (SourceHit(106, "hand_l", 0.8), SourceHit(121, "hand_r", 1.0)), False, "mocap_flip_uppercut"),
 ]}
 
 

@@ -93,11 +93,22 @@ class MoveTests(unittest.TestCase):
                     self.assertTrue(0.0 < h["strength"] <= 1.0)
 
     def test_one_idle_clip_per_key_pose(self):
+        """One Idle family per Key Pose: a base Idle Clip, its variants counted as that one (robot/CONTRACTS.md)."""
         for key in moves.KEY_POSES:
             with self.subTest(key_pose=key):
                 idles = [m for m in _moves(True) if m.key_in == key]
-                self.assertEqual(len(idles), 1)
-                self.assertEqual(idles[0].key_out, key)
+                self.assertEqual(len({m.variant_of or m.name for m in idles}), 1)
+                self.assertTrue(all(m.key_out == key for m in idles))
+
+    def test_variants_share_their_base_way(self):
+        for name, move in moves.MOVES.items():
+            if move.variant_of:
+                base = moves.MOVES[move.variant_of]
+                with self.subTest(move=name):
+                    self.assertIsNone(base.variant_of)
+                    self.assertEqual((move.key_in, move.key_out, move.tier, move.idle),
+                                     (base.key_in, base.key_out, base.tier, base.idle))
+                    self.assertNotEqual(moves.frames(move), moves.frames(base))
 
     def test_idle_loops_without_a_jump(self):
         for move in _moves(True):

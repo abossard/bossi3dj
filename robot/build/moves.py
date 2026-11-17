@@ -23,7 +23,9 @@ FPS = 30
 BEATS = 4
 ANKLE_Z = 0.10
 
-Move = namedtuple("Move", "name tier beats key_in key_out keys hits idle waves", defaults=(False, ()))
+# variant_of, seed and track: a variant's base Move, its seed and its capture track (variants.py, #32)
+Move = namedtuple("Move", "name tier beats key_in key_out keys hits idle waves variant_of seed track",
+                  defaults=(False, (), None, None, None))
 Wave = namedtuple("Wave", "channel axis amplitude harmonic")
 Key = namedtuple("Key", "beat pose ease", defaults=("smooth",))
 Hit = namedtuple("Hit", "beat limb strength")
@@ -501,6 +503,10 @@ def _key_frames(move, bpm, fps):
 def sample(move, frame, bpm=BPM, fps=FPS):
     """The Pose of `move` at `frame` (0-based)."""
     pose = _sample_keys(move, frame, bpm, fps)
+    if move.track:
+        import variants
+        for ch, d in variants.track_offsets(move, frame, bpm, fps).items():
+            pose[ch] = tuple(a + b for a, b in zip(pose[ch], d))
     if move.waves:
         t = frame / (move_frames(move, bpm, fps) - 1)
         for w in move.waves:
@@ -550,7 +556,7 @@ def frames(move, bpm=BPM, fps=FPS, weighted=True, hits=None, warp=None, dodges=(
     import weight
     who = __import__("exchanges").body() if "g_hips" in move.keys[0].pose else body()
     return weight.weigh(lambda f: sample(move, f, bpm, fps), n, stops(move, bpm, fps) if hits is None else hits,
-                        beat_frames(move, bpm, fps), who, warp, dodges, move.idle)
+                        beat_frames(move, bpm, fps), who, warp, dodges, move.idle, move.seed)
 
 
 def hit_frames(move, bpm=BPM, fps=FPS):
@@ -593,3 +599,12 @@ def hip_joint(p, side):
     v = (v[0] * math.cos(c) - v[1] * math.sin(c), v[0] * math.sin(c) + v[1] * math.cos(c), v[2])
     hx, hy, hz = p["hips"]
     return (hx + v[0], hy - v[2], hz + v[1])            # bone frame back to root
+
+
+def _add_variants():
+    """The variants (variants.py) join MOVES after their base Moves."""
+    import variants
+    MOVES.update({v.name: v for v in variants.all_variants(MOVES)})
+
+
+_add_variants()

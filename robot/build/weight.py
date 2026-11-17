@@ -16,7 +16,8 @@ docs/research/weighted-animation.md section 4, steps 1, 3 and 4). Pure, no bpy.
   overshoot), never further than DEPART from the key table. Pins put the keyed value back at the first and last frame and at each Hit (every channel, so the strike reaches); a planted foot keeps
   its keyed place. It runs on the key table's own timeline, before the hit-stop, so a hold stays still. Not on Idle
   Clips (their waves are smooth already) and not on Mocap Clips.
-Recoils and dips fade out over the Clip's last END_FRAMES frames, so its last frame is still its Key Pose, and the
+- Seeded layer (#32, `seeded`): a variant's breathing, weight shift, glance and hand height, drawn from its seed.
+Recoils, dips and the seeded layer fade out over the Clip's last END_FRAMES frames, so its last frame is still its Key Pose, and the
 hips give way where a planted leg would no longer reach its foot.
 
 `measure()` is the research's check: hips acceleration in flight against -g and the ground force per kilogram from
@@ -348,10 +349,30 @@ def springy(sample, n, stops, body):
     return at
 
 
-def weigh(sample, n, stops, beat_frames, body, warp=None, dodges=(), idle=False):
+def seeded(n, seed, stops):
+    """A variant's seeded layer (variants.seeded_waves): offsets [(frame, channel, delta)], 0 at the Clip's ends and
+    at each Hit (faded over PIN_HIT frames), so Key Poses and contacts stay keyed."""
+    import variants
+    out = []
+    for f in range(n):
+        env = 1.0
+        for h, _l, _s in stops:
+            env *= _smooth(min(abs(f - h) / PIN_HIT, 1.0))
+        for ch, axis, amp, harmonic in variants.seeded_waves(seed, n):
+            d = [0.0, 0.0, 0.0]
+            d[axis] = variants.wave(amp, harmonic, f, n) * env
+            out.append((f, ch, tuple(d)))
+    return out
+
+
+def _smooth(t):
+    return t * t * (3.0 - 2.0 * t)
+
+
+def weigh(sample, n, stops, beat_frames, body, warp=None, dodges=(), idle=False, seed=None):
     """The weighted Pose sequence. `sample(frame)` gives the key table's Pose at a (fractional) frame; `stops`:
     [(frame, limb, strength)] of the Hits; `warp` overrides the time warp (an Exchange shares one); `dodges`: frames
-    whose keyed pose must hold; `idle`: no spring."""
+    whose keyed pose must hold; `idle`: no spring; `seed`: a variant's seeded layer."""
     if not idle:
         sample = springy(sample, n, stops, body)
     if warp is None:
@@ -360,7 +381,8 @@ def weigh(sample, n, stops, beat_frames, body, warp=None, dodges=(), idle=False)
     if body.hips != "hips":
         return seq
     ballistic(seq, pins(stops, dodges))
-    apply_offsets(seq, recoil(seq, sample, stops) + dip(seq, sample, stops), body)
+    apply_offsets(seq, recoil(seq, sample, stops) + dip(seq, sample, stops) +
+                  (seeded(n, seed, stops) if seed is not None else []), body)
     fall_limit(seq, body, hit_windows(stops))
     return seq
 

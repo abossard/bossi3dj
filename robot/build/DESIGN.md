@@ -90,3 +90,12 @@ The user, 2026-11-17: the key-table Moves look mechanical. Mixamo captures repla
 - The time map runs through Anchors (beat, source frame), so contacts land on beats. Hits name their source frame. The first and last beat blend into the Key Poses; an Idle Clip blends its last 12 frames into its first. Net travel is taken out in proportion to the hips' path.
 - Weight on top: the hit-stop through the time map, the fist recoil and the stomp dip. No ballistic layer or landing dip: the capture flies and lands by itself. An ankle target past the leg's reach follows the leg.
 - `review/mocap_check.py` gives the numbers, `review/mocap_proof.py` the low renders, `review/mocap_reel.sh` the reel beside the hand-keyed Clips.
+
+## Variants ([variants.py](variants.py), #32)
+
+A variant is its own Move in its base's family (`variant_of` in the Manifest, robot/CONTRACTS.md): the same Key Poses, tier and idle, its own Clips. The first batch:
+- Idle families: four one-bar variants per Key Pose (`idle_<pose>_v2` to `_v5`). Each is the Key Pose plus a window of a captured idle's micro-motion (breathing, sway, glances; `tracks/*.json` from `extract_tracks.py`), detrended to start and end at the Key Pose and faded over 8 frames, so any variant chains into any.
+- Move takes: `jab_cross_v2`, `_v3` move inner keys by up to a frame and scale Hit strengths (other hit-stop holds). The Mocap takes `mocap_flip_uppercut_v2`, `_v3` put the same capture on other Anchors.
+- Every variant has a seed. weight.py's seeded layer draws breathing, weight shift, glance and hand height from it, zero at the ends and at Hits.
+- Key Poses stay the hand-keyed ones until the Mixamo fight clips arrive. Swapping them for capture poses is a change to `moves.KEY_POSES` only.
+

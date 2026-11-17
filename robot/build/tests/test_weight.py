@@ -134,12 +134,12 @@ class SpringTests(unittest.TestCase):
         for name, move in moves.MOVES.items():
             seq, raw = moves.frames(move), moves.frames(move, weighted=False)
             with self.subTest(move=name):
-                if move.idle:
+                if move.idle and move.seed is None:
                     self.assertEqual(seq, raw)
                 for f, (p, q) in enumerate(zip(seq, raw)):
                     for foot in ("foot_l", "foot_r"):
                         if q[foot][2] <= moves.ANKLE_Z + weight.AIR_M and p[foot][2] <= moves.ANKLE_Z + weight.AIR_M:
-                            self.assertEqual(p[foot][2], q[foot][2])
+                            self.assertAlmostEqual(p[foot][2], q[foot][2], places=5)   # the warp samples between frames
 
 
 class DipTests(unittest.TestCase):
