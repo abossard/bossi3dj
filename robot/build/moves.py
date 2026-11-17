@@ -34,8 +34,8 @@ GUARD = {
     "spine_rot": (6.0, -5.0, 0.0),
     "chest_rot": (6.0, 0.0, 0.0),
     "head_rot": (-8.0, 22.0, 0.0),
-    "hand_l": (0.15, -0.42, 1.50),
-    "hand_r": (-0.10, -0.20, 1.52),
+    "hand_l": (0.22, -0.40, 1.47),      # lead fist over the lead shoulder, clear of the face (M2000 shoulders)
+    "hand_r": (-0.14, -0.20, 1.50),
     "foot_l": (0.15, -0.24, ANKLE_Z),
     "foot_l_rot": (0.0, -15.0, 0.0),
     "foot_r": (-0.15, 0.30, ANKLE_Z),
@@ -79,7 +79,7 @@ CROUCH = pose(GUARD, hips=(0.0, 0.10, 0.50), hips_rot=(25.0, -10.0, 0.0), spine_
 KEY_POSES = {"guard": GUARD, "low": LOW, "crouch": CROUCH}
 
 # the bob: weight settles a little between beats, so a held guard never freezes
-BOB = pose(GUARD, hips=(0.0, 0.02, 0.895), hand_l=(0.15, -0.42, 1.49), hand_r=(-0.10, -0.20, 1.51))
+BOB = pose(GUARD, hips=(0.0, 0.02, 0.895), hand_l=(0.22, -0.40, 1.46), hand_r=(-0.14, -0.20, 1.49))
 
 # punches from the guard, shared by the guard's striking Moves
 JAB = pose(GUARD, hips=(0.0, 0.0, 0.90), hips_rot=(0.0, -32.0, 0.0), spine_rot=(8.0, -8.0, 0.0),

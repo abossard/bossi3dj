@@ -249,6 +249,24 @@ M2000_PIECES = {"HIP": ("HIP", "hips", "keep"), "WAIST": ("WAIST", "spine", "kee
                 "FOOT": ("LEG.001", "foot.R", "foot"), "FOOT.001": ("LEG", "foot.L", "foot")}
 
 
+# its finger chains (Bone.013 and Bone.033 are the wrists); curled before the hands are baked, so they bake as fists
+M2000_FINGERS = ("Bone.015", "Bone.019", "Bone.022", "Bone.025", "Bone.028",
+                 "Bone.035", "Bone.039", "Bone.042", "Bone.045", "Bone.048")
+FIST_CURL_DEG = 75.0
+
+
+def _curl_fingers(rig):
+    for root in M2000_FINGERS:
+        chain, todo = [], [rig.pose.bones[root]]
+        while todo:
+            pb = todo.pop()
+            chain.append(pb)
+            todo += list(pb.children)
+        for pb in chain:
+            pb.rotation_mode = "XYZ"
+            pb.rotation_euler.x += math.radians(FIST_CURL_DEG)
+
+
 def _split_x(me, keep_positive):
     bm = bmesh.new()
     bm.from_mesh(me)
@@ -261,7 +279,8 @@ def _split_x(me, keep_positive):
 
 def import_m2000(coll, arm):
     """Append the M2000's pieces, bake each (its skinned hands and neck in their saved pose), turn and scale them
-    into our rest pose and parent each to our bone. Its own armature, floor, environment and wires are dropped."""
+    into our rest pose and parent each to our bone; its fingers bake curled into fists. Its own armature, floor,
+    environment and wires are dropped."""
     with bpy.data.libraries.load(M2000_BLEND, link=False) as (src, dst):
         dst.objects = [n for n in src.objects if n not in ("FLOOR", "ENV", "WIRES")]
     tmp = bpy.data.collections.new("m2000_source")
@@ -271,6 +290,9 @@ def import_m2000(coll, arm):
     bpy.context.view_layer.update()
     dg = bpy.context.evaluated_depsgraph_get()
     rig = next(o for o in dst.objects if o.type == "ARMATURE")
+    _curl_fingers(rig)
+    bpy.context.view_layer.update()
+    dg = bpy.context.evaluated_depsgraph_get()
     g = Matrix.Rotation(math.pi, 4, "Z") @ Matrix.Scale(M2000_SCALE, 4) @ Matrix.Translation((0, M2000_DY, 0))
 
     def its(bone):
