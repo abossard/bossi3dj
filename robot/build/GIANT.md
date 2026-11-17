@@ -11,6 +11,8 @@ Probe of the first candidate, Blender Studio's Security Bot (CC-BY, `robot/asset
 - Cost at 6 m on the duel camera: Cycles 64 samples 19.9 s per frame (about 7.7 h for both duel Angles at that rate), Eevee full size 4.9 s, Eevee half-size preview 4.8 s per frame.
 - Verdict (review round G2, rubric-g1): framing, floor contact, the strike and readability pass; scale fails: "a scaled-up small robot, not a giant". Slender human proportions and large smooth panels carry no mass. A slim biped does not read as a giant; the giant needs a bulky, heavy model (thick limbs and torso, fine detail), or this one used at human scale as a second fighter.
 
+Decision (the user, 2026-11-17, after the side-by-side preview `docs/video/robot-giant-scale.mp4`): the Security Bot is the opponent at 6 m ("6 m giant"), with the duel cameras framed for it. At 2.5 m it read as a sparring partner. Credit: Security Bot by Blender Studio, CC-BY (`robot/assets/security_bot/CREDIT.txt`).
+
 ## Why the Android reads weak, and what the machine does instead
 
 - Silhouette: built from boxes, spheres and cylinders, generic at tile size. The machine: a detailed model with distinct masses (hammer, claw, hunched torso) that read in silhouette alone.
