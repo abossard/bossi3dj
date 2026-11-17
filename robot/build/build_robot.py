@@ -26,6 +26,7 @@ from mathutils import Matrix, Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import exchanges as X  # noqa: E402
 import moves  # noqa: E402
 
 SIZE = (1920, 1080)
@@ -36,6 +37,23 @@ ANGLES = (
     ("front", "ShotCamera.front", (-2.32, -3.51, 0.55), (0.0, -0.20, 1.05), 32.0),   # low front, the guard's chest faces it (review/camera_sweep.py)
     ("side", "ShotCamera.side", (6.50, -0.35, 1.30), (0.0, -0.35, 1.00), 35.0),     # wide side, lead side
 )
+# Duel Angles, for Exchanges only (GIANT.md): the giant stands at y = GIANT_Y facing +Y, 6 m tall.
+DUEL_ANGLES = (
+    ("duel_wide", "ShotCamera.duel_wide", (12.0, -1.25, 2.4), (0.0, -1.25, 3.0), 32.0),     # profile, both full figures
+    ("duel_low", "ShotCamera.duel_low", (0.9, 2.0, 0.35), (0.0, -2.5, 2.3), 16.0),        # low behind the Android, up at the giant
+)
+# The giant machine: Blender Studio's Security Bot (CC-BY, robot/assets/security_bot/CREDIT.txt), appended with
+# auto-run off, scaled to GIANT_H. Our giant control points (exchanges.py) drive its IK targets and torso.
+GIANT_ASSET = os.path.join(HERE, "..", "assets", "security_bot", "security_bot_v1", "security_bot_release_v1.blend")
+GIANT_RIG, GIANT_H, GIANT_Y = "RIG-security_bot", 6.0, -2.5
+GIANT_BONES = {"g_hips": "Torso", "g_hammer": "IK-Wrist.R", "g_claw": "IK-Wrist.L",
+               "g_foot_l": "IK-TGT-Ankle.L", "g_foot_r": "IK-TGT-Ankle.R"}
+GIANT_ROT = {"g_hips_rot": "Torso", "g_chest_rot": "Chest"}
+# Clip Data points of the giant: the bone whose head (Chest: middle) is the point
+GIANT_POINTS = {"g_head": "Head", "g_core": "Chest", "g_hammer": "IK-Wrist.R", "g_claw": "IK-Wrist.L",
+                "g_knee_l": "ROBO-X-Knee.L", "g_knee_r": "ROBO-X-Knee.R",
+                "g_foot_l": "IK-TGT-Ankle.L", "g_foot_r": "IK-TGT-Ankle.R"}
+GIANT_SUBSURF_LOW = 1          # subdivision render levels at most this in preview and low quality (the file has up to 3)
 UP = Matrix.Rotation(math.radians(90.0), 4, "X")      # part frame: x width, y up, z forward (-Y)
 FWD = Matrix.Rotation(math.radians(180.0), 4, "Z")    # part frame: y toward the toes (-Y), z up
 SODIUM = (1.0, 0.60, 0.24)
@@ -476,7 +494,7 @@ def build_lights(coll):
 
 
 def build_cameras(coll):
-    for _id, name, loc, target, lens in ANGLES:
+    for _id, name, loc, target, lens in ANGLES + DUEL_ANGLES:
         cam = bpy.data.cameras.new(name)
         cam.lens, cam.sensor_width, cam.sensor_fit = lens, 36.0, "HORIZONTAL"
         obj = bpy.data.objects.new(name, cam)
@@ -500,6 +518,91 @@ def bake_moves(arm):
             for ch, (bone, kind) in CHANNEL_BONES.items():
                 arm.pose.bones[bone].keyframe_insert("location" if kind == "loc" else "rotation_euler", frame=f)
     arm.animation_data.action = bpy.data.actions["move." + next(iter(moves.MOVES))]
+
+
+# ---------- the giant machine ----------
+
+def _giant_coll():
+    return next((c for c in bpy.data.collections if c.get("robot_giant")), None)
+
+
+def import_giant(scene):
+    """Append the Security Bot's character collection, keep rig widgets and the battery prop out of render, scale
+    it to GIANT_H with its feet on the floor at y = GIANT_Y facing +Y. Hidden in render until an Exchange uses it."""
+    with bpy.data.libraries.load(GIANT_ASSET, link=False) as (src, dst):
+        dst.collections = [c for c in src.collections if c.startswith("CH")]
+    coll = dst.collections[0]
+    scene.collection.children.link(coll)
+    coll["robot_giant"] = True
+    body = []
+    for o in list(coll.all_objects):          # setting hide_render while iterating all_objects ends the loop
+        if o.type != "MESH":
+            continue
+        if o.name.startswith("WGT-") or "battery" in o.name:
+            o.hide_render = True
+        elif not o.hide_render:
+            body.append(o)
+    rig = bpy.data.objects[GIANT_RIG]
+    dg = bpy.context.evaluated_depsgraph_get()
+    zs = [(o.evaluated_get(dg).matrix_world @ Vector(c)).z for o in body for c in o.evaluated_get(dg).bound_box]
+    s = GIANT_H / (max(zs) - min(zs))
+    rig.scale = (s, s, s)
+    rig.rotation_euler = (0.0, 0.0, math.pi)          # the bot faces -Y; the giant faces the Android (+Y)
+    rig.location = (0.0, GIANT_Y, -min(zs) * s)
+    coll.hide_render = True
+    bpy.context.view_layer.update()
+    return rig
+
+
+def pose_giant(rig, g):
+    """Set the giant's bones from one giant Pose of exchanges.py (positions in world space, rotations in degrees)."""
+    inv = rig.matrix_world.inverted()
+    for ch, bone in GIANT_ROT.items():
+        pb = rig.pose.bones[bone]
+        pb.rotation_mode = "XYZ"
+        pb.rotation_euler = tuple(math.radians(v) for v in g[ch])
+    bpy.context.view_layer.update()
+    for ch, bone in GIANT_BONES.items():
+        pb = rig.pose.bones[bone]
+        m = pb.matrix.copy()
+        m.translation = inv @ Vector(g[ch])
+        pb.matrix = m
+        bpy.context.view_layer.update()
+
+
+def bake_exchanges(arm, rig):
+    """Per Exchange one Action for the Android (exchange.<name>) and one for the giant (giant.<name>)."""
+    rig.animation_data_create()
+    bones = set(GIANT_BONES.values()) | set(GIANT_ROT.values())
+    for name, ex in X.EXCHANGES.items():
+        acts = (bpy.data.actions.new("exchange." + name), bpy.data.actions.new("giant." + name))
+        for act in acts:
+            act.use_fake_user = True
+        arm.animation_data.action, rig.animation_data.action = acts
+        for f, (a, g) in enumerate(X.frames(ex)):
+            apply_pose(arm, a)
+            for ch, (bone, kind) in CHANNEL_BONES.items():
+                arm.pose.bones[bone].keyframe_insert("location" if kind == "loc" else "rotation_euler", frame=f)
+            pose_giant(rig, g)
+            for bone in bones:
+                rig.pose.bones[bone].keyframe_insert("location", frame=f)
+                rig.pose.bones[bone].keyframe_insert("rotation_euler", frame=f)
+    rig.animation_data.action = None
+    arm.animation_data.action = bpy.data.actions["move." + next(iter(moves.MOVES))]
+
+
+def giant_points(rig):
+    pb = rig.pose.bones
+    return {p: rig.matrix_world @ ((pb[b].head + pb[b].tail) / 2 if p == "g_core" else pb[b].head)
+            for p, b in GIANT_POINTS.items()}
+
+
+def _giant_lod(scene):
+    coll = _giant_coll()
+    for o in (coll.all_objects if coll else ()):
+        for m in o.modifiers:
+            if m.type == "SUBSURF":
+                m.render_levels = min(m.render_levels, GIANT_SUBSURF_LOW)
 
 
 # ---------- render settings ----------
@@ -610,7 +713,9 @@ def build(out):
     build_set(colls["Set"], mats)
     build_lights(colls["Lights"])
     build_cameras(colls["Cameras"])
+    rig = import_giant(scene)
     bake_moves(arm)
+    bake_exchanges(arm, rig)
     setup_render(scene)
     scene.camera = bpy.data.objects[ANGLES[0][1]]
     bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(out), relative_remap=True)
@@ -620,8 +725,15 @@ def build(out):
 # ---------- clips, export ----------
 
 def clip_list():
-    """[(clip id, move, angle id, camera name)], Moves in table order, Angles in ANGLES order."""
-    return [("%s__%s" % (m, a), m, a, cam) for m in moves.MOVES for a, cam, *_ in ANGLES]
+    """[(clip id, move, angle id, camera name)]: Moves in table order on ANGLES, then Exchanges on DUEL_ANGLES."""
+    return [("%s__%s" % (m, a), m, a, cam) for m in moves.MOVES for a, cam, *_ in ANGLES] + \
+        [("%s__%s" % (e, a), e, a, cam) for e in X.EXCHANGES for a, cam, *_ in DUEL_ANGLES]
+
+
+def _move(name):
+    """The Android's Move of a Clip: a Move of moves.py, or an Exchange's Android part (its tier, beats and idle
+    equal the Exchange's, test_exchanges.py)."""
+    return X.EXCHANGES[name].android if name in X.EXCHANGES else moves.MOVES[name]
 
 
 def _arm():
@@ -633,12 +745,18 @@ def _points():
 
 
 def _longest():
-    return max(moves.move_frames(m) for m in moves.MOVES.values())
+    return max(moves.move_frames(_move(m)) for _c, m, *_ in clip_list())
 
 
 def _use_move(scene, move):
-    _arm().animation_data.action = bpy.data.actions["move." + move]
-    scene.frame_start, scene.frame_end = 0, moves.move_frames(moves.MOVES[move]) - 1
+    """The Android's Action of the Move or Exchange; the giant shows, with its Action, only in an Exchange."""
+    ex = move in X.EXCHANGES
+    _arm().animation_data.action = bpy.data.actions[("exchange." if ex else "move.") + move]
+    coll = _giant_coll()
+    if coll:
+        coll.hide_render = not ex
+        bpy.data.objects[GIANT_RIG].animation_data.action = bpy.data.actions["giant." + move] if ex else None
+    scene.frame_start, scene.frame_end = 0, moves.move_frames(_move(move)) - 1
 
 
 def _project(scene, cam, co):
@@ -647,17 +765,26 @@ def _project(scene, cam, co):
 
 
 def export_clip_data(scene, clip_id, move, cam):
+    """An Exchange adds the giant's points to every frame, and its Strikes (both ways, with their target) to the
+    Hits; an Android Hit at the same frame and limb as a Strike is that Strike."""
     _use_move(scene, move)
     pts = _points()
+    ex = X.EXCHANGES.get(move)
+    rig = bpy.data.objects[GIANT_RIG] if ex else None
     frames = []
-    for f in range(moves.move_frames(moves.MOVES[move])):
+    for f in range(moves.move_frames(_move(move))):
         scene.frame_set(f)
         entry = {"f": f}
         entry.update({p: _project(scene, cam, pts[p].matrix_world.translation) for p in POINTS})
+        if rig:
+            entry.update({p: _project(scene, cam, co) for p, co in giant_points(rig).items()})
         frames.append(entry)
-    hits = [{"f": h["f"], "point": frames[h["f"]][h["limb"]], "strength": h["strength"], "limb": h["limb"]}
-            for h in moves.hit_frames(moves.MOVES[move])]
-    return {"clip": clip_id, "frames": frames, "hits": hits}
+    hits = [{"f": moves.beat_frame(s.beat), "point": frames[moves.beat_frame(s.beat)][s.point], "strength": s.strength,
+             "limb": s.point, "target": s.target} for s in (ex.hits if ex else ())]
+    struck = {(h["f"], h["limb"]) for h in hits}
+    hits += [{"f": h["f"], "point": frames[h["f"]][h["limb"]], "strength": h["strength"], "limb": h["limb"]}
+             for h in moves.hit_frames(_move(move)) if (h["f"], h["limb"]) not in struck]
+    return {"clip": clip_id, "frames": frames, "hits": sorted(hits, key=lambda h: h["f"])}
 
 
 def export_camera_track(scene, angle, cam):
@@ -674,16 +801,19 @@ def export_camera_track(scene, angle, cam):
 def manifest():
     clips = []
     for clip_id, move, angle, _cam in clip_list():
-        m = moves.MOVES[move]
-        clips.append({"id": clip_id, "move": move, "angle": angle, "beats": m.beats,
-                      "frames": moves.move_frames(m), "key_in": m.key_in, "key_out": m.key_out,
-                      "tier": m.tier, "idle": m.idle,
-                      "cut_points": moves.cut_points(m),
-                      "passes": {p: "%s/%s.mov" % (p, clip_id) for p in ("beauty", "shadow", "depth")},
-                      "clip_data": "clip_data/%s.json" % clip_id, "camera_track": "camera/%s.json" % angle})
+        m = _move(move)
+        clip = {"id": clip_id, "move": move, "angle": angle, "beats": m.beats,
+                "frames": moves.move_frames(m), "key_in": m.key_in, "key_out": m.key_out,
+                "tier": m.tier, "idle": m.idle,
+                "cut_points": moves.cut_points(m),
+                "passes": {p: "%s/%s.mov" % (p, clip_id) for p in ("beauty", "shadow", "depth")},
+                "clip_data": "clip_data/%s.json" % clip_id, "camera_track": "camera/%s.json" % angle}
+        if move in X.EXCHANGES:
+            clip["opponent"] = True
+        clips.append(clip)
     return {"version": 1, "bpm": moves.BPM, "fps": moves.FPS, "size": list(SIZE),
-            "key_poses": list(moves.KEY_POSES), "angles": [{"id": a, "camera": cam} for a, cam, *_ in ANGLES],
-            "clips": clips}
+            "key_poses": list(moves.KEY_POSES),
+            "angles": [{"id": a, "camera": cam} for a, cam, *_ in ANGLES + DUEL_ANGLES], "clips": clips}
 
 
 def _write_json(path, data):
@@ -695,7 +825,7 @@ def _write_json(path, data):
 
 def export(package):
     scene = bpy.context.scene
-    for angle, name, *_ in ANGLES:
+    for angle, name, *_ in ANGLES + DUEL_ANGLES:
         _write_json(os.path.join(package, "camera", angle + ".json"),
                     export_camera_track(scene, angle, bpy.data.objects[name]))
     for clip_id, move, _angle, cam in clip_list():
@@ -716,6 +846,7 @@ def use_preview(scene):
         scene.render.engine = "BLENDER_EEVEE_NEXT"
     scene.eevee.taa_render_samples = 16
     scene.render.resolution_percentage = 50
+    _giant_lod(scene)
     for name in ("shadow", "depth"):
         scene.compositing_node_group.nodes[name].mute = True
 
@@ -728,6 +859,7 @@ def use_low(scene):
     except TypeError:
         scene.render.engine = "BLENDER_EEVEE_NEXT"
     scene.eevee.taa_render_samples = 32
+    _giant_lod(scene)
     bpy.data.objects["floor_catcher"].is_holdout = True
     scene.view_layers[0].use_pass_shadow = True
     tree = scene.compositing_node_group

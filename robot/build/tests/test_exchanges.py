@@ -103,6 +103,13 @@ class ExchangeTests(unittest.TestCase):
                 with self.subTest(exchange=name, fighter=who):
                     self.assertEqual(moves.pose_distance(seq[0], seq[-1]), (0.0, 0.0))
 
+    def test_one_idle_exchange_per_key_pose(self):
+        used = {k for e in X.EXCHANGES.values() for k in (e.android.key_in, e.android.key_out)}
+        for key in sorted(used):
+            with self.subTest(key_pose=key):
+                idles = [n for n, e in X.EXCHANGES.items() if e.idle and e.android.key_in == key]
+                self.assertEqual(len(idles), 1, idles)
+
     def test_every_tier_has_exchanges(self):
         for tier in ("calm", "build", "drop"):
             with self.subTest(tier=tier):

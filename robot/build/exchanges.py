@@ -109,11 +109,12 @@ def shifted_x(base, dx):
 
 # ---------- calm ----------
 
-def _duel_idle():
-    giant = _giant("duel_idle", "calm", BEATS, [Key(0, LOOM), Key(BEATS, LOOM)],
+def _duel_idle(name, android_idle):
+    """The duel Angles' Idle Clip of one Key Pose: the Android's Idle Clip of it, the giant breathing in LOOM."""
+    giant = _giant(name, "calm", BEATS, [Key(0, LOOM), Key(BEATS, LOOM)],
                    (("g_hips", 2, -0.05, 2), ("g_chest_rot", 0, 3.0, 2), ("g_hammer", 2, -0.08, 2),
                     ("g_claw", 2, -0.06, 2), ("g_head_rot", 1, 10.0, 1), ("g_hips", 0, 0.04, 1)), idle=True)
-    return Exchange("duel_idle", "calm", BEATS, moves.MOVES["idle_guard"], giant, [], [], True)
+    return Exchange(name, "calm", BEATS, moves.MOVES[android_idle], giant, [], [], True)
 
 
 def _circle():
@@ -280,7 +281,8 @@ CROSS_KNEE = (0.40, -1.30, 1.42)
 HAMMER_ON_HEAD = (0.0, -0.20, 2.38)
 CORE_PUNCH = (0.0, -1.53, 3.68)
 
-EXCHANGES = {e.name: e for e in (_duel_idle(), _circle(), _hammer_dodge(), _sweep_jump(), _knee_combo(),
+EXCHANGES = {e.name: e for e in (_duel_idle("duel_idle", "idle_guard"), _duel_idle("duel_idle_low", "idle_low"),
+                                 _duel_idle("duel_idle_crouch", "idle_crouch"), _circle(), _hammer_dodge(), _sweep_jump(), _knee_combo(),
                                  _hammer_hit(), _core_strike(), _quake_stomp())}
 
 
