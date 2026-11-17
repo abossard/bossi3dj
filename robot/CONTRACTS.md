@@ -31,6 +31,7 @@ Each Clip:
 | `idle` | `true` for an Idle Clip: `key_in` equals `key_out`, first and last frames identical, Magic loops it; `false` for a Move Clip, which Magic restarts on each pick |
 | `quality` | optional: this Clip's render quality, `low` or `high`; missing means `high` |
 | `opponent` | optional: `true` for an Exchange, a Clip with both the Android and the giant machine in the frame (`robot/build/GIANT.md`); missing or `false` for a Clip with the Android alone. `key_in`, `key_out`, `idle` and `cut_points` always describe the Android |
+| `variant_of` | optional: the name of a base Move this Move is a variant of (#32). The variant is its own Move with its own name and Clips, in the base's family; it has the base's `key_in`, `key_out`, `tier`, `idle` and `opponent`, and may differ in `beats`, `frames`, `cut_points`, Clip Data and the picture. The base has no `variant_of` (a variant of a variant names the base). Missing: the Move is a base, a family of its own |
 | `cut_points` | beats inside the Clip where a switch is allowed, `[0]` at least |
 | `passes` | `{beauty, shadow, depth}`: file paths relative to the package; beauty carries the Matte as alpha |
 | `clip_data` | path of the Clip Data file |
@@ -48,7 +49,7 @@ Pass files, one `.mov` per Clip and Pass, 1920x1080, 30 fps, the Clip's frame co
 
 ProRes 4444 for beauty decoded below 30 fps at 3 Angles in Magic; qtrle holds 4 (docs/handover/robot-magic.md, 2026-11-16).
 
-On every Angle, each Key Pose that a Clip on that Angle starts or ends in has exactly one Idle Clip there (a solo Angle: every Key Pose). A Move Clip that ends with no next pick goes to the Idle Clip of its `key_out`; the Clip Graph leaves the Idle Clip on the next bar boundary into any Move with that `key_in`. Magic switches between a solo and a duel Angle only from an Idle Clip, into the Idle Clip of the same Key Pose on the other Angle.
+On every Angle, each Key Pose that a Clip on that Angle starts or ends in has exactly one Idle Clip there, its variants counted as that one (a solo Angle: every Key Pose). A Move Clip that ends with no next pick goes to the Idle Clip of its `key_out` (one of its variants); the Clip Graph leaves the Idle Clip on the next bar boundary into any Move with that `key_in`. With no such Move, an Idle Clip plays its whole length and goes on to another variant of its family; one without variants loops. The Clip Graph keeps variety by family: a family not picked for 8 bars and a variant not for 32 bars come first, so each family is as likely whatever its number of variants. Magic switches between a solo and a duel Angle only from an Idle Clip, into the Idle Clip of the same Key Pose on the other Angle.
 
 ## Clip Data (`clip_data/<clip id>.json`)
 
