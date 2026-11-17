@@ -13,7 +13,7 @@ One per Render Package. Written by `build/`, read by `magic/` and `live/`.
 | `fps` | frame rate of every Clip (30) |
 | `size` | `[width, height]`, 1920x1080 |
 | `key_poses` | list of Key Pose names, e.g. `["guard"]` |
-| `angles` | list of `{id, camera}`: Angle id and its Shot Camera name |
+| `angles` | list of `{id, camera}` and optional `opponent`: Angle id, its Shot Camera name, and `true` for a duel Angle that holds both fighters (missing or `false`: a solo Angle) |
 | `clips` | list of Clips, below |
 | `quality` | optional: `low` (Eevee, for judging motion), `high` (Cycles) or `mixed`; missing means `high` |
 
@@ -36,7 +36,7 @@ Each Clip:
 | `clip_data` | path of the Clip Data file |
 | `camera_track` | path of the Camera Track file |
 
-Clips of one Move share timing across Angles, so Magic may cut Angles at any frame.
+Clips of one Move share timing across Angles, so Magic may cut Angles at any frame. A Move has a Clip on exactly the Angles whose `opponent` equals its Clips' `opponent`: an Exchange on every duel Angle, a solo Move on every solo Angle. A Manifest with no `opponent` anywhere is all solo, as before.
 
 Pass files, one `.mov` per Clip and Pass, 1920x1080, 30 fps, the Clip's frame count:
 
@@ -48,14 +48,14 @@ Pass files, one `.mov` per Clip and Pass, 1920x1080, 30 fps, the Clip's frame co
 
 ProRes 4444 for beauty decoded below 30 fps at 3 Angles in Magic; qtrle holds 4 (docs/handover/robot-magic.md, 2026-11-16).
 
-Every Key Pose has exactly one Idle Clip per Angle. A Move Clip that ends with no next pick goes to the Idle Clip of its `key_out`; the Clip Graph leaves the Idle Clip on the next bar boundary into any Move with that `key_in`.
+On every Angle, each Key Pose that a Clip on that Angle starts or ends in has exactly one Idle Clip there (a solo Angle: every Key Pose). A Move Clip that ends with no next pick goes to the Idle Clip of its `key_out`; the Clip Graph leaves the Idle Clip on the next bar boundary into any Move with that `key_in`. Magic switches between a solo and a duel Angle only from an Idle Clip, into the Idle Clip of the same Key Pose on the other Angle.
 
 ## Clip Data (`clip_data/<clip id>.json`)
 
 | Field | Meaning |
 |---|---|
 | `clip` | Clip id |
-| `frames` | list, one entry per frame: `{f, head, eye_l, eye_r, hand_l, hand_r, foot_l, foot_r}`, and in an Exchange also `{g_head, g_core, g_hammer, g_claw, g_foot_l, g_foot_r}` (the giant's), each `[x, y, depth]` with x, y in 0..1 from the top left and depth in metres from the Shot Camera |
+| `frames` | list, one entry per frame: `{f, head, eye_l, eye_r, hand_l, hand_r, foot_l, foot_r}`, and in an Exchange also `{g_head, g_core, g_hammer, g_claw, g_knee_l, g_knee_r, g_foot_l, g_foot_r}` (the giant's), each `[x, y, depth]` with x, y in 0..1 from the top left and depth in metres from the Shot Camera |
 | `hits` | list of Hits: `{f, point: [x, y, depth], strength: 0..1, limb}` and optional `target`; in an Exchange `limb` may be a giant point (`g_hammer`, ...) and `target` names the struck point of the other fighter or `floor`. A Hit without `target` is valid |
 
 ## Camera Track (`camera/<angle>.json`)
