@@ -19,6 +19,16 @@
   {
    "id": "side",
    "camera": "ShotCamera.side"
+  },
+  {
+   "id": "duel_wide",
+   "camera": "ShotCamera.duel_wide",
+   "opponent": true
+  },
+  {
+   "id": "duel_low",
+   "camera": "ShotCamera.duel_low",
+   "opponent": true
   }
  ],
  "clips": [
