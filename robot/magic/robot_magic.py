@@ -21,7 +21,7 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "..", "..", "magic"))
 import magicproj as mp  # noqa: E402
 import xray  # noqa: E402
-from clip_graph import SALT_ANGLE, SALT_CUT, SALT_MOVE  # noqa: E402
+from clip_graph import FAMILY_WINDOW, SALT_ANGLE, SALT_CUT, SALT_FAMILY, SALT_FLAVOR, SALT_VARIANT, VARIANT_WINDOW  # noqa: E402
 from manifest import load  # noqa: E402
 
 # One table for the OSC rows (proposed in robot/CONTRACTS.md, not yet in osc/contract.json): address, Out Global, wire maximum.
@@ -48,25 +48,52 @@ def num(v):
     return "%.10g" % v
 
 
+def tree(var, items, lo=0):
+    """items[i] (expressions) where the integer var == lo + i, by halves so the nesting stays log2(n) deep (ExprTk and the tests'
+    interpreter limit nesting); below lo the first, past the end the last."""
+    if len(items) == 1:
+        return items[0]
+    mid = len(items) // 2
+    return "if(%s < %d, %s, %s)" % (var, lo + mid, tree(var, items[:mid], lo), tree(var, items[mid:], lo + mid))
+
+
 def table(var, values):
-    """Nested ifs: values[i] where var == i, the last value otherwise."""
-    expr = num(values[-1])
-    for i in range(len(values) - 2, -1, -1):
-        expr = "if(%s == %d, %s, %s)" % (var, i, num(values[i]), expr)
-    return expr
+    """values[i] where the integer var == i, the last value past the end."""
+    return tree(var, [num(v) for v in values])
 
 
 def pick(cands):
-    """The candidate chosen by PickH, as clip_graph.next_move: cands[min(n-1, floor(PickH*n))]."""
-    n = len(cands)
+    """The candidate with the best Score, the first on a tie, as clip_graph.next_move."""
     expr = num(cands[-1])
-    for i in range(n - 2, -1, -1):
-        expr = "if(floor(PickH*%d) == %d, %s, %s)" % (n, i, num(cands[i]), expr)
+    for i in range(len(cands) - 2, -1, -1):
+        rest = ["%s%d" % (SCORE, c) for c in cands[i + 1:]]
+        best = rest[0] if len(rest) == 1 else "max(%s)" % ", ".join(rest)
+        expr = "if(%s%d >= %s, %s, %s)" % (SCORE, cands[i], best, num(cands[i]), expr)
     return expr
 
 
 def hash_expr(count, salt):
     return "sin(%s*12.9898 + Seed*78.233 + %s*37.719)*43758.5453" % (count, num(salt))
+
+
+def frac01(count, salt):
+    """hash01 of clip_graph inline: x - floor(x) of the hash (ExprTk's frac keeps the sign)."""
+    h = hash_expr(count, salt)
+    return "((%s) - floor(%s))" % (h, h)
+
+
+SCORE, USED = "Score", "Used"       # Score<i>, Used<i>: per Move, its pick score and the beat it was last picked (0: never)
+
+
+def score_expr(m, mv):
+    """clip_graph.ClipGraph.score of Move `mv` at the current beat, from the Used Globals of its family."""
+    fam = [USED + str(m.moves.index(m.move(v))) for v in m.variants(mv.family)]
+    fu = fam[0] if len(fam) == 1 else "max(%s)" % ", ".join(fam)
+    vu = USED + str(m.moves.index(mv))
+    return ("if(%s < 0.5 or Beats - %s >= %d, 1024 + 8*floor(64*%s), 8*floor(64*(Beats - %s)/%d))"
+            " + if(%s < 0.5 or Beats - %s >= %d, 4 + 2*%s, 2*(Beats - %s)/%d)") % (
+        fu, fu, FAMILY_WINDOW, frac01("floor(Beats/4)", SALT_FAMILY + m.families.index(mv.family)), fu, FAMILY_WINDOW,
+        vu, vu, VARIANT_WINDOW, frac01("floor(Beats/4)", SALT_VARIANT + m.moves.index(mv)), vu, VARIANT_WINDOW)
 
 
 def ex(expr):
@@ -77,25 +104,23 @@ def graph_globals(m, seed=0, cut_rate=1.0, duel_tiers=("drop",)):
     """The Clip Graph of Manifest `m` as Globals (name, value, source, mods). Reads Beats, BeatFrac, Section, Bpm.
 
     Every Global reads the previous frame, so the graph runs as a pipeline after the beat count changes (b = the frame it changes):
-    BeatEv b+1, Wrap and NxtMove b+3 (the pick needs PickH and PickNext first), Move and Angle b+4, Sel b+5.
+    BeatEv and Score b+1, PickNext and Chain b+2, Wrap and NxtMove b+3, Move, Used and Angle b+4, Sel b+5.
     """
     M, A = len(m.moves), len(m.angles)
     graph_moves = {mv.name: i for i, mv in enumerate(m.moves)}
     from clip_graph import ClipGraph
     g = ClipGraph(m, duel_tiers=duel_tiers)
     tiers = ("calm", "build", "drop")
-    entries = []
+    entries, chains = [], []
     for t in tiers:
         for mv in m.moves:
             entries.append([graph_moves[c] for c in g.pool(mv.name, t)])
-    pick_table = "0"
-    for k in range(len(entries) - 1, -1, -1):
-        pick_table = pick(entries[k]) if k == len(entries) - 1 else "if(Tier*%d + Move == %d, %s, %s)" % (M, k, pick(entries[k]), pick_table)
-    ends = "BeatEv2 > 0.5 and (if(IsIdle > 0.5, Beats - floor(Beats/4)*4 == 0 and Beats - MoveStart > 0 and PickNext != Move, Beats - MoveStart >= MoveBeats))"
+            chains.append(1 if g.chain(mv.name, t) else 0)
+    pick_table = tree("(Tier*%d + Move)" % M, [pick(e) for e in entries])
+    ends = ("BeatEv2 > 0.5 and (if(IsIdle > 0.5, Beats - floor(Beats/4)*4 == 0 and Beats - MoveStart > 0 and PickNext != Move"
+            " and (Chain < 0.5 or Beats - MoveStart >= MoveBeats), Beats - MoveStart >= MoveBeats))")
     cut_tests = ["(%s)" % " or ".join("NxtOff == %d" % c for c in mv.cut_points) for mv in m.moves]
-    cut_here = cut_tests[-1]
-    for i in range(M - 2, -1, -1):
-        cut_here = "if(NxtMove == %d, %s, %s)" % (i, cut_tests[i], cut_here)
+    cut_here = tree("NxtMove", cut_tests)
     per_beat = m.fps * 60.0 / m.bpm
     out = [
         ("Seed", seed, None, []),
@@ -109,8 +134,9 @@ def graph_globals(m, seed=0, cut_rate=1.0, duel_tiers=("drop",)):
         ("MoveBeats", 0, "calc", [ex(table("Move", [mv.beats for mv in m.moves]))]),
         ("MoveFrames", 0, "calc", [ex(table("Move", [mv.frames for mv in m.moves]))]),
         ("IsIdle", 0, "calc", [ex(table("Move", [1 if mv.idle else 0 for mv in m.moves]))]),
-        ("PickH", 0, "calc", [ex(hash_expr("floor(Beats/4)", SALT_MOVE)), ex("x - floor(x)")]),
+    ] + [(SCORE + str(i), 0, "calc", [ex(score_expr(m, mv))]) for i, mv in enumerate(m.moves)] + [
         ("PickNext", 0, "calc", [ex(pick_table)]),
+        ("Chain", 0, "calc", [ex(table("(Tier*%d + Move)" % M, chains))]),
         ("AngleH", 0, "calc", [ex(hash_expr("Beats", SALT_CUT)), ex("x - floor(x)")]),
         ("AngleH2", 0, "calc", [ex(hash_expr("Beats", SALT_ANGLE)), ex("x - floor(x)")]),
         ("Wrap", 0, "calc", [ex("if(%s, 1, 0)" % ends)]),
@@ -119,6 +145,8 @@ def graph_globals(m, seed=0, cut_rate=1.0, duel_tiers=("drop",)):
         ("NxtOff", 0, "calc", [ex("if(%s, 0, (Beats - MoveStart) %% max(1, MoveBeats))" % ends)]),
         ("Move", 0, "calc", [ex("if(Wrap > 0.5, NxtMove, y)")]),
         ("MoveStart", 0, "calc", [ex("if(Wrap > 0.5, Beats, y)")]),
+    ] + [(USED + str(i), 0, "calc", [ex("if(Wrap > 0.5 and NxtMove == %d, Beats, y)" % i)]) for i in range(M)] + [
+        ("Flavor", 0, "calc", [ex(frac01("MoveStart", SALT_FLAVOR))]),
         ("Angle", 0, "calc", [ex(angle_expr(m, cut_here))]),
         ("Sel", 0, "calc", [ex("Move*%d + Angle" % A)]),
     ] + [(HIDE_ANGLE + str(a), 1, "calc", [ex("if(Angle == %d, 0, 1)" % a)]) for a in range(A)] + [
@@ -170,7 +198,8 @@ def angle_expr(m, cut_here):
             return "y"
         return table("((%s + 1 + floor(AngleH2*%d)) %% %d)" % (table("Angle", pos), len(g) - 1, len(g)), g)
     within = cut(False) if not groups[True] else "if(%s == 1, %s, %s)" % (table("Angle", duel), cut(True), cut(False))
-    cut_branch = "if(BeatEv3 > 0.5 and (%s) and AngleH < CutRate, %s, y)" % (cut_here, within)
+    flavor = frac01("if(Wrap > 0.5, Beats, MoveStart)", SALT_FLAVOR)     # the Flavor of the Move that starts or runs in this frame
+    cut_branch = "if(BeatEv3 > 0.5 and (%s) and AngleH < CutRate*(0.4 + 1.2*%s), %s, y)" % (cut_here, flavor, within)
     if not groups[True]:
         return cut_branch
     kind_n = table("NxtMove", [1 if mv.opponent else 0 for mv in m.moves])
@@ -199,21 +228,19 @@ def clip_hits(m):
 
 
 def effect_globals(m, hits, fx=None):
-    """Globals of the MMV effects (name, value, source, mods). Reads OutClip, OutFrame, Angle, Tier, Section, Kick and Dt.
-    HitEnv: 1 for the 2 frames of a Clip Data Hit, then decays (flash and chromatic split). StrobeEnv: 1 in the frame after an Angle cut, then decays.
+    """Globals of the MMV effects (name, value, source, mods). Reads OutClip, OutFrame, Angle, Flavor, Tier, Section, Kick and Dt.
+    HitEnv: 0.6 + 0.8 x Flavor for the 2 frames of a Clip Data Hit, then decays (flash and chromatic split). StrobeEnv: as much in the frame
+    after an Angle cut, then decays. So each pick hits and cuts with its own strength.
     DropAmt: eases to 1 while X-Ray says drop (glow). GradeSat, GradeCon: ease to the tier's grade."""
     fx = dict(FX, **(fx or {}))
-    hit = "0"
-    for i in range(len(hits) - 1, -1, -1):
-        if hits[i]:
-            hit = "if(OutClip == %d, if(%s, 1, 0), %s)" % (i, " or ".join("(OutFrame >= %d and OutFrame < %d)" % (f, f + 2) for f in hits[i]), hit)
+    hit = tree("OutClip", ["if(%s, 1, 0)" % " or ".join("(OutFrame >= %d and OutFrame < %d)" % (f, f + 2) for f in h) if h else "0" for h in hits] + ["0"])
     ease = lambda target, tau: ex("y + ((%s) - y)*(1 - exp(-Dt/%s))" % (target, num(tau)))
     tier = lambda vals: "if(Tier == 2, %s, if(Tier == 1, %s, %s))" % (num(vals[2]), num(vals[1]), num(vals[0]))
     sat, con = [[GRADE[t][k] for t in ("calm", "build", "drop")] for k in (0, 1)]
     return [(name, value, None, []) for name, value in sorted(fx.items())] + [
-        ("HitEnv", 0, "calc", [ex("max(%s, y*exp(-Dt/%s))" % (hit, num(HIT_DECAY)))]),
+        ("HitEnv", 0, "calc", [ex("max((%s)*(0.6 + 0.8*Flavor), y*exp(-Dt/%s))" % (hit, num(HIT_DECAY)))]),
         ("AngleLag", 0, "calc", [ex("Angle")]),
-        ("StrobeEnv", 0, "calc", [ex("max(if(Angle != AngleLag, 1, 0), y*exp(-Dt/%s))" % num(STROBE_DECAY))]),
+        ("StrobeEnv", 0, "calc", [ex("max(if(Angle != AngleLag, 0.6 + 0.8*Flavor, 0), y*exp(-Dt/%s))" % num(STROBE_DECAY))]),
         ("DropAmt", 0, "calc", [ease("if(abs(Section - 3) < 0.5, 1, 0)", DROP_TAU)]),
         ("GradeSat", 1, "calc", [ease(tier(sat), GRADE_TAU)]),
         ("GradeCon", 1, "calc", [ease(tier(con), GRADE_TAU)]),

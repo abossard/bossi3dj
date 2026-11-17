@@ -136,6 +136,27 @@ class GraphGlobalsTests(unittest.TestCase):
                     self.assertEqual(v["MoveInDuel" if duel else "MoveInSolo"], local, "beat %d" % beat)
                 self.assertEqual({m.move(s.move).opponent for s in walk}, {False, True})
 
+    def test_globals_match_the_model_with_variants(self):
+        """package/variants: scored picks over families and variants, Idle chains (no calm Move out of guard) and each pick's cut chance;
+        every Move, Angle, Clip index and Used beat equals the model's over 200 beats (the variant window is 128)."""
+        with open(os.path.join(HERE, "..", "..", "package", "variants", "manifest.json")) as f:
+            data = json.load(f)
+        chain = dict(data, clips=[c for c in data["clips"] if c.get("variant_of", c["move"]) not in ("sway", "duck")])
+        sections = [0] * 24 + [2] * 40 + [3] * 56 + [0] * 32 + [3] * 48
+        for name, d, seed, rate in [("variants", data, 0, 1.0), ("variants with an Idle chain", chain, 2.5, 0.5)]:
+            with self.subTest(name):
+                m = mf.Manifest(d)
+                run = Run(m, sections, seed=seed, cut_rate=rate)
+                model = cg.ClipGraph(m, seed=seed, cut_rate=rate)
+                walk = model.walk(sections)
+                for beat in range(1, len(sections) + 1):
+                    v, s = run.settled(beat), walk[beat - 1]
+                    self.assertEqual((v["Move"], v["Angle"], v["MoveStart"]),
+                                     (m.moves.index(m.move(s.move)), m.angle_ids.index(s.angle), s.start), "beat %d" % beat)
+                    self.assertEqual(v["OutClip"], model.clip_index(s), "beat %d" % beat)
+                    self.assertEqual({i: v["Used%d" % i] for i in range(len(m.moves)) if v["Used%d" % i]},
+                                     {m.moves.index(m.move(n)): b for n, b in s.used}, "beat %d" % beat)
+
     def test_duel_project_layers(self):
         """Each Angle's selector holds the Moves of its kind and reads that kind's input Global; the project checks clean."""
         m = mf.Manifest(json.load(open(os.path.join(HERE, "..", "..", "package", "duel", "manifest.json"))))
@@ -412,7 +433,7 @@ class EffectTests(unittest.TestCase):
     def run_fx(self, drive, seconds, hits=None):
         rows = rm.effect_globals(self.m, rm.clip_hits(self.m) if hits is None else hits)
         def full(f):
-            return dict({"Dt": 1.0 / self.FPS, "Kick": 0, "Section": 0, "Tier": 0, "OutClip": 0, "OutFrame": 0, "Angle": 0}, **drive(f))
+            return dict({"Dt": 1.0 / self.FPS, "Kick": 0, "Section": 0, "Tier": 0, "OutClip": 0, "OutFrame": 0, "Angle": 0, "Flavor": 0.5}, **drive(f))
         return list(simulate(rows, full, int(seconds * self.FPS)))
 
     def test_clip_hits_come_from_the_clip_data_and_a_missing_file_gives_none(self):

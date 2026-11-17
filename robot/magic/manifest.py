@@ -35,6 +35,7 @@ class Move:
         for k in MOVE_SHARED:
             setattr(self, k, clip[k])
         self.opponent = clip.get("opponent") is True        # an Exchange: plays on the duel Angles
+        self.family = clip.get("variant_of") or name         # a variant's family is its base Move; a base is its own family
 
 
 class Manifest:
@@ -68,6 +69,23 @@ class Manifest:
     def idle_move(self, key_pose, duel=False):
         """Name of the Idle Clip's Move of a Key Pose on the solo Angles (duel: on the duel Angles, None when there is none)."""
         return next((m.name for m in self.moves if m.idle and m.key_in == key_pose and m.opponent == duel), None)
+
+    def idle_family(self, key_pose, duel=False):
+        """Names of the Idle Clip's Move of a Key Pose and its variants, in Manifest order; empty when there is none."""
+        return [m.name for m in self.moves if m.idle and m.key_in == key_pose and m.opponent == duel]
+
+    @property
+    def families(self):
+        """Family names (base Moves) in Manifest order."""
+        out = []
+        for m in self.moves:
+            if m.family not in out:
+                out.append(m.family)
+        return out
+
+    def variants(self, family):
+        """Names of the Moves of a family, the base first when it comes first in the Manifest."""
+        return [m.name for m in self.moves if m.family == family]
 
     def clip_index(self, move, angle):
         """Index in `clips`: the value of /vj/clip."""
@@ -204,12 +222,29 @@ def validate(data, base_dir=None):
         for g in group:
             touched.setdefault(g["angle"], set()).update((g["key_in"], g["key_out"]))
             if g["idle"] is True:
-                idles.setdefault((g["key_in"], g["angle"]), []).append(g["move"])
+                idles.setdefault((g["key_in"], g["angle"]), set()).add(g.get("variant_of") or g["move"])
     for a in angle_ids:     # a solo Angle: every Key Pose; a duel Angle: the Key Poses its Clips start or end in
         for pose in (poses if not duel_angle.get(a) else [p for p in poses if p in touched.get(a, ())]):
-            found = idles.get((pose, a), [])
+            found = idles.get((pose, a), set())
             if len(found) != 1:
-                out.append("Key Pose %s, Angle %s: %d Idle Clips, exactly one needed" % (pose, a, len(found)))
+                out.append("Key Pose %s, Angle %s: %d Idle Clips (variants count as their base), exactly one needed" % (pose, a, len(found)))
+    for move, group in by_move.items():      # a variant: its own Move in its base's family, the same way in and out
+        bases = {json.dumps(g.get("variant_of")) for g in group}
+        if len(bases) > 1:
+            out.append("move %s: variant_of differs across Angles" % move)
+            continue
+        base = group[0].get("variant_of")
+        if base is None:
+            continue
+        if not isinstance(base, str) or base not in by_move or base == move:
+            out.append("move %s: variant_of %r is not another Move" % (move, base))
+        elif by_move[base][0].get("variant_of") is not None:
+            out.append("move %s: variant_of %r is itself a variant; name the base Move" % (move, base))
+        else:
+            shared = lambda g, k: g.get(k) is True if k == "opponent" else g.get(k)
+            for k in ("key_in", "key_out", "tier", "idle", "opponent"):
+                if shared(group[0], k) != shared(by_move[base][0], k):
+                    out.append("move %s: %s differs from its base Move %s" % (move, k, base))
     for move, group in by_move.items():
         if len({g.get("opponent", False) is True for g in group}) > 1:
             out.append("move %s: opponent differs across Angles" % move)

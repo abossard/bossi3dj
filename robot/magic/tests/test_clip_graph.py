@@ -402,8 +402,9 @@ class WalkTests(unittest.TestCase):
         self.assertGreater(changes, 4)
 
     def test_cut_rate(self):
+        """32 Cut Points in 64 beats; each pick's chance is cut_rate x (0.4 + 1.2 x its Flavor), 0.85 on average at 1."""
         m = manifest()
-        for rate, expect in [(0.0, lambda n: n == 0), (1.0, lambda n: n >= 30), (0.5, lambda n: 8 <= n <= 28)]:
+        for rate, expect in [(0.0, lambda n: n == 0), (1.0, lambda n: 22 <= n <= 32), (0.5, lambda n: 8 <= n <= 28)]:
             with self.subTest(cut_rate=rate):
                 walk = cg.ClipGraph(m, seed=4, cut_rate=rate).walk([2] * 64)
                 changes = sum(1 for a, b in zip(walk, walk[1:]) if a.angle != b.angle)
@@ -419,6 +420,124 @@ class WalkTests(unittest.TestCase):
     def test_first_state(self):
         s = cg.ClipGraph(manifest()).start()
         self.assertEqual(s, cg.State("idle", "front", 0))
+
+
+with open(os.path.join(HERE, "..", "..", "package", "variants", "manifest.json")) as _f:
+    VARIANTS = json.load(_f)
+
+
+def variants(mutate=None):
+    """package/variants: package/duel with 4 variants of every Move and 3 of every Idle Clip (#32)."""
+    d = copy.deepcopy(VARIANTS)
+    if mutate:
+        mutate(d)
+    assert mf.validate(d) == [], mf.validate(d)
+    return mf.Manifest(d)
+
+
+def without(*families):
+    """Drop whole families (a base Move and its variants)."""
+    return lambda d: d.update(clips=[c for c in d["clips"] if c.get("variant_of", c["move"]) not in families])
+
+
+def picks(g, walk):
+    """(beat, Move) of every pick in a walk."""
+    out, prev = [], g.start()
+    for beat, s in enumerate(walk, 1):
+        if s.start != prev.start:
+            out.append((beat, s.move))
+        prev = s
+    return out
+
+
+class VariantTests(unittest.TestCase):
+    SEEDS = (0, 1, 2.5, 7, 42)
+    MINUTE = 124          # beats in 60 s at the fixture's 124 BPM
+    SHOW = [0] * 32 + [2] * 64 + [3] * 96 + [4] * 32 + [2] * 32 + [3] * 64 + [0] * 52      # 372 beats: 3 minutes
+
+    def test_three_minutes_never_pick_the_same_clip_twice_within_a_minute(self):
+        m = variants()
+        for seed in self.SEEDS:
+            with self.subTest(seed=seed):
+                g = cg.ClipGraph(m, seed=seed)
+                last, used = {}, set()
+                for beat, move in picks(g, g.walk(self.SHOW)):
+                    if move in last:
+                        self.assertGreaterEqual(beat - last[move], self.MINUTE, (move, last[move], beat))
+                    last[move] = beat
+                    used.add(move)
+                self.assertGreater(len(used), 40)
+
+    def test_each_family_is_as_likely_however_many_variants_it_has(self):
+        """sway has 4 variants, duck 1: from idle_guard in calm, with nothing played yet, each family wins about half the bars."""
+        m = variants(lambda d: d.update(clips=[c for c in d["clips"] if not c["move"].startswith("duck_v")]))
+        for seed in self.SEEDS:
+            with self.subTest(seed=seed):
+                g = cg.ClipGraph(m, seed=seed)
+                fams = [m.move(g.next_move("idle_guard", bar, "calm")).family for bar in range(400)]
+                self.assertTrue(150 <= fams.count("duck") <= 250, fams.count("duck"))
+
+    def test_fresh_before_stale_and_the_oldest_when_none_is_fresh(self):
+        m = variants()
+        g = cg.ClipGraph(m, seed=3)
+        bar = 100
+        beat = 4 * bar
+        sways = ["sway", "sway_v2", "sway_v3", "sway_v4"]
+        cases = [
+            ("sway played 2 bars ago: duck", {"sway_v2": beat - 8}, lambda p: m.move(p).family == "duck"),
+            ("both families recent: the older family, duck", {"sway_v2": beat - 8, "duck": beat - 16}, lambda p: m.move(p).family == "duck"),
+            ("duck just played, sway 8 bars ago: sway is fresh again", {"duck": beat - 4, "sway": beat - 32}, lambda p: p in sways[1:]),
+            ("every variant of both within the window: the oldest sway", dict({v: beat - 20 - i for i, v in enumerate(sways)},
+                                                                                  **{v: beat - 4 for v in m.variants("duck")}), lambda p: p == "sway_v4"),
+        ]
+        for name, used, ok in cases:
+            with self.subTest(name):
+                p = g.next_move("idle_guard", bar, "calm", tuple(used.items()))
+                self.assertTrue(ok(p), p)
+
+    def test_an_idle_chain_walks_its_variants_at_their_length_never_one_after_itself(self):
+        """No calm Move leaves guard: the Idle Clip plays its whole length, then another variant of its family."""
+        m = variants(without("sway", "duck"))
+        for seed in self.SEEDS:
+            with self.subTest(seed=seed):
+                g = cg.ClipGraph(m, seed=seed)
+                walk = g.walk([0] * 96)
+                chain = [(beat, move) for beat, move in picks(g, walk) if beat > 4]
+                self.assertTrue(all(m.move(mv).idle and m.move(mv).key_in == "guard" for _b, mv in chain), chain)
+                self.assertEqual({mv for _b, mv in chain}, set(m.idle_family("guard")))
+                for (b1, a), (b2, c) in zip(chain, chain[1:]):
+                    self.assertNotEqual(a, c)
+                    self.assertEqual(b2 - b1, m.move(a).beats)
+
+    def test_an_idle_chain_leaves_into_a_move_on_the_next_bar(self):
+        m = variants(without("sway", "duck"))
+        g = cg.ClipGraph(m, seed=1)
+        walk = g.walk([0] * 30 + [2] * 10)
+        first = next(beat for beat, s in enumerate(walk, 1) if not m.move(s.move).idle)
+        self.assertEqual(first, 32)
+
+    def test_each_pick_cuts_with_its_own_chance(self):
+        """At cut_rate 1 a pick with Flavor 0.5 or more cuts at every Cut Point; one with less skips some."""
+        m = variants()
+        full = some = 0
+        for seed in self.SEEDS:
+            g = cg.ClipGraph(m, seed=seed)
+            walk = g.walk(self.SHOW)
+            prev = g.start()
+            per_pick = {}
+            for beat, s in enumerate(walk, 1):
+                mv = m.move(s.move)
+                if (beat - s.start) % mv.beats in mv.cut_points and m.angle_duel(s.angle) == m.angle_duel(prev.angle) and s.start != beat:
+                    per_pick.setdefault(s.start, []).append(s.angle != prev.angle)
+                prev = s
+            for start, cuts in per_pick.items():
+                if g.flavor(start) >= 0.5:
+                    self.assertTrue(all(cuts), (seed, start))
+                    full += 1
+                elif not all(cuts):
+                    some += 1
+        self.assertGreater(full, 20)
+        self.assertGreater(some, 10)
 
 
 class OutputTests(unittest.TestCase):

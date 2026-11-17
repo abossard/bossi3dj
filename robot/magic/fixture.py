@@ -2,9 +2,10 @@
   package/fixture  3 Moves and 1 Idle Clip, one Key Pose, 4 beats each
   package/many     3 Key Poses (guard, crouch, stance), 6 Moves per Intensity Tier of 4, 8 and 16 beats, an Idle Clip per Key Pose
   package/duel     2 Key Poses, solo Moves on 2 solo Angles and Exchanges with the giant machine on 2 duel Angles (#23)
+  package/variants package/duel with 4 variants of every Move and 3 of every Idle Clip (`variant_of`, #32)
 
-    python3 robot/magic/fixture.py [--many | --duel]   # manifest, Clip Data, Camera Tracks (committed)
-    python3 robot/magic/fixture.py [--many | --duel] --media    # also the placeholder Clips (git-ignored; ffmpeg, ProRes)
+    python3 robot/magic/fixture.py [--many | --duel | --variants]   # manifest, Clip Data, Camera Tracks (committed)
+    python3 robot/magic/fixture.py [--many | --duel | --variants] --media    # also the placeholder Clips (git-ignored; ffmpeg, ProRes)
 
 Each Clip is a numbered test card tinted per Clip: beauty is ProRes 4444 with an alpha disc (the Matte), shadow and depth are
 ProRes 422. This ffmpeg has no Hap encoder.
@@ -60,6 +61,21 @@ DUEL_MOVES = [
     ("claw_counter", "drop", "crouch", "guard", 4, CUTS[4], [1, 3], True), ("stomp_block", "drop", "crouch", "crouch", 8, CUTS[8], [4], True),
 ]
 DUEL_IDLES = {"guard": "idle_guard", "crouch": "idle_crouch", "duel_guard": "duel_idle_guard", "duel_crouch": "duel_idle_crouch"}
+PACKAGE_VARIANTS = os.path.join(HERE, "..", "package", "variants")
+
+
+def with_variants(moves, idles, n=4, n_idle=3):
+    """Each Move followed by its variants <name>_v2.. (n in all, n_idle for an Idle Clip): (moves, {variant: base})."""
+    out, of = [], {}
+    for mv in moves:
+        out.append(mv)
+        for v in range(2, (n_idle if mv[0] in idles.values() else n) + 1):
+            out.append(("%s_v%d" % (mv[0], v),) + tuple(mv[1:]))
+            of[out[-1][0]] = mv[0]
+    return out, of
+
+
+VARIANT_MOVES, VARIANT_OF = with_variants(DUEL_MOVES, DUEL_IDLES)
 
 
 def duel(entry):
@@ -67,7 +83,8 @@ def duel(entry):
     return len(entry) > 2 and entry[-1] is True
 
 
-def manifest(moves=MOVES, idles=IDLES, key_poses=KEY_POSES, angles=ANGLES):
+def manifest(moves=MOVES, idles=IDLES, key_poses=KEY_POSES, angles=ANGLES, variants=None):
+    variants = variants or {}
     clips = []
     for mv in moves:
         move, tier, key_in, key_out, beats, cuts = mv[:6]
@@ -77,11 +94,13 @@ def manifest(moves=MOVES, idles=IDLES, key_poses=KEY_POSES, angles=ANGLES):
                 continue
             cid = "%s__%s" % (move, a[0])
             clip = {"id": cid, "move": move, "angle": a[0], "beats": beats, "frames": frames_for(beats, BPM, FPS), "key_in": key_in,
-                    "key_out": key_out, "tier": tier, "idle": move in idles.values(), "cut_points": cuts,
+                    "key_out": key_out, "tier": tier, "idle": variants.get(move, move) in idles.values(), "cut_points": cuts,
                     "passes": {p: "%s/%s.mov" % (p, cid) for p in ("beauty", "shadow", "depth")},
                     "clip_data": "clip_data/%s.json" % cid, "camera_track": "camera/%s.json" % a[0]}
             if exchange:
                 clip["opponent"] = True
+            if move in variants:
+                clip["variant_of"] = variants[move]
             clips.append(clip)
     return {"version": 1, "bpm": BPM, "fps": FPS, "size": SIZE, "key_poses": list(key_poses),
             "angles": [dict({"id": a[0], "camera": a[1]}, **({"opponent": True} if duel(a) else {})) for a in angles], "clips": clips}
@@ -121,8 +140,8 @@ def write_json(path, obj):
         f.write("\n")
 
 
-def write_package(root=PACKAGE, moves=MOVES, idles=IDLES, key_poses=KEY_POSES, angles=ANGLES):
-    m = manifest(moves, idles, key_poses, angles)
+def write_package(root=PACKAGE, moves=MOVES, idles=IDLES, key_poses=KEY_POSES, angles=ANGLES, variants=None):
+    m = manifest(moves, idles, key_poses, angles, variants)
     write_json(os.path.join(root, "manifest.json"), m)
     hits = {mv[0]: mv[6] for mv in moves}
     for c in m["clips"]:
@@ -156,9 +175,13 @@ def main():
     ap.add_argument("--media", action="store_true", help="also render the placeholder Clips with ffmpeg")
     ap.add_argument("--many", action="store_true", help="the package with 3 Key Poses and mixed lengths (package/many)")
     ap.add_argument("--duel", action="store_true", help="the package with Exchanges on duel Angles (package/duel)")
+    ap.add_argument("--variants", action="store_true", help="package/duel with variants of every Move (package/variants)")
     ap.add_argument("--out")
     a = ap.parse_args()
-    if a.duel:
+    if a.variants:
+        a.out = a.out or PACKAGE_VARIANTS
+        m = write_package(a.out, VARIANT_MOVES, DUEL_IDLES, DUEL_KEY_POSES, DUEL_ANGLES, VARIANT_OF)
+    elif a.duel:
         a.out = a.out or PACKAGE_DUEL
         m = write_package(a.out, DUEL_MOVES, DUEL_IDLES, DUEL_KEY_POSES, DUEL_ANGLES)
     elif a.many:

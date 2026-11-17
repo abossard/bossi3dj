@@ -13,14 +13,21 @@ within the kind of the Move on air and cuts within the Angles of that kind. The 
 (default: drop) and solo otherwise; it changes kind only through an Idle Clip: a Move that ends goes to the Idle Clip of its key_out, which
 on the next bar line hands over to the Idle Clip of the same Key Pose of the other kind (on the first Angle of that kind), which is left on
 the bar after as usual. A Key Pose with no Idle Clip of the wanted kind stays in its kind.
+Variation (#32): a Move may be a variant of a base Move (`variant_of`); a family is a base and its variants. The pick takes the best
+score in the pool: a Move is fresh when its family has not been picked for FAMILY_WINDOW beats and the Move itself not for
+VARIANT_WINDOW beats; fresh before stale, among fresh families a hash per family (so each family is as likely, whatever its variants),
+then a hash per variant; among stale ones the oldest. An Idle Clip with no Move to leave into plays its whole length, then goes to
+another variant of its Idle family (an Idle chain), never itself. Each pick draws a Flavor (a hash of its start beat): the Move's cut
+chance is cut_rate x (0.4 + 1.2 x Flavor), and robot_magic.py scales the Hit and cut effects by it.
 Picks are a hash of the beat count and the seed, so a run repeats. robot_magic.py writes the same hash and the same tables
 into Magic Globals; tests/test_robot_magic.py runs those Globals beside this model.
 """
 import math
 from collections import namedtuple
 
-State = namedtuple("State", "move angle start tier", defaults=("calm",))
-SALT_MOVE, SALT_CUT, SALT_ANGLE = 0, 1, 2
+State = namedtuple("State", "move angle start tier used", defaults=("calm", ()))    # used: (Move, beat it was last picked) pairs
+SALT_CUT, SALT_ANGLE, SALT_FLAVOR, SALT_FAMILY, SALT_VARIANT = 1, 2, 3, 10, 500   # family f: SALT_FAMILY + f, Move i: SALT_VARIANT + i
+FAMILY_WINDOW, VARIANT_WINDOW = 32, 128          # beats: 8 bars; 32 bars, about a minute at 124 BPM
 SECTION_BUILDUP, SECTION_DROP = 2, 3      # Music X-Ray State: 0 intro, 2 buildup, 3 drop, 4 breakdown; everything else is calm
 
 
@@ -69,28 +76,59 @@ class ClipGraph:
         return [k for k, v in self.exits().items() if not v]
 
     def pool(self, move, tier):
-        """What the pick draws from: the candidates, else the Idle Clip of the Key Pose (an Idle Clip with no candidate stays).
-        When the tier wants the other kind and the Key Pose has an Idle Clip of that kind: a Move goes to its own kind's Idle Clip, an Idle Clip to the other's."""
+        """What the pick draws from: the candidates, else the Idle family of the Key Pose (an Idle Clip with no candidate: the other
+        variants of its family, itself when it has none). When the tier wants the other kind and the Key Pose has an Idle Clip of that
+        kind: a Move goes to its own kind's Idle family, an Idle Clip to the other's."""
         m = self.manifest.move(move)
         want = self.wants_duel(tier)
         if want != m.opponent:
-            other = self.manifest.idle_move(m.key_out, want)
-            if other is not None:
-                return [other] if m.idle else [self.manifest.idle_move(m.key_out, m.opponent)]
+            other = self.manifest.idle_family(m.key_out, want)
+            if other:
+                return other if m.idle else self.manifest.idle_family(m.key_out, m.opponent)
         cands = self.candidates(move, tier)
         if cands:
             return cands
-        return [move if m.idle else self.manifest.idle_move(m.key_out, m.opponent)]
+        if m.idle:
+            return [v for v in self.manifest.idle_family(m.key_out, m.opponent) if v != move] or [move]
+        return self.manifest.idle_family(m.key_out, m.opponent)
 
-    def next_move(self, move, bar, tier):
-        pool = self.pool(move, tier)
-        return pool[min(len(pool) - 1, int(math.floor(hash01(bar, self.seed, SALT_MOVE) * len(pool))))]
+    def chain(self, move, tier):
+        """True when an Idle Clip's pool is its own Idle family: it is left only once it has played its whole length."""
+        m = self.manifest.move(move)
+        return m.idle and all(self.manifest.move(p).idle and self.manifest.move(p).opponent == m.opponent for p in self.pool(move, tier))
 
-    def next_angle(self, angle, beat):
-        """A cut within the Angles of `angle`'s kind."""
+    def score(self, move, beat, used):
+        """The pick's score of `move` at `beat`, `used` {Move: beat last picked}: family part (fresh 1024 + 8 x a hash in 64 steps, stale
+        8 x its age in 64ths of the window) above the variant part (fresh 4 + 2 x a hash, stale 2 x its age over the window)."""
+        m = self.manifest
+        mv = m.move(move)
+        fu = max(used.get(v, 0) for v in m.variants(mv.family))
+        vu = used.get(move, 0)
+        bar = beat // 4
+        if fu == 0 or beat - fu >= FAMILY_WINDOW:
+            fam = 1024 + 8 * math.floor(64 * hash01(bar, self.seed, SALT_FAMILY + m.families.index(mv.family)))
+        else:
+            fam = 8 * math.floor(64 * (beat - fu) / FAMILY_WINDOW)
+        if vu == 0 or beat - vu >= VARIANT_WINDOW:
+            var = 4 + 2 * hash01(bar, self.seed, SALT_VARIANT + m.moves.index(mv))
+        else:
+            var = 2 * (beat - vu) / VARIANT_WINDOW
+        return fam + var
+
+    def next_move(self, move, bar, tier, used=()):
+        """The pool's best score at the bar line (the first on a tie). `used`: (Move, beat) pairs, as State.used."""
+        used = dict(used)
+        return max(self.pool(move, tier), key=lambda c: self.score(c, 4 * bar, used))
+
+    def flavor(self, start):
+        """0..1 per pick, from the beat its Move started."""
+        return hash01(start, self.seed, SALT_FLAVOR)
+
+    def next_angle(self, angle, beat, start=0):
+        """A cut within the Angles of `angle`'s kind, with the cut chance of the Move that started at `start`."""
         group = self.manifest.group(self.manifest.angle_duel(angle))
         n = len(group)
-        if n < 2 or not hash01(beat, self.seed, SALT_CUT) < self.cut_rate:
+        if n < 2 or not hash01(beat, self.seed, SALT_CUT) < self.cut_rate * (0.4 + 1.2 * self.flavor(start)):
             return angle
         i = group.index(angle)
         return group[(i + 1 + int(math.floor(hash01(beat, self.seed, SALT_ANGLE) * (n - 1)))) % n]
@@ -100,22 +138,24 @@ class ClipGraph:
         return State(first.name, self.manifest.group(first.opponent)[0], 0, "calm")
 
     def step(self, state, beat, section):
-        move, angle, start, _tier = state
+        move, angle, start, _tier, used = state
         tier = self.latch(state.tier, beat, section)
         offset = beat - start
         m = self.manifest.move(move)
         if m.idle:
-            leave = beat % 4 == 0 and offset > 0 and self.next_move(move, beat // 4, tier) != move
+            leave = (beat % 4 == 0 and offset > 0 and self.next_move(move, beat // 4, tier, used) != move
+                     and (offset >= m.beats or not self.chain(move, tier)))
         else:
             leave = offset >= m.beats
         if leave:
-            move, start, offset = self.next_move(move, beat // 4, tier), beat, 0
+            move, start, offset = self.next_move(move, beat // 4, tier, used), beat, 0
+            used = tuple(sorted(dict(used, **{move: beat}).items()))
         mv = self.manifest.move(move)
         if self.manifest.angle_duel(angle) != mv.opponent:       # the kind changed: the first Angle of the new kind
             angle = self.manifest.group(mv.opponent)[0]
         elif offset % mv.beats in mv.cut_points:
-            angle = self.next_angle(angle, beat)
-        return State(move, angle, start, tier)
+            angle = self.next_angle(angle, beat, start)
+        return State(move, angle, start, tier, used)
 
     def walk(self, sections):
         """States after beats 1..len(sections), one section per beat; the state before is `start()`."""

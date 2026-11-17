@@ -160,7 +160,7 @@ class ExchangeTests(unittest.TestCase):
         return d
 
     def test_every_package_is_valid(self):
-        for name in ("fixture", "many", "v1", "duel"):
+        for name in ("fixture", "many", "v1", "duel", "variants"):
             with self.subTest(name):
                 with open(os.path.join(PACKAGES, name, "manifest.json")) as f:
                     self.assertEqual(mf.validate(json.load(f)), [])
@@ -214,6 +214,53 @@ class ExchangeTests(unittest.TestCase):
                     self.assertEqual(problems, [])
                 else:
                     self.assertTrue(any(expect in p for p in problems), problems)
+
+
+class VariantTests(unittest.TestCase):
+    """robot/CONTRACTS.md, variants (#32): a Move may name a base Move in `variant_of`; it shares the way in and out with its base."""
+
+    def data(self):
+        with open(os.path.join(PACKAGES, "variants", "manifest.json")) as f:
+            return json.load(f)
+
+    def test_variant_of(self):
+        def move(name, **fields):
+            return lambda d: [c.update(fields) for c in d["clips"] if c["move"] == name]
+        cases = [
+            ("the variants package as written", None, None),
+            ("a variant of an unknown Move", move("sway_v2", variant_of="sashay"), "move sway_v2: variant_of 'sashay' is not another Move"),
+            ("a variant of itself", move("sway_v2", variant_of="sway_v2"), "move sway_v2: variant_of 'sway_v2' is not another Move"),
+            ("a variant of a variant", move("sway_v3", variant_of="sway_v2"), "move sway_v3: variant_of 'sway_v2' is itself a variant"),
+            ("variant_of not a string", move("sway_v2", variant_of=3), "move sway_v2: variant_of 3 is not another Move"),
+            ("another Key Pose out", move("sway_v2", key_out="crouch"), "move sway_v2: key_out differs from its base Move sway"),
+            ("another tier", move("sway_v2", tier="drop"), "move sway_v2: tier differs from its base Move sway"),
+            ("an Idle variant of a Move Clip", move("sway_v2", idle=True), "move sway_v2: idle differs from its base Move sway"),
+            ("variant_of on one Angle only", lambda d: next(c for c in d["clips"] if c["move"] == "sway_v2").pop("variant_of"), "move sway_v2: variant_of differs across Angles"),
+            ("other beats and Cut Points are fine", move("sway_v2", beats=8, frames=116, cut_points=[0, 2, 4, 6]), None),
+            ("an Idle Clip that is no variant is a second Idle", move("idle_guard_v2", variant_of=None), "Key Pose guard, Angle front: 2 Idle Clips"),
+        ]
+        for name, mutate, expect in cases:
+            with self.subTest(name):
+                d = self.data()
+                if mutate:
+                    mutate(d)
+                for c in d["clips"]:
+                    if "variant_of" in c and c["variant_of"] is None:
+                        del c["variant_of"]
+                problems = mf.validate(d)
+                if expect is None:
+                    self.assertEqual(problems, [])
+                else:
+                    self.assertTrue(any(expect in p for p in problems), problems)
+
+    def test_families(self):
+        m = mf.Manifest(self.data())
+        self.assertEqual(m.variants("sway"), ["sway", "sway_v2", "sway_v3", "sway_v4"])
+        self.assertEqual(m.idle_family("guard"), ["idle_guard", "idle_guard_v2", "idle_guard_v3"])
+        self.assertEqual(m.idle_family("guard", True), ["duel_idle_guard", "duel_idle_guard_v2", "duel_idle_guard_v3"])
+        self.assertEqual(len(m.families), 20)
+        old = mf.Manifest(fixture_data())
+        self.assertEqual([old.move(n).family for n in old.families], old.families)
 
 
 def _hit(root, c, **fields):
