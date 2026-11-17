@@ -81,6 +81,21 @@ All archives passed `unzip -t` / `7z t` and their sizes were stable over 30 s.
 - The `.blend` files were not opened. Counts of objects, rig details and Blender-side materials wait for a Blender slot (`robot/build/inspect_asset.py` reads a `.blend` with auto-run off).
 - Store pages call M2000, Juno, Arclink and DUNE royalty-free, but the downloads ship no licence text; Luminara depends on its Cargo tier. Check each before a public video.
 
+## More Geo-Scatter biome packs (only the brochures so far)
+
+On 2026-11-17 at 09:32 the user downloaded four PDFs and nothing else. Each PDF is the brochure of a free Geo-Scatter biome pack: a cover, one preview render per biome, a requirements page, the install guide and an info page. Image-only pages, read with `robot/build/review/pdf_pages.swift`; the page renders are in `<pack>/pdf/page_NN.jpg`, the PDFs in `<pack>/_zips/`.
+
+| Pack | Folder | Biomes | Look | Needs |
+|---|---|---|---|---|
+| Greeble Town BinaryFrame | `binaryframe_biomes/` | Chipset 01 to 08 | a circuit-board megastructure: dark slabs, gold pins and chips, seen from above like a city | the biome archive plus Greeble Town's BinaryFrame kit |
+| Greeble Town FutureScratch | `futurescratch_biomes/` | Greeble 01 to 08 | dark industrial greebles: pipes, tanks, vents, cables; closest to the foundry mood | the biome archive plus Greeble Town's FutureScratch kit |
+| 3D Shaker Spring Grass | `spring_grass_biomes/` | Grass 01 to 08 | lawn grasses on a terrace | the biome archive plus 3D Shaker's Spring Grass collection |
+| Geo-Scatter Plant Library | `plant_library_biomes/` | 31: Lawn 01 to 07, Wild Grass 01 to 04, Forest 01 to 06, Autumn 01 to 04, Wasteland 01 to 06, Rockplain 01 to 04 | vegetation | the biome archive plus the free Plant Library (Blender 3.4 or later) |
+
+- Requirements from every brochure: Geo-Scatter or Biome Reader 5.3.1 or later (we have 5.6.4) and Blender 3.3 LTS or later.
+- Missing for every pack: the biome files (`.biome`, `.preset`, `.scatpack` or zip) and the partner models they scatter. Nothing can be placed until those are downloaded, from the same store pages as the brochures.
+- Fit for the Robot Scene: FutureScratch (foundry mood) and BinaryFrame (a megastructure under the duel) are arena and backdrop candidates. Wasteland and Rockplain could make an open-air floor. The lawns, grass and forests don't fit a robot duel; offered only.
+
 ## Geo-Scatter Biome Reader (`geoscatter/`)
 
 The free Biome Reader from geoscatter.com, downloaded by the user on 2026-11-17 to place the Arclink biomes. The archive is in `_zips/`, the unpacked files in `extracted/`.
