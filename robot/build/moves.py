@@ -376,7 +376,8 @@ def _burst_rise():
                  head_rot=(-25.0, 0.0, 0.0), hand_l=(0.62, -0.05, 1.60), hand_r=(-0.62, -0.05, 1.60),
                  foot_l=(0.30, -0.15, 0.25), foot_l_rot=(0.0, 10.0, 0.0),
                  foot_r=(-0.30, 0.10, 0.25), foot_r_rot=(0.0, -20.0, 0.0))
-    land = pose(LOW, hips=(0.0, 0.0, 0.70), hand_l=(0.55, -0.10, 1.35), hand_r=(-0.55, -0.10, 1.35))
+    land = pose(LOW, hips=(0.0, -0.05, 0.60), spine_rot=(25.0, 0.0, 0.0), chest_rot=(8.0, 0.0, 0.0),
+                head_rot=(15.0, 0.0, 0.0), hand_l=(0.55, -0.30, 0.82), hand_r=(-0.55, -0.30, 0.82))
     punch_r = pose(LOW, hips_rot=(0.0, 15.0, 0.0), spine_rot=(12.0, 12.0, 0.0),
                    hand_l=(0.25, -0.30, 1.20), hand_r=(-0.10, -0.82, 1.25))
     punch_l = pose(LOW, hips_rot=(0.0, -15.0, 0.0), spine_rot=(12.0, -12.0, 0.0),
@@ -395,7 +396,7 @@ def _power_stomp():
     """Three stomps of the right heel onto one spot ahead, the last the heaviest: the weight shifts onto the left leg,
     the knee chambers high with the toe up while the torso leans back, the heel drives down at full speed, the body
     follows it into a deep crouch and rebounds; then the foot steps back into the stance."""
-    spot = dict(foot_r=(-0.26, -0.34, ANKLE_Z), foot_r_rot=(0.0, -10.0, 0.0))
+    spot = dict(foot_r=(-0.26, -0.42, ANKLE_Z), foot_r_rot=(0.0, -10.0, 0.0))
 
     def chamber(lift, arms_z, lean):
         return pose(LOW, hips=(0.12, 0.0, 0.84 + 0.05 * lift), hips_rot=(0.0, -8.0, 0.0),
@@ -404,9 +405,10 @@ def _power_stomp():
                     foot_r=(-0.28, -0.28, 0.10 + 0.6 * lift), foot_r_rot=(-25.0, -10.0, 0.0))
 
     def impact(depth, fists_y):
-        return pose(LOW, hips=(0.0, -0.10, 0.62 - depth), spine_rot=(28.0 + 40 * depth, 0.0, 0.0),
-                    chest_rot=(10.0, 0.0, 0.0), head_rot=(20.0, 0.0, 0.0),
-                    hand_l=(0.20, fists_y, 0.78 - depth), hand_r=(-0.28, fists_y, 0.72 - depth), **spot)
+        # both fists driven down in front of the stomping knee, so the side Angle reads a blow, not a brace
+        return pose(LOW, hips=(-0.08, -0.16, 0.60 - depth), spine_rot=(36.0 + 40 * depth, 0.0, 0.0),
+                    chest_rot=(12.0, 0.0, 0.0), head_rot=(22.0, 0.0, 0.0),
+                    hand_l=(0.02, fists_y - 0.35, 0.58 - depth), hand_r=(-0.22, fists_y - 0.35, 0.55 - depth), **spot)
 
     def follow(p):
         return pose(p, hips=(p["hips"][0], -0.12, p["hips"][2] - 0.05), spine_rot=(p["spine_rot"][0] + 6, 0.0, 0.0),
@@ -414,8 +416,8 @@ def _power_stomp():
                     hand_r=(p["hand_r"][0], p["hand_r"][1] - 0.04, p["hand_r"][2] - 0.08))
 
     rebound = pose(LOW, hips=(0.08, -0.06, 0.72), spine_rot=(8.0, 0.0, 0.0), head_rot=(10.0, 0.0, 0.0),
-                   hand_l=(0.32, -0.15, 1.15), hand_r=(-0.30, -0.20, 1.15), **spot)
-    last = pose(impact(0.04, -0.55), hand_l=(0.06, -0.55, 0.62), hand_r=(-0.10, -0.55, 0.60))
+                   hand_l=(0.28, -0.30, 1.00), hand_r=(-0.26, -0.35, 1.00), **spot)
+    last = impact(0.06, -0.45)
     big = pose(chamber(1.15, 1.30, 12.0), hand_l=(0.08, -0.12, 1.32), hand_r=(-0.08, -0.12, 1.32))
     keys = [Key(0, LOW),
             Key(0.4, pose(LOW, hips=(0.12, 0.0, 0.80), hips_rot=(0.0, -8.0, 0.0), spine_rot=(2.0, 0.0, 0.0),
@@ -449,8 +451,9 @@ def _low_charge():
             Key(3.25, fwd),
             Key(4.0, pose(fwd, hips=(0.0, -0.27, 0.95), spine_rot=(-6.0, 0.0, 0.0), head_rot=(-15.0, 5.0, 0.0),
                           hand_l=(0.15, -0.40, 1.95), hand_r=(-0.15, -0.40, 1.95))),
-            Key(4.5, pose(fwd, hips=(0.0, -0.36, 0.78), spine_rot=(35.0, 0.0, 0.0), chest_rot=(10.0, 0.0, 0.0),
-                          head_rot=(-25.0, 5.0, 0.0), hand_l=(0.08, -0.78, 0.85), hand_r=(-0.08, -0.78, 0.85))),
+            Key(4.5, pose(fwd, hips=(0.0, -0.36, 0.86), hips_rot=(0.0, 20.0, 0.0), spine_rot=(15.0, 15.0, 0.0),
+                          chest_rot=(5.0, 0.0, 0.0), head_rot=(-10.0, 5.0, 0.0),
+                          hand_l=(0.22, -0.45, 1.40), hand_r=(-0.05, -1.05, 1.30))),
             Key(5.0, fwd),
             Key(5.5, pose(fwd, hips=(0.0, -0.20, 0.91), foot_r=(-0.18, 0.15, 0.20))),
             Key(6.0, pose(GUARD, hips=(0.0, -0.10, 0.90), hand_l=fwd["hand_l"], **planted)),

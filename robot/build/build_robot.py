@@ -40,7 +40,7 @@ ANGLES = (
 # Duel Angles, for Exchanges only (GIANT.md): the giant stands at y = GIANT_Y facing +Y, 6 m tall.
 DUEL_ANGLES = (
     ("duel_wide", "ShotCamera.duel_wide", (12.0, -1.25, 2.4), (0.0, -1.25, 3.0), 32.0),     # profile, both full figures
-    ("duel_low", "ShotCamera.duel_low", (0.9, 2.0, 0.35), (0.0, -2.5, 2.3), 16.0),        # low behind the Android, up at the giant
+    ("duel_low", "ShotCamera.duel_low", (0.9, 2.8, 0.5), (0.0, -2.5, 2.3), 16.0),   # back and up: the Android's feet in frame        # low behind the Android, up at the giant
 )
 # The giant machine: Blender Studio's Security Bot (CC-BY, robot/assets/security_bot/CREDIT.txt), appended with
 # auto-run off, scaled to GIANT_H. Our giant control points (exchanges.py) drive its IK targets and torso.
@@ -58,6 +58,7 @@ UP = Matrix.Rotation(math.radians(90.0), 4, "X")      # part frame: x width, y u
 FWD = Matrix.Rotation(math.radians(180.0), 4, "Z")    # part frame: y toward the toes (-Y), z up
 SODIUM = (1.0, 0.60, 0.24)
 MOLTEN = (1.0, 0.32, 0.06)
+KEY_WARM = (1.0, 0.88, 0.76)   # the key: warm but near white, so the shell reads light grey on the side Angle (rubric A1, A3)
 
 
 # ---------- rig ----------
@@ -274,23 +275,28 @@ M2000_PIECES = {"HIP": ("HIP", "hips", "keep"), "WAIST": ("WAIST", "spine", "kee
 
 
 # its finger chains (Bone.013 and Bone.033 are the wrists); curled before the hands are baked, so they bake as fists
-# chain root -> curl sign about the bones' Z, measured as the sign that brings the tips toward the wrist: the hands
-# mirror, and each thumb (Bone.015, Bone.035) curls the other way from its fingers
-M2000_FINGERS = {"Bone.015": -1, "Bone.019": 1, "Bone.022": 1, "Bone.025": 1, "Bone.028": 1,
-                 "Bone.035": 1, "Bone.039": -1, "Bone.042": -1, "Bone.045": -1, "Bone.048": -1}
-FIST_CURL_DEG = 75.0
+# finger chain root -> curl sign about the bones' Z, the sign that brings the tips toward the wrist (the hands mirror)
+M2000_FINGERS = {"Bone.019": 1, "Bone.022": 1, "Bone.025": 1, "Bone.028": 1,
+                 "Bone.039": -1, "Bone.042": -1, "Bone.045": -1, "Bone.048": -1}
+FIST_CURL_DEG = (100.0, 90.0, 70.0)   # base, middle, tip bone: tips reach the palm; 75 on all stayed cupped, 120 clips
+# thumb chain root -> (axis, degrees): tucked beside or across the fingers (review/fist_probe.py, 2026-11-17)
+M2000_THUMBS = {"Bone.015": ("x", 60.0), "Bone.035": ("z", 30.0)}
 
 
 def _curl_fingers(rig):
-    for root, sign in M2000_FINGERS.items():
-        chain, todo = [], [rig.pose.bones[root]]
+    for root in list(M2000_FINGERS) + list(M2000_THUMBS):
+        chain, todo = [], [(rig.pose.bones[root], 0)]
         while todo:
-            pb = todo.pop()
-            chain.append(pb)
-            todo += list(pb.children)
-        for pb in chain:
+            pb, depth = todo.pop()
+            chain.append((pb, depth))
+            todo += [(c, depth + 1) for c in pb.children]
+        for pb, depth in chain:
             pb.rotation_mode = "XYZ"
-            pb.rotation_euler.z += sign * math.radians(FIST_CURL_DEG)
+            if root in M2000_THUMBS:
+                axis, deg = M2000_THUMBS[root]
+                pb.rotation_euler["xyz".index(axis)] += math.radians(deg)
+            else:
+                pb.rotation_euler.z += M2000_FINGERS[root] * math.radians(FIST_CURL_DEG[min(depth, 2)])
 
 
 def _split_x(me, keep_positive):
@@ -484,7 +490,7 @@ def build_lights(coll):
     for i, (x, y) in enumerate(((-4, -4), (4, -4), (-4, 3), (4, 3), (0, -1))):
         _light(coll, "sodium_%d" % i, "SPOT", (x, y, 7.5), 2500.0, SODIUM, target=(x, y, 0),
                spot_size=math.radians(70), spot_blend=0.5, shadow_soft_size=0.4)
-    _light(coll, "sodium_key", "SPOT", (3.0, -3.5, 5.0), 4000.0, SODIUM, target=(0, 0, 1.3),
+    _light(coll, "sodium_key", "SPOT", (3.0, -3.5, 5.0), 4000.0, KEY_WARM, target=(0, 0, 1.3),
            spot_size=math.radians(40), spot_blend=0.3, shadow_soft_size=0.3)
     _light(coll, "molten_glow", "AREA", (0, 3.5, 0.15), 3000.0, MOLTEN, target=(0, 3.5, 5.0),
            shape="RECTANGLE", size=28.0, size_y=1.0)
@@ -527,8 +533,8 @@ def _giant_coll():
 
 
 def import_giant(scene):
-    """Append the Security Bot's character collection, keep rig widgets and the battery prop out of render, scale
-    it to GIANT_H with its feet on the floor at y = GIANT_Y facing +Y. Hidden in render until an Exchange uses it."""
+    """Append the Security Bot's character collection, keep rig widgets, cable tubes and the battery prop out of
+    render, scale it to GIANT_H with its feet on the floor at y = GIANT_Y facing +Y. Hidden in render until an Exchange uses it."""
     with bpy.data.libraries.load(GIANT_ASSET, link=False) as (src, dst):
         dst.collections = [c for c in src.collections if c.startswith("CH")]
     coll = dst.collections[0]
@@ -538,7 +544,9 @@ def import_giant(scene):
     for o in list(coll.all_objects):          # setting hide_render while iterating all_objects ends the loop
         if o.type != "MESH":
             continue
-        if o.name.startswith("WGT-") or "battery" in o.name:
+        # its cable tubes (Array fit to a hooked curve) stretch up to 4 m off their curves once the rig is scaled,
+        # down to the Android's spot (round X1, review/giant_strays.py)
+        if o.name.startswith("WGT-") or "battery" in o.name or "cable_tube" in o.name:
             o.hide_render = True
         elif not o.hide_render:
             body.append(o)
