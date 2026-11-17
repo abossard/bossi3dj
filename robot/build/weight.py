@@ -8,6 +8,8 @@ docs/research/weighted-animation.md section 4, steps 1, 3 and 4). Pure, no bpy.
 - Recoil: after the hold, the striking limb springs back along its approach and the hips take a smaller reaction
   (a damped sine, `recoil`).
 - Landing dip: at a touch-down after flight and at a stomp the hips and hands sink and spring back (`dip`).
+- Fall limit: standing, the hips never bend down harder than gravity allows: drops start earlier, rebound crests
+  round off (`fall_limit`).
 - Succession and spring (step 2, `springy`): each chain samples the key table a few frames early or late (the hips
   lead, the head trails) and follows it through a second-order spring (heavy chains slow and damped, fists fast with
   overshoot), never further than DEPART from the key table. Pins put the keyed value back at the first and last frame and at each Hit (every channel, so the strike reaches); a planted foot keeps
@@ -31,8 +33,8 @@ ANKLE_Z = 0.10
 AIR_M = 1e-6               # both feet above ANKLE_Z by more than this: in flight
 END_FRAMES = 10
 RECOIL = {"limb": (0.04, 5.0, 0.35), "hips": (0.02, 3.0, 0.5)}     # amplitude per strength (m), Hz, damping
-DIP = (3.0, 0.5)                                                   # Hz, damping
-DIP_M = (0.0, 0.06)
+DIP = (2.0, 0.5)                                                   # Hz, damping
+DIP_M = (0.0, 0.05)        # 5 cm at 2 Hz peaks near 8 m/s²: the legs absorb, the floor never pulls
 HAND_FLOOR_M = (0.15, 0.45)    # a hand this low takes none of the dip, this high all of it
 MU = 0.8
 
@@ -52,6 +54,8 @@ GIANT_CHAINS = {"g_hips": (-4, 1.2, 0.8, 0.0), "g_hips_rot": (-4, 1.2, 0.8, 0.0)
                 "g_head_rot": (3, 1.8, 0.4, 0.0), "g_hammer": (1, 2.1, 0.7, 0.0), "g_claw": (1, 2.1, 0.7, 0.0),
                 "g_foot_l": (0, 3.0, 1.0, 0.0), "g_foot_r": (0, 3.0, 1.0, 0.0)}
 GIANT_STRIKE = (0, 2.7, 0.6, 1.0)
+FALL_G = 0.9               # standing, the hips fall at most this fraction of g (the rest of the body adds a little)
+ITER = 400
 PIN_END = 10
 PIN_HIT = 6
 DEPART = (0.06, 10.0)      # the spring keeps a channel within this of the key table (m, degrees per axis)
@@ -351,7 +355,52 @@ def weigh(sample, n, stops, beat_frames, body, warp=None, dodges=(), idle=False)
         return seq
     ballistic(seq, pins(stops, dodges))
     apply_offsets(seq, recoil(seq, sample, stops) + dip(seq, sample, stops), body)
+    fall_limit(seq, body, hit_windows(stops))
     return seq
+
+
+def hit_windows(stops, half=0):
+    """A Hit and its hold, widened by `half` - 1 frames on each side (PIN_HIT: the research's pin window, where the
+    ground check does not look)."""
+    w = max(half - 1, 0)
+    return {f for h, _l, s in stops for f in range(h - w, h + hold_frames(s) + w + 1)}
+
+
+def fall_limit(seq, body, held=()):
+    """Standing, the floor can only push: the hips' acceleration stays at or above -FALL_G·g. A frame where the keys
+    bend down harder (a drop faster than a fall, a rebound stopped harder than gravity can) is lowered, so the drop
+    starts earlier and the crest is rounder; where such a frame is fixed its free neighbours rise instead. Fixed:
+    flights and their take-off and touch-down frames, Hit windows (`held`), the first and last frame. Hands move
+    with the hips. Repeated until no frame breaks the limit (or ITER sweeps)."""
+    n = len(seq)
+    fixed = {f for t0, t1 in flights(seq, body.feet, body.ankle_z) for f in range(t0 - 1, t1 + 2)} | set(held) | {0, n - 1}
+    z0 = [p["hips"][2] for p in seq]
+    z = list(z0)
+    c = FALL_G * G / (FPS * FPS)
+    for _ in range(ITER):
+        worst = 0.0
+        for f in range(1, n - 1):
+            d2 = z[f + 1] - 2 * z[f] + z[f - 1]
+            if d2 >= -c - 1e-12:
+                continue
+            e = -c - d2
+            worst = max(worst, e)
+            if f not in fixed:
+                z[f] -= e / 2
+            else:
+                free = [g for g in (f - 1, f + 1) if g not in fixed]
+                for g in free:
+                    z[g] += e / len(free)
+        if worst < 1e-9:
+            break
+    for f in range(n):
+        dz = z[f] - z0[f]
+        if dz:
+            p = dict(seq[f])
+            for ch in ("hips", "hand_l", "hand_r"):
+                _add(p, ch, (0.0, 0.0, dz))
+            if _reach_ok(p, body):
+                seq[f] = p
 
 
 def centre_of_mass(p, hip_joint):

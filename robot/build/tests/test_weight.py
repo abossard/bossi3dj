@@ -1,5 +1,5 @@
 """Weight layers (weight.py): hit-stop warp holds and lands the next beat, flight is ballistic, Hits keep their
-frame and limb, touch-downs dip, the spring and its pins behave. Also keeps the research's measurement of the key tables (docs/research/
+frame and limb, touch-downs dip, the spring and its pins behave, the floor only pushes. Also keeps the research's measurement of the key tables (docs/research/
 weighted-animation.md, section 1) as a check. No Blender.
 Run: python3 -m unittest discover robot/build/tests"""
 import math
@@ -88,6 +88,22 @@ class HitTests(unittest.TestCase):
                     continue
                 with self.subTest(move=name, frame=h, limb=limb):
                     self.assertLessEqual(math.dist(seq[h][limb], moves.sample(move, h)[limb]), HIT_TOL_M)
+
+
+class GroundTests(unittest.TestCase):
+    def test_floor_only_pushes(self):
+        """Standing, the hips (the research's stand-in for the centre of mass) never fall faster than g: the floor
+        pushes, it cannot pull. Not inside the pin windows around Hits nor around flights (research 4: ground
+        test). The stomp rebound of the key tables broke this (power_stomp about -97 m/s² at f76f78c)."""
+        for name, seq, stops, _d in SEQS:
+            skip = weight.hit_windows(stops, weight.PIN_HIT) | {f for t0, t1 in weight.flights(seq)
+                                                                for f in range(t0 - 1, t1 + 2)}
+            z = [p["hips"][2] for p in seq]
+            for f in range(1, len(seq) - 1):
+                if f in skip:
+                    continue
+                with self.subTest(clip=name, frame=f):
+                    self.assertGreaterEqual((z[f + 1] - 2 * z[f] + z[f - 1]) * weight.FPS ** 2, -weight.G)
 
 
 class SpringTests(unittest.TestCase):
