@@ -776,6 +776,9 @@ def eye_space(T):
     return T.smooth(eye_alt(T), 2000.0, 12000.0)
 
 
+DUSK_BAND = (-0.03, 0.0, 0.005, 0.05)     # the orbit look's dusk band over the sun's height (mu): in from a to b, out from c
+#                                         to d. The user, 2026-11-17: "Tone it down" (was -0.06, 0, 0.01, 0.10 at 0.35)
+DUSK_K = 0.15                      # its strength (pink-orange added at the band's peak)
 GLOBE_BAND = (8000.0, 12000.0)     # m: the globe takes the planet over from the ground's patches across this band
 SITE_GLOW = 140.0                  # m, the radius of a pyramid site's light seen from high up
 
@@ -830,9 +833,12 @@ def orbit_look(T, pos, inc, up, n_, h, depth, land, sun, city=0.0):
     lit_land = T.scale(land_c, T.mul(day, T.addf(0.3, T.mul(lam, 0.7))))
     # a warm pink-orange band along the terminator, where the ground sees the sun set (S9: it showed only where the
     # terminator met the limb)
-    dusk_b = T.mul(T.smooth(mu, -0.06, 0.0), T.sub(1.0, T.smooth(mu, 0.01, 0.10)))
-    lit_land = T.add(lit_land, T.scale((0.55, 0.20, 0.12), T.mul(dusk_b, 0.35)))     # (twice as wide and strong, it read as a
-    # broad salmon stripe across the disc)
+    dusk_b = T.mul(T.smooth(mu, DUSK_BAND[0], DUSK_BAND[1]), T.sub(1.0, T.smooth(mu, DUSK_BAND[2], DUSK_BAND[3])))
+    dk_ = T.node("ShaderNodeValue")
+    dk_.label = "dusk_k"            # review/ridge_check.py's A/B sets the old 0.35
+    dk_.outputs[0].default_value = DUSK_K
+    lit_land = T.add(lit_land, T.scale((0.55, 0.20, 0.12), T.mul(dusk_b, dk_.outputs[0])))     # (twice as wide and strong, it read as a
+    # broad salmon stripe across the disc; toned down again by the user's call, issue #25)
     rv = T.vmath("REFLECT", T.vmath("SCALE", inc, scale=-1.0), up)
     # a soft lobe: at 0.35 its middle burnt to a white blob, at 0.15 it was gone (S9)
     spec = T.mul(T.math("POWER", T.math("MAXIMUM", T.dot(rv, sun["Dir"]), 0.0), 36.0), T.mul(day, 0.24))

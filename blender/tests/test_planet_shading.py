@@ -12,7 +12,8 @@ SRC = open(os.path.join(HERE, "..", "scenes", "planet_proto", "build_planet.py")
 TREE = ast.parse(SRC)
 NS = {}
 for node in TREE.body:
-    if isinstance(node, ast.Assign) and any(getattr(t, "id", None) in ("SKY_MATERIALS", "SKY_PARTS", "FOG_D", "FOG_D_RISE")
+    if isinstance(node, ast.Assign) and any(getattr(t, "id", None) in ("SKY_MATERIALS", "SKY_PARTS", "FOG_D", "FOG_D_RISE",
+                                                                                 "DUSK_BAND", "DUSK_K")
                                             for t in node.targets):
         exec(compile(ast.Module([node], []), "build_planet.py", "exec"), NS)
     if isinstance(node, ast.FunctionDef) and node.name == "is_sky":
@@ -24,6 +25,30 @@ def haze(dist, eye):
     """VJ_Fog's haze share at view distance dist m from a camera eye m over the sea, as planetize_fog wires it."""
     d = NS["FOG_D"] + NS["FOG_D_RISE"][1] * max(eye - NS["FOG_D_RISE"][0], 0.0)
     return 1.0 - math.exp(-(dist / d) ** 2)
+
+
+def dusk(mu, band, k):
+    """orbit_look's dusk band at sun height mu: smoothstep in over band[0:2], out over band[2:4], times k."""
+    ss = lambda x, a, b: (lambda t: t * t * (3.0 - 2.0 * t))(min(max((x - a) / (b - a), 0.0), 1.0))
+    return k * ss(mu, band[0], band[1]) * (1.0 - ss(mu, band[2], band[3]))
+
+
+def band_numbers(band, k):
+    """The band's peak strength and its share of the disc (mu is uniform over a sphere's area) over half that peak."""
+    mus = [-1.0 + 2.0 * i / 20000 for i in range(20001)]
+    vals = [dusk(m, band, k) for m in mus]
+    peak = max(vals)
+    return peak, sum(v > 0.5 * peak for v in vals) / len(vals)
+
+
+class DuskTests(unittest.TestCase):
+    def test_toned_down(self):
+        """The user, 2026-11-17: "Tone it down" (the salmon band across the disc from space)."""
+        old_peak, old_share = band_numbers((-0.06, 0.0, 0.01, 0.10), 0.35)
+        peak, share = band_numbers(NS["DUSK_BAND"], NS["DUSK_K"])
+        self.assertLessEqual(peak, 0.5 * old_peak, "strength")
+        self.assertLessEqual(share, 0.6 * old_share, "share of the disc")
+        self.assertGreaterEqual(peak, 0.1, "still there: the day/night edge keeps its warm line")
 
 
 class SkyTests(unittest.TestCase):
