@@ -73,7 +73,7 @@ def ex(expr):
     return ("Expression", expr)
 
 
-def graph_globals(m, seed=0, cut_rate=1.0):
+def graph_globals(m, seed=0, cut_rate=1.0, duel_tiers=("drop",)):
     """The Clip Graph of Manifest `m` as Globals (name, value, source, mods). Reads Beats, BeatFrac, Section, Bpm.
 
     Every Global reads the previous frame, so the graph runs as a pipeline after the beat count changes (b = the frame it changes):
@@ -82,7 +82,7 @@ def graph_globals(m, seed=0, cut_rate=1.0):
     M, A = len(m.moves), len(m.angles)
     graph_moves = {mv.name: i for i, mv in enumerate(m.moves)}
     from clip_graph import ClipGraph
-    g = ClipGraph(m)
+    g = ClipGraph(m, duel_tiers=duel_tiers)
     tiers = ("calm", "build", "drop")
     entries = []
     for t in tiers:
@@ -119,18 +119,62 @@ def graph_globals(m, seed=0, cut_rate=1.0):
         ("NxtOff", 0, "calc", [ex("if(%s, 0, (Beats - MoveStart) %% max(1, MoveBeats))" % ends)]),
         ("Move", 0, "calc", [ex("if(Wrap > 0.5, NxtMove, y)")]),
         ("MoveStart", 0, "calc", [ex("if(Wrap > 0.5, Beats, y)")]),
-        ("Angle", 0, "calc", [ex("if(BeatEv3 > 0.5 and (%s) and AngleH < CutRate, (Angle + 1 + floor(AngleH2*%d)) %% %d, y)"
-                                 % (cut_here, A - 1, A) if A > 1 else "0")]),
+        ("Angle", 0, "calc", [ex(angle_expr(m, cut_here))]),
         ("Sel", 0, "calc", [ex("Move*%d + Angle" % A)]),
     ] + [(HIDE_ANGLE + str(a), 1, "calc", [ex("if(Angle == %d, 0, 1)" % a)]) for a in range(A)] + [
         ("StartPulse", 0, "calc", [ex("max(Wrap, WrapPrev)")]),
         ("SpeedRatio", 1, "calc", [ex("%s/%s" % (xray.BPM, num(m.bpm)))]),
-        ("OutClip", 0, "calc", [ex(table("Sel", [m.clip_index(mv.name, a) for mv in m.moves for a in m.angle_ids]))]),
+        ("OutClip", 0, "calc", [ex(table("Sel", [clip_on(m, mv, a) for mv in m.moves for a in m.angle_ids]))]),
         ("OutFrame", 0, "calc", [ex("if(IsIdle > 0.5, max(0, floor((Beats - MoveStart + BeatFrac)*%s)) %% max(1, MoveFrames), max(0, min(MoveFrames - 1, floor((Beats - MoveStart + BeatFrac)*%s))))"
                                     % (num(per_beat), num(per_beat)))]),
         ("OutAngle", 0, "calc", [ex("Angle")]),
     ]
+    for duel in (False, True):
+        if m.group(duel) and len(local_moves(m, duel)) != len(m.moves):
+            out.append((MOVE_IN[duel], 0, "calc", [ex(table("Move", [local_moves(m, duel).index(mv) if mv in local_moves(m, duel) else 0 for mv in m.moves]))]))
     return out
+
+
+MOVE_IN = {False: "MoveInSolo", True: "MoveInDuel"}      # the input of a solo or duel Angle's selector: the Move's place among the Moves of that kind
+
+
+def local_moves(m, duel):
+    """The Moves of one kind, in Manifest order: what a solo or duel Angle's selector holds."""
+    return [mv for mv in m.moves if mv.opponent == duel]
+
+
+def move_input(m, duel):
+    """The Global a selector of that kind reads: Move itself when every Move is of that kind (a solo-only Manifest)."""
+    return "Move" if len(local_moves(m, duel)) == len(m.moves) else MOVE_IN[duel]
+
+
+def clip_on(m, mv, angle):
+    """/vj/clip of a Move on an Angle; a Move has no Clip on the other kind's Angles, which the graph never shows, so its first Angle's Clip stands in."""
+    if (mv.name, angle) in m._by:
+        return m.clip_index(mv.name, angle)
+    return m.clip_index(mv.name, m.group(mv.opponent)[0])
+
+
+def angle_expr(m, cut_here):
+    """Angle after a beat: the first Angle of the new kind when the Move's kind changes, else a cut within the Angles of its kind (clip_graph.next_angle)."""
+    A = len(m.angle_ids)
+    if A < 2:
+        return "0"
+    duel = [1 if m.angle_duel(a) else 0 for a in m.angle_ids]
+    groups = {d: [m.angle_ids.index(a) for a in m.group(d)] for d in (False, True)}
+    pos = [groups[bool(duel[i])].index(i) for i in range(A)]
+
+    def cut(d):
+        g = groups[d]
+        if len(g) < 2:
+            return "y"
+        return table("((%s + 1 + floor(AngleH2*%d)) %% %d)" % (table("Angle", pos), len(g) - 1, len(g)), g)
+    within = cut(False) if not groups[True] else "if(%s == 1, %s, %s)" % (table("Angle", duel), cut(True), cut(False))
+    cut_branch = "if(BeatEv3 > 0.5 and (%s) and AngleH < CutRate, %s, y)" % (cut_here, within)
+    if not groups[True]:
+        return cut_branch
+    kind_n = table("NxtMove", [1 if mv.opponent else 0 for mv in m.moves])
+    return "if(BeatEv3 > 0.5 and %s != %s, if(%s == 1, %d, %d), %s)" % (kind_n, table("Angle", duel), kind_n, groups[True][0], groups[False][0], cut_branch)
 
 
 # ------------------------------------------------------------ effects
@@ -219,12 +263,13 @@ def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=No
         layers = []
         for a, angle in enumerate(m.angle_ids):
             nodes = []
-            for mv in m.moves:
+            duel = m.angle_duel(angle)
+            for mv in local_moves(m, duel):
                 path = m.path(m.clips[m.clip_index(mv.name, angle)]["passes"][kind])
                 path = os.path.relpath(path, project_dir) if project_dir else os.path.abspath(path)
                 nodes.append(robot.node("VideoFile", {"File": path, "Speed": ("global:SpeedRatio", [], 1), "Goto Start": ("global:StartPulse", [], 0),
                                                       "Looping": 1}))   # Looping 0 draws black after the last frame (restart_check.py); 1 replays instead
-            moves = robot.node("InputSelector", {"Input #": ("global:Move", [], 0)}, inputs=nodes)
+            moves = robot.node("InputSelector", {"Input #": ("global:%s" % move_input(m, duel), [], 0)}, inputs=nodes)
             layers.append(robot.node("Transparency", {"Amount": ("global:%s%d" % (HIDE_ANGLE, a), [], 1)}, inputs=[moves]))
         return robot.node("Null", inputs=layers)
 

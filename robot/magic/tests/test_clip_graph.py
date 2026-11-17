@@ -110,6 +110,115 @@ class CandidateTests(unittest.TestCase):
                         self.assertFalse(nxt.idle and nxt.name != move.name and g.candidates(move.name, tier))
 
 
+with open(os.path.join(HERE, "..", "..", "package", "duel", "manifest.json")) as _f:
+    DUEL = json.load(_f)
+
+
+def duel(mutate=None):
+    """package/duel: solo Moves on front and side, Exchanges with the giant machine on duel_wide and duel_low (#23)."""
+    d = copy.deepcopy(DUEL)
+    if mutate:
+        mutate(d)
+    assert mf.validate(d) == [], mf.validate(d)
+    return mf.Manifest(d)
+
+
+class DuelTests(unittest.TestCase):
+    SEEDS = (0, 1, 2.5, 7, 42)
+    SECTIONS = ([0] * 16 + [2] * 16 + [3] * 32 + [4] * 16 + [3] * 24 + [0] * 16) * 2
+
+    def walk(self, m, seed, sections=None):
+        g = cg.ClipGraph(m, seed=seed)
+        return g, g.walk(sections or self.SECTIONS)
+
+    def test_moves_and_angles_stay_of_one_kind(self):
+        m = duel()
+        for seed in self.SEEDS:
+            with self.subTest(seed=seed):
+                g, walk = self.walk(m, seed)
+                for beat, s in enumerate(walk, 1):
+                    self.assertEqual(m.angle_duel(s.angle), m.move(s.move).opponent, (beat, s))
+                kinds = {m.move(s.move).opponent for s in walk}
+                self.assertEqual(kinds, {False, True})
+
+    def test_the_kind_changes_only_from_an_idle_clip_on_a_bar_line_into_the_same_key_pose(self):
+        m = duel()
+        for seed in self.SEEDS:
+            with self.subTest(seed=seed):
+                g, walk = self.walk(m, seed)
+                prev = g.start()
+                for beat, s in enumerate(walk, 1):
+                    a, b = m.move(prev.move), m.move(s.move)
+                    if a.opponent != b.opponent:
+                        self.assertEqual(beat % 4, 0, beat)
+                        self.assertTrue(a.idle and b.idle, (beat, prev, s))
+                        self.assertEqual(a.key_in, b.key_in)
+                        self.assertEqual(s.angle, m.group(b.opponent)[0])
+                    prev = s
+
+    def test_duel_in_the_drop_solo_otherwise(self):
+        """Once the tier settles, the kind follows it within 3 bars: the Move's end, its Idle Clip, the other kind's Idle Clip."""
+        m = duel()
+        for seed in self.SEEDS:
+            with self.subTest(seed=seed):
+                g, walk = self.walk(m, seed)
+                for beat in range(1, len(walk) + 1):
+                    s, settled = walk[beat - 1], walk[max(0, beat - 1 - 12 - 16):beat]
+                    if len({x.tier for x in settled}) == 1 and len(settled) == 29:
+                        self.assertEqual(m.move(s.move).opponent, s.tier == "drop", (beat, s))
+
+    def test_cuts_stay_within_the_kind(self):
+        m = duel()
+        for seed in self.SEEDS:
+            with self.subTest(seed=seed):
+                g, walk = self.walk(m, seed)
+                prev = g.start()
+                cuts = 0
+                for s in walk:
+                    if s.angle != prev.angle and m.move(s.move).opponent == m.move(prev.move).opponent:
+                        cuts += 1
+                        self.assertEqual(m.angle_duel(s.angle), m.angle_duel(prev.angle))
+                    prev = s
+                self.assertGreater(cuts, 10)
+
+    def test_picks_follow_the_key_pose(self):
+        m = duel()
+        g, walk = self.walk(m, 3)
+        prev = g.start()
+        for beat, s in enumerate(walk, 1):
+            if s.start != prev.start:
+                self.assertEqual(m.move(s.move).key_in, m.move(prev.move).key_out, beat)
+            prev = s
+
+    def test_a_key_pose_without_a_duel_idle_stays_solo(self):
+        def guard_only(d):
+            d["clips"] = [c for c in d["clips"] if c["move"] not in ("duel_idle_crouch", "hammer_dodge", "claw_counter", "stomp_block")]
+        m = duel(guard_only)
+        g = cg.ClipGraph(m)
+        self.assertEqual(g.pool("idle_crouch", "drop"), ["uppercut_rise", "sweep"])
+        self.assertEqual(g.pool("sweep", "drop"), ["uppercut_rise"])
+        self.assertEqual(g.pool("idle_guard", "drop"), ["duel_idle_guard"])
+        self.assertEqual(g.pool("front_kick", "drop"), ["idle_guard"])
+
+    def test_pools(self):
+        m = duel()
+        g = cg.ClipGraph(m)
+        cases = [("a solo Move in the drop goes to its Idle Clip", "front_kick", "drop", ["idle_guard"]),
+                 ("the solo Idle Clip hands over to the duel one", "idle_guard", "drop", ["duel_idle_guard"]),
+                 ("the duel Idle Clip picks Exchanges", "duel_idle_guard", "drop", ["clash", "hammer_dodge"]),
+                 ("an Exchange picks Exchanges, not itself", "clash", "drop", ["hammer_dodge"]),
+                 ("an Exchange after the drop goes to its duel Idle Clip", "hammer_dodge", "calm", ["duel_idle_crouch"]),
+                 ("the duel Idle Clip hands back to the solo one", "duel_idle_crouch", "build", ["idle_crouch"]),
+                 ("solo in build picks solo Moves", "idle_guard", "build", ["jab_cross", "feint_duck"])]
+        for name, move, tier, pool in cases:
+            with self.subTest(name):
+                self.assertEqual(g.pool(move, tier), pool)
+
+    def test_a_solo_manifest_never_wants_the_duel(self):
+        g = cg.ClipGraph(many())
+        self.assertFalse(any(g.wants_duel(t) for t in ("calm", "build", "drop")))
+
+
 class NoRepeatTests(unittest.TestCase):
     SEEDS = (0, 1, 2.5, 7, 42)
 

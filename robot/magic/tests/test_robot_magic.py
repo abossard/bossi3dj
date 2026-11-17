@@ -117,6 +117,36 @@ class GraphGlobalsTests(unittest.TestCase):
                     self.assertEqual(v["OutClip"], model.clip_index(s), "beat %d" % beat)
                 self.assertEqual({m.move(s.move).beats for s in walk if not m.move(s.move).idle}, {4, 8, 16})
 
+    def test_globals_match_the_model_with_duel_angles(self):
+        """package/duel: solo and duel Angle groups, the switch through the Idle Clips in the drop; every Move, Angle and Clip index equals the model's."""
+        m = mf.Manifest(json.load(open(os.path.join(HERE, "..", "..", "package", "duel", "manifest.json"))))
+        sections = [0] * 8 + [2] * 16 + [3] * 32 + [4] * 12 + [3] * 20 + [0] * 16
+        for seed, rate in [(0, 1.0), (2.5, 0.5)]:
+            with self.subTest(seed=seed, cut_rate=rate):
+                run = Run(m, sections, seed=seed, cut_rate=rate)
+                model = cg.ClipGraph(m, seed=seed, cut_rate=rate)
+                walk = model.walk(sections)
+                for beat in range(1, len(sections) + 1):
+                    v, s = run.settled(beat), walk[beat - 1]
+                    self.assertEqual((v["Move"], v["Angle"], v["MoveStart"]),
+                                     (m.moves.index(m.move(s.move)), m.angle_ids.index(s.angle), s.start), "beat %d" % beat)
+                    self.assertEqual(v["OutClip"], model.clip_index(s), "beat %d" % beat)
+                    duel = m.move(s.move).opponent
+                    local = [mv.name for mv in m.moves if mv.opponent == duel].index(s.move)
+                    self.assertEqual(v["MoveInDuel" if duel else "MoveInSolo"], local, "beat %d" % beat)
+                self.assertEqual({m.move(s.move).opponent for s in walk}, {False, True})
+
+    def test_duel_project_layers(self):
+        """Each Angle's selector holds the Moves of its kind and reads that kind's input Global; the project checks clean."""
+        m = mf.Manifest(json.load(open(os.path.join(HERE, "..", "..", "package", "duel", "manifest.json"))))
+        root = rm.build(m).build()
+        self.assertEqual([p for p in mp.check(root) if p[0] == "error"], [])     # warnings: the media are not rendered here
+        selectors = [n for n in mp.node_table(root, "Robot") if n["plugin"] == "InputSelector" and n["params"][0]["source"] != "global:LiveOn"]
+        reads = sorted({p["source"] for n in selectors for p in n["params"] if p["name"] == "Input #"})
+        self.assertEqual(reads, ["global:MoveInDuel", "global:MoveInSolo"])
+        sizes = sorted({len(n["inputs"]) for n in selectors})
+        self.assertEqual(sizes, sorted({sum(1 for mv in m.moves if mv.opponent), sum(1 for mv in m.moves if not mv.opponent)}))
+
     def test_section_steers_the_tier(self):
         for section, tier in [(0, "calm"), (1, "calm"), (2, "build"), (3, "drop"), (4, "calm")]:
             with self.subTest(section=section):

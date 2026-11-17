@@ -8,6 +8,11 @@ Tier. `step` is called once per beat with the running beat count and the music's
   is the only one; the pick comes from the bar number. With no pick the Android goes to the Idle Clip of that Key Pose;
 - an Idle Clip loops (Magic does that) and is left on the next bar boundary, once it has played, into such a pick; with no pick it stays;
 - at a Cut Point of the Move on air (offset in beats since its start), cut to another Angle with probability `cut_rate`.
+Solo and duel (#23): a Manifest may hold duel Angles and Exchanges (Moves with the giant machine, on the duel Angles only). Picks stay
+within the kind of the Move on air and cuts within the Angles of that kind. The walk wants the duel while the tier is one of `duel_tiers`
+(default: drop) and solo otherwise; it changes kind only through an Idle Clip: a Move that ends goes to the Idle Clip of its key_out, which
+on the next bar line hands over to the Idle Clip of the same Key Pose of the other kind (on the first Angle of that kind), which is left on
+the bar after as usual. A Key Pose with no Idle Clip of the wanted kind stays in its kind.
 Picks are a hash of the beat count and the seed, so a run repeats. robot_magic.py writes the same hash and the same tables
 into Magic Globals; tests/test_robot_magic.py runs those Globals beside this model.
 """
@@ -26,11 +31,15 @@ def hash01(n, seed, salt):
 
 
 class ClipGraph:
-    def __init__(self, manifest, seed=0, cut_rate=1.0):
+    def __init__(self, manifest, seed=0, cut_rate=1.0, duel_tiers=("drop",)):
         self.manifest, self.seed = manifest, seed
         self.cut_rate = cut_rate
         self.moves = manifest.moves
         self.angles = manifest.angle_ids
+        self.duel_tiers = tuple(duel_tiers) if manifest.group(True) else ()
+
+    def wants_duel(self, tier):
+        return tier in self.duel_tiers
 
     @staticmethod
     def tier(section):
@@ -42,15 +51,16 @@ class ClipGraph:
 
     def candidates(self, move, tier):
         """Names of the Move Clips that may follow `move` in `tier`: same Key Pose, current Move left out unless it is alone. May be empty."""
-        key = self.manifest.move(move).key_out
-        cands = [m.name for m in self.moves if not m.idle and m.key_in == key and m.tier == tier]
+        cur = self.manifest.move(move)
+        key = cur.key_out
+        cands = [m.name for m in self.moves if not m.idle and m.key_in == key and m.tier == tier and m.opponent == cur.opponent]
         return [c for c in cands if c != move] or cands
 
-    def exits(self):
-        """{(key pose, tier): names of the Moves that start in that Key Pose in that tier}, every pair listed."""
+    def exits(self, duel=False):
+        """{(key pose, tier): names of the solo Moves (duel: the Exchanges) that start in that Key Pose in that tier}, every pair listed."""
         out = {(k, t): [] for k in self.manifest.key_poses for t in ("calm", "build", "drop")}
         for m in self.moves:
-            if not m.idle:
+            if not m.idle and m.opponent == duel:
                 out[(m.key_in, m.tier)].append(m.name)
         return out
 
@@ -59,26 +69,35 @@ class ClipGraph:
         return [k for k, v in self.exits().items() if not v]
 
     def pool(self, move, tier):
-        """What the pick draws from: the candidates, else the Idle Clip of the Key Pose (an Idle Clip with no candidate stays)."""
+        """What the pick draws from: the candidates, else the Idle Clip of the Key Pose (an Idle Clip with no candidate stays).
+        When the tier wants the other kind and the Key Pose has an Idle Clip of that kind: a Move goes to its own kind's Idle Clip, an Idle Clip to the other's."""
+        m = self.manifest.move(move)
+        want = self.wants_duel(tier)
+        if want != m.opponent:
+            other = self.manifest.idle_move(m.key_out, want)
+            if other is not None:
+                return [other] if m.idle else [self.manifest.idle_move(m.key_out, m.opponent)]
         cands = self.candidates(move, tier)
         if cands:
             return cands
-        m = self.manifest.move(move)
-        return [move if m.idle else self.manifest.idle_move(m.key_out)]
+        return [move if m.idle else self.manifest.idle_move(m.key_out, m.opponent)]
 
     def next_move(self, move, bar, tier):
         pool = self.pool(move, tier)
         return pool[min(len(pool) - 1, int(math.floor(hash01(bar, self.seed, SALT_MOVE) * len(pool))))]
 
     def next_angle(self, angle, beat):
-        n = len(self.angles)
+        """A cut within the Angles of `angle`'s kind."""
+        group = self.manifest.group(self.manifest.angle_duel(angle))
+        n = len(group)
         if n < 2 or not hash01(beat, self.seed, SALT_CUT) < self.cut_rate:
             return angle
-        i = self.angles.index(angle)
-        return self.angles[(i + 1 + int(math.floor(hash01(beat, self.seed, SALT_ANGLE) * (n - 1)))) % n]
+        i = group.index(angle)
+        return group[(i + 1 + int(math.floor(hash01(beat, self.seed, SALT_ANGLE) * (n - 1)))) % n]
 
     def start(self):
-        return State(self.moves[0].name, self.angles[0], 0, "calm")
+        first = self.moves[0]
+        return State(first.name, self.manifest.group(first.opponent)[0], 0, "calm")
 
     def step(self, state, beat, section):
         move, angle, start, _tier = state
@@ -91,7 +110,10 @@ class ClipGraph:
             leave = offset >= m.beats
         if leave:
             move, start, offset = self.next_move(move, beat // 4, tier), beat, 0
-        if offset % self.manifest.move(move).beats in self.manifest.move(move).cut_points:
+        mv = self.manifest.move(move)
+        if self.manifest.angle_duel(angle) != mv.opponent:       # the kind changed: the first Angle of the new kind
+            angle = self.manifest.group(mv.opponent)[0]
+        elif offset % mv.beats in mv.cut_points:
             angle = self.next_angle(angle, beat)
         return State(move, angle, start, tier)
 
