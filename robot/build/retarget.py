@@ -7,7 +7,8 @@ own bone lengths gives the joints. The torso bones (hips, spine, chest, neck, he
 legs keep their IK, driven by the wrist and ankle and by a pole set beside the captured elbow and knee each frame, so
 the IK solves the captured limb; the hands then take the captured hand rotation relative to the solved forearm and
 the feet the captured foot rotation (flat on the floor while planted). Hips travel scales with the leg length.
-weight.py's hit-stop comes through mocap.warp; its fist recoil moves the wrist targets, its stomp dip the hips.
+weight.py's hit-stop comes through mocap.warp; its fist recoil moves the wrist targets, its stomp dip the hips. In
+the end blends a foot steps to its Key Pose spot (`_step`).
 """
 import os
 
@@ -227,6 +228,26 @@ def _blend(a, b, w):
     return {k: (a[k][0].lerp(b[k][0], w), a[k][1].slerp(b[k][1], w)) for k in a}
 
 
+STEP_M = (0.02, 0.06)      # a foot farther than this from its Key Pose spot steps there, lifting at most this high
+
+
+def _step(rt, c, raw, keys, clip, w_in, w_out):
+    """Where the capture's foot and the Key Pose's foot differ, the end blends lift the foot in an arc (4·w·(1 - w)
+    of half the distance, at most STEP_M[1]) instead of sliding it over the floor."""
+    out = dict(c)
+    for side in (".L", ".R"):
+        bone = "foot_ik" + side
+        A = rt.A[bone].to_3x3()
+        lift = 0.0
+        for key, w in ((clip.key_in, w_in), (clip.key_out, w_out)):
+            d = (A @ (raw[bone][0] - keys[key][bone][0])).length
+            if d > STEP_M[0] and 0.0 < w < 1.0:
+                lift += 4 * w * (1 - w) * min(STEP_M[1], d / 2)
+        if lift:
+            out[bone] = (c[bone][0] + A.inverted() @ Vector((0.0, 0.0, lift)), c[bone][1])
+    return out
+
+
 def _set(arm, controls):
     for bone, (loc, rot) in controls.items():
         pb = arm.pose.bones[bone]
@@ -253,7 +274,9 @@ def bake(arm, clip):
         if clip.idle:
             c = _blend(c, controls[0], mocap.loop_weight(clip, f))
         else:
+            raw = c
             c = _blend(_blend(c, keys[clip.key_in], w_in), keys[clip.key_out], w_out)
+            c = _step(rt, c, raw, keys, clip, w_in, w_out)
         _set(arm, c)
         bpy.context.view_layer.update()
         hand = {}

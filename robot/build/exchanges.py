@@ -16,7 +16,7 @@ import math
 from collections import namedtuple
 
 import moves
-from moves import BEATS, CROUCH, GUARD, LOW, Hit, Key, Move, Wave, pose, shifted
+from moves import BEATS, CROUCH, HAND_GUARD, LOW, Hit, Key, Move, Wave, pose, shifted
 
 Exchange = namedtuple("Exchange", "name tier beats android giant hits dodges idle", defaults=(False,))
 Strike = namedtuple("Strike", "beat point strength target")
@@ -131,10 +131,10 @@ def _circle():
 # ---------- build ----------
 
 def _hammer_dodge():
-    side = shifted_x(GUARD, 1.15)
+    side = shifted_x(HAND_GUARD, 1.15)
     android = Move("hammer_dodge", "build", BEATS, "guard", "low", [
-        Key(0, GUARD), Key(0.8, BOB_UP),
-        Key(1.2, pose(GUARD, hips=(0.25, 0.02, 0.86), foot_l=(0.45, -0.20, 0.25), foot_l_rot=(0.0, 0.0, 0.0))),
+        Key(0, HAND_GUARD), Key(0.8, BOB_UP),
+        Key(1.2, pose(HAND_GUARD, hips=(0.25, 0.02, 0.86), foot_l=(0.45, -0.20, 0.25), foot_l_rot=(0.0, 0.0, 0.0))),
         Key(1.6, pose(side, hips=(1.15, 0.02, 0.84), foot_r=(0.70, 0.20, 0.22), foot_r_rot=(0.0, -30.0, 0.0),
                       hand_l=(1.30, -0.40, 1.45), hand_r=(1.05, -0.22, 1.45))),
         Key(2.0, pose(side, hips=(1.15, 0.02, 0.84), head_rot=(-8.0, -30.0, 0.0))),
@@ -177,9 +177,9 @@ def _sweep_jump():
 
 
 def _knee_combo():
-    step = shifted(GUARD, -0.95)
+    step = shifted(HAND_GUARD, -0.95)
     android = Move("knee_combo", "build", BEATS, "guard", "guard", [
-        Key(0, GUARD), Key(0.4, pose(GUARD, hips=(0.0, -0.15, 0.88), foot_l=(0.20, -0.70, 0.20))),
+        Key(0, HAND_GUARD), Key(0.4, pose(HAND_GUARD, hips=(0.0, -0.15, 0.88), foot_l=(0.20, -0.70, 0.20))),
         Key(0.75, pose(step, foot_r=(-0.15, -0.45, 0.20))),
         Key(1.0, pose(step, hips=(0.0, -0.98, 0.86), hips_rot=(0.0, -35.0, 0.0), spine_rot=(14.0, -8.0, 0.0),
                       hand_l=JAB_KNEE), "in"),
@@ -190,7 +190,7 @@ def _knee_combo():
                       foot_r_rot=(12.0, -5.0, 0.0)), "in"),
         Key(2.4, pose(step, foot_r=(-0.15, -0.65, 0.14), foot_r_rot=(6.0, -25.0, 0.0))),
         Key(2.8, pose(step, hips=(0.0, -0.85, 0.91), foot_l=(0.18, -0.95, 0.20))),
-        Key(3.2, pose(GUARD, hips=(0.0, -0.30, 0.91), foot_r=(-0.15, -0.20, 0.18))), Key(4, GUARD)],
+        Key(3.2, pose(HAND_GUARD, hips=(0.0, -0.30, 0.91), foot_r=(-0.15, -0.20, 0.18))), Key(4, HAND_GUARD)],
         [Hit(1.0, "hand_l", 0.7), Hit(2.0, "hand_r", 1.0)])
     buckle = gpose(LOOM, g_hips=(0.15, -2.6, 2.35), g_hips_rot=(0.0, -12.0, 0.0), g_chest_rot=(28.0, 0.0, 0.0),
                    g_hammer=(1.2, -2.2, 2.8), g_claw=(-1.1, -2.0, 2.2))
@@ -204,17 +204,17 @@ def _knee_combo():
 # ---------- drop ----------
 
 def _hammer_hit():
-    block = pose(GUARD, hips=(0.0, 0.02, 0.86), spine_rot=(10.0, -5.0, 0.0), head_rot=(10.0, 10.0, 0.0),
+    block = pose(HAND_GUARD, hips=(0.0, 0.02, 0.86), spine_rot=(10.0, -5.0, 0.0), head_rot=(10.0, 10.0, 0.0),
                  hand_l=(0.15, -0.25, 1.95), hand_r=(-0.10, -0.15, 1.95))
     crushed = pose(CROUCH, hips=(0.0, 0.10, 0.44), spine_rot=(38.0, -5.0, 0.0), head_rot=(-5.0, 0.0, 0.0),
                    hand_l=(0.25, -0.30, 0.90), hand_r=(-0.16, -0.36, 0.30))
     android = Move("hammer_hit", "drop", BEATS, "guard", "crouch", [
-        Key(0, GUARD), Key(1.2, BOB_UP), Key(1.7, block), Key(2.0, pose(block, hips=(0.0, 0.02, 0.84))),
+        Key(0, HAND_GUARD), Key(1.2, BOB_UP), Key(1.7, block), Key(2.0, pose(block, hips=(0.0, 0.02, 0.84))),
         Key(2.35, pose(crushed, hips=(0.0, 0.06, 0.56), hand_l=(0.22, -0.28, 1.25), hand_r=(-0.15, -0.20, 1.20),
-                       foot_l=GUARD["foot_l"], foot_l_rot=GUARD["foot_l_rot"],
-                       foot_r=GUARD["foot_r"], foot_r_rot=GUARD["foot_r_rot"]), "out"),
+                       foot_l=HAND_GUARD["foot_l"], foot_l_rot=HAND_GUARD["foot_l_rot"],
+                       foot_r=HAND_GUARD["foot_r"], foot_r_rot=HAND_GUARD["foot_r_rot"]), "out"),
         Key(2.8, pose(crushed, foot_l=(0.20, -0.24, 0.18), foot_l_rot=(0.0, -10.0, 0.0),
-                      foot_r=GUARD["foot_r"], foot_r_rot=GUARD["foot_r_rot"])),
+                      foot_r=HAND_GUARD["foot_r"], foot_r_rot=HAND_GUARD["foot_r_rot"])),
         Key(3.2, pose(crushed, foot_r=(-0.20, 0.30, 0.18), foot_r_rot=(0.0, -35.0, 0.0))),
         Key(3.6, pose(CROUCH, hips=(0.0, 0.10, 0.48))), Key(4, CROUCH)], [Hit(2.0, "head", 1.0)])
     wind = gpose(LOOM, g_hips=(0.0, -2.6, 2.7), g_chest_rot=(-10.0, 0.0, 0.0), g_head_rot=(-25.0, 0.0, 0.0),
@@ -230,24 +230,24 @@ def _hammer_hit():
 def _core_strike():
     coil = pose(CROUCH, hips=(0.0, 0.08, 0.44), head_rot=(-45.0, 0.0, 0.0), hand_l=(0.35, 0.10, 0.80),
                 hand_r=(-0.30, 0.15, 0.80))
-    rise = pose(GUARD, hips=(0.0, -0.55, 2.10), spine_rot=(-10.0, 10.0, 0.0), head_rot=(-25.0, 0.0, 0.0),
+    rise = pose(HAND_GUARD, hips=(0.0, -0.55, 2.10), spine_rot=(-10.0, 10.0, 0.0), head_rot=(-25.0, 0.0, 0.0),
                 hand_l=(0.25, -0.70, 2.75), hand_r=(-0.20, -0.40, 2.70),
                 foot_l=(0.20, -0.60, 1.30), foot_l_rot=(-30.0, 0.0, 0.0),
                 foot_r=(-0.19, -0.23, 1.28), foot_r_rot=(-30.0, -20.0, 0.0))
     punch = pose(rise, hips=(0.0, -1.39, 3.05), hips_rot=(0.0, 15.0, 0.0), spine_rot=(10.0, 20.0, 0.0),
                  hand_l=(0.30, -1.24, 3.40), hand_r=CORE_PUNCH,
                  foot_l=(0.19, -1.39, 2.18), foot_r=(-0.18, -1.13, 2.23))
-    fall = pose(GUARD, hips=(0.0, -0.40, 1.80), spine_rot=(15.0, -5.0, 0.0),
+    fall = pose(HAND_GUARD, hips=(0.0, -0.40, 1.80), spine_rot=(15.0, -5.0, 0.0),
                 hand_l=(0.30, -0.50, 2.20), hand_r=(-0.25, -0.40, 2.20),
                 foot_l=(0.15, -0.40, 0.93), foot_l_rot=(0.0, -15.0, 0.0),
                 foot_r=(-0.14, 0.03, 1.02), foot_r_rot=(0.0, -45.0, 0.0))
-    land = pose(GUARD, hips=(0.0, 0.02, 0.70), spine_rot=(25.0, -5.0, 0.0), hand_l=(0.30, -0.45, 1.20),
+    land = pose(HAND_GUARD, hips=(0.0, 0.02, 0.70), spine_rot=(25.0, -5.0, 0.0), hand_l=(0.30, -0.45, 1.20),
                 hand_r=(-0.20, -0.35, 1.20))
     android = Move("core_strike", "drop", 8, "crouch", "guard", [
         Key(0, CROUCH), Key(1.2, coil), Key(2.2, rise), Key(3.0, punch, "in"),
         Key(3.3, pose(punch, hand_r=(-0.05, -1.54, 3.45)), "out"), Key(4.2, fall), Key(5.0, land, "in"),
-        Key(5.6, pose(GUARD, hips=(0.0, 0.02, 0.82))), Key(6.5, pose(GUARD, head_rot=(-15.0, 22.0, 0.0))),
-        Key(7.5, moves.BOB), Key(8, GUARD)], [Hit(3.0, "hand_r", 1.0), Hit(5.0, "foot_l", 0.6)])
+        Key(5.6, pose(HAND_GUARD, hips=(0.0, 0.02, 0.82))), Key(6.5, pose(HAND_GUARD, head_rot=(-15.0, 22.0, 0.0))),
+        Key(7.5, moves.BOB), Key(8, HAND_GUARD)], [Hit(3.0, "hand_r", 1.0), Hit(5.0, "foot_l", 0.6)])
     reel = gpose(LOOM, g_hips=(0.0, -2.9, 2.5), g_chest_rot=(-15.0, 0.0, 0.0), g_head_rot=(-35.0, 0.0, 0.0),
                  g_hammer=(1.4, -2.9, 3.4), g_claw=(-1.4, -2.8, 3.0))
     giant = _giant("core_strike", "drop", 8, [Key(0, LOOM), Key(2.2, gpose(LOOM, g_chest_rot=(22.0, 0.0, 0.0))),
@@ -276,7 +276,7 @@ def _quake_stomp():
                     [Strike(h.beat + 4, h.limb, h.strength, "floor") for h in stomp.hits], [])
 
 
-BOB_UP = pose(GUARD, hips=(0.0, 0.02, 0.89))
+BOB_UP = pose(HAND_GUARD, hips=(0.0, 0.02, 0.89))
 # contact targets, placed where the struck point stands at the Hit (checked by the tests)
 JAB_KNEE = (0.43, -1.70, 1.40)
 CROSS_KNEE = (0.40, -1.70, 1.38)

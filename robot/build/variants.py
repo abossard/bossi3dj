@@ -2,7 +2,7 @@
 Clip. Pure, no bpy; moves.py adds them to MOVES.
 
 - Idle families: per Key Pose, IDLE_FAMILIES gives one-bar Idle variants. Each is its Key Pose with a captured
-  idle's micro-motion on top (breathing, sway, glances from robot/build/tracks/, extract_tracks.py): a window of the
+  idle's motion on top (breathing, bounce, sway, glances, the hands; robot/build/tracks/, extract_tracks.py): a window of the
   capture, detrended so it starts and ends at the Key Pose and faded in and out over EDGE frames, so any variant
   chains into any other.
 - Move takes: MOVE_TAKES gives seeds for a Move's extra takes. A take moves the keys that are neither an end nor a
@@ -19,12 +19,13 @@ import moves
 from moves import Hit, Key, Move
 
 TRACKS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tracks")
-TRACK_CHANNELS = ("hips", "hips_rot", "spine_rot", "chest_rot", "head_rot")
+TRACK_CHANNELS = ("hips", "hips_rot", "spine_rot", "chest_rot", "head_rot", "hand_l", "hand_r")
 EDGE = 8
-# Key Pose: [(track, first source frame, scale, seed)], named idle_<pose>_v2 and on
+# Key Pose: [(track, first source frame, scale, seed[, channels left out])], named idle_<pose>_v2 and on
 IDLE_FAMILIES = {
-    "guard": [("breathing_idle", 0, 1.5, 21), ("breathing_idle", 80, 1.5, 22), ("breathing_idle", 160, 1.5, 23),
-              ("relaxed_idle", 40, 1.2, 24)],
+    # the user's fight idles (Fight Idle-2 repeats Fight Idle); the bounce at 0.6, as the soles stay flat on the floor
+    "guard": [("fighting_idle", 0, 0.6, 21), ("fighting_idle", 40, 0.6, 22), ("fight_idle", 10, 0.7, 23),
+              ("fight_idle_weave", 30, 0.5, 24, ("hips_rot",))],   # its hips turn sits at XYZ Euler's 90° lock
     "low": [("relaxed_idle", 0, 1.3, 31), ("relaxed_idle", 70, 1.3, 32), ("relaxed_idle", 140, 1.3, 33),
             ("breathing_idle", 220, 1.3, 34)],
     "crouch": [("crouched_idle", 0, 1.5, 41), ("crouched_idle", 10, 1.5, 42), ("crouched_idle", 19, 1.5, 43),
@@ -55,13 +56,15 @@ def _wrap(d):
 def track_offsets(move, frame, bpm=moves.BPM, fps=moves.FPS):
     """{channel: offset} of a tracked Move at `frame`: the capture window's change since its first frame, detrended
     to 0 at the last frame, scaled, faded over EDGE frames at both ends."""
-    name, start, scale = move.track
+    name, start, scale, skip = (tuple(move.track) + ((),))[:4]
     fr = _track(name)
     n = moves.move_frames(move, bpm, fps)
     k = frame / (n - 1)
     edge = moves._smoothstep(min(max(min(frame, n - 1 - frame) / EDGE, 0.0), 1.0))
     out = {}
     for ch in TRACK_CHANNELS:
+        if ch in skip:
+            continue
         a, b, x = fr[start][ch], fr[start + n - 1][ch], _at(fr, start + frame, ch)
         diff = (lambda p, q: _wrap(p - q)) if ch.endswith("_rot") else (lambda p, q: p - q)
         out[ch] = tuple(scale * edge * (diff(xi, ai) - diff(bi, ai) * k) for xi, ai, bi in zip(x, a, b))
@@ -72,10 +75,10 @@ def _idle_variants():
     out = []
     for key, takes in IDLE_FAMILIES.items():
         pose = moves.KEY_POSES[key]
-        for i, (track, start, scale, seed) in enumerate(takes):
+        for i, (track, start, scale, seed, *skip) in enumerate(takes):
             out.append(Move("idle_%s_v%d" % (key, i + 2), "calm", moves.BEATS, key, key,
                             [Key(0, pose), Key(moves.BEATS, pose)], [], True, (), "idle_" + key, seed,
-                            (track, start, scale)))
+                            (track, start, scale, tuple(skip[0]) if skip else ())))
     return out
 
 

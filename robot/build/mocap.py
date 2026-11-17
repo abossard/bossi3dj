@@ -25,6 +25,7 @@ import moves
 import weight
 
 PACKS = "robot/assets/mixamo/packs"
+FIGHT = "../fight/"         # relative to PACKS: the fight clips the user downloaded on 2026-11-17
 LOOP_FRAMES = 12
 PLANT_HEIGHT_M = 0.04      # ankle within this of ANKLE_Z
 PLANT_SPEED_M = 0.012      # per frame at 30 fps (0.36 m/s)
@@ -47,6 +48,36 @@ CLIPS = {c.name: c for c in [
     MocapClip("mocap_flip_uppercut_v2", "drop", 8, "guard", "guard", "free_test_pack/extracted/back flip to uppercut.fbx",
               ((0, 9), (4, 106), (5, 121), (8, 165)),    # earlier strikes, a longer settle
               (SourceHit(106, "hand_l", 0.8), SourceHit(121, "hand_r", 1.0)), False, "mocap_flip_uppercut"),
+    # the user's fight clips (robot/assets/mixamo/fight/): Hits on each strike's contact frame (the fist furthest
+    # forward, the elbow's forward stop), Anchors put them on beats and half beats
+    MocapClip("mocap_fist_fight", "drop", 8, "guard", "guard", FIGHT + "Fist Fight A.fbx",
+              ((0, 5), (2, 47), (4, 75), (4.5, 83), (7, 129), (8, 141)),
+              (SourceHit(47, "hand_l", 0.6), SourceHit(75, "hand_r", 0.9), SourceHit(83, "hand_l", 0.7),
+               SourceHit(129, "hand_l", 1.0))),
+    MocapClip("mocap_fist_fight_v2", "drop", 8, "guard", "guard", FIGHT + "Fist Fight A.fbx",
+              ((0, 1), (2.5, 47), (4.5, 75), (5, 83), (7, 129), (8, 141)),     # a later start, the combo tighter
+              (SourceHit(47, "hand_l", 0.6), SourceHit(75, "hand_r", 0.9), SourceHit(83, "hand_l", 0.7),
+               SourceHit(129, "hand_l", 1.0)), False, "mocap_fist_fight"),
+    MocapClip("mocap_jab_elbow", "build", 8, "guard", "guard", FIGHT + "Jab To Elbow Punch.fbx",
+              ((0, 1), (2, 31), (3, 47), (8, 99)),
+              (SourceHit(31, "hand_l", 0.7), SourceHit(47, "hand_r", 1.0))),          # the elbow drives the right arm
+    MocapClip("mocap_jab_elbow_v2", "build", 8, "guard", "guard", FIGHT + "Jab To Elbow Punch.fbx",
+              ((0, 1), (3, 31), (4, 47), (8, 99)),                                   # a longer wind-up
+              (SourceHit(31, "hand_l", 0.7), SourceHit(47, "hand_r", 1.0)), False, "mocap_jab_elbow"),
+    MocapClip("mocap_uppercut_jab", "drop", 8, "guard", "guard", FIGHT + "Uppercut Jab.fbx",
+              ((0, 1), (2, 25), (3, 43), (3.5, 53), (4, 61), (4.5, 69), (5, 77), (8, 109)),
+              (SourceHit(25, "hand_l", 0.6), SourceHit(43, "hand_r", 0.8), SourceHit(53, "hand_l", 0.6),
+               SourceHit(61, "hand_r", 0.8), SourceHit(69, "hand_l", 0.7), SourceHit(77, "hand_r", 1.0))),
+    MocapClip("mocap_uppercut_jab_v2", "drop", 8, "guard", "guard", FIGHT + "Uppercut Jab-2.fbx",     # another clip
+              ((0, 1), (1, 27), (2.5, 57), (3.5, 77), (4.5, 95), (5.5, 115), (6.5, 133), (8, 175)),
+              (SourceHit(27, "hand_l", 0.6), SourceHit(57, "hand_r", 0.8), SourceHit(77, "hand_l", 0.7),
+               SourceHit(95, "hand_r", 0.8), SourceHit(115, "hand_l", 0.8), SourceHit(133, "hand_r", 1.0)),
+              False, "mocap_uppercut_jab"),
+    MocapClip("mocap_uppercut_jab_v3", "drop", 8, "guard", "guard", FIGHT + "Uppercut Jab.fbx",
+              ((0, 1), (2.5, 25), (3.5, 43), (4, 53), (4.5, 61), (5, 69), (6, 77), (8, 109)),   # a later, looser combo
+              (SourceHit(25, "hand_l", 0.6), SourceHit(43, "hand_r", 0.8), SourceHit(53, "hand_l", 0.6),
+               SourceHit(61, "hand_r", 0.8), SourceHit(69, "hand_l", 0.7), SourceHit(77, "hand_r", 1.0)),
+              False, "mocap_uppercut_jab"),
     MocapClip("mocap_flip_uppercut_v3", "drop", 8, "guard", "guard", "free_test_pack/extracted/back flip to uppercut.fbx",
               ((0, 13), (5.5, 106), (6.5, 121), (8, 158)),    # a slower flip, off-beat strikes, a quick settle
               (SourceHit(106, "hand_l", 0.8), SourceHit(121, "hand_r", 1.0)), False, "mocap_flip_uppercut"),
