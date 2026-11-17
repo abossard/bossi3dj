@@ -28,6 +28,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import exchanges as X  # noqa: E402
 import moves  # noqa: E402
+import retarget  # noqa: E402
 
 SIZE = (1920, 1080)
 DEFAULT_BLEND = os.path.join(HERE, "robot.blend")
@@ -511,6 +512,15 @@ def build_cameras(coll):
 
 # ---------- Moves ----------
 
+def _key_extras_at_rest(arm):
+    """Key the bones only a Mocap Clip poses at rest, so this Action never inherits them."""
+    for bone in retarget.EXTRA_BONES:
+        pb = arm.pose.bones[bone]
+        pb.location, pb.rotation_euler = (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)
+        pb.keyframe_insert("location", frame=0)
+        pb.keyframe_insert("rotation_euler", frame=0)
+
+
 def bake_moves(arm):
     """One Action per Move, a key on every frame from moves.py, linear between them."""
     bpy.context.preferences.edit.keyframe_new_interpolation_type = "LINEAR"
@@ -519,6 +529,7 @@ def bake_moves(arm):
         act = bpy.data.actions.new("move." + name)
         act.use_fake_user = True
         arm.animation_data.action = act
+        _key_extras_at_rest(arm)
         for f, pose in enumerate(moves.frames(move)):
             apply_pose(arm, pose)
             for ch, (bone, kind) in CHANNEL_BONES.items():
@@ -587,6 +598,7 @@ def bake_exchanges(arm, rig):
         for act in acts:
             act.use_fake_user = True
         arm.animation_data.action, rig.animation_data.action = acts
+        _key_extras_at_rest(arm)
         for f, (a, g) in enumerate(X.frames(ex)):
             apply_pose(arm, a)
             for ch, (bone, kind) in CHANNEL_BONES.items():
@@ -724,6 +736,8 @@ def build(out):
     rig = import_giant(scene)
     bake_moves(arm)
     bake_exchanges(arm, rig)
+    retarget.bake_all(arm)
+    arm.animation_data.action = bpy.data.actions["move." + next(iter(moves.MOVES))]
     setup_render(scene)
     scene.camera = bpy.data.objects[ANGLES[0][1]]
     bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(out), relative_remap=True)
