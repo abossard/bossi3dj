@@ -33,14 +33,15 @@ LIB = os.path.expanduser("~/Library/Application Support/Blender/data/scatter lib
 # scale and placement from preview rounds B1 to B3 (docs/handover/robot-assets.md): median part about 8 m.
 # per_angle overrides scale, area or y0 on one Angle (round P1 fails: a thin dark band on the horizon). A taller
 # scale keeps the instance count only if the area grows with it (Geo-Scatter's density is per local square metre).
+# ship False keeps a biome out of the Manifest until its plates pass review on every Angle.
 BIOMES = {
     "arclink_city_1": {"biome": "Arclink City/arclink_city_1.biome", "scale": 1.0, "area": [200, 230], "y0": 15},
-    "chipset_04": {"biome": "Binary Frames/chipset_04.biome", "scale": 20.0, "area": [120, 120], "y0": 8,
+    "chipset_04": {"biome": "Binary Frames/chipset_04.biome", "scale": 20.0, "area": [120, 120], "y0": 8, "ship": False,
                    "per_angle": {"front": {"scale": 40.0, "area": [240, 240]},
                                  "duel_low": {"scale": 40.0, "area": [240, 240]}}},
     # y0 8 put a pipe behind the Android's head on side and one slab across the fighters on duel_low; at y0 30
     # front and duel_low thinned to a band (round P1). front passed at y0 8.
-    "greeble_01": {"biome": "Future Scratch/greeble_01.biome", "scale": 4.0, "area": [200, 200], "y0": 30,
+    "greeble_01": {"biome": "Future Scratch/greeble_01.biome", "scale": 4.0, "area": [200, 200], "y0": 30, "ship": False,
                    "per_angle": {"front": {"y0": 8},
                                  "duel_low": {"scale": 8.0, "area": [400, 400]}}},
     "greeble_03": {"biome": "Future Scratch/greeble_03.biome", "scale": 4.0, "area": [200, 200], "y0": 30},
@@ -140,16 +141,16 @@ def promote(names, angles, tag):
 
 
 def manifest():
-    """Set the Manifest's `backdrops` from the plates on disk: one entry per biome that has a plate for every Angle,
-    in BIOMES order. Other keys stay as they are. build_robot.py rewrites manifest.json without it: run this after."""
+    """Set the Manifest's `backdrops` from the plates on disk: one entry per shipped biome that has a plate for every
+    Angle, in BIOMES order. Other keys stay as they are. build_robot.py rewrites manifest.json without it: run this after."""
     path = os.path.join(PACKAGE, "manifest.json")
     with open(path) as f:
         m = json.load(f)
     angles = [a["id"] for a in m["angles"]]
     m["backdrops"] = [{"id": name, "frames": LOOP_FRAMES,
                        "angles": {a: "backdrop/%s/%s.mov" % (name, a) for a in angles}}
-                      for name in BIOMES
-                      if all(os.path.isfile(os.path.join(PACKAGE, "backdrop", name, a + ".mov")) for a in angles)]
+                      for name, b in BIOMES.items() if b.get("ship", True)
+                      and all(os.path.isfile(os.path.join(PACKAGE, "backdrop", name, a + ".mov")) for a in angles)]
     with open(path, "w") as f:
         json.dump(m, f, indent=1)
         f.write("\n")
