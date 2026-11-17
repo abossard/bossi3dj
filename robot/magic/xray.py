@@ -93,21 +93,23 @@ def globals_(src=SOURCE):
     g("ToneRise", 0, "calc", [ex("ToneBar - ToneSlow")])
     g("KickRate", 0, "calc", [ex("y*exp(-Dt*max(Bpm, 60)/240) + KickPulse")])     # about kicks per bar
     g("SnareRate", 0, "calc", [ex("y*exp(-Dt*max(Bpm, 60)/240) + SnarePulse")])   # about snares per bar
-    g("SubOut", 0, "calc", [ex("if (BarPulse > 0.5, if (SubBar < SubLow, y + 1, 0), y)")])
+    # bars of music since the last silent bar: the evidence a first State waits for (#29: a silent bar is not a bar without sub)
+    g("MusicBars", 0, "calc", [ex("if (BarPulse > 0.5, if (VolSlow < Quiet, 0, y + 1), y)")])
+    g("SubOut", 0, "calc", [ex("if (DropPulse > 0.5, 0, if (BarPulse > 0.5, if (VolSlow < Quiet, 0, if (SubBar < SubLow, y + 1, 0)), y))")])
 
-    # drop: sub-bass back after >= 2 low bars; it sets the bar grid
-    g("DropPulse", 0, "calc", [ex("if (SubFast > SubHigh and SubOut >= 2 and abs(State - 3) > 0.5 and y < 0.5, 1, 0)")])
+    # drop: sub-bass back after >= 2 bars of music without it; it sets the bar grid, also inside a drop (a missed breakdown re-anchors it)
+    g("DropPulse", 0, "calc", [ex("if (SubFast > SubHigh and SubOut >= 2 and y < 0.5, 1, 0)")])
     g("DownSlot", 0, "calc", [ex("if (DropPulse > 0.5, round(Phase - 0.25) - 4*floor(round(Phase - 0.25)/4), y)")])
 
     # section state, decided on bar lines (a drop switches at once)
     g("ThinBars", 0, "calc", [ex("if (BarPulse > 0.5, if (SubBar < SubLow and KickRate >= 2.5, y + 1, 0), y)")])
     g("State", 0, "calc", [ex(
         "if (DropPulse > 0.5, 3, if (BarPulse > 0.5, "
-        "if (VolSlow < Quiet, 0, "
+        "if (VolSlow < Quiet, 0, if (MusicBars < 2, y, "
         "if (ThinBars >= 16 and y > 0.5, 0, "
         "if (abs(y - 3) < 0.5, if (SubBar < SubLow and KickRate < 0.5, 4, 3), "
         "if (SubBar < SubLow and (ToneRise > RiseMin or SnareRate >= 5), 2, "
-        "if (SubBar < SubLow and KickRate < 0.5 and y > 0.5 and abs(y - 2) > 0.5, 4, y))))), y))")])
+        "if (SubBar < SubLow and KickRate < 0.5 and y > 0.5 and abs(y - 2) > 0.5, 4, y)))))), y))")])
 
     # what the Clip Graph reads. A plain Global link reads the same frame.
     g(SECTION, 0, "global:State")

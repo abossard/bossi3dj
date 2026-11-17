@@ -44,7 +44,8 @@ PY313 = {"PYTHONPATH": os.path.expanduser("~/.local/lib/python3.13/site-packages
 
 PROBE_PORT, BPM, RATE, FPS, SECONDS = 19420, 124, 44100, 30, 90
 SPB = 60.0 / BPM
-PROBE = ["Beats", "Bpm", "State", "Section", "Tier", "Move", "Angle", "OutClip", "OutFrame", "IsIdle", "MoveStart", "Volume", "Fps"]
+PROBE = ["Beats", "Bpm", "State", "Section", "Tier", "Move", "Angle", "OutClip", "OutFrame", "IsIdle", "MoveStart", "Volume", "Fps",
+         "SubBar", "SubFast", "SubOut", "MusicBars", "DropPulse", "DownSlot", "KickRate", "VolSlow"]     # the X-Ray section inputs, to replay a start-up (#29)
 # bars, layers: kick on every beat, sub-bass, pad, snare roll (eighth notes). The section names are what the track means, not what X-Ray reads.
 PLAN = [(4, "intro", "k"), (8, "drop", "ks"), (4, "breakdown", "p"), (4, "buildup", "pr"), (8, "drop", "ks"),
         (4, "breakdown", "p"), (4, "buildup", "pr"), (12, "drop", "ks")]
