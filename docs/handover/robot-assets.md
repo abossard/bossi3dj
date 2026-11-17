@@ -209,7 +209,9 @@ Before any slot: script work of about one session per step. After the slots: `ma
   - **chipset_04** fails front and duel_low: a thin dark band on the horizon.
   - **greeble_01** fails front and duel_low at y0 30 (thin, barely visible). At y0 8, front passed, but side had a pipe behind the head and duel_low had one slab across the fighters.
   - No shot shows floating feet, a plane edge, or a structure cutting through a fighter.
-- Next fix, one slot of about 5 min: a per-Angle `y0` (and scale) in `BIOMES`.
-  - greeble_01: front y0 8, side and duel_wide y0 30, duel_low about 15.
-  - chipset_04: front and duel_low at a larger scale or a closer y0.
+- Fix P2, prepared and waiting for one slot of about 3 min. `BIOMES[...]["per_angle"]` overrides scale, area or y0 per Angle, and `--angles` renders and encodes only those Angles:
+  - greeble_01: front back to y0 8, where it passed. duel_low gets scale 8 on a 400 x 400 m area: twice as tall at the same instance count, because the 16 mm lens looks up and sees only a band of the horizon.
+  - chipset_04: front and duel_low get scale 40 on 240 x 240 m (median part about 15 m), so the band grows into towers.
+  - Slot: `python3 robot/backdrop/render_plates.py render chipset_04 greeble_01 --angles front duel_low`.
+  - Then, without Blender: `encode chipset_04 greeble_01 --angles front duel_low`, the reel, and review P2 of those 4 composites with `rubric-backdrops.md`.
   - Until then Magic can use arclink_city_1 and greeble_03.

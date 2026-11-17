@@ -1,8 +1,8 @@
 """Backdrop Plates for the Robot Scene: a Geo-Scatter biome as a megastructure behind the arena, one loop per Angle,
 for Magic to draw behind the Clips. The Shot Cameras are locked, so one plate per Angle fits every Clip on it.
 
-    python3 robot/backdrop/render_plates.py render [BIOME...]     # Blender slot: stills per Angle (base and glow)
-    python3 robot/backdrop/render_plates.py encode [BIOME...]     # no Blender: loops, luma check, composites
+    python3 robot/backdrop/render_plates.py render [BIOME...] [--angles ANGLE...]   # Blender slot: base and glow stills
+    python3 robot/backdrop/render_plates.py encode [BIOME...] [--angles ANGLE...]   # no Blender: loops, luma, composites
     python3 robot/backdrop/render_plates.py manifest              # the Manifest's `backdrops` from the plates on disk
     python3 robot/backdrop/render_plates.py reel                  # no Blender: docs/video/robot-backdrops.mp4
 
@@ -26,12 +26,19 @@ PROBE = os.path.join(ROOT, "robot", "build", "probe", "backdrop")
 REEL = os.path.join(ROOT, "docs", "video", "robot-backdrops.mp4")
 LIB = os.path.expanduser("~/Library/Application Support/Blender/data/scatter library/_biomes_/GreebleTown")
 
-# scale and placement from preview rounds B1 to B3 (docs/handover/robot-assets.md): median part about 8 m
+# scale and placement from preview rounds B1 to B3 (docs/handover/robot-assets.md): median part about 8 m.
+# per_angle overrides scale, area or y0 on one Angle (round P1 fails: a thin dark band on the horizon). A taller
+# scale keeps the instance count only if the area grows with it (Geo-Scatter's density is per local square metre).
 BIOMES = {
     "arclink_city_1": {"biome": "Arclink City/arclink_city_1.biome", "scale": 1.0, "area": [200, 230], "y0": 15},
-    "chipset_04": {"biome": "Binary Frames/chipset_04.biome", "scale": 20.0, "area": [120, 120], "y0": 8},
-    # y0 8 put a pipe behind the Android's head on side and one slab across the fighters on duel_low (round P1)
-    "greeble_01": {"biome": "Future Scratch/greeble_01.biome", "scale": 4.0, "area": [200, 200], "y0": 30},
+    "chipset_04": {"biome": "Binary Frames/chipset_04.biome", "scale": 20.0, "area": [120, 120], "y0": 8,
+                   "per_angle": {"front": {"scale": 40.0, "area": [240, 240]},
+                                 "duel_low": {"scale": 40.0, "area": [240, 240]}}},
+    # y0 8 put a pipe behind the Android's head on side and one slab across the fighters on duel_low; at y0 30
+    # front and duel_low thinned to a band (round P1). front passed at y0 8.
+    "greeble_01": {"biome": "Future Scratch/greeble_01.biome", "scale": 4.0, "area": [200, 200], "y0": 30,
+                   "per_angle": {"front": {"y0": 8},
+                                 "duel_low": {"scale": 8.0, "area": [400, 400]}}},
     "greeble_03": {"biome": "Future Scratch/greeble_03.biome", "scale": 4.0, "area": [200, 200], "y0": 30},
 }
 GLOW = 3.0
@@ -52,12 +59,12 @@ def _run(cmd):
     subprocess.run(cmd, check=True)
 
 
-def render(names):
+def render(names, angles):
     for name in names:
         b = BIOMES[name]
         out = os.path.join(PROBE, name)
         os.makedirs(out, exist_ok=True)
-        job = dict(b, biome=os.path.join(LIB, b["biome"]), angles=_angles(), out=out, glow=GLOW)
+        job = dict(b, biome=os.path.join(LIB, b["biome"]), angles=angles, out=out, glow=GLOW)
         path = os.path.join(out, "job.json")
         with open(path, "w") as f:
             json.dump(job, f, indent=1)
@@ -73,13 +80,17 @@ def _luma(mov):
     return [float(v.strip(",")) for v in res.stdout.split()]
 
 
-def encode(names):
+def encode(names, angles):
+    path = os.path.join(PROBE, "encode_report.json")
     report = {}
+    if os.path.isfile(path):          # a run on some Angles keeps the others' entries
+        with open(path) as f:
+            report = json.load(f)
     for name in names:
         src = os.path.join(PROBE, name)
         dst = os.path.join(PACKAGE, "backdrop", name)
         os.makedirs(dst, exist_ok=True)
-        for angle in _angles():
+        for angle in angles:
             mov = os.path.join(dst, angle + ".mov")
             swell = "0.5-0.5*cos(2*PI*N/%d)" % LOOP_FRAMES
             _run(["ffmpeg", "-v", "error", "-y",
@@ -96,9 +107,9 @@ def encode(names):
             report.setdefault(name, {})[angle] = {
                 "frames": len(y), "luma_min": round(min(y), 1), "luma_max": round(max(y), 1),
                 "black": min(y) < BLACK_LUMA, "loop_seam": round(abs(y[0] - y[-1]), 2), "composite": comp}
-    with open(os.path.join(PROBE, "encode_report.json"), "w") as f:
+    with open(path, "w") as f:
         json.dump(report, f, indent=1)
-    print(json.dumps(report, indent=1))
+    print(json.dumps({n: report[n] for n in names}, indent=1))
 
 
 def manifest():
@@ -137,8 +148,14 @@ def reel():
 
 
 def main():
-    cmd, names = sys.argv[1], sys.argv[2:] or list(BIOMES)
-    {"render": lambda: render(names), "encode": lambda: encode(names), "manifest": manifest, "reel": reel}[cmd]()
+    cmd, rest = sys.argv[1], sys.argv[2:]
+    angles = _angles()
+    if "--angles" in rest:
+        i = rest.index("--angles")
+        rest, angles = rest[:i], rest[i + 1:]
+    names = rest or list(BIOMES)
+    {"render": lambda: render(names, angles), "encode": lambda: encode(names, angles), "manifest": manifest,
+     "reel": reel}[cmd]()
 
 
 main()

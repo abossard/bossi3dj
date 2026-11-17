@@ -101,6 +101,7 @@ def _render(scene, path):
 
 
 def plate(job, angle):
+    job = dict(job, **job.get("per_angle", {}).get(angle, {}))
     bpy.ops.wm.open_mainfile(filepath=job["blend"])
     scene = bpy.context.scene
     _engine(scene)
@@ -130,7 +131,7 @@ def plate(job, angle):
     for sk in sockets:
         sk.default_value *= job["glow"]
     _render(scene, os.path.join(out, angle + "_glow.png"))
-    rep = {"angle": angle, "camera": cam.name, "lens": cam.data.lens, "size": [r.resolution_x, r.resolution_y],
+    rep = {"angle": angle, "camera": cam.name, "scale": s, "y0": job["y0"], "lens": cam.data.lens, "size": [r.resolution_x, r.resolution_y],
            "plane_centre": [round(c, 2) for c in centre], "plane_yaw_deg": round(math.degrees(yaw), 1),
            "plane_size_m": [round(width, 1), job["area"][1]], "instances": count, "emission_inputs": len(sockets)}
     with open(os.path.join(out, angle + ".json"), "w") as f:
