@@ -46,3 +46,8 @@ Falls and far hops go dark late because the keep's turn budget (`BLEND_LAND_TURN
   - `PUSH_PERIOD` stays 80 s ("Keep 80 s").
 - Opus review of 5367861..0de533f: the mutants of `issue25_review/mutants.py` (the 0.8 cap, the start ramp, the heading from the ends) fail `test_path_blends.py`; the guard's change branch was removed (`redundant.py`: it never mattered in 120 programs).
 - Next slot: `make blender-rebuild` (haze 58783e3, sky without hue), check the log's list and warnings, live A/B on the demo program plus an orbit view of the limb from space heights, shot-reviewer (Opus).
+
+## Sky bodies seen from where they are up (2026-11-17, issue #30)
+
+- Cause: the moon and sun shots always looked from the pyramids (HOME); in run 4 the moon stood 30 to 38 deg under their horizon, so `look_point` aimed at the horizon and no moon showed (the target and the drawn moon share rt_moon_x/y/z).
+- Built: `path_camera.sky_home()`: at a sky shot's start its home is HOME if the body stands `SKY_HOME_EL` (20 deg) up there, else the first ground on the great circle toward the point under the body where it does (`SKY_HOME_STEPS` 64), else HOME (the horizon look). Fixed for the shot; the sun at night likewise. `test_path_blends.py` SkyHomeTests: a set moon (75 deg away) and a night sun (150 deg) in frame with land on orbit, vantage and rise (3 failures with the home held at HOME); a risen moon keeps HOME. `verify_paths` 2c 70.8. Not yet seen live.

@@ -56,6 +56,9 @@ RISE_DEPTH = 0.75                   # rise and descend: the share of the log hei
 PATHS = ("orbit", "follow", "rise", "vantage")
 TARGETS = ("pyramids", "lake", "river", "coast", "moon", "sun", "planet")
 HOME = "pyramids"                   # the ground the moon, the sun and the planet are seen from
+SKY_HOME_EL = math.radians(20.0)    # a sky body is seen from where it stands at least this high (issue #30): from HOME
+#                                     when it does there, else from the first ground toward the point under it that does
+SKY_HOME_STEPS = 64                 # the walk's steps from HOME to the point under the body
 FOG = ((10.0, 1.5, 150.0), (60.0, 2.0, 250.0), (3000.0, 1.0, 600.0), (64000.0, 1.0, 180.0))   # m, fog_k, fog_clear
 
 
@@ -149,6 +152,26 @@ def reach(h, size):
     """Ground distance (m) the camera keeps from its home at clearance h: a stand-off that grows with height, at
     most 0.7 rad round the Planet."""
     return min(max(2.5 * h, 4.0 * size, 120.0), 0.7 * fl.R)
+
+
+def body_elevation(body, u, terrain):
+    """Radians the point body stands over the level at the ground under the unit direction u."""
+    g = fl.add(fl.CENTRE, u, fl.R + terrain.surface(u))
+    return math.asin(fl.clamp(fl.dot(fl.norm(fl.sub(body, g)), u), -1.0, 1.0))
+
+
+def sky_home(body, home, terrain):
+    """The ground a sky body is seen from: home if the body stands SKY_HOME_EL up there, else the first point on the
+    great circle from home toward the point under the body where it does (a Target of home's size), else home: under
+    the horizon look_point keeps the old view toward it (issue #30: the moon had set at the pyramids)."""
+    u0, ub = home.ground_dir(), fl.norm(fl.sub(body, fl.CENTRE))
+    if body_elevation(body, u0, terrain) >= SKY_HOME_EL:
+        return home
+    for i in range(1, SKY_HOME_STEPS + 1):
+        u = fl.slerp(u0, ub, i / SKY_HOME_STEPS)
+        if body_elevation(body, u, terrain) >= SKY_HOME_EL:
+            return ground_target(home.name, u, terrain, home.size)
+    return home
 
 
 def home_frame(home):
@@ -279,13 +302,18 @@ class PathCamera:
         self.D = dr.Director()
         self.key = None
         self.le = None                      # log of the eye's height over the sea, as last given out
+        self.homes = None                   # the running sky shot's home (sky_home), None: HOME
         self.views = None                   # (the view before the keep, the view shown) last frame, for the turn limit
 
     def target(self, name):
         return self.targets.get(name) or self.targets[HOME]
 
+    def home(self):
+        """The ground the running shot's sky or planet target is seen from: fixed at the shot's start (sky_home)."""
+        return self.homes or self.targets[HOME]
+
     def live(self, path, target_name, h):
-        return pose(path, self.target(target_name), self.targets[HOME], self.phase, h, self.terrain)
+        return pose(path, self.target(target_name), self.home(), self.phase, h, self.terrain)
 
     def step(self, dt, path, target_name, w, speed=1.0, blend_s=30.0, drive=None):
         """dt s; path and target names; w the /vj/height fader; speed /vj/cam_speed in scene units; blend_s the time
@@ -297,14 +325,16 @@ class PathCamera:
             self.lh += fl.clamp(want - self.lh, -H_RATE * dt, H_RATE * dt)
         h = math.exp(self.lh)
         t = self.target(target_name)
-        size = t.size if t.kind == "ground" else self.targets[HOME].size
+        if (path, target_name) != self.D.shot:      # a new shot: a sky body's home, fixed for the shot
+            self.homes = sky_home(t.point, self.targets[HOME], self.terrain) if t.kind == "sky" else None
+        size = t.size if t.kind == "ground" else self.home().size
         r = rate(path, h, size, speed, self.phase)
         self.phase += r * dt
         target_pose = self.live(path, target_name, h)
         turn = 0.0
         changed = (path, target_name) != self.D.shot
         if changed:      # a change: how fast the new view turns by itself, for the blend's length
-            later = pose(path, t, self.targets[HOME], self.phase + r * 0.5, h, self.terrain)
+            later = pose(path, t, self.home(), self.phase + r * 0.5, h, self.terrain)
             turn = fl.angle(target_pose[1], later[1]) / 0.5
         out = self.D.step(dt, (path, target_name), target_pose, blend_s / dr.DUR_MAX, self.terrain, None, turn)
         if self.D.blending():

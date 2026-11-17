@@ -136,6 +136,30 @@ class SkyFrameTests(unittest.TestCase):
                         self.assertLessEqual(off, 1.0, "the body in the frame (share of the half field)")
 
 
+def set_body(kind, away_deg, dist):
+    """A sky body away_deg of arc from the pyramids' ground, dist m from the planet's centre: set there (issue #30)."""
+    u = fl.norm(fl.rot(T.e, math.radians(away_deg), T.c))
+    return pc.Target(kind, "sky", fl.add(fl.CENTRE, u, dist), TARGETS[kind].size)
+
+
+class SkyHomeTests(unittest.TestCase):
+    def test_set_bodies_are_framed(self):
+        """A body under the pyramids' horizon is seen from ground where it stands up: in frame, land too."""
+        for name, body in (("moon set", set_body("moon", 75.0, 50000.0)), ("sun at night", set_body("sun", 150.0, 2.0e6))):
+            targets = dict(TARGETS, **{body.name: body})
+            self.assertLess(pc.body_elevation(body.point, T.c, T), 0.0, "set at the pyramids")
+            for path in ("orbit", "vantage", "rise"):
+                with self.subTest(body=name, path=path):
+                    C = pc.PathCamera(targets, T)
+                    poses = [C.step(DT, path, body.name, 0.3, 1.0, 30.0) for _ in range(int(20.0 / DT))][int(2.0 / DT):]
+                    self.assertGreaterEqual(min(land(q[0], q[1], q[3]) for q in poses), 0.15)
+                    off = max(fl.angle(q[1], fl.norm(fl.sub(body.point, q[0]))) / half_v(q[3]) for q in poses)
+                    self.assertLessEqual(off, 1.0, "the body in the frame (share of the half field)")
+
+    def test_risen_body_keeps_home(self):
+        self.assertIs(pc.sky_home(TARGETS["moon"].point, TARGETS["pyramids"], T), TARGETS["pyramids"])
+
+
 class BlendTests(unittest.TestCase):
     def test_blends(self):
         for name, targets, prog, seconds, dark_max, turn_max in CASES:
