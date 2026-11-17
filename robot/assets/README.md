@@ -102,7 +102,11 @@ On 2026-11-17 at 09:32 the user downloaded four PDFs and nothing else. Each PDF 
     - The kit `GT Binary Frames Computer Mainboards.zip` (795 MB): one zstd `.blend` plus 225 PNG textures, unpacked in `kit/`.
     - A `1K Packed.zip` variant (53 MB, one `.blend` with packed 1K textures), left zipped.
     - Each biome scatters up to 9 layers (Big, Chips, Slots, Round, Heatsink, Resistors, Large Resistors, Blocky Resistors, Pins) from that `.blend`.
-  - FutureScratch has only its biomes: `futurescratch_biomes/_zips/greebletown_futurescratch_geoscatter_biomes.zip`, 8 biomes, 37 presets, plus a `.scatpack` copy. They scatter up to 6 layers (Main Greebles, Pipes, Cables, Blocks, Circular, Cylindrical) from `GT Future Scratch SciFi Sketches.blend`, the kit from its store page, which is not downloaded yet.
+  - FutureScratch is complete:
+    - `futurescratch_biomes/_zips/greebletown_futurescratch_geoscatter_biomes.zip`, 8 biomes, 37 presets, plus a `.scatpack` copy.
+    - The kit `GT Future Scratch SciFi Sketches.zip` (4.1 GB, zip test passes): one `.blend` (44 MB) plus textures, 532 files, unpacked in `kit/` (3.8 GB).
+    - A `1k Packed.zip` variant (203 MB), left zipped.
+    - Each biome scatters up to 6 layers (Main Greebles, Pipes, Cables, Blocks, Circular, Cylindrical) from that `.blend`. Greeble 03 is the densest (7.6 instances per m², the others 0.5 to 1.1).
   - No biome file holds a `script` entry (the Biome Reader would run one), and no pack holds any `.py`.
 - Still missing for Spring Grass and Plant Library: the biome files (`.biome`, `.preset`, `.scatpack` or zip) and the partner models they scatter. Nothing can be placed until those are downloaded, from the same store pages as the brochures.
 - Fit for the Robot Scene: FutureScratch (foundry mood) and BinaryFrame (a megastructure under the duel) are arena and backdrop candidates. Wasteland and Rockplain could make an open-air floor. The lawns, grass and forests don't fit a robot duel; offered only.
