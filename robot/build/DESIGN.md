@@ -67,3 +67,13 @@ An Idle Clip is its Key Pose plus waves a·0.5·(1 − cos(2πk·f/57)): zero of
 - Shadow Pass: PNG RGBA 16 bit, black with alpha = shadow and contact shade on the floor (1 - Cycles Shadow Catcher).
 - Depth Pass: half-float EXR, planar distance from the Shot Camera in metres. How it becomes video (range, codec) is the encode step's choice.
 - Frames: `<package>/<pass>/<clip id>/NNNN.<ext>`; the Manifest names `<pass>/<clip id>.mov`.
+
+## Android model: HUMANOID M2000 (the user's pick, 2026-11-17)
+
+Our rig stays the driver; `moves.py`, `exchanges.py`, the Clip Data points and `check()` do not change. Plan, settled by `review/inspect_assets.sh` (slot 1):
+- The FBX holds 74 bones under `ROOT`, most named `Bone.011` to `Bone.050`, plus named mesh pieces: HIP, WAIST, CHEST, NECK, HEAD, ARM, FOREARM, HANDS, THIGH, SHIN, FOOT and WIRES (`.001` and `.002` copies for the other side). Names alone give no map; the report's bone tree (heads and tails) and mesh binding (parent bone or Armature modifier with vertex groups) decide the path:
+  - Rigid pieces (each piece moves with one bone): parent each piece to our matching bone (hips, spine, chest, neck, head, upperarm, forearm, hand, thigh, shin, foot), as `build_parts` does now, and drop the M2000 armature.
+  - Skinned mesh: keep the M2000 armature, give each mapped bone a Copy Rotation from ours (hips also Copy Location), matched by head position.
+- Import (`import_asset` in `build_robot.py`): append the collection, drop FLOOR_* and ENV_*, scale so hips sit at 1.00 m and the head top at 1.98 m, soles at the ankle height; re-parent the Clip Data points to the M2000 head, hands and feet; metal roughness 0.25 or more, an emissive visor and a rim light per Angle.
+- Proof: `check()` (planted soles, lowest point), one probe frame per Key Pose, then the Eevee preview of every Move for the reel.
+

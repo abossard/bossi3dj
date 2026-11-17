@@ -46,9 +46,18 @@ def main():
             "roots": [b.name for b in bones if b.parent is None],
             "collections": [c.name for c in o.data.collections_all] if hasattr(o.data, "collections_all") else [],
             "ik_constraints": ik,
+            "tree": {b.name: {"parent": b.parent.name if b.parent else None,
+                              "head": [round(v, 3) for v in (o.matrix_world @ b.head_local)],
+                              "tail": [round(v, 3) for v in (o.matrix_world @ b.tail_local)], "deform": b.use_deform}
+                     for b in bones} if len(bones) <= 120 else "too many bones to list",
             "control_like": [b.name for b in bones if not b.use_deform and any(
                 k in b.name.upper() for k in ("IK", "FK", "MSTR", "CTR", "ROOT", "TORSO", "HIP", "CHEST", "HEAD",
                                                "FOOT", "HAND", "ARM", "LEG"))][:200]})
+    rep["binding"] = {o.name: {"parent": o.parent.name if o.parent else None, "parent_type": o.parent_type,
+                               "parent_bone": o.parent_bone, "vertex_groups": len(o.vertex_groups),
+                               "armature_mod": any(m.type == "ARMATURE" for m in o.modifiers),
+                               "tris": sum(len(p.vertices) - 2 for p in o.data.polygons)}
+                      for o in bpy.data.objects if o.type == "MESH"} if len(bpy.data.objects) <= 200 else "too many"
     rep["materials"] = sorted(m.name for m in bpy.data.materials if m.users)
     rep["actions"] = sorted(a.name for a in bpy.data.actions)
     with open(os.path.join(out, "report.json"), "w") as f:
