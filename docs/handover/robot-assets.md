@@ -209,7 +209,14 @@ Before any slot: script work of about one session per step. After the slots: `ma
   - **chipset_04** fails front and duel_low: a thin dark band on the horizon.
   - **greeble_01** fails front and duel_low at y0 30 (thin, barely visible). At y0 8, front passed, but side had a pipe behind the head and duel_low had one slab across the fighters.
   - No shot shows floating feet, a plane edge, or a structure cutting through a fighter.
-- Fix P2, prepared and waiting for one slot of about 3 min. `BIOMES[...]["per_angle"]` overrides scale, area or y0 per Angle, and `--angles` renders and encodes only those Angles:
+- **Review P2 (2026-11-18, 3 min slot): 1 of the 4 re-rendered plates passes, so 13 of 16 pass in all.**
+  - chipset_04 duel_low passes at scale 40: pipes and slabs with orange rims across the horizon.
+  - chipset_04 front still fails at scale 40: near-black structures on a near-black sky.
+  - greeble_01 front at y0 8 now fails: one huge grey slab with a hard box corner behind the Android. The random layout puts a big part near the camera, as on side in P1.
+  - greeble_01 duel_low still fails at scale 8: the 16 mm lens looks up from 0.5 m, so low wide greebles stay a band under the knees. Only tall biomes (Arclink towers, greeble_03 tanks) fill that Angle.
+  - `robot.blend` was rebuilt by R5 at 23:41, after the P1 plates. The P2 plates come from that build, and greeble_01 front measures mean luma 71 against 36 before. A fresh render of all plates would make the set consistent.
+  - Open: drop chipset_04 and greeble_01 from the Manifest, or more rounds. More rounds would need lighting on the biome (the plates are lit only by the arena's sodium lights) or a different seed, not just scale.
+- Fix P2 as prepared: `BIOMES[...]["per_angle"]` overrides scale, area or y0 per Angle, and `--angles` renders and encodes only those Angles:
   - greeble_01: front back to y0 8, where it passed. duel_low gets scale 8 on a 400 x 400 m area: twice as tall at the same instance count, because the 16 mm lens looks up and sees only a band of the horizon.
   - chipset_04: front and duel_low get scale 40 on 240 x 240 m (median part about 15 m), so the band grows into towers.
   - Slot: `python3 robot/backdrop/render_plates.py render chipset_04 greeble_01 --angles front duel_low`.
