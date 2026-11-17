@@ -85,11 +85,17 @@ def to_bone_local(v):
     return Vector((v.x, v.z, -v.y))
 
 
+# moves.py writes hips for a rig resting at 1.00 m; this rig rests higher with legs as much longer, so the knees
+# bend as written when the hips rise by the difference
+HIPS_LIFT = REST_HEAD["hips"].z - 1.00
+
+
 def apply_pose(arm, pose):
     for ch, (bone, kind) in CHANNEL_BONES.items():
         pb = arm.pose.bones[bone]
         if kind == "loc":
-            pb.location = to_bone_local(Vector(pose[ch]) - REST_HEAD[bone])
+            target = Vector(pose[ch]) + (Vector((0, 0, HIPS_LIFT)) if ch == "hips" else Vector())
+            pb.location = to_bone_local(target - REST_HEAD[bone])
         else:
             pb.rotation_euler = [math.radians(a) for a in pose[ch]]
 
@@ -250,13 +256,15 @@ M2000_PIECES = {"HIP": ("HIP", "hips", "keep"), "WAIST": ("WAIST", "spine", "kee
 
 
 # its finger chains (Bone.013 and Bone.033 are the wrists); curled before the hands are baked, so they bake as fists
-M2000_FINGERS = ("Bone.015", "Bone.019", "Bone.022", "Bone.025", "Bone.028",
-                 "Bone.035", "Bone.039", "Bone.042", "Bone.045", "Bone.048")
+# chain root -> curl sign about the bones' Z, measured as the sign that brings the tips toward the wrist: the hands
+# mirror, and each thumb (Bone.015, Bone.035) curls the other way from its fingers
+M2000_FINGERS = {"Bone.015": -1, "Bone.019": 1, "Bone.022": 1, "Bone.025": 1, "Bone.028": 1,
+                 "Bone.035": 1, "Bone.039": -1, "Bone.042": -1, "Bone.045": -1, "Bone.048": -1}
 FIST_CURL_DEG = 75.0
 
 
 def _curl_fingers(rig):
-    for root in M2000_FINGERS:
+    for root, sign in M2000_FINGERS.items():
         chain, todo = [], [rig.pose.bones[root]]
         while todo:
             pb = todo.pop()
@@ -264,7 +272,7 @@ def _curl_fingers(rig):
             todo += list(pb.children)
         for pb in chain:
             pb.rotation_mode = "XYZ"
-            pb.rotation_euler.x += math.radians(FIST_CURL_DEG)
+            pb.rotation_euler.z += sign * math.radians(FIST_CURL_DEG)
 
 
 def _split_x(me, keep_positive):
