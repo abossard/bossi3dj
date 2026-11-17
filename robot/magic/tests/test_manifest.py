@@ -19,11 +19,16 @@ def fixture_data():
         return json.load(f)
 
 
-def package_with_media(tmp):
-    """The committed package in `tmp`, with empty files where the git-ignored Clips would be."""
+PACKAGES = os.path.join(HERE, "..", "..", "package")
+
+
+def package_with_media(tmp, src=FIXTURE):
+    """The committed package `src` in `tmp`, with empty files where the git-ignored Clips would be."""
     root = os.path.join(tmp, "pkg")
-    shutil.copytree(FIXTURE, root, ignore=shutil.ignore_patterns("beauty", "shadow", "depth", "*.mov", "*.magic"))
-    for c in fixture_data()["clips"]:
+    shutil.copytree(src, root, ignore=shutil.ignore_patterns("beauty", "shadow", "depth", "*.mov", "*.magic"))
+    with open(os.path.join(src, "manifest.json")) as f:
+        clips = json.load(f)["clips"]
+    for c in clips:
         for rel in c["passes"].values():
             os.makedirs(os.path.dirname(os.path.join(root, rel)), exist_ok=True)
             open(os.path.join(root, rel), "w").close()
@@ -140,41 +145,75 @@ class FileTests(unittest.TestCase):
 
 
 class ExchangeTests(unittest.TestCase):
-    """robot/CONTRACTS.md, the giant machine (#23): an Exchange (opponent true) carries the giant's points in every frame; a Hit may name a target."""
-    GIANT = {p: [0.5, 0.4, 9.0] for p in mf.GIANT_POINTS}
+    """robot/CONTRACTS.md, the giant machine (#23): package/duel has Exchanges (opponent) on duel Angles; an Exchange carries the giant's points in
+    every frame; a Hit may name a target."""
+    DUEL = os.path.join(PACKAGES, "duel")
 
-    def exchange(self, root, frames_with=GIANT, hits=()):
-        d = fixture_data()
-        for c in d["clips"]:
-            if c["move"] == "front_kick":
-                c["opponent"] = True
-                _rewrite(os.path.join(root, c["clip_data"]), lambda cd: ([e.update(frames_with) for e in cd["frames"]], cd["hits"].extend(hits)))
+    def duel_data(self):
+        with open(os.path.join(self.DUEL, "manifest.json")) as f:
+            return json.load(f)
+
+    def exchange(self, root, change_frame=None, hits=()):
+        d = self.duel_data()
+        c = next(c for c in d["clips"] if c["id"] == "clash__duel_wide")
+        _rewrite(os.path.join(root, c["clip_data"]), lambda cd: ([change_frame(e) for e in cd["frames"]] if change_frame else None, cd["hits"].extend(hits)))
         return d
 
-    def test_accepted(self):
-        cases = [("an old Manifest, no opponent anywhere", None, ()),
-                 ("an Exchange with every giant point", self.GIANT, ()),
-                 ("the Android hits the giant", self.GIANT, [{"f": 10, "point": [0.5, 0.4, 9], "strength": 1, "limb": "hand_r", "target": "g_core"}]),
-                 ("the giant hits the Android", self.GIANT, [{"f": 20, "point": [0.5, 0.3, 3], "strength": 1, "limb": "g_hammer", "target": "head"}]),
-                 ("a Hit on the floor", self.GIANT, [{"f": 30, "point": [0.5, 0.9, 3], "strength": 0.5, "limb": "g_foot_l", "target": "floor"}]),
-                 ("a Hit without target", self.GIANT, [{"f": 40, "point": [0.5, 0.4, 3], "strength": 0.5, "limb": "foot_r"}])]
-        for name, frames_with, hits in cases:
-            with self.subTest(name), tempfile.TemporaryDirectory() as tmp:
-                root = package_with_media(tmp)
-                d = fixture_data() if frames_with is None else self.exchange(root, frames_with, hits)
-                self.assertEqual(mf.validate(d, root), [])
+    def test_every_package_is_valid(self):
+        for name in ("fixture", "many", "v1", "duel"):
+            with self.subTest(name):
+                with open(os.path.join(PACKAGES, name, "manifest.json")) as f:
+                    self.assertEqual(mf.validate(json.load(f)), [])
 
-    def test_rejected(self):
-        partial = {p: v for p, v in self.GIANT.items() if p != "g_claw"}
-        cases = [("an Exchange without the giant's points", {}, (), "lacks g_head"),
-                 ("an Exchange missing one point", partial, (), "lacks g_claw"),
-                 ("a giant point that is no triple", dict(self.GIANT, g_core=[0.5, 0.5]), (), "lacks g_core"),
-                 ("an unknown target in an Exchange", self.GIANT, [{"f": 1, "point": [0, 0, 0], "strength": 1, "limb": "hand_r", "target": "g_tail"}], "hit target 'g_tail'")]
-        for name, frames_with, hits, expect in cases:
+    def test_accepted_with_files(self):
+        cases = [("the duel package as written", ()),
+                 ("the Android hits the giant", [{"f": 10, "point": [0.5, 0.4, 9], "strength": 1, "limb": "hand_r", "target": "g_knee_l"}]),
+                 ("the giant hits the Android", [{"f": 20, "point": [0.5, 0.3, 3], "strength": 1, "limb": "g_hammer", "target": "head"}]),
+                 ("a Hit on the floor", [{"f": 30, "point": [0.5, 0.9, 3], "strength": 0.5, "limb": "g_foot_l", "target": "floor"}]),
+                 ("a Hit without target", [{"f": 40, "point": [0.5, 0.4, 3], "strength": 0.5, "limb": "foot_r"}])]
+        for name, hits in cases:
             with self.subTest(name), tempfile.TemporaryDirectory() as tmp:
-                root = package_with_media(tmp)
-                problems = mf.validate(self.exchange(root, frames_with, hits), root)
+                root = package_with_media(tmp, self.DUEL)
+                self.assertEqual(mf.validate(self.exchange(root, None, hits), root), [])
+
+    def test_rejected_with_files(self):
+        cases = [("an Exchange without the giant's points", lambda e: [e.pop(p) for p in mf.GIANT_POINTS], (), "lacks g_head"),
+                 ("an Exchange without the knees", lambda e: e.pop("g_knee_r"), (), "lacks g_knee_r"),
+                 ("a giant point that is no triple", lambda e: e.update(g_core=[0.5, 0.5]), (), "lacks g_core"),
+                 ("an unknown target", None, [{"f": 1, "point": [0, 0, 0], "strength": 1, "limb": "hand_r", "target": "g_tail"}], "hit target 'g_tail'")]
+        for name, change, hits, expect in cases:
+            with self.subTest(name), tempfile.TemporaryDirectory() as tmp:
+                root = package_with_media(tmp, self.DUEL)
+                problems = mf.validate(self.exchange(root, change, hits), root)
                 self.assertTrue(any(expect in p for p in problems), problems)
+
+    def test_angles_of_a_kind(self):
+        def drop_moves(*names):
+            return lambda d: d.update(clips=[c for c in d["clips"] if c["move"] not in names])
+
+        def add_clip(move, angle):
+            def f(d):
+                c = dict(next(c for c in d["clips"] if c["move"] == move), angle=angle, id="%s__%s" % (move, angle))
+                d["clips"].append(c)
+            return f
+        cases = [
+            ("an Exchange lacks a duel Angle", lambda d: d.update(clips=[c for c in d["clips"] if c["id"] != "clash__duel_low"]), "move clash: no Clip for Angle duel_low"),
+            ("an Exchange on a solo Angle", add_clip("clash", "front"), "move clash: an Exchange on the solo Angle front"),
+            ("a solo Move on a duel Angle", add_clip("sway", "duel_wide"), "move sway: a solo Move on the duel Angle duel_wide"),
+            ("a duel Angle's opponent not a bool", lambda d: d["angles"][2].update(opponent="yes"), "angles[2]: opponent must be true or false"),
+            ("a Key Pose an Exchange ends in has no duel Idle", drop_moves("duel_idle_crouch"), "Key Pose crouch, Angle duel_wide: 0 Idle Clips"),
+            ("a solo Angle still needs every Key Pose's Idle", drop_moves("idle_crouch"), "Key Pose crouch, Angle front: 0 Idle Clips"),
+            ("no Exchange touches crouch: no duel Idle needed", drop_moves("duel_idle_crouch", "hammer_dodge", "claw_counter", "stomp_block"), None),
+        ]
+        for name, mutate, expect in cases:
+            with self.subTest(name):
+                d = self.duel_data()
+                mutate(d)
+                problems = mf.validate(d)
+                if expect is None:
+                    self.assertEqual(problems, [])
+                else:
+                    self.assertTrue(any(expect in p for p in problems), problems)
 
 
 def _hit(root, c, **fields):

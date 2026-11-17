@@ -11,7 +11,7 @@ CLIP_BEATS = (4, 8, 16)
 PASSES = ("beauty", "shadow", "depth")
 MAX_ANGLES, MAX_CLIPS = 8, 256        # OSC wire: /vj/angle 0..7, /vj/clip 0..255
 MOVE_SHARED = ("beats", "frames", "key_in", "key_out", "tier", "cut_points", "idle")
-GIANT_POINTS = ("g_head", "g_core", "g_hammer", "g_claw", "g_foot_l", "g_foot_r")    # the giant machine's points, in an Exchange only
+GIANT_POINTS = ("g_head", "g_core", "g_hammer", "g_claw", "g_knee_l", "g_knee_r", "g_foot_l", "g_foot_r")    # the giant machine's points, in an Exchange only
 POINTS = ("head", "eye_l", "eye_r", "hand_l", "hand_r", "foot_l", "foot_r")
 TARGETS = POINTS + GIANT_POINTS + ("floor",)
 
@@ -34,6 +34,7 @@ class Move:
         self.name = name
         for k in MOVE_SHARED:
             setattr(self, k, clip[k])
+        self.opponent = clip.get("opponent") is True        # an Exchange: plays on the duel Angles
 
 
 class Manifest:
@@ -53,12 +54,20 @@ class Manifest:
     def angle_ids(self):
         return [a["id"] for a in self.angles]
 
+    def angle_duel(self, angle_id):
+        """True for a duel Angle (both fighters in the frame)."""
+        return next(a.get("opponent") is True for a in self.angles if a["id"] == angle_id)
+
+    def group(self, duel):
+        """The Angle ids of one kind, in Manifest order: the duel Angles or the solo Angles."""
+        return [a["id"] for a in self.angles if (a.get("opponent") is True) == duel]
+
     def move(self, name):
         return next(m for m in self.moves if m.name == name)
 
-    def idle_move(self, key_pose):
-        """Name of the Idle Clip's Move of a Key Pose."""
-        return next(m.name for m in self.moves if m.idle and m.key_in == key_pose)
+    def idle_move(self, key_pose, duel=False):
+        """Name of the Idle Clip's Move of a Key Pose on the solo Angles (duel: on the duel Angles, None when there is none)."""
+        return next((m.name for m in self.moves if m.idle and m.key_in == key_pose and m.opponent == duel), None)
 
     def clip_index(self, move, angle):
         """Index in `clips`: the value of /vj/clip."""
@@ -111,6 +120,8 @@ def validate(data, base_dir=None):
         for i, a in enumerate(angles):
             if isinstance(a, dict) and _require(a, ("id", "camera"), "angles[%d]" % i, out):
                 angle_ids.append(a["id"])
+                if not isinstance(a.get("opponent", False), bool):
+                    out.append("angles[%d]: opponent must be true or false" % i)
         if len(set(angle_ids)) != len(angle_ids):
             out.append("angle ids are not unique")
         if len(angles) > MAX_ANGLES:
@@ -187,13 +198,15 @@ def validate(data, base_dir=None):
                             out.append("%s: hit %s %r is the giant's, but the Clip is not an Exchange (opponent)" % (where, giant[0], h[giant[0]]))
                 except (ValueError, AttributeError) as e:
                     out.append("%s: clip data unreadable: %s" % (where, e))
-    idles = {}
+    duel_angle = {a["id"]: a.get("opponent") is True for a in angles if isinstance(a, dict) and "id" in a} if isinstance(angles, list) else {}
+    idles, touched = {}, {}
     for group in by_move.values():
         for g in group:
+            touched.setdefault(g["angle"], set()).update((g["key_in"], g["key_out"]))
             if g["idle"] is True:
                 idles.setdefault((g["key_in"], g["angle"]), []).append(g["move"])
-    for pose in poses:
-        for a in angle_ids:
+    for a in angle_ids:     # a solo Angle: every Key Pose; a duel Angle: the Key Poses its Clips start or end in
+        for pose in (poses if not duel_angle.get(a) else [p for p in poses if p in touched.get(a, ())]):
             found = idles.get((pose, a), [])
             if len(found) != 1:
                 out.append("Key Pose %s, Angle %s: %d Idle Clips, exactly one needed" % (pose, a, len(found)))
@@ -203,9 +216,14 @@ def validate(data, base_dir=None):
         for k in MOVE_SHARED:
             if len({json.dumps(g[k]) for g in group}) > 1:
                 out.append("move %s: %s differs across Angles" % (move, k))
-        missing = [a for a in angle_ids if a not in [g["angle"] for g in group]]
+        kind = group[0].get("opponent") is True       # a Move covers exactly the Angles of its kind
+        have = [g["angle"] for g in group]
+        missing = [a for a in angle_ids if duel_angle.get(a) == kind and a not in have]
         if missing:
             out.append("move %s: no Clip for Angle %s" % (move, ", ".join(map(str, missing))))
+        wrong = [a for a in have if a in duel_angle and duel_angle[a] != kind]
+        if wrong:
+            out.append("move %s: %s on the %s Angle %s" % (move, "an Exchange" if kind else "a solo Move", "solo" if kind else "duel", ", ".join(map(str, wrong))))
     return out
 
 

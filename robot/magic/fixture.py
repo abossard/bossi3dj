@@ -1,9 +1,10 @@
 """Fixture Render Packages at 124 BPM and 30 fps, 480x270, 2 Angles:
   package/fixture  3 Moves and 1 Idle Clip, one Key Pose, 4 beats each
   package/many     3 Key Poses (guard, crouch, stance), 6 Moves per Intensity Tier of 4, 8 and 16 beats, an Idle Clip per Key Pose
+  package/duel     2 Key Poses, solo Moves on 2 solo Angles and Exchanges with the giant machine on 2 duel Angles (#23)
 
-    python3 robot/magic/fixture.py [--many]   # manifest, Clip Data, Camera Tracks (committed)
-    python3 robot/magic/fixture.py [--many] --media    # also the placeholder Clips (git-ignored; ffmpeg, ProRes)
+    python3 robot/magic/fixture.py [--many | --duel]   # manifest, Clip Data, Camera Tracks (committed)
+    python3 robot/magic/fixture.py [--many | --duel] --media    # also the placeholder Clips (git-ignored; ffmpeg, ProRes)
 
 Each Clip is a numbered test card tinted per Clip: beauty is ProRes 4444 with an alpha disc (the Matte), shadow and depth are
 ProRes 422. This ffmpeg has no Hap encoder.
@@ -41,19 +42,49 @@ MANY_IDLES = {"guard": "idle_guard", "crouch": "idle_crouch", "stance": "idle_st
 MANY_KEY_POSES = ["guard", "crouch", "stance"]
 ANGLES = [("front", "CAM_FRONT"), ("side", "CAM_SIDE")]
 LIMBS = ("head", "eye_l", "eye_r", "hand_l", "hand_r", "foot_l", "foot_r")
+GIANT = ("g_head", "g_core", "g_hammer", "g_claw", "g_knee_l", "g_knee_r", "g_foot_l", "g_foot_r")
+# package/duel: an 8th field True makes the Move an Exchange (both fighters, the duel Angles). The giant comes in the drop.
+PACKAGE_DUEL = os.path.join(HERE, "..", "package", "duel")
+DUEL_ANGLES = ANGLES + [("duel_wide", "CAM_DUEL_WIDE", True), ("duel_low", "CAM_DUEL_LOW", True)]
+DUEL_KEY_POSES = ["guard", "crouch"]
+DUEL_MOVES = [
+    ("idle_guard", "calm", "guard", "guard", 4, CUTS[4], []), ("idle_crouch", "calm", "crouch", "crouch", 4, CUTS[4], []),
+    ("sway", "calm", "guard", "guard", 4, CUTS[4], []), ("duck", "calm", "guard", "crouch", 4, CUTS[4], []),
+    ("rise", "calm", "crouch", "guard", 4, CUTS[4], []), ("crouch_hold", "calm", "crouch", "crouch", 8, CUTS[8], []),
+    ("jab_cross", "build", "guard", "guard", 4, CUTS[4], [1, 2]), ("feint_duck", "build", "guard", "crouch", 4, CUTS[4], [2]),
+    ("spring_up", "build", "crouch", "guard", 8, CUTS[8], [6]), ("crouch_weave", "build", "crouch", "crouch", 4, CUTS[4], [2]),
+    ("front_kick", "drop", "guard", "guard", 4, CUTS[4], [2]), ("flying_knee", "drop", "guard", "crouch", 8, CUTS[8], [4]),
+    ("uppercut_rise", "drop", "crouch", "guard", 4, CUTS[4], [2]), ("sweep", "drop", "crouch", "crouch", 4, CUTS[4], [2]),
+    ("duel_idle_guard", "drop", "guard", "guard", 4, CUTS[4], [], True), ("duel_idle_crouch", "drop", "crouch", "crouch", 4, CUTS[4], [], True),
+    ("clash", "drop", "guard", "guard", 4, CUTS[4], [2], True), ("hammer_dodge", "drop", "guard", "crouch", 8, CUTS[8], [4], True),
+    ("claw_counter", "drop", "crouch", "guard", 4, CUTS[4], [1, 3], True), ("stomp_block", "drop", "crouch", "crouch", 8, CUTS[8], [4], True),
+]
+DUEL_IDLES = {"guard": "idle_guard", "crouch": "idle_crouch", "duel_guard": "duel_idle_guard", "duel_crouch": "duel_idle_crouch"}
 
 
-def manifest(moves=MOVES, idles=IDLES, key_poses=KEY_POSES):
+def duel(entry):
+    """An Angle or a Move entry's duel flag (an optional last field)."""
+    return len(entry) > 2 and entry[-1] is True
+
+
+def manifest(moves=MOVES, idles=IDLES, key_poses=KEY_POSES, angles=ANGLES):
     clips = []
-    for move, tier, key_in, key_out, beats, cuts, _ in moves:
-        for angle, _cam in ANGLES:
-            cid = "%s__%s" % (move, angle)
-            clips.append({"id": cid, "move": move, "angle": angle, "beats": beats, "frames": frames_for(beats, BPM, FPS), "key_in": key_in,
-                          "key_out": key_out, "tier": tier, "idle": move in idles.values(), "cut_points": cuts,
-                          "passes": {p: "%s/%s.mov" % (p, cid) for p in ("beauty", "shadow", "depth")},
-                          "clip_data": "clip_data/%s.json" % cid, "camera_track": "camera/%s.json" % angle})
+    for mv in moves:
+        move, tier, key_in, key_out, beats, cuts = mv[:6]
+        exchange = len(mv) > 7 and mv[7] is True
+        for a in angles:
+            if duel(a) != exchange:
+                continue
+            cid = "%s__%s" % (move, a[0])
+            clip = {"id": cid, "move": move, "angle": a[0], "beats": beats, "frames": frames_for(beats, BPM, FPS), "key_in": key_in,
+                    "key_out": key_out, "tier": tier, "idle": move in idles.values(), "cut_points": cuts,
+                    "passes": {p: "%s/%s.mov" % (p, cid) for p in ("beauty", "shadow", "depth")},
+                    "clip_data": "clip_data/%s.json" % cid, "camera_track": "camera/%s.json" % a[0]}
+            if exchange:
+                clip["opponent"] = True
+            clips.append(clip)
     return {"version": 1, "bpm": BPM, "fps": FPS, "size": SIZE, "key_poses": list(key_poses),
-            "angles": [{"id": a, "camera": c} for a, c in ANGLES], "clips": clips}
+            "angles": [dict({"id": a[0], "camera": a[1]}, **({"opponent": True} if duel(a) else {})) for a in angles], "clips": clips}
 
 
 def clip_data(clip, hit_beats):
@@ -67,15 +98,20 @@ def clip_data(clip, hit_beats):
         e = {"f": f}
         for k in LIMBS:
             e[k] = [round(base[k][0] + sway, 4), base[k][1], 3.0]
+        if clip.get("opponent"):
+            for i, k in enumerate(GIANT):
+                e[k] = [0.75, round(0.1 + 0.1 * i, 2), 9.0]
         frames.append(e)
     hits = [{"f": min(n - 1, int(b * per_beat)), "point": [0.6, 0.5, 2.9], "strength": 0.8, "limb": "hand_r"} for b in hit_beats]
+    if clip.get("opponent"):        # an Exchange: the Android and the giant strike in turn
+        hits = [dict(h, limb="hand_r" if i % 2 == 0 else "g_hammer", target="g_core" if i % 2 == 0 else "head") for i, h in enumerate(hits)]
     return {"clip": clip["id"], "frames": frames, "hits": hits}
 
 
-def camera_track(angle_index, frames):
+def camera_track(angle_index, frames, angles=ANGLES):
     entry = {"location": [0.0, -6.0 + angle_index * 2, 1.6], "rotation": [0.7071, 0.7071, 0.0, 0.0], "focal_length": 50.0,
              "sensor_width": 36.0}
-    return {"angle": ANGLES[angle_index][0], "camera": ANGLES[angle_index][1], "frames": [dict(entry, f=f) for f in range(frames)]}
+    return {"angle": angles[angle_index][0], "camera": angles[angle_index][1], "frames": [dict(entry, f=f) for f in range(frames)]}
 
 
 def write_json(path, obj):
@@ -85,14 +121,14 @@ def write_json(path, obj):
         f.write("\n")
 
 
-def write_package(root=PACKAGE, moves=MOVES, idles=IDLES, key_poses=KEY_POSES):
-    m = manifest(moves, idles, key_poses)
+def write_package(root=PACKAGE, moves=MOVES, idles=IDLES, key_poses=KEY_POSES, angles=ANGLES):
+    m = manifest(moves, idles, key_poses, angles)
     write_json(os.path.join(root, "manifest.json"), m)
     hits = {mv[0]: mv[6] for mv in moves}
     for c in m["clips"]:
         write_json(os.path.join(root, c["clip_data"]), clip_data(c, hits[c["move"]]))
-    for i, (angle, _) in enumerate(ANGLES):
-        write_json(os.path.join(root, "camera", "%s.json" % angle), camera_track(i, max(c["frames"] for c in m["clips"])))
+    for i, a in enumerate(angles):
+        write_json(os.path.join(root, "camera", "%s.json" % a[0]), camera_track(i, max(c["frames"] for c in m["clips"]), angles))
     return m
 
 
@@ -119,9 +155,13 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--media", action="store_true", help="also render the placeholder Clips with ffmpeg")
     ap.add_argument("--many", action="store_true", help="the package with 3 Key Poses and mixed lengths (package/many)")
+    ap.add_argument("--duel", action="store_true", help="the package with Exchanges on duel Angles (package/duel)")
     ap.add_argument("--out")
     a = ap.parse_args()
-    if a.many:
+    if a.duel:
+        a.out = a.out or PACKAGE_DUEL
+        m = write_package(a.out, DUEL_MOVES, DUEL_IDLES, DUEL_KEY_POSES, DUEL_ANGLES)
+    elif a.many:
         a.out = a.out or PACKAGE_MANY
         m = write_package(a.out, MANY_MOVES, MANY_IDLES, MANY_KEY_POSES)
     else:

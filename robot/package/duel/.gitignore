@@ -1,0 +1,5 @@
+# regenerated: python3 robot/magic/fixture.py --duel --media ; python3 robot/magic/robot_magic.py robot/package/duel/manifest.json
+beauty/
+shadow/
+depth/
+robot.magic
