@@ -117,6 +117,13 @@ The Clips' beauty Pass holds only the fighters. The set is invisible to the came
   - `chipset_04_mega.png` passes, marginally: tall lit fins and big cylinders behind the figure read as power-plant machinery and fill about 25 % of the frame. The right third is still dark.
   - `chipset_01_mega.png` fails: the scale now reads big, but 171 instances are too sparse (about 5 % of the frame) and mostly black on black. Next try is a bigger `--area` (e.g. 240 240) or S 12, measure first.
   - Command: `$B -b robot/build/robot.blend -P robot/build/review/biome_preview.py -- robot/build/probe/biomes [--measure] --scale 20 --area 120 120 --y0 8 --tag _mega "$L/Binary Frames/chipset_01.biome" "$L/Binary Frames/chipset_04.biome"`, with `L="$HOME/Library/Application Support/Blender/data/scatter library/_biomes_/GreebleTown"`.
+- **FutureScratch megastructure, round B3** (2026-11-17, one slot of about 6 min):
+  - Kit search path added with `biome_reader_setup.py configure robot/assets/futurescratch_biomes/kit`. The only change in the userpref dump is that one entry in `blend_environment_paths` (`robot/build/probe/biome_reader/before_fs.json` vs `after_fs.json`).
+  - Measured at scale 1, the median part is 2.0 m (greeble_01, 135 parts) and 2.0 m (greeble_03, 9 parts), so S = 4.
+  - At `--scale 4 --area 200 200 --y0 8`, the median part is 8.1 m and 8.0 m, the largest 94 m and 47 m, with 1990 and 19125 instances.
+  - Both pass: `greeble_01_mega.png` shows a giant rusty tank with orange bands, pipes and coils over the figure (about 90 % of the frame). `greeble_03_mega.png` shows a refinery of stacked drums, copper pipes and spheres (about 85 %).
+  - The reviewer notes that the nearest parts sit close to the camera, so it reads as an industrial interior more than a far skyline. For a skyline, raise `--y0` (e.g. 40).
+  - Command: as above, with `"$L/Future Scratch/greeble_01.biome" "$L/Future Scratch/greeble_03.biome"` and `--scale 4 --area 200 200 --y0 8 --tag _mega`.
 - **Then**: run one biome preset (`arclink_city_1`, the dark blue-lit one) once in a build step, realise it to instances, and save it into the scene, so the live Blender never runs Geo-Scatter.
 - **Live World budget**: instances only, a triangle cap. Judge fps only when `make status` says `fps_trustworthy`.
 
