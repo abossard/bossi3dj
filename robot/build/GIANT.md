@@ -4,7 +4,12 @@ The opponent the user chose: a giant foundry machine the Android fights. Proposa
 
 ## Form
 
-Held: the user wants a rich, detailed, rigged model from the internet, not a script-built one; the form follows the chosen candidate. Fixed so far: about 6 m tall (3x the Android), a hammer or press arm and a claw or grab arm help the Exchanges below, a glowing core helps the look.
+Probe of the first candidate, Blender Studio's Security Bot (CC-BY, `robot/assets/security_bot/`), 2026-11-17, `review/giant_probe.py`:
+- File: saved with Blender 3.5; five text blocks (CloudRig UI, a viewport-quality driver helper, a material listing, ReadMe); none touches files, network or processes, none is needed to pose the rig headless, so auto-run stays off (one driver on the screen glass needs it and stays off).
+- Body: a slim biped, 1.95 m natively (x3.08 to 6 m), 99k triangles before modifiers, white shell, a third gun arm. Rig widget meshes and a battery prop must stay out of bounds and render.
+- Rig: CloudRig, 206 bones, IK on both arms, both legs, the head and the gun arm. Bone map: g_hips and g_hips_rot to `Torso`, g_chest_rot to `Chest`, g_hammer to `IK-Wrist.R`, g_claw to `IK-Wrist.L`, g_foot_l and g_foot_r to `IK-TGT-Ankle.L/.R`. Driven from `exchanges.py` it stands on the floor and the hammer_hit strike lands on the Android's head.
+- Cost at 6 m on the duel camera: Cycles 64 samples 19.9 s per frame (about 7.7 h for both duel Angles at that rate), Eevee full size 4.9 s, Eevee half-size preview 4.8 s per frame.
+- Verdict (review round G2, rubric-g1): framing, floor contact, the strike and readability pass; scale fails: "a scaled-up small robot, not a giant". Slender human proportions and large smooth panels carry no mass. A slim biped does not read as a giant; the giant needs a bulky, heavy model (thick limbs and torso, fine detail), or this one used at human scale as a second fighter.
 
 ## Why the Android reads weak, and what the machine does instead
 
