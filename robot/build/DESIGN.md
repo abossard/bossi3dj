@@ -62,7 +62,7 @@ An Idle Clip is its Key Pose plus waves a·0.5·(1 − cos(2πk·f/57)): zero of
 
 ## Passes and render
 
-- Cycles, 128 samples, denoised, motion blur 0.5, AgX, 1920x1080, 30 fps.
+- Cycles, 128 samples, denoised, motion blur 0.25 (0.5 smeared fast Hits, round A2), AgX, 1920x1080, 30 fps.
 - Beauty: QuickTime Animation (qtrle), 8-bit RGBA, written by Blender straight to `beauty/<clip id>.mov`, transparent film, the alpha is the Matte. `--beauty png` renders a 16-bit PNG sequence for comparison.
 - Shadow Pass: PNG RGBA 16 bit, black with alpha = shadow and contact shade on the floor (1 - Cycles Shadow Catcher).
 - Depth Pass: half-float EXR, planar distance from the Shot Camera in metres. How it becomes video (range, codec) is the encode step's choice.

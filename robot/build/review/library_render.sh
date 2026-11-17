@@ -3,10 +3,10 @@
 # high (Cycles at SAMPLES, default 64; hours). <package>/quality/<clip> records each Clip's quality, and a Clip counts
 # as complete only at the quality asked for, so a high run replaces a low package Clip by Clip; FORCE=1 renders all: one Clip per Blender run, a
 # Clip already complete (review/clip_complete.py) is skipped, so a stop costs at most one Clip. Order: moves.py order
-# with ground_pound last. Builds and checks first and stops on a failed check; stops when another Blender runs.
+# with ground_pound last, then the Exchanges (exchanges.py) on the duel Angles. Builds and checks first and stops on a failed check; stops when another Blender runs.
 # Named Moves render in that order instead. DEADLINE=HH:MM: no Clip starts that the last measured seconds per frame
 # (SPF to begin with) say ends later. Then encodes each Clip, exports Clip Data, Camera Tracks and the Manifest, keeps
-# only Moves complete on both Angles in it (review/manifest_complete.py), and runs the validator.
+# only Moves complete on every Angle in it (review/manifest_complete.py), and runs the validator.
 # Log and timings: robot/build/probe/library/; DONE or STOPPED there at the end.
 cd "${0:A:h}/../../.."
 setopt null_glob
@@ -22,12 +22,14 @@ $B -b --factory-startup -P robot/build/build_robot.py -- build > $P/build.log 2>
 $B -b robot/build/robot.blend -P robot/build/build_robot.py -- check --out $P/check.json > $P/check.log 2>&1 || stop "check failed"
 jq -e '[to_entries[].value | select(.planted_sole_error_m > 0.005 or .planted_ankle_gap_m > 0.005 or .lowest_point_m < -0.005)] | length == 0' $P/check.json >/dev/null \
   || stop "check out of bounds"
-python3 -c "import sys; sys.path.insert(0, 'robot/build'); import moves
-order = sys.argv[1:] or [m for m in moves.MOVES if m != 'ground_pound'] + ['ground_pound']
-for m in order: print(m, moves.move_frames(moves.MOVES[m]))" "$@" > $P/order.txt
+python3 -c "import sys; sys.path.insert(0, 'robot/build'); import moves, exchanges as X
+order = sys.argv[1:] or [m for m in moves.MOVES if m != 'ground_pound'] + ['ground_pound'] + list(X.EXCHANGES)
+for m in order:
+    ex = X.EXCHANGES.get(m)
+    print(m, moves.move_frames(ex.android if ex else moves.MOVES[m]), 'duel_wide duel_low' if ex else 'front side')" "$@" > $P/order.txt
 echo "$(date +%T) start" >> $P/progress.txt
-while read -u 3 m n; do
-  for a in front side; do
+while read -u 3 m n angles; do
+  for a in ${=angles}; do
     c=${m}__$a
     complete $c $n && { echo "$(date +%T) skip $c" >> $P/progress.txt; continue; }
     pgrep -i blender >/dev/null && stop "another Blender runs before $c"

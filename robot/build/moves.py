@@ -387,7 +387,7 @@ def _burst_rise():
             Key(2.5, punch_r), Key(2.75, back), Key(3.0, punch_l), Key(3.25, back), Key(3.5, punch_r),
             Key(3.75, back), Key(4.0, punch_l), Key(4.5, back), Key(5.25, pose(LOW, spine_rot=(4.0, 0.0, 0.0), **FLEX)),
             Key(6, pose(LOW, spine_rot=(0.0, 0.0, 0.0), head_rot=(-30.0, 0.0, 0.0), **FLEX)), Key(7, LOW), Key(8, LOW)]
-    hits = [Hit(1.0, "head", 1.0), Hit(1.5, "foot_l", 0.8), Hit(2.5, "hand_r", 0.7), Hit(3.0, "hand_l", 0.7),
+    hits = [Hit(1.0, "head", 1.0), Hit(2.5, "hand_r", 0.7), Hit(3.0, "hand_l", 0.7),
             Hit(3.5, "hand_r", 0.8), Hit(4.0, "hand_l", 1.0)]
     return Move("burst_rise", "drop", 8, "crouch", "low", keys, hits)
 
@@ -459,7 +459,7 @@ def _low_charge():
             Key(6.0, pose(GUARD, hips=(0.0, -0.10, 0.90), hand_l=fwd["hand_l"], **planted)),
             Key(6.5, pose(GUARD, hips=(0.0, -0.02, 0.91), foot_l=(0.15, -0.40, 0.20))),
             Key(7.0, GUARD), Key(7.5, BOB), Key(8, GUARD)]
-    return Move("low_charge", "drop", 8, "low", "guard", keys, [Hit(2.0, "head", 1.0), Hit(4.5, "hand_r", 1.0)])
+    return Move("low_charge", "drop", 8, "low", "guard", keys, [Hit(4.5, "hand_r", 1.0)])
 
 
 MOVES = {m.name: m for m in _idles() + [

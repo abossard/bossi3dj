@@ -975,6 +975,470 @@
    "clip_data": "clip_data/low_charge__side.json",
    "camera_track": "camera/side.json",
    "quality": "low"
+  },
+  {
+   "id": "duel_idle__duel_wide",
+   "move": "duel_idle",
+   "angle": "duel_wide",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "calm",
+   "idle": true,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/duel_idle__duel_wide.mov",
+    "shadow": "shadow/duel_idle__duel_wide.mov",
+    "depth": "depth/duel_idle__duel_wide.mov"
+   },
+   "clip_data": "clip_data/duel_idle__duel_wide.json",
+   "camera_track": "camera/duel_wide.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "duel_idle__duel_low",
+   "move": "duel_idle",
+   "angle": "duel_low",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "calm",
+   "idle": true,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/duel_idle__duel_low.mov",
+    "shadow": "shadow/duel_idle__duel_low.mov",
+    "depth": "depth/duel_idle__duel_low.mov"
+   },
+   "clip_data": "clip_data/duel_idle__duel_low.json",
+   "camera_track": "camera/duel_low.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "duel_idle_low__duel_wide",
+   "move": "duel_idle_low",
+   "angle": "duel_wide",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "low",
+   "key_out": "low",
+   "tier": "calm",
+   "idle": true,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/duel_idle_low__duel_wide.mov",
+    "shadow": "shadow/duel_idle_low__duel_wide.mov",
+    "depth": "depth/duel_idle_low__duel_wide.mov"
+   },
+   "clip_data": "clip_data/duel_idle_low__duel_wide.json",
+   "camera_track": "camera/duel_wide.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "duel_idle_low__duel_low",
+   "move": "duel_idle_low",
+   "angle": "duel_low",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "low",
+   "key_out": "low",
+   "tier": "calm",
+   "idle": true,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/duel_idle_low__duel_low.mov",
+    "shadow": "shadow/duel_idle_low__duel_low.mov",
+    "depth": "depth/duel_idle_low__duel_low.mov"
+   },
+   "clip_data": "clip_data/duel_idle_low__duel_low.json",
+   "camera_track": "camera/duel_low.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "duel_idle_crouch__duel_wide",
+   "move": "duel_idle_crouch",
+   "angle": "duel_wide",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "crouch",
+   "key_out": "crouch",
+   "tier": "calm",
+   "idle": true,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/duel_idle_crouch__duel_wide.mov",
+    "shadow": "shadow/duel_idle_crouch__duel_wide.mov",
+    "depth": "depth/duel_idle_crouch__duel_wide.mov"
+   },
+   "clip_data": "clip_data/duel_idle_crouch__duel_wide.json",
+   "camera_track": "camera/duel_wide.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "duel_idle_crouch__duel_low",
+   "move": "duel_idle_crouch",
+   "angle": "duel_low",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "crouch",
+   "key_out": "crouch",
+   "tier": "calm",
+   "idle": true,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/duel_idle_crouch__duel_low.mov",
+    "shadow": "shadow/duel_idle_crouch__duel_low.mov",
+    "depth": "depth/duel_idle_crouch__duel_low.mov"
+   },
+   "clip_data": "clip_data/duel_idle_crouch__duel_low.json",
+   "camera_track": "camera/duel_low.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "circle__duel_wide",
+   "move": "circle",
+   "angle": "duel_wide",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "calm",
+   "idle": false,
+   "cut_points": [
+    0,
+    7
+   ],
+   "passes": {
+    "beauty": "beauty/circle__duel_wide.mov",
+    "shadow": "shadow/circle__duel_wide.mov",
+    "depth": "depth/circle__duel_wide.mov"
+   },
+   "clip_data": "clip_data/circle__duel_wide.json",
+   "camera_track": "camera/duel_wide.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "circle__duel_low",
+   "move": "circle",
+   "angle": "duel_low",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "calm",
+   "idle": false,
+   "cut_points": [
+    0,
+    7
+   ],
+   "passes": {
+    "beauty": "beauty/circle__duel_low.mov",
+    "shadow": "shadow/circle__duel_low.mov",
+    "depth": "depth/circle__duel_low.mov"
+   },
+   "clip_data": "clip_data/circle__duel_low.json",
+   "camera_track": "camera/duel_low.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "hammer_dodge__duel_wide",
+   "move": "hammer_dodge",
+   "angle": "duel_wide",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "low",
+   "tier": "build",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/hammer_dodge__duel_wide.mov",
+    "shadow": "shadow/hammer_dodge__duel_wide.mov",
+    "depth": "depth/hammer_dodge__duel_wide.mov"
+   },
+   "clip_data": "clip_data/hammer_dodge__duel_wide.json",
+   "camera_track": "camera/duel_wide.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "hammer_dodge__duel_low",
+   "move": "hammer_dodge",
+   "angle": "duel_low",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "low",
+   "tier": "build",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/hammer_dodge__duel_low.mov",
+    "shadow": "shadow/hammer_dodge__duel_low.mov",
+    "depth": "depth/hammer_dodge__duel_low.mov"
+   },
+   "clip_data": "clip_data/hammer_dodge__duel_low.json",
+   "camera_track": "camera/duel_low.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "sweep_jump__duel_wide",
+   "move": "sweep_jump",
+   "angle": "duel_wide",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "low",
+   "key_out": "crouch",
+   "tier": "build",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/sweep_jump__duel_wide.mov",
+    "shadow": "shadow/sweep_jump__duel_wide.mov",
+    "depth": "depth/sweep_jump__duel_wide.mov"
+   },
+   "clip_data": "clip_data/sweep_jump__duel_wide.json",
+   "camera_track": "camera/duel_wide.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "sweep_jump__duel_low",
+   "move": "sweep_jump",
+   "angle": "duel_low",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "low",
+   "key_out": "crouch",
+   "tier": "build",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/sweep_jump__duel_low.mov",
+    "shadow": "shadow/sweep_jump__duel_low.mov",
+    "depth": "depth/sweep_jump__duel_low.mov"
+   },
+   "clip_data": "clip_data/sweep_jump__duel_low.json",
+   "camera_track": "camera/duel_low.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "knee_combo__duel_wide",
+   "move": "knee_combo",
+   "angle": "duel_wide",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "build",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/knee_combo__duel_wide.mov",
+    "shadow": "shadow/knee_combo__duel_wide.mov",
+    "depth": "depth/knee_combo__duel_wide.mov"
+   },
+   "clip_data": "clip_data/knee_combo__duel_wide.json",
+   "camera_track": "camera/duel_wide.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "knee_combo__duel_low",
+   "move": "knee_combo",
+   "angle": "duel_low",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "build",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/knee_combo__duel_low.mov",
+    "shadow": "shadow/knee_combo__duel_low.mov",
+    "depth": "depth/knee_combo__duel_low.mov"
+   },
+   "clip_data": "clip_data/knee_combo__duel_low.json",
+   "camera_track": "camera/duel_low.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "hammer_hit__duel_wide",
+   "move": "hammer_hit",
+   "angle": "duel_wide",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "crouch",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/hammer_hit__duel_wide.mov",
+    "shadow": "shadow/hammer_hit__duel_wide.mov",
+    "depth": "depth/hammer_hit__duel_wide.mov"
+   },
+   "clip_data": "clip_data/hammer_hit__duel_wide.json",
+   "camera_track": "camera/duel_wide.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "hammer_hit__duel_low",
+   "move": "hammer_hit",
+   "angle": "duel_low",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "crouch",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/hammer_hit__duel_low.mov",
+    "shadow": "shadow/hammer_hit__duel_low.mov",
+    "depth": "depth/hammer_hit__duel_low.mov"
+   },
+   "clip_data": "clip_data/hammer_hit__duel_low.json",
+   "camera_track": "camera/duel_low.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "core_strike__duel_wide",
+   "move": "core_strike",
+   "angle": "duel_wide",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "crouch",
+   "key_out": "guard",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/core_strike__duel_wide.mov",
+    "shadow": "shadow/core_strike__duel_wide.mov",
+    "depth": "depth/core_strike__duel_wide.mov"
+   },
+   "clip_data": "clip_data/core_strike__duel_wide.json",
+   "camera_track": "camera/duel_wide.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "core_strike__duel_low",
+   "move": "core_strike",
+   "angle": "duel_low",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "crouch",
+   "key_out": "guard",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/core_strike__duel_low.mov",
+    "shadow": "shadow/core_strike__duel_low.mov",
+    "depth": "depth/core_strike__duel_low.mov"
+   },
+   "clip_data": "clip_data/core_strike__duel_low.json",
+   "camera_track": "camera/duel_low.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "quake_stomp__duel_wide",
+   "move": "quake_stomp",
+   "angle": "duel_wide",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "low",
+   "key_out": "low",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0,
+    4
+   ],
+   "passes": {
+    "beauty": "beauty/quake_stomp__duel_wide.mov",
+    "shadow": "shadow/quake_stomp__duel_wide.mov",
+    "depth": "depth/quake_stomp__duel_wide.mov"
+   },
+   "clip_data": "clip_data/quake_stomp__duel_wide.json",
+   "camera_track": "camera/duel_wide.json",
+   "opponent": true,
+   "quality": "low"
+  },
+  {
+   "id": "quake_stomp__duel_low",
+   "move": "quake_stomp",
+   "angle": "duel_low",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "low",
+   "key_out": "low",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0,
+    4
+   ],
+   "passes": {
+    "beauty": "beauty/quake_stomp__duel_low.mov",
+    "shadow": "shadow/quake_stomp__duel_low.mov",
+    "depth": "depth/quake_stomp__duel_low.mov"
+   },
+   "clip_data": "clip_data/quake_stomp__duel_low.json",
+   "camera_track": "camera/duel_low.json",
+   "opponent": true,
+   "quality": "low"
   }
  ],
  "quality": "low"

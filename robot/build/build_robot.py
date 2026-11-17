@@ -621,7 +621,7 @@ def setup_render(scene):
     r.resolution_x, r.resolution_y, r.resolution_percentage = SIZE[0], SIZE[1], 100
     r.fps, r.fps_base = moves.FPS, 1.0
     r.film_transparent = True
-    r.use_motion_blur, r.motion_blur_shutter = True, 0.5
+    r.use_motion_blur, r.motion_blur_shutter = True, 0.25   # 0.5 smeared fast Hits (round A2)
     set_beauty_format(scene, "qtrle")
     scene.cycles.device = "GPU"
     scene.cycles.samples, scene.cycles.adaptive_threshold = 128, 0.02
