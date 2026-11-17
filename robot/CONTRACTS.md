@@ -16,6 +16,7 @@ One per Render Package. Written by `build/`, read by `magic/` and `live/`.
 | `angles` | list of `{id, camera}` and optional `opponent`: Angle id, its Shot Camera name, and `true` for a duel Angle that holds both fighters (missing or `false`: a solo Angle) |
 | `clips` | list of Clips, below |
 | `quality` | optional: `low` (Eevee, for judging motion), `high` (Cycles) or `mixed`; missing means `high` |
+| `backdrops` | optional: list of Backdrops, below; missing or empty means no backdrop |
 
 Each Clip:
 
@@ -50,6 +51,16 @@ Pass files, one `.mov` per Clip and Pass, 1920x1080, 30 fps, the Clip's frame co
 ProRes 4444 for beauty decoded below 30 fps at 3 Angles in Magic; qtrle holds 4 (docs/handover/robot-magic.md, 2026-11-16).
 
 On every Angle, each Key Pose that a Clip on that Angle starts or ends in has exactly one Idle Clip there, its variants counted as that one (a solo Angle: every Key Pose). A Move Clip that ends with no next pick goes to the Idle Clip of its `key_out` (one of its variants); the Clip Graph leaves the Idle Clip on the next bar boundary into any Move with that `key_in`. With no such Move, an Idle Clip plays its whole length and goes on to another variant of its family; one without variants loops. The Clip Graph keeps variety by family: a family not picked for 8 bars and a variant not for 32 bars come first, so each family is as likely whatever its number of variants. Magic switches between a solo and a duel Angle only from an Idle Clip, into the Idle Clip of the same Key Pose on the other Angle.
+
+Each Backdrop (a plate per Angle behind the Android, rendered from the Shot Cameras):
+
+| Field | Meaning |
+|---|---|
+| `id` | name, unique among the backdrops, e.g. `greeble_01` |
+| `frames` | frame count of each plate, positive |
+| `angles` | `{<angle id>: path}`: one plate per Manifest Angle, exactly the Manifest's Angles; paths relative to the package |
+
+A plate is opaque H.264, full range, 1920x1080, 30 fps, and loops seamlessly on its own clock (it is not synced to the Clips). Magic draws the on-air Angle's plate of the chosen backdrop under the Shadow and beauty Passes, so the plate cuts with the Angle. The backdrop changes at the first Angle change after an X-Ray Section change (8 beats later on a bar line if no Angle change comes), to another backdrop, never the same twice in a row.
 
 ## Clip Data (`clip_data/<clip id>.json`)
 

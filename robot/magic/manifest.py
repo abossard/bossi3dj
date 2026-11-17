@@ -45,6 +45,7 @@ class Manifest:
         self.key_poses = list(data["key_poses"])
         self.angles = list(data["angles"])
         self.clips = list(data["clips"])
+        self.backdrops = list(data.get("backdrops") or [])
         self.moves = []
         for c in self.clips:
             if c["move"] not in [m.name for m in self.moves]:
@@ -216,6 +217,32 @@ def validate(data, base_dir=None):
                             out.append("%s: hit %s %r is the giant's, but the Clip is not an Exchange (opponent)" % (where, giant[0], h[giant[0]]))
                 except (ValueError, AttributeError) as e:
                     out.append("%s: clip data unreadable: %s" % (where, e))
+    backdrops = data.get("backdrops", [])
+    if not isinstance(backdrops, list):
+        out.append("backdrops must be a list")
+        backdrops = []
+    bd_ids = []
+    for i, bd in enumerate(backdrops):
+        where = "backdrops[%d]" % i
+        if not isinstance(bd, dict) or not _require(bd, ("id", "frames", "angles"), where, out):
+            continue
+        if not isinstance(bd["id"], str) or not bd["id"]:
+            out.append("%s: id must be a name" % where)
+        elif bd["id"] in bd_ids:
+            out.append("%s: duplicate id %s" % (where, bd["id"]))
+        bd_ids.append(bd["id"])
+        if not (_is_int(bd["frames"]) and bd["frames"] > 0):
+            out.append("%s: frames must be a positive integer" % where)
+        plates = bd["angles"]
+        if not isinstance(plates, dict) or not all(isinstance(v, str) for v in plates.values()):
+            out.append("%s: angles must map Angle ids to paths" % where)
+            continue
+        if sorted(plates) != sorted(angle_ids):
+            out.append("%s: plates for %s, the Angles are %s" % (where, ", ".join(sorted(plates)) or "none", ", ".join(sorted(angle_ids))))
+        if base_dir:
+            for rel in plates.values():
+                if not os.path.isfile(os.path.join(base_dir, rel)):
+                    out.append("%s: file missing: %s" % (where, rel))
     duel_angle = {a["id"]: a.get("opponent") is True for a in angles if isinstance(a, dict) and "id" in a} if isinstance(angles, list) else {}
     idles, touched = {}, {}
     for group in by_move.values():

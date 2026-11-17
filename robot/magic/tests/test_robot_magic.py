@@ -157,6 +157,38 @@ class GraphGlobalsTests(unittest.TestCase):
                     self.assertEqual({i: v["Used%d" % i] for i in range(len(m.moves)) if v["Used%d" % i]},
                                      {m.moves.index(m.move(n)): b for n, b in s.used}, "beat %d" % beat)
 
+    def test_backdrop_globals_match_the_model(self):
+        with open(os.path.join(HERE, "..", "..", "package", "variants", "manifest.json")) as f:
+            m = mf.Manifest(json.load(f))
+        sections = [0] * 12 + [2] * 20 + [3] * 24 + [4] * 16 + [0] * 8 + [3] * 24
+        for seed, rate in [(0, 1.0), (7, 0.0)]:
+            with self.subTest(seed=seed, cut_rate=rate):
+                run = Run(m, sections, seed=seed, cut_rate=rate)
+                model = cg.ClipGraph(m, seed=seed, cut_rate=rate)
+                walk = model.walk(sections)
+                bds = model.backdrops(walk, sections)
+                self.assertGreater(len(set(bds)), 1)
+                for beat in range(1, len(sections) + 1):
+                    self.assertEqual(run.settled(beat)["Backdrop"], bds[beat - 1], "beat %d" % beat)
+
+    def test_backdrop_layer(self):
+        """Each Angle has an InputSelector over the backdrops' plates of that Angle, hidden off air; the gate reads Ground over the Android
+        alone, the Live World and the backdrop; the plates loop and take no clip pulse."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = package_with_media(tmp, os.path.join(HERE, "..", "..", "package", "variants"))
+            m = mf.Manifest(json.load(open(os.path.join(root, "manifest.json"))), root)
+            built = rm.build(m).build()
+        self.assertEqual([p for p in mp.check(built) if p[0] == "error"], [])
+        nodes = mp.node_table(built, "Robot")
+        plates = [n for n in nodes if n["plugin"] == "InputSelector" and any(p["source"] == "global:Backdrop" for p in n["params"])]
+        self.assertEqual([len(n["inputs"]) for n in plates], [4] * len(m.angle_ids))
+        files = [iv.get("value") for iv in built.iter("InputValue") if iv.get("name") == "File" and "backdrop/" in (iv.get("value") or "")]
+        self.assertEqual(len(files), 16)
+        gate = [n for n in nodes if n["plugin"] == "InputSelector" and any(p["source"] == "global:Ground" for p in n["params"])]
+        self.assertEqual([len(n["inputs"]) for n in gate], [3])
+        names = {g[0] for g in rm.ground_globals()}
+        self.assertEqual(names, {"Ground", "BackdropOn"})
+
     def test_duel_project_layers(self):
         """Each Angle's selector holds the Moves of its kind and reads that kind's input Global; the project checks clean."""
         m = mf.Manifest(json.load(open(os.path.join(HERE, "..", "..", "package", "duel", "manifest.json"))))

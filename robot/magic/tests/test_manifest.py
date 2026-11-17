@@ -263,6 +263,53 @@ class VariantTests(unittest.TestCase):
         self.assertEqual([old.move(n).family for n in old.families], old.families)
 
 
+class BackdropTests(unittest.TestCase):
+    """robot/CONTRACTS.md, Backdrops: an optional top-level list, a plate per Manifest Angle."""
+    VARIANTS = os.path.join(PACKAGES, "variants")
+
+    def data(self):
+        with open(os.path.join(self.VARIANTS, "manifest.json")) as f:
+            return json.load(f)
+
+    def test_backdrops(self):
+        cases = [
+            ("the variants package as written", None, None),
+            ("no backdrops at all", lambda d: d.pop("backdrops"), None),
+            ("an empty list", lambda d: d.update(backdrops=[]), None),
+            ("not a list", lambda d: d.update(backdrops={"id": "x"}), "backdrops must be a list"),
+            ("an entry without frames", lambda d: d["backdrops"][0].pop("frames"), "backdrops[0]: missing frames"),
+            ("frames 0", lambda d: d["backdrops"][1].update(frames=0), "backdrops[1]: frames must be a positive integer"),
+            ("a duplicate id", lambda d: d["backdrops"][2].update(id="chipset_04"), "backdrops[2]: duplicate id chipset_04"),
+            ("a plate missing for an Angle", lambda d: d["backdrops"][0]["angles"].pop("duel_low"), "backdrops[0]: plates for duel_wide, front, side, the Angles are"),
+            ("a plate for an unknown Angle", lambda d: d["backdrops"][0]["angles"].update(top="backdrop/x.mov"), "backdrops[0]: plates for duel_low, duel_wide, front, side, top"),
+            ("a plate path not a string", lambda d: d["backdrops"][3]["angles"].update(front=7), "backdrops[3]: angles must map Angle ids to paths"),
+        ]
+        for name, mutate, expect in cases:
+            with self.subTest(name):
+                d = self.data()
+                if mutate:
+                    mutate(d)
+                problems = mf.validate(d)
+                if expect is None:
+                    self.assertEqual(problems, [])
+                else:
+                    self.assertTrue(any(expect in p for p in problems), problems)
+
+    def test_plate_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = package_with_media(tmp, self.VARIANTS)
+            d = self.data()
+            for bd in d["backdrops"]:
+                for rel in bd["angles"].values():
+                    os.makedirs(os.path.dirname(os.path.join(root, rel)), exist_ok=True)
+                    open(os.path.join(root, rel), "w").close()
+            self.assertEqual(mf.validate(d, root), [])
+            os.remove(os.path.join(root, d["backdrops"][1]["angles"]["side"]))
+            self.assertEqual(mf.validate(d, root), ["backdrops[1]: file missing: backdrop/chipset_04/side.mov"])
+        self.assertEqual([b["id"] for b in mf.Manifest(d).backdrops], ["arclink_city_1", "chipset_04", "greeble_01", "greeble_03"])
+        self.assertEqual(mf.Manifest(fixture_data()).backdrops, [])
+
+
 def _hit(root, c, **fields):
     _rewrite(os.path.join(root, c["clip_data"]), lambda d: d["hits"].append(dict({"f": 3, "point": [0, 0, 0], "strength": 1, "limb": "hand_r"}, **fields)))
 

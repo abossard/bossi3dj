@@ -19,6 +19,8 @@ VARIANT_WINDOW beats; fresh before stale, among fresh families a hash per family
 then a hash per variant; among stale ones the oldest. An Idle Clip with no Move to leave into plays its whole length, then goes to
 another variant of its Idle family (an Idle chain), never itself. Each pick draws a Flavor (a hash of its start beat): the Move's cut
 chance is cut_rate x (0.4 + 1.2 x Flavor), and robot_magic.py scales the Hit and cut effects by it.
+Backdrops: `backdrops` follows a walk; the first backdrop at the start, a change due when the Section at a bar line differs from the
+last bar line's, taken at the next Angle change (8 beats after the Section change on a bar line if none comes), to another backdrop.
 Picks are a hash of the beat count and the seed, so a run repeats. robot_magic.py writes the same hash and the same tables
 into Magic Globals; tests/test_robot_magic.py runs those Globals beside this model.
 """
@@ -26,8 +28,9 @@ import math
 from collections import namedtuple
 
 State = namedtuple("State", "move angle start tier used", defaults=("calm", ()))    # used: (Move, beat it was last picked) pairs
-SALT_CUT, SALT_ANGLE, SALT_FLAVOR, SALT_FAMILY, SALT_VARIANT = 1, 2, 3, 10, 500   # family f: SALT_FAMILY + f, Move i: SALT_VARIANT + i
+SALT_CUT, SALT_ANGLE, SALT_FLAVOR, SALT_BACKDROP, SALT_FAMILY, SALT_VARIANT = 1, 2, 3, 4, 10, 500   # family f: SALT_FAMILY + f, Move i: SALT_VARIANT + i
 FAMILY_WINDOW, VARIANT_WINDOW = 32, 128          # beats: 8 bars; 32 bars, about a minute at 124 BPM
+BACKDROP_WAIT = 8                                # beats a due backdrop change waits for an Angle change
 SECTION_BUILDUP, SECTION_DROP = 2, 3      # Music X-Ray State: 0 intro, 2 buildup, 3 drop, 4 breakdown; everything else is calm
 
 
@@ -163,6 +166,22 @@ class ClipGraph:
         for beat, e in enumerate(sections, 1):
             s = self.step(s, beat, e)
             out.append(s)
+        return out
+
+    def backdrops(self, walk, sections):
+        """Index into the Manifest's backdrops after beats 1..len(walk), for `walk` = self.walk(sections)."""
+        n = len(self.manifest.backdrops)
+        out, cur, latched, due, since, angle = [], 0, 0, False, 0, self.start().angle
+        for beat, (s, section) in enumerate(zip(walk, sections), 1):
+            if beat % 4 == 0:
+                if section != latched:
+                    due, since = True, beat
+                latched = section
+            if due and (s.angle != angle or (beat % 4 == 0 and beat - since >= BACKDROP_WAIT)):
+                cur = (cur + 1 + int(math.floor(hash01(beat, self.seed, SALT_BACKDROP) * max(0, n - 1)))) % max(1, n)
+                due = False
+            out.append(cur)
+            angle = s.angle
         return out
 
     def clip_index(self, state):

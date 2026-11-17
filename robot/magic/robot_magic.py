@@ -21,7 +21,7 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "..", "..", "magic"))
 import magicproj as mp  # noqa: E402
 import xray  # noqa: E402
-from clip_graph import FAMILY_WINDOW, SALT_ANGLE, SALT_CUT, SALT_FAMILY, SALT_FLAVOR, SALT_VARIANT, VARIANT_WINDOW  # noqa: E402
+from clip_graph import BACKDROP_WAIT, FAMILY_WINDOW, SALT_ANGLE, SALT_BACKDROP, SALT_CUT, SALT_FAMILY, SALT_FLAVOR, SALT_VARIANT, VARIANT_WINDOW  # noqa: E402
 from manifest import load  # noqa: E402
 
 # One table for the OSC rows (proposed in robot/CONTRACTS.md, not yet in osc/contract.json): address, Out Global, wire maximum.
@@ -157,10 +157,34 @@ def graph_globals(m, seed=0, cut_rate=1.0, duel_tiers=("drop",)):
                                     % (num(per_beat), num(per_beat)))]),
         ("OutAngle", 0, "calc", [ex("Angle")]),
     ]
+    if m.backdrops:
+        out += backdrop_globals(m)
     for duel in (False, True):
         if m.group(duel) and len(local_moves(m, duel)) != len(m.moves):
             out.append((MOVE_IN[duel], 0, "calc", [ex(table("Move", [local_moves(m, duel).index(mv) if mv in local_moves(m, duel) else 0 for mv in m.moves]))]))
     return out
+
+
+def backdrop_globals(m):
+    """clip_graph.ClipGraph.backdrops as Globals: a Section change at a bar line makes a change due (BdDue, BdSince), BdTrig fires in the
+    frame after an Angle change (or BACKDROP_WAIT beats on, on a bar line), Backdrop takes another one in the frame after."""
+    n = len(m.backdrops)
+    bar = "Beats - floor(Beats/4)*4 == 0"
+    return [
+        ("BeatEv4", 0, "calc", [ex("BeatEv3")]),
+        ("BdSec", 0, "calc", [ex("if(Beats > BeatsPrev and %s, Section, y)" % bar)]),
+        ("BdSecLag", 0, "calc", [ex("BdSec")]),
+        ("BdSince", 0, "calc", [ex("if(BdSec != BdSecLag, Beats, y)")]),
+        ("BdDue", 0, "calc", [ex("if(BdSec != BdSecLag, 1, if(BdTrig > 0.5, 0, y))")]),
+        ("BdAngleLag", 0, "calc", [ex("Angle")]),
+        ("BdTrig", 0, "calc", [ex("if(BdDue > 0.5 and (Angle != BdAngleLag or (BeatEv4 > 0.5 and %s and Beats - BdSince >= %d)), 1, 0)" % (bar, BACKDROP_WAIT))]),
+        ("Backdrop", 0, "calc", [ex("if(BdTrig > 0.5, (y + 1 + floor(%s*%d)) %% %d, y)" % (frac01("Beats", SALT_BACKDROP), max(0, n - 1), max(1, n)))]),
+    ]
+
+
+def ground_globals():
+    """Ground picks the gate's input when there are backdrops: 0 the Android alone, 1 the Live World (its heartbeat wins), 2 the backdrop (BackdropOn 1)."""
+    return [("BackdropOn", 1, None, []), ("Ground", 0, "calc", [ex("if(%s > 0.5, 1, if(BackdropOn > 0.5, 2, 0))" % LIVE_GATE)])]
 
 
 MOVE_IN = {False: "MoveInSolo", True: "MoveInDuel"}      # the input of a solo or duel Angle's selector: the Move's place among the Moves of that kind
@@ -280,7 +304,7 @@ def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=No
     b = mp.Builder(syphon=OUTPUT_SERVER, size=tuple(size or m.size), fps=m.fps, audio_device=audio_device, osc_in=osc_in)
     for name, value, source, mods in (clock if clock is not None else clock_globals()) + graph_globals(m, seed=seed, **graph):
         b.glob(name, value, source, mods)
-    for g in live_globals() + (effect_globals(m, clip_hits(m), fx) if effects else []):
+    for g in live_globals() + (ground_globals() if m.backdrops else []) + (effect_globals(m, clip_hits(m), fx) if effects else []):
         b.glob(*g)
     robot, osc = b.scene("Robot"), b.scene("OSC Out")
 
@@ -300,6 +324,19 @@ def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=No
             layers.append(robot.node("Transparency", {"Amount": ("global:%s%d" % (HIDE_ANGLE, a), [], 1)}, inputs=[moves]))
         return robot.node("Null", inputs=layers)
 
+    def plates():
+        """Every Angle's InputSelector over the backdrops' plates of that Angle, hidden off air like the Clips (the same cut frame).
+        No Goto Start or Speed link: a plate loops on its own clock."""
+        layers = []
+        for a, angle in enumerate(m.angle_ids):
+            nodes = []
+            for bd in m.backdrops:
+                path = m.path(bd["angles"][angle])
+                nodes.append(robot.node("VideoFile", {"File": os.path.relpath(path, project_dir) if project_dir else os.path.abspath(path), "Looping": 1}))
+            sel = robot.node("InputSelector", {"Input #": ("global:Backdrop", [], 0)}, inputs=nodes)
+            layers.append(robot.node("Transparency", {"Amount": ("global:%s%d" % (HIDE_ANGLE, a), [], 1)}, inputs=[sel]))
+        return robot.node("Null", inputs=layers)
+
     world = robot.node("SyphonClient", {"Server": live})
     shadow = clip_files("shadow")
     shaded = robot.node("Blend", {"Mode": BLEND_MULTIPLY}, inputs=[world, shadow])
@@ -308,7 +345,11 @@ def build(m, live=LIVE_SERVER, osc_ip=OSC_IP, osc_port=OSC_PORT, seed=0, size=No
     comp = robot.node("Transparency", {"Amount": 0}, inputs=[matte, shaded])
     osc_mod = robot.scene_module(osc)
     # A module wired to a missing Syphon server draws black, bypassed or not; an InputSelector only evaluates the input it draws.
-    gate = robot.node("InputSelector", {"Input #": ("global:%s" % LIVE_GATE, [], 0)}, inputs=[matte, comp])
+    if m.backdrops:         # under the Shadow and the beauty, like the Live World; Ground 2 draws it
+        on_plate = robot.node("Transparency", {"Amount": 0}, inputs=[matte, robot.node("Blend", {"Mode": BLEND_MULTIPLY}, inputs=[plates(), shadow])])
+        gate = robot.node("InputSelector", {"Input #": ("global:Ground", [], 0)}, inputs=[matte, comp, on_plate])
+    else:
+        gate = robot.node("InputSelector", {"Input #": ("global:%s" % LIVE_GATE, [], 0)}, inputs=[matte, comp])
     robot.output(effect_chain(robot, gate) if effects else gate, osc_mod)
     senders = []
     for address, glob, top in OSC_ROWS:

@@ -540,6 +540,47 @@ class VariantTests(unittest.TestCase):
         self.assertGreater(some, 10)
 
 
+class BackdropTests(unittest.TestCase):
+    SEEDS = (0, 1, 2.5, 7, 42)
+    SHOW = VariantTests.SHOW
+
+    def test_the_backdrop_changes_at_the_first_angle_change_after_a_section_change(self):
+        m = variants()
+        for seed in self.SEEDS:
+            for rate in (1.0, 0.3, 0.0):
+                with self.subTest(seed=seed, cut_rate=rate):
+                    g = cg.ClipGraph(m, seed=seed, cut_rate=rate)
+                    walk = g.walk(self.SHOW)
+                    bds = g.backdrops(walk, self.SHOW)
+                    self.assertEqual(bds[:32], [0] * 32)
+                    changes = [b for b in range(2, len(bds) + 1) if bds[b - 1] != bds[b - 2]]
+                    bar_changes = [b for b in range(4, len(self.SHOW) + 1, 4) if self.SHOW[b - 1] != self.SHOW[b - 5 if b > 4 else 0]]
+                    self.assertEqual(len(changes), len(bar_changes), (changes, bar_changes))
+                    for due, b in zip(bar_changes, changes):
+                        angle_change = walk[b - 1].angle != walk[b - 2].angle
+                        self.assertTrue(b >= due and (angle_change or (b % 4 == 0 and b - due >= cg.BACKDROP_WAIT)), (due, b))
+                        self.assertLessEqual(b - due, cg.BACKDROP_WAIT + 3)
+
+    def test_never_the_same_backdrop_twice_in_a_row_and_all_of_them_come(self):
+        m = variants()
+        sections = ([0] * 8 + [2] * 8 + [3] * 16 + [4] * 8) * 12
+        seen = set()
+        for seed in self.SEEDS:
+            g = cg.ClipGraph(m, seed=seed)
+            bds = g.backdrops(g.walk(sections), sections)
+            runs = [b for i, b in enumerate(bds) if i == 0 or b != bds[i - 1]]
+            self.assertTrue(all(a != b for a, b in zip(runs, runs[1:])))
+            seen |= set(bds)
+        self.assertEqual(seen, {0, 1, 2, 3})
+
+    def test_without_backdrops_or_with_one_it_stays(self):
+        for name, keep in [("none", 0), ("one", 1)]:
+            with self.subTest(name):
+                m = variants(lambda d: d.update(backdrops=d["backdrops"][:keep]))
+                g = cg.ClipGraph(m)
+                self.assertEqual(set(g.backdrops(g.walk(self.SHOW), self.SHOW)), {0})
+
+
 class OutputTests(unittest.TestCase):
     def test_clip_index_and_frame(self):
         m = manifest()
