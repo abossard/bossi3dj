@@ -7,7 +7,9 @@
   1080
  ],
  "key_poses": [
-  "guard"
+  "guard",
+  "low",
+  "crouch"
  ],
  "angles": [
   {
@@ -39,7 +41,8 @@
     "depth": "depth/idle_guard__front.mov"
    },
    "clip_data": "clip_data/idle_guard__front.json",
-   "camera_track": "camera/front.json"
+   "camera_track": "camera/front.json",
+   "quality": "low"
   },
   {
    "id": "idle_guard__side",
@@ -60,7 +63,322 @@
     "depth": "depth/idle_guard__side.mov"
    },
    "clip_data": "clip_data/idle_guard__side.json",
-   "camera_track": "camera/side.json"
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "idle_low__front",
+   "move": "idle_low",
+   "angle": "front",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "low",
+   "key_out": "low",
+   "tier": "calm",
+   "idle": true,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/idle_low__front.mov",
+    "shadow": "shadow/idle_low__front.mov",
+    "depth": "depth/idle_low__front.mov"
+   },
+   "clip_data": "clip_data/idle_low__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "idle_low__side",
+   "move": "idle_low",
+   "angle": "side",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "low",
+   "key_out": "low",
+   "tier": "calm",
+   "idle": true,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/idle_low__side.mov",
+    "shadow": "shadow/idle_low__side.mov",
+    "depth": "depth/idle_low__side.mov"
+   },
+   "clip_data": "clip_data/idle_low__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "idle_crouch__front",
+   "move": "idle_crouch",
+   "angle": "front",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "crouch",
+   "key_out": "crouch",
+   "tier": "calm",
+   "idle": true,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/idle_crouch__front.mov",
+    "shadow": "shadow/idle_crouch__front.mov",
+    "depth": "depth/idle_crouch__front.mov"
+   },
+   "clip_data": "clip_data/idle_crouch__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "idle_crouch__side",
+   "move": "idle_crouch",
+   "angle": "side",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "crouch",
+   "key_out": "crouch",
+   "tier": "calm",
+   "idle": true,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/idle_crouch__side.mov",
+    "shadow": "shadow/idle_crouch__side.mov",
+    "depth": "depth/idle_crouch__side.mov"
+   },
+   "clip_data": "clip_data/idle_crouch__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "guard_shuffle__front",
+   "move": "guard_shuffle",
+   "angle": "front",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "calm",
+   "idle": false,
+   "cut_points": [
+    0,
+    7
+   ],
+   "passes": {
+    "beauty": "beauty/guard_shuffle__front.mov",
+    "shadow": "shadow/guard_shuffle__front.mov",
+    "depth": "depth/guard_shuffle__front.mov"
+   },
+   "clip_data": "clip_data/guard_shuffle__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "guard_shuffle__side",
+   "move": "guard_shuffle",
+   "angle": "side",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "calm",
+   "idle": false,
+   "cut_points": [
+    0,
+    7
+   ],
+   "passes": {
+    "beauty": "beauty/guard_shuffle__side.mov",
+    "shadow": "shadow/guard_shuffle__side.mov",
+    "depth": "depth/guard_shuffle__side.mov"
+   },
+   "clip_data": "clip_data/guard_shuffle__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "settle_low__front",
+   "move": "settle_low",
+   "angle": "front",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "guard",
+   "key_out": "low",
+   "tier": "calm",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/settle_low__front.mov",
+    "shadow": "shadow/settle_low__front.mov",
+    "depth": "depth/settle_low__front.mov"
+   },
+   "clip_data": "clip_data/settle_low__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "settle_low__side",
+   "move": "settle_low",
+   "angle": "side",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "guard",
+   "key_out": "low",
+   "tier": "calm",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/settle_low__side.mov",
+    "shadow": "shadow/settle_low__side.mov",
+    "depth": "depth/settle_low__side.mov"
+   },
+   "clip_data": "clip_data/settle_low__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "rise_guard__front",
+   "move": "rise_guard",
+   "angle": "front",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "low",
+   "key_out": "guard",
+   "tier": "calm",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/rise_guard__front.mov",
+    "shadow": "shadow/rise_guard__front.mov",
+    "depth": "depth/rise_guard__front.mov"
+   },
+   "clip_data": "clip_data/rise_guard__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "rise_guard__side",
+   "move": "rise_guard",
+   "angle": "side",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "low",
+   "key_out": "guard",
+   "tier": "calm",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/rise_guard__side.mov",
+    "shadow": "shadow/rise_guard__side.mov",
+    "depth": "depth/rise_guard__side.mov"
+   },
+   "clip_data": "clip_data/rise_guard__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "low_scan__front",
+   "move": "low_scan",
+   "angle": "front",
+   "beats": 16,
+   "frames": 232,
+   "key_in": "low",
+   "key_out": "low",
+   "tier": "calm",
+   "idle": false,
+   "cut_points": [
+    0,
+    4,
+    8
+   ],
+   "passes": {
+    "beauty": "beauty/low_scan__front.mov",
+    "shadow": "shadow/low_scan__front.mov",
+    "depth": "depth/low_scan__front.mov"
+   },
+   "clip_data": "clip_data/low_scan__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "low_scan__side",
+   "move": "low_scan",
+   "angle": "side",
+   "beats": 16,
+   "frames": 232,
+   "key_in": "low",
+   "key_out": "low",
+   "tier": "calm",
+   "idle": false,
+   "cut_points": [
+    0,
+    4,
+    8
+   ],
+   "passes": {
+    "beauty": "beauty/low_scan__side.mov",
+    "shadow": "shadow/low_scan__side.mov",
+    "depth": "depth/low_scan__side.mov"
+   },
+   "clip_data": "clip_data/low_scan__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "stand_up__front",
+   "move": "stand_up",
+   "angle": "front",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "crouch",
+   "key_out": "guard",
+   "tier": "calm",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/stand_up__front.mov",
+    "shadow": "shadow/stand_up__front.mov",
+    "depth": "depth/stand_up__front.mov"
+   },
+   "clip_data": "clip_data/stand_up__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "stand_up__side",
+   "move": "stand_up",
+   "angle": "side",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "crouch",
+   "key_out": "guard",
+   "tier": "calm",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/stand_up__side.mov",
+    "shadow": "shadow/stand_up__side.mov",
+    "depth": "depth/stand_up__side.mov"
+   },
+   "clip_data": "clip_data/stand_up__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
   },
   {
    "id": "jab_cross__front",
@@ -82,7 +400,8 @@
     "depth": "depth/jab_cross__front.mov"
    },
    "clip_data": "clip_data/jab_cross__front.json",
-   "camera_track": "camera/front.json"
+   "camera_track": "camera/front.json",
+   "quality": "low"
   },
   {
    "id": "jab_cross__side",
@@ -104,49 +423,8 @@
     "depth": "depth/jab_cross__side.mov"
    },
    "clip_data": "clip_data/jab_cross__side.json",
-   "camera_track": "camera/side.json"
-  },
-  {
-   "id": "front_kick__front",
-   "move": "front_kick",
-   "angle": "front",
-   "beats": 4,
-   "frames": 58,
-   "key_in": "guard",
-   "key_out": "guard",
-   "tier": "drop",
-   "idle": false,
-   "cut_points": [
-    0
-   ],
-   "passes": {
-    "beauty": "beauty/front_kick__front.mov",
-    "shadow": "shadow/front_kick__front.mov",
-    "depth": "depth/front_kick__front.mov"
-   },
-   "clip_data": "clip_data/front_kick__front.json",
-   "camera_track": "camera/front.json"
-  },
-  {
-   "id": "front_kick__side",
-   "move": "front_kick",
-   "angle": "side",
-   "beats": 4,
-   "frames": 58,
-   "key_in": "guard",
-   "key_out": "guard",
-   "tier": "drop",
-   "idle": false,
-   "cut_points": [
-    0
-   ],
-   "passes": {
-    "beauty": "beauty/front_kick__side.mov",
-    "shadow": "shadow/front_kick__side.mov",
-    "depth": "depth/front_kick__side.mov"
-   },
-   "clip_data": "clip_data/front_kick__side.json",
-   "camera_track": "camera/side.json"
+   "camera_track": "camera/side.json",
+   "quality": "low"
   },
   {
    "id": "take_hit__front",
@@ -168,7 +446,8 @@
     "depth": "depth/take_hit__front.mov"
    },
    "clip_data": "clip_data/take_hit__front.json",
-   "camera_track": "camera/front.json"
+   "camera_track": "camera/front.json",
+   "quality": "low"
   },
   {
    "id": "take_hit__side",
@@ -190,7 +469,503 @@
     "depth": "depth/take_hit__side.mov"
    },
    "clip_data": "clip_data/take_hit__side.json",
-   "camera_track": "camera/side.json"
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "jab_jab_hook__front",
+   "move": "jab_jab_hook",
+   "angle": "front",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "build",
+   "idle": false,
+   "cut_points": [
+    0,
+    5,
+    6,
+    7
+   ],
+   "passes": {
+    "beauty": "beauty/jab_jab_hook__front.mov",
+    "shadow": "shadow/jab_jab_hook__front.mov",
+    "depth": "depth/jab_jab_hook__front.mov"
+   },
+   "clip_data": "clip_data/jab_jab_hook__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "jab_jab_hook__side",
+   "move": "jab_jab_hook",
+   "angle": "side",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "build",
+   "idle": false,
+   "cut_points": [
+    0,
+    5,
+    6,
+    7
+   ],
+   "passes": {
+    "beauty": "beauty/jab_jab_hook__side.mov",
+    "shadow": "shadow/jab_jab_hook__side.mov",
+    "depth": "depth/jab_jab_hook__side.mov"
+   },
+   "clip_data": "clip_data/jab_jab_hook__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "palm_strike__front",
+   "move": "palm_strike",
+   "angle": "front",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "low",
+   "key_out": "low",
+   "tier": "build",
+   "idle": false,
+   "cut_points": [
+    0,
+    3
+   ],
+   "passes": {
+    "beauty": "beauty/palm_strike__front.mov",
+    "shadow": "shadow/palm_strike__front.mov",
+    "depth": "depth/palm_strike__front.mov"
+   },
+   "clip_data": "clip_data/palm_strike__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "palm_strike__side",
+   "move": "palm_strike",
+   "angle": "side",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "low",
+   "key_out": "low",
+   "tier": "build",
+   "idle": false,
+   "cut_points": [
+    0,
+    3
+   ],
+   "passes": {
+    "beauty": "beauty/palm_strike__side.mov",
+    "shadow": "shadow/palm_strike__side.mov",
+    "depth": "depth/palm_strike__side.mov"
+   },
+   "clip_data": "clip_data/palm_strike__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "rush_cross__front",
+   "move": "rush_cross",
+   "angle": "front",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "low",
+   "key_out": "guard",
+   "tier": "build",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/rush_cross__front.mov",
+    "shadow": "shadow/rush_cross__front.mov",
+    "depth": "depth/rush_cross__front.mov"
+   },
+   "clip_data": "clip_data/rush_cross__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "rush_cross__side",
+   "move": "rush_cross",
+   "angle": "side",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "low",
+   "key_out": "guard",
+   "tier": "build",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/rush_cross__side.mov",
+    "shadow": "shadow/rush_cross__side.mov",
+    "depth": "depth/rush_cross__side.mov"
+   },
+   "clip_data": "clip_data/rush_cross__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "crouch_strike__front",
+   "move": "crouch_strike",
+   "angle": "front",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "crouch",
+   "key_out": "crouch",
+   "tier": "build",
+   "idle": false,
+   "cut_points": [
+    0,
+    3
+   ],
+   "passes": {
+    "beauty": "beauty/crouch_strike__front.mov",
+    "shadow": "shadow/crouch_strike__front.mov",
+    "depth": "depth/crouch_strike__front.mov"
+   },
+   "clip_data": "clip_data/crouch_strike__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "crouch_strike__side",
+   "move": "crouch_strike",
+   "angle": "side",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "crouch",
+   "key_out": "crouch",
+   "tier": "build",
+   "idle": false,
+   "cut_points": [
+    0,
+    3
+   ],
+   "passes": {
+    "beauty": "beauty/crouch_strike__side.mov",
+    "shadow": "shadow/crouch_strike__side.mov",
+    "depth": "depth/crouch_strike__side.mov"
+   },
+   "clip_data": "clip_data/crouch_strike__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "front_kick__front",
+   "move": "front_kick",
+   "angle": "front",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/front_kick__front.mov",
+    "shadow": "shadow/front_kick__front.mov",
+    "depth": "depth/front_kick__front.mov"
+   },
+   "clip_data": "clip_data/front_kick__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "front_kick__side",
+   "move": "front_kick",
+   "angle": "side",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/front_kick__side.mov",
+    "shadow": "shadow/front_kick__side.mov",
+    "depth": "depth/front_kick__side.mov"
+   },
+   "clip_data": "clip_data/front_kick__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "uppercut_combo__front",
+   "move": "uppercut_combo",
+   "angle": "front",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/uppercut_combo__front.mov",
+    "shadow": "shadow/uppercut_combo__front.mov",
+    "depth": "depth/uppercut_combo__front.mov"
+   },
+   "clip_data": "clip_data/uppercut_combo__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "uppercut_combo__side",
+   "move": "uppercut_combo",
+   "angle": "side",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "guard",
+   "key_out": "guard",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/uppercut_combo__side.mov",
+    "shadow": "shadow/uppercut_combo__side.mov",
+    "depth": "depth/uppercut_combo__side.mov"
+   },
+   "clip_data": "clip_data/uppercut_combo__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "leap_slam__front",
+   "move": "leap_slam",
+   "angle": "front",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "guard",
+   "key_out": "crouch",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/leap_slam__front.mov",
+    "shadow": "shadow/leap_slam__front.mov",
+    "depth": "depth/leap_slam__front.mov"
+   },
+   "clip_data": "clip_data/leap_slam__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "leap_slam__side",
+   "move": "leap_slam",
+   "angle": "side",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "guard",
+   "key_out": "crouch",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/leap_slam__side.mov",
+    "shadow": "shadow/leap_slam__side.mov",
+    "depth": "depth/leap_slam__side.mov"
+   },
+   "clip_data": "clip_data/leap_slam__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "ground_pound__front",
+   "move": "ground_pound",
+   "angle": "front",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "crouch",
+   "key_out": "crouch",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/ground_pound__front.mov",
+    "shadow": "shadow/ground_pound__front.mov",
+    "depth": "depth/ground_pound__front.mov"
+   },
+   "clip_data": "clip_data/ground_pound__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "ground_pound__side",
+   "move": "ground_pound",
+   "angle": "side",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "crouch",
+   "key_out": "crouch",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/ground_pound__side.mov",
+    "shadow": "shadow/ground_pound__side.mov",
+    "depth": "depth/ground_pound__side.mov"
+   },
+   "clip_data": "clip_data/ground_pound__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "burst_rise__front",
+   "move": "burst_rise",
+   "angle": "front",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "crouch",
+   "key_out": "low",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/burst_rise__front.mov",
+    "shadow": "shadow/burst_rise__front.mov",
+    "depth": "depth/burst_rise__front.mov"
+   },
+   "clip_data": "clip_data/burst_rise__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "burst_rise__side",
+   "move": "burst_rise",
+   "angle": "side",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "crouch",
+   "key_out": "low",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/burst_rise__side.mov",
+    "shadow": "shadow/burst_rise__side.mov",
+    "depth": "depth/burst_rise__side.mov"
+   },
+   "clip_data": "clip_data/burst_rise__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "power_stomp__front",
+   "move": "power_stomp",
+   "angle": "front",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "low",
+   "key_out": "low",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/power_stomp__front.mov",
+    "shadow": "shadow/power_stomp__front.mov",
+    "depth": "depth/power_stomp__front.mov"
+   },
+   "clip_data": "clip_data/power_stomp__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "power_stomp__side",
+   "move": "power_stomp",
+   "angle": "side",
+   "beats": 4,
+   "frames": 58,
+   "key_in": "low",
+   "key_out": "low",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/power_stomp__side.mov",
+    "shadow": "shadow/power_stomp__side.mov",
+    "depth": "depth/power_stomp__side.mov"
+   },
+   "clip_data": "clip_data/power_stomp__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
+  },
+  {
+   "id": "low_charge__front",
+   "move": "low_charge",
+   "angle": "front",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "low",
+   "key_out": "guard",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/low_charge__front.mov",
+    "shadow": "shadow/low_charge__front.mov",
+    "depth": "depth/low_charge__front.mov"
+   },
+   "clip_data": "clip_data/low_charge__front.json",
+   "camera_track": "camera/front.json",
+   "quality": "low"
+  },
+  {
+   "id": "low_charge__side",
+   "move": "low_charge",
+   "angle": "side",
+   "beats": 8,
+   "frames": 116,
+   "key_in": "low",
+   "key_out": "guard",
+   "tier": "drop",
+   "idle": false,
+   "cut_points": [
+    0
+   ],
+   "passes": {
+    "beauty": "beauty/low_charge__side.mov",
+    "shadow": "shadow/low_charge__side.mov",
+    "depth": "depth/low_charge__side.mov"
+   },
+   "clip_data": "clip_data/low_charge__side.json",
+   "camera_track": "camera/side.json",
+   "quality": "low"
   }
- ]
+ ],
+ "quality": "low"
 }
