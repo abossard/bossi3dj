@@ -35,7 +35,7 @@ def main():
         key_pts[key] = points(pts)
     report = {}
     for name, clip in mocap.CLIPS.items():
-        arm.animation_data.action = bpy.data.actions["mocap." + name]
+        arm.animation_data.action = bpy.data.actions["move." + name]
         n = mocap.frames(clip)
         reach = {c[0]: (0.0, 0) for c in br.IK_CHAINS}
         lowest, step, seq, ankle_slide = (1e9, 0), (0.0, 0, ""), [], (0.0, 0)

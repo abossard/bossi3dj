@@ -2,7 +2,7 @@
 # library_render.sh [MOVE...]: the Clip Library into robot/package/v1, resumable; QUALITY=low (Eevee, minutes) or
 # high (Cycles at SAMPLES, default 64; hours). <package>/quality/<clip> records each Clip's quality, and a Clip counts
 # as complete only at the quality asked for, so a high run replaces a low package Clip by Clip; FORCE=1 renders all: one Clip per Blender run, a
-# Clip already complete (review/clip_complete.py) is skipped, so a stop costs at most one Clip. Order: moves.py order
+# Clip already complete (review/clip_complete.py) is skipped, so a stop costs at most one Clip. Order: the Clip Library's order (library.py)
 # with ground_pound last, then the Exchanges (exchanges.py) on the duel Angles. Builds and checks first and stops on a failed check; stops when another Blender runs.
 # Named Moves render in that order instead. DEADLINE=HH:MM: no Clip starts that the last measured seconds per frame
 # (SPF to begin with) say ends later. Then encodes each Clip, exports Clip Data, Camera Tracks and the Manifest, keeps
@@ -22,11 +22,12 @@ $B -b --factory-startup -P robot/build/build_robot.py -- build > $P/build.log 2>
 $B -b robot/build/robot.blend -P robot/build/build_robot.py -- check --out $P/check.json > $P/check.log 2>&1 || stop "check failed"
 jq -e '[to_entries[].value | select(.planted_sole_error_m > 0.005 or .planted_ankle_gap_m > 0.005 or .lowest_point_m < -0.005)] | length == 0' $P/check.json >/dev/null \
   || stop "check out of bounds"
-python3 -c "import sys; sys.path.insert(0, 'robot/build'); import moves, exchanges as X
-order = sys.argv[1:] or [m for m in moves.MOVES if m != 'ground_pound'] + ['ground_pound'] + list(X.EXCHANGES)
+python3 -c "import sys; sys.path.insert(0, 'robot/build'); import moves, library, exchanges as X
+L = library.LIBRARY
+order = sys.argv[1:] or [m for m in L if m != 'ground_pound'] + ['ground_pound'] + list(X.EXCHANGES)
 for m in order:
     ex = X.EXCHANGES.get(m)
-    print(m, moves.move_frames(ex.android if ex else moves.MOVES[m]), 'duel_wide duel_low' if ex else 'front side')" "$@" > $P/order.txt
+    print(m, moves.move_frames(ex.android if ex else L[m]), 'duel_wide duel_low' if ex else 'front side')" "$@" > $P/order.txt
 echo "$(date +%T) start" >> $P/progress.txt
 while read -u 3 m n angles; do
   for a in ${=angles}; do

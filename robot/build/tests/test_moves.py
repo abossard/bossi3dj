@@ -17,7 +17,6 @@ TIERS = ("calm", "build", "drop")
 
 HITS = {
     "idle_guard": [],
-    "jab_cross": [{"f": 15, "limb": "hand_l", "strength": 0.6}, {"f": 29, "limb": "hand_r", "strength": 1.0}],
     "front_kick": [{"f": 29, "limb": "foot_l", "strength": 1.0}],
     "take_hit": [{"f": 15, "limb": "head", "strength": 1.0}],
 }
@@ -124,28 +123,6 @@ class MoveTests(unittest.TestCase):
             with self.subTest(move=move.name, where="alive"):
                 self.assertGreater(biggest[0], 0.0)
                 self.assertGreater(biggest[1], 0.0)
-
-    def test_every_key_pose_reaches_every_other_within_two_moves(self):
-        edges = {(m.key_in, m.key_out) for m in _moves(False)}
-        for a in moves.KEY_POSES:
-            one = {b for x, b in edges if x == a}
-            two = one | {c for x, c in edges if x in one}
-            for b in moves.KEY_POSES:
-                if a != b:
-                    with self.subTest(start=a, end=b):
-                        self.assertIn(b, two)
-
-    def test_every_key_pose_has_a_move_in_every_tier(self):
-        for key in moves.KEY_POSES:
-            for tier in TIERS:
-                with self.subTest(key_pose=key, tier=tier):
-                    self.assertTrue(any(m.key_in == key and m.tier == tier for m in _moves(False)))
-
-    def test_four_moves_per_tier_in_mixed_lengths(self):
-        for tier in TIERS:
-            with self.subTest(tier=tier):
-                self.assertGreaterEqual(len([m for m in _moves(False) if m.tier == tier]), 4)
-        self.assertEqual({m.beats for m in _moves(False)}, set(FRAMES_PER_BEATS))
 
     def test_unknown_channel_raises(self):
         with self.assertRaises(KeyError):

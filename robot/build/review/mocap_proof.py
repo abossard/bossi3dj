@@ -27,7 +27,7 @@ def main():
     arm = br._arm()
     for name in argv or mocap.CLIPS:
         clip = mocap.CLIPS[name]
-        arm.animation_data.action = bpy.data.actions["mocap." + name]
+        arm.animation_data.action = bpy.data.actions["move." + name]
         scene.frame_start, scene.frame_end = 0, mocap.frames(clip) - 1
         for angle, cam, *_ in br.ANGLES:
             scene.camera = bpy.data.objects[cam]

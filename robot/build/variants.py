@@ -31,7 +31,7 @@ IDLE_FAMILIES = {
     "crouch": [("crouched_idle", 0, 1.5, 41), ("crouched_idle", 10, 1.5, 42), ("crouched_idle", 19, 1.5, 43),
                ("breathing_idle", 120, 1.0, 44)],
 }
-MOVE_TAKES = {"jab_cross": (2, 3)}
+MOVE_TAKES = {}         # hand-keyed takes: none while the Mocap Moves take over (#32)
 HIT_SCALE = (0.6, 0.8, 1.0)
 _cache = {}
 

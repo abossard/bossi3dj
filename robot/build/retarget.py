@@ -1,4 +1,5 @@
-"""Retarget a Mixamo capture onto the Android's rig as one baked Action per Mocap Clip (`mocap.<name>`), for the
+"""Retarget a Mixamo capture onto the Android's rig as one baked Action per Mocap Clip (`move.<name>`, like the
+key-table Moves, since the Mocap Moves are in the Clip Library), for the
 build (#31). Timing, travel, plants and the end blends are `mocap.py`'s; this file is the Blender side.
 
 Every body bone follows its capture bone (MAP): each bone takes the capture bone's world rotation, corrected by the
@@ -233,7 +234,8 @@ STEP_M = (0.02, 0.06)      # a foot farther than this from its Key Pose spot ste
 
 def _step(rt, c, raw, keys, clip, w_in, w_out):
     """Where the capture's foot and the Key Pose's foot differ, the end blends lift the foot in an arc (4·w·(1 - w)
-    of half the distance, at most STEP_M[1]) instead of sliding it over the floor."""
+    of half the distance, at most STEP_M[1]) instead of sliding it over the floor; a sole the blend tilts into the
+    floor is lifted onto it."""
     out = dict(c)
     for side in (".L", ".R"):
         bone = "foot_ik" + side
@@ -243,8 +245,13 @@ def _step(rt, c, raw, keys, clip, w_in, w_out):
             d = (A @ (raw[bone][0] - keys[key][bone][0])).length
             if d > STEP_M[0] and 0.0 < w < 1.0:
                 lift += 4 * w * (1 - w) * min(STEP_M[1], d / 2)
-        if lift:
-            out[bone] = (c[bone][0] + A.inverted() @ Vector((0.0, 0.0, lift)), c[bone][1])
+        loc = c[bone][0] + A.inverted() @ Vector((0.0, 0.0, lift))
+        ik = rt.A[bone] @ Matrix.Translation(loc) @ c[bone][1].to_matrix().to_4x4()
+        foot = ik @ rt.A[bone].inverted() @ rt.A["foot" + side]
+        sink = min((foot @ v).z for v in rt.sole[side])       # the blend may tilt a sole into the floor
+        if sink < 0.0:
+            loc = loc + A.inverted() @ Vector((0.0, 0.0, -sink))
+        out[bone] = (loc, c[bone][1])
     return out
 
 
@@ -256,7 +263,7 @@ def _set(arm, controls):
 
 
 def bake(arm, clip):
-    """One Action `mocap.<name>`, a key per frame."""
+    """One Action `move.<name>`, a key per frame."""
     src = Source(os.path.join(PACKS, clip.fbx))
     rt = Retarget(arm, src)
     n = mocap.frames(clip)
@@ -264,7 +271,7 @@ def bake(arm, clip):
     src.remove()
     controls, hands = _controls(rt, frames, mocap.stops(clip))
     keys = {k: _key_controls(arm, k) for k in (clip.key_in, clip.key_out) if k}
-    act = bpy.data.actions.new("mocap." + clip.name)
+    act = bpy.data.actions.new("move." + clip.name)
     act.use_fake_user = True
     arm.animation_data.action = act
     first_hands = None

@@ -26,8 +26,8 @@ BEATS = 4
 ANKLE_Z = 0.10
 
 # variant_of, seed and track: a variant's base Move, its seed and its capture track (variants.py, #32)
-Move = namedtuple("Move", "name tier beats key_in key_out keys hits idle waves variant_of seed track",
-                  defaults=(False, (), None, None, None))
+Move = namedtuple("Move", "name tier beats key_in key_out keys hits idle waves variant_of seed track source",
+                  defaults=(False, (), None, None, None, None))      # source "mocap": a Mocap Move (library.py)
 Wave = namedtuple("Wave", "channel axis amplitude harmonic")
 Key = namedtuple("Key", "beat pose ease", defaults=("smooth",))
 Hit = namedtuple("Hit", "beat limb strength")
@@ -119,25 +119,6 @@ KEY_POSES = {"guard": GUARD, "low": LOW, "crouch": CROUCH}
 # the bob: weight settles a little between beats, so a held guard never freezes
 BOB = pose(HAND_GUARD, hips=(0.0, 0.02, 0.895), hand_l=(0.22, -0.40, 1.46), hand_r=(-0.14, -0.20, 1.49))
 
-# punches from the guard, shared by the guard's striking Moves
-JAB = pose(HAND_GUARD, hips=(0.0, 0.0, 0.90), hips_rot=(0.0, -32.0, 0.0), spine_rot=(8.0, -8.0, 0.0),
-           chest_rot=(6.0, -6.0, 0.0), head_rot=(-8.0, 30.0, 0.0),
-           hand_l=(0.10, -0.86, 1.52), hand_r=(-0.08, -0.22, 1.54))
-JAB_BACK = pose(HAND_GUARD, hips=(0.0, 0.01, 0.90), hand_l=(0.15, -0.44, 1.51))
-CROSS_LOAD = pose(HAND_GUARD, hips=(0.0, 0.0, 0.90), hips_rot=(0.0, -28.0, 0.0), spine_rot=(7.0, -7.0, 0.0),
-                  hand_l=(0.14, -0.40, 1.52), hand_r=(-0.10, -0.18, 1.52))
-CROSS = pose(HAND_GUARD, hips=(0.0, -0.04, 0.89), hips_rot=(0.0, 10.0, 0.0), spine_rot=(10.0, 12.0, 0.0),
-             chest_rot=(6.0, 8.0, 0.0), head_rot=(-8.0, -10.0, 0.0),
-             hand_l=(0.12, -0.36, 1.52), hand_r=(-0.02, -0.88, 1.52),
-             foot_r=(-0.15, 0.30, 0.14), foot_r_rot=(12.0, -5.0, 0.0))
-CROSS_BACK = pose(HAND_GUARD, hips=(0.0, -0.01, 0.90), hips_rot=(0.0, -12.0, 0.0), spine_rot=(7.0, 2.0, 0.0),
-                  head_rot=(-8.0, 8.0, 0.0), hand_r=(-0.06, -0.40, 1.50),
-                  foot_r=(-0.15, 0.30, 0.12), foot_r_rot=(6.0, -25.0, 0.0))
-HOOK_LOAD = pose(HAND_GUARD, hips=(0.0, 0.01, 0.90), hips_rot=(0.0, -12.0, 0.0), spine_rot=(7.0, 0.0, 0.0),
-                 hand_l=(0.24, -0.36, 1.48))
-HOOK = pose(HAND_GUARD, hips=(0.0, 0.0, 0.89), hips_rot=(0.0, -50.0, 0.0), spine_rot=(8.0, -20.0, 0.0),
-            chest_rot=(6.0, -12.0, 0.0), head_rot=(-8.0, 38.0, 0.0), hand_l=(-0.02, -0.68, 1.46))
-HOOK_BACK = pose(HAND_GUARD, hips=(0.0, 0.01, 0.90), hips_rot=(0.0, -30.0, 0.0), hand_l=(0.10, -0.45, 1.50))
 # a fist raised overhead for the two-handed slams
 FLEX = dict(hand_l=(0.42, -0.05, 1.42), hand_r=(-0.42, -0.05, 1.42), chest_rot=(-6.0, 0.0, 0.0))
 
@@ -243,12 +224,6 @@ def _stand_up():
 
 # ---------- build ----------
 
-def _jab_cross():
-    keys = [Key(0, HAND_GUARD), Key(0.7, BOB), Key(1.0, JAB), Key(1.3, JAB_BACK), Key(1.7, CROSS_LOAD),
-            Key(2.0, CROSS), Key(2.5, CROSS_BACK), Key(3.0, HAND_GUARD), Key(3.5, BOB), Key(4, HAND_GUARD)]
-    return Move("jab_cross", "build", 4, "guard", "guard", keys, [Hit(1.0, "hand_l", 0.6), Hit(2.0, "hand_r", 1.0)])
-
-
 def _take_hit():
     impact = pose(HAND_GUARD, hips=(0.0, 0.08, 0.90), spine_rot=(-6.0, -5.0, 0.0), chest_rot=(-12.0, 0.0, 4.0),
                   head_rot=(-30.0, 35.0, 8.0), hand_l=(0.22, -0.30, 1.46), hand_r=(-0.16, -0.10, 1.44))
@@ -260,15 +235,6 @@ def _take_hit():
     keys = [Key(0, HAND_GUARD), Key(0.8, BOB), Key(1.0, impact), Key(1.4, stagger), Key(2.25, recover),
             Key(3.0, HAND_GUARD), Key(3.5, BOB), Key(4, HAND_GUARD)]
     return Move("take_hit", "build", 4, "guard", "guard", keys, [Hit(1.0, "head", 1.0)])
-
-
-def _jab_jab_hook():
-    keys = [Key(0, HAND_GUARD), Key(0.6, BOB), Key(1.0, JAB), Key(1.25, JAB_BACK), Key(1.5, JAB), Key(1.8, JAB_BACK),
-            Key(2.25, HOOK_LOAD), Key(2.5, HOOK), Key(2.9, HOOK_BACK), Key(3.5, CROSS_LOAD), Key(4.0, CROSS),
-            Key(4.5, CROSS_BACK), Key(5.0, HAND_GUARD), Key(5.5, BOB), Key(6.0, HAND_GUARD),
-            Key(6.5, pose(HAND_GUARD, head_rot=(-8.0, 35.0, 0.0))), Key(7.0, HAND_GUARD), Key(7.5, BOB), Key(8, HAND_GUARD)]
-    hits = [Hit(1.0, "hand_l", 0.6), Hit(1.5, "hand_l", 0.6), Hit(2.5, "hand_l", 0.8), Hit(4.0, "hand_r", 1.0)]
-    return Move("jab_jab_hook", "build", 8, "guard", "guard", keys, hits)
 
 
 def _palm_strike():
@@ -326,23 +292,6 @@ def _front_kick():
             Key(2.3, rechamber), Key(2.75, pose(HAND_GUARD, hips=(0.0, 0.04, 0.90))), Key(3.25, planted),
             Key(3.6, BOB), Key(4, HAND_GUARD)]
     return Move("front_kick", "drop", 4, "guard", "guard", keys, [Hit(2.0, "foot_l", 1.0)])
-
-
-def _uppercut_combo():
-    dip = pose(HAND_GUARD, hips=(0.0, 0.02, 0.84), spine_rot=(14.0, -5.0, 0.0), hand_r=(-0.12, -0.25, 1.25))
-    upper_r = pose(HAND_GUARD, hips=(0.0, -0.03, 0.95), hips_rot=(0.0, 8.0, 0.0), spine_rot=(-4.0, 10.0, 0.0),
-                   head_rot=(-14.0, -5.0, 0.0), hand_r=(-0.02, -0.55, 1.85),
-                   foot_r=(-0.15, 0.30, 0.14), foot_r_rot=(12.0, -10.0, 0.0))
-    upper_r_back = pose(HAND_GUARD, hips=(0.0, 0.0, 0.91), hand_r=(-0.08, -0.28, 1.55),
-                        foot_r=(-0.15, 0.30, 0.12), foot_r_rot=(6.0, -30.0, 0.0))
-    dip_l = pose(HAND_GUARD, hips=(0.0, 0.02, 0.84), spine_rot=(14.0, -12.0, 0.0), hand_l=(0.16, -0.38, 1.25))
-    upper_l = pose(HAND_GUARD, hips=(0.0, -0.02, 0.95), hips_rot=(0.0, -40.0, 0.0), spine_rot=(-4.0, -10.0, 0.0),
-                   head_rot=(-14.0, 30.0, 0.0), hand_l=(0.05, -0.55, 1.85))
-    keys = [Key(0, HAND_GUARD), Key(0.5, dip), Key(1.0, upper_r), Key(1.4, upper_r_back), Key(1.75, HOOK_LOAD),
-            Key(2.0, HOOK), Key(2.4, HOOK_BACK), Key(2.75, dip_l), Key(3.0, upper_l), Key(3.4, JAB_BACK),
-            Key(3.75, BOB), Key(4, HAND_GUARD)]
-    return Move("uppercut_combo", "drop", 4, "guard", "guard", keys,
-                [Hit(1.0, "hand_r", 1.0), Hit(2.0, "hand_l", 0.8), Hit(3.0, "hand_l", 1.0)])
 
 
 def _leap_slam():
@@ -502,8 +451,8 @@ def _low_charge():
 
 MOVES = {m.name: m for m in _idles() + [
     _guard_shuffle(), _settle_low(), _rise_guard(), _low_scan(), _stand_up(),
-    _jab_cross(), _take_hit(), _jab_jab_hook(), _palm_strike(), _rush_cross(), _crouch_strike(),
-    _front_kick(), _uppercut_combo(), _leap_slam(), _ground_pound(), _burst_rise(), _power_stomp(), _low_charge()]}
+    _take_hit(), _palm_strike(), _rush_cross(), _crouch_strike(),
+    _front_kick(), _leap_slam(), _ground_pound(), _burst_rise(), _power_stomp(), _low_charge()]}
 
 
 def frames_per_beat(bpm=BPM, fps=FPS):

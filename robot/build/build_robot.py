@@ -27,6 +27,7 @@ from mathutils import Matrix, Vector
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import exchanges as X  # noqa: E402
+import library  # noqa: E402
 import manifest_io  # noqa: E402
 import moves  # noqa: E402
 import retarget  # noqa: E402
@@ -748,15 +749,16 @@ def build(out):
 # ---------- clips, export ----------
 
 def clip_list():
-    """[(clip id, move, angle id, camera name)]: Moves in table order on ANGLES, then Exchanges on DUEL_ANGLES."""
-    return [("%s__%s" % (m, a), m, a, cam) for m in moves.MOVES for a, cam, *_ in ANGLES] + \
+    """[(clip id, move, angle id, camera name)]: the Clip Library's Moves (library.py) on ANGLES, then Exchanges on
+    DUEL_ANGLES."""
+    return [("%s__%s" % (m, a), m, a, cam) for m in library.LIBRARY for a, cam, *_ in ANGLES] + \
         [("%s__%s" % (e, a), e, a, cam) for e in X.EXCHANGES for a, cam, *_ in DUEL_ANGLES]
 
 
 def _move(name):
     """The Android's Move of a Clip: a Move of moves.py, or an Exchange's Android part (its tier, beats and idle
     equal the Exchange's, test_exchanges.py)."""
-    return X.EXCHANGES[name].android if name in X.EXCHANGES else moves.MOVES[name]
+    return X.EXCHANGES[name].android if name in X.EXCHANGES else library.LIBRARY[name]
 
 
 def _arm():
@@ -828,7 +830,7 @@ def manifest():
         clip = {"id": clip_id, "move": move, "angle": angle, "beats": m.beats,
                 "frames": moves.move_frames(m), "key_in": m.key_in, "key_out": m.key_out,
                 "tier": m.tier, "idle": m.idle,
-                "cut_points": moves.cut_points(m),
+                "cut_points": library.cut_points(m),
                 "passes": {p: "%s/%s.mov" % (p, clip_id) for p in ("beauty", "shadow", "depth")},
                 "clip_data": "clip_data/%s.json" % clip_id, "camera_track": "camera/%s.json" % angle}
         if move in X.EXCHANGES:
@@ -939,30 +941,34 @@ def _min_z(obj, dg):
 
 
 def check():
-    """Per Move: how far punches reach past the arm (by design), the gap between shin and planted ankle,
-    sole height of planted feet, lowest point of the Android,
-    and the Key Pose match of the first and last frame (Clip Data points, metres)."""
+    """Per Move of the Clip Library: how far punches reach past the arm (by design), the gap between shin and planted
+    ankle, sole height of planted feet, lowest point of the Android, and the Key Pose match of the first and last
+    frame (Clip Data points, metres). A key-table foot is planted where its key table plants it, a Mocap Move's
+    where its ankle target stands at ANKLE_Z (the foot-lock)."""
     scene = bpy.context.scene
     arm, pts = _arm(), _points()
     feet = {s: [o for o in bpy.data.objects if o.get("robot_part") == "foot" + s] for s in (".L", ".R")}
     parts = [o for o in bpy.data.objects if "robot_part" in o]
     report = {}
-    for name, move in moves.MOVES.items():
+    for name, move in library.LIBRARY.items():
         _use_move(scene, name)
-        seq = moves.frames(move)
+        seq = None if library.is_mocap(move) else moves.frames(move)
+        n = moves.move_frames(move)
         reach, sole, ankle, lowest, ends = 0.0, 0.0, 0.0, 1e9, []
-        for f in range(len(seq)):
+        for f in range(n):
             scene.frame_set(f)
             dg = bpy.context.evaluated_depsgraph_get()
             pb = arm.pose.bones
             for owner, target, _pole in IK_CHAINS[:2]:
                 reach = max(reach, (pb[owner].tail - pb[target].head).length)
             for s, ch in ((".L", "foot_l"), (".R", "foot_r")):
-                if seq[f][ch][2] <= moves.ANKLE_Z + 1e-6 and seq[f][ch + "_rot"][0] == 0.0:
+                planted = (pb["foot_ik" + s].head.z <= moves.ANKLE_Z + 0.001) if seq is None else \
+                    (seq[f][ch][2] <= moves.ANKLE_Z + 1e-6 and seq[f][ch + "_rot"][0] == 0.0)
+                if planted:
                     sole = max(sole, abs(min(_min_z(o, dg) for o in feet[s])))
                     ankle = max(ankle, (pb["shin" + s].tail - pb["foot_ik" + s].head).length)
             lowest = min(lowest, min(_min_z(o, dg) for o in parts))
-            if f in (0, len(seq) - 1):
+            if f in (0, n - 1):
                 ends.append({p: pts[p].matrix_world.translation.copy() for p in POINTS})
         key_match = max((ends[0][p] - ends[1][p]).length for p in POINTS)
         report[name] = {"hand_overreach_m": round(reach, 4), "planted_ankle_gap_m": round(ankle, 4),

@@ -101,3 +101,7 @@ A variant is its own Move in its base's family (`variant_of` in the Manifest, ro
 - Guard Idle family from the fight idles: Fighting Idle twice (its bounce at 0.6, since the soles stay flat), Fight Idle, and Fight Idle-3's weave at 0.5 without its hips turn, which sits at XYZ Euler's 90° lock. Fight Idle-2 repeats Fight Idle frame for frame. Tracks now carry the hands too.
 - Mocap fight Moves: `mocap_fist_fight`, `mocap_jab_elbow`, `mocap_uppercut_jab`, with takes (`_v2` and `_v3`; `mocap_uppercut_jab_v2` is the second Uppercut Jab clip). Hits are on contact frames (the fist furthest forward, the elbow's forward stop). Their end blends step a foot to the Key Pose spot instead of sliding it.
 
+## Clip Library ([library.py](library.py), #32)
+
+The package holds the Clip Library: moves.py's key-table Moves with their variants, and the Mocap Moves (mocap.py) as Moves with `source: mocap`, baked as `move.<name>` like the others. The hand-keyed jab_cross, jab_jab_hook and uppercut_combo are gone (the user: unusable); `mocap_jab_elbow`, `mocap_uppercut_jab`, `mocap_fist_fight` and `mocap_flip_uppercut` with their takes replace them. A Mocap Move's Cut Points are its first beat only. `check` measures the Mocap Moves on the posed rig (planted where the foot-lock holds the ankle at 0.10 m); their end blends lift a sole the blend would tilt into the floor.
+
