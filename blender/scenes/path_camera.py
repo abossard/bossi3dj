@@ -132,20 +132,23 @@ def lens_to_fit(p, look, size, least=0.12):
     return fl.clamp(fl.lens_for(min(half, math.radians(40.0))), 14.0, 85.0)
 
 
-def sky_frame(p, look):
+def sky_frame(p, look, radius=0.0):
     """A view (fwd, up, lens) of a sky body at look with land in frame: the horizon on the lower third line, the body
     on the upper one, the field opened to fit both (up to SKY_FRAME_HALF; wider gaps keep the horizon there and the
-    body inside the top tenth). Without it a body high over the horizon filled the frame with sky and nothing in it
-    moved (issue #25: vantage moon held still for 27 s)."""
+    disc, radius m, inside the frame's top edge). Without it a body high over the horizon filled the frame with sky and
+    nothing in it moved (issue #25: vantage moon held still for 27 s); without the disc's radius a near moon was cut in
+    half at the top edge (issue #30's live round)."""
     u = fl.norm(fl.sub(p, fl.CENTRE))
     to = fl.norm(fl.sub(look, p))
     el = math.asin(fl.clamp(fl.dot(to, u), -1.0, 1.0))
     dip = math.acos(fl.clamp(fl.R / max(fl.length(fl.sub(p, fl.CENTRE)), fl.R), -1.0, 1.0))
-    hv = fl.clamp(1.5 * (el + dip), math.radians(12.0), SKY_FRAME_HALF)
-    c = max(-dip + hv / 3.0, el - 0.8 * hv)
+    ar = math.atan2(radius, max(fl.length(fl.sub(look, p)), 1.0))     # the disc's angular radius
+    lens = fl.clamp(fl.lens_for(fl.clamp(1.5 * (el + dip) + ar, math.radians(12.0), SKY_FRAME_HALF)), 14.0, 85.0)
+    hv = math.atan(fl.SENSOR / 2.0 / fl.ASPECT / lens)      # the field the clamped lens gives
+    c = max(-dip + hv / 3.0, el + ar - 0.95 * hv)
     head = fl.tangent(u, to)
     fwd = fl.add(fl.scale(head, math.cos(c)), u, math.sin(c))
-    return fwd, fl.tangent(fwd, u), fl.clamp(fl.lens_for(hv), 14.0, 85.0)
+    return fwd, fl.tangent(fwd, u), lens
 
 
 def reach(h, size):
@@ -252,7 +255,7 @@ def pose(path, target, home, phase, h, terrain):
         lens = planet_lens(p) if target.kind == "planet" else lens_to_fit(p, look, target.size)
         framed = SKY_FRAME and target.kind == "sky" and path in ("orbit", "vantage", "rise")
         if framed:
-            fwd, up, lens = sky_frame(p, look)
+            fwd, up, lens = sky_frame(p, look, target.size if look == target.point else 0.0)
         if path == "vantage" and not framed:      # framed: the push alone moves it (the zoom lost the body off the top)
             lens *= 1.0 + 0.35 * fl.smootherstep(0.5 * (1.0 - math.cos(phase)))
     props = props_at(clear)

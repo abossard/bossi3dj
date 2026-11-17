@@ -134,6 +134,11 @@ class SkyFrameTests(unittest.TestCase):
                         off = max(fl.angle(q[1], fl.norm(fl.sub(pc.look_point(TARGETS[target], q[0], q[1]), q[0])))
                                   / half_v(q[3]) for q in poses)
                         self.assertLessEqual(off, 1.0, "the body in the frame (share of the half field)")
+                        body = TARGETS[target]
+                        top = max((fl.angle(q[1], fl.norm(fl.sub(body.point, q[0])))
+                                   + math.atan2(body.size, fl.length(fl.sub(body.point, q[0])))) / half_v(q[3])
+                                  for q in poses if pc.look_point(body, q[0], q[1]) == body.point)
+                        self.assertLessEqual(top, 1.0, "the disc's far edge inside the frame (share of the half field)")
 
 
 def set_body(kind, away_deg, dist):
@@ -155,6 +160,9 @@ class SkyHomeTests(unittest.TestCase):
                     self.assertGreaterEqual(min(land(q[0], q[1], q[3]) for q in poses), 0.15)
                     off = max(fl.angle(q[1], fl.norm(fl.sub(body.point, q[0]))) / half_v(q[3]) for q in poses)
                     self.assertLessEqual(off, 1.0, "the body in the frame (share of the half field)")
+                    top = max((fl.angle(q[1], fl.norm(fl.sub(body.point, q[0])))
+                               + math.atan2(body.size, fl.length(fl.sub(body.point, q[0])))) / half_v(q[3]) for q in poses)
+                    self.assertLessEqual(top, 1.0, "the disc's far edge inside the frame (issue #30's live round)")
 
     def test_risen_body_keeps_home(self):
         self.assertIs(pc.sky_home(TARGETS["moon"].point, TARGETS["pyramids"], T), TARGETS["pyramids"])
