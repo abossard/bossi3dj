@@ -1,5 +1,7 @@
 # State
 
+> Current state lives in issue #33 "Orchestrator state" (label orchestrator), the single source of truth since 2026-11-18. This file is background.
+
 Updated 2026-11-11. Keep this file short and current: where each stream stands, what is open, what waits for the user. Details go to `docs/handover/`.
 
 ## Now

@@ -1,5 +1,7 @@
 # Orchestrator hand-over (2026-11-13)
 
+> Current state lives in issue #33 "Orchestrator state" (label orchestrator), the single source of truth since 2026-11-18. This file is background.
+
 For the session that takes over orchestration. Where the work stands and what is decided is in [STATE.md](../../STATE.md); read "Now" and "Decided by the user" first. This note holds what `STATE.md` does not: how the orchestration itself works here.
 
 ## The job
