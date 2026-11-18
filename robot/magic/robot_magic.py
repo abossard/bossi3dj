@@ -273,8 +273,9 @@ def effect_globals(m, hits, fx=None):
 
 def effect_chain(scene, src):
     """The effect modules after `src`, in order: chromatic split, grade, glow, flash. Each is the identity when its switch is 0 or its Global rests."""
-    split = scene.node("Chroma Zoom", {"Red_zoom": ("global:HitEnv", [ex("1 + %s*x*FxHit" % num(SPLIT))], 1),
-                                       "Blue_zoom": ("global:HitEnv", [ex("1 - %s*x*FxHit" % num(SPLIT))], 1)}, inputs=[src])
+    # the split stays at SPLIT whatever the Flavor (HitEnv up to 1.4): stronger, it doubled the fighters (review round 3, tiles 19 and 20)
+    split = scene.node("Chroma Zoom", {"Red_zoom": ("global:HitEnv", [ex("1 + %s*min(x, 1)*FxHit" % num(SPLIT))], 1),
+                                       "Blue_zoom": ("global:HitEnv", [ex("1 - %s*min(x, 1)*FxHit" % num(SPLIT))], 1)}, inputs=[src])
     grade = scene.node("Color Controls", {"Saturation": ("global:GradeSat", [ex("1 + (x - 1)*FxGrade")], 1),
                                           "Contrast": ("global:GradeCon", [ex("1 + (x - 1)*FxGrade")], 1)}, inputs=[split])
     glow = scene.node("Bloom", {"Intensity": ("global:DropAmt", [ex("x*FxDrop*(0.5 + 0.5*Kick)")], 0)}, inputs=[grade])

@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
 # ------------------------------------------------------------ section start-up (#29)
 
-SECTION_ROWS = ["SubLow", "SubHigh", "Quiet", "RiseMin", "VolSlow", "MusicBars", "SubOut", "DropPulse", "DownSlot", "ThinBars", "State"]
+SECTION_ROWS = ["SubLow", "SubHigh", "Quiet", "RiseMin", "VolSlow", "Hush", "MusicBars", "SubOut", "DropPulse", "DownSlot", "ThinBars", "State"]
 # The rules before #29, kept here to show the replay reproduces the live misread with them
 LEGACY = {"SubOut": "if (BarPulse > 0.5, if (SubBar < SubLow, y + 1, 0), y)",
           "DropPulse": "if (SubFast > SubHigh and SubOut >= 2 and abs(State - 3) > 0.5 and y < 0.5, 1, 0)"}
@@ -95,7 +95,7 @@ LOG = os.path.join(HERE, "data", "live-2026-11-17-start.txt")
 FPS = 100
 
 
-def run_sections(drive, frames, legacy=False):
+def run_sections(drive, frames, legacy=False, rules=None):
     """The section Globals of xray.py per frame (legacy: SubOut and DropPulse as before #29); `drive(f)` gives Volume, Dt, Phase, BarPulse,
     SubBar, SubFast, KickRate, ToneRise, SnareRate. Rows without modifiers keep their value."""
     spec = {}
@@ -103,6 +103,8 @@ def run_sections(drive, frames, legacy=False):
         if name in SECTION_ROWS:
             if legacy and name in LEGACY:
                 mods = [("Expression", LEGACY[name])]
+            if rules and name in rules:
+                mods = [("Expression", rules[name])]
             spec[name] = (value, mods)
     if legacy:
         spec.pop("MusicBars")
@@ -218,3 +220,121 @@ class SectionRuleTests(unittest.TestCase):
                 n = sum(1 for a, b in zip(frames, frames[1:]) if b["DropPulse"] and not a["DropPulse"])
                 self.assertEqual(n, pulses)
                 self.assertEqual(frames[-1]["State"], 3)
+
+
+# ------------------------------------------------------------ kick gate (live test 2026-11-18)
+
+KICK_ROWS = ["KickFloor", "KickSpan", "Kick", "KickGate", "KickGateLag", "KickPulse", "LastKickT"]
+KICK_LEGACY = {"Kick": [("Expression", "max(KickRaw, y*exp(-Dt/0.12))"), ("Clamp", 1)],
+               "KickPulse": [("Expression", "if (KickGate > 0.5 and KickGateLag < 0.5, 1, 0)")]}
+BAND = os.path.join(HERE, "data", "kickband-live-track.txt")      # kick_band.py: the live test track's 80-320 Hz band, every 10 ms
+SPB = 60 / 124.0
+# the track's sections in s (live_test.PLAN at 124 BPM), the kick sections first
+KICK_SECTIONS = [("intro", 1, 7.7), ("drop", 8.5, 23.2), ("drop 2", 39, 54.2), ("drop 3", 70, 92)]
+QUIET_SECTIONS = [("breakdown", 23.5, 31), ("buildup with a snare roll", 31.2, 38.7)]
+
+
+def run_kick(level, legacy=False):
+    """Kick pulse times (s) of the kick Globals on the replayed band x `level` (Magic's scale of the band is not known: the tests try several).
+    Modifiers: Expression, Clamp; a global: source reads the same frame and Threshold gives 1 at or above its value."""
+    spec = [(n, v, src, KICK_LEGACY.get(n, mods) if legacy else mods) for n, v, src, mods in xray.globals_() if n in KICK_ROWS]
+    with open(BAND) as f:
+        band = [tuple(map(float, line.split())) for line in f]
+    prev = dict({n: v for n, v, _s, _m in spec}, KickRaw=0, Dt=0.01, Time=0)
+    pulses = []
+    for t, b in band:
+        cur = {}
+        for name, value, src, mods in spec:
+            x = cur[src[7:]] if src and src.startswith("global:") else 0
+            for kind, e in mods:
+                if kind == "Expression":
+                    x = eval(translate(e), ENV, dict(prev, x=x, y=prev[name]))
+                elif kind == "Clamp":
+                    x = min(max(x, 0), e)
+                elif kind == "Threshold":
+                    x = 1 if x >= e else 0
+            cur[name] = x
+        cur.update(KickRaw=level * b, Dt=0.01, Time=t)
+        if cur["KickPulse"] > 0.5:
+            pulses.append(t)
+        prev = cur
+    return pulses
+
+
+def per_beat(pulses, start, end):
+    return sum(1 for t in pulses if start <= t < end) / ((end - start) / SPB)
+
+
+# the rules before the pause reset: evidence ended only when VolSlow fell below Quiet at a bar line
+NO_PAUSE = {"MusicBars": "if (BarPulse > 0.5, if (VolSlow < Quiet, 0, y + 1), y)",
+            "SubOut": "if (DropPulse > 0.5, 0, if (BarPulse > 0.5, if (VolSlow < Quiet, 0, if (SubBar < SubLow, y + 1, 0)), y))",
+            "State": next(e for n, _v, _s, mods in xray.globals_() if n == "State" for _k, e in mods).replace("if (Hush > %g, 0, " % xray.PAUSE, "", 1)[:-1]}
+
+
+class PauseTests(unittest.TestCase):
+    """A pause shorter than VolSlow's decay (2 s) ends the music too: Volume below Quiet for PAUSE s resets the evidence. The live run of
+    2026-11-18 started 2 s after the audio check, VolSlow still 0.17, and read the intro as a drop."""
+
+    def scenario(self, segments, rules=None):
+        """segments: (seconds, volume, sub, kick); 120 BPM, a bar line every 2 s through pauses (the beat clock runs on)."""
+        edges, t = [], 0.0
+        for seg in segments:
+            edges.append((t, t + seg[0]) + seg[1:])
+            t += seg[0]
+
+        def at(t):
+            return next((e[2:] for e in edges if e[0] <= t < e[1]), edges[-1][2:])
+
+        def drive(f):
+            t = f / FPS
+            vol, sub, kick = at(t)
+            return {"Volume": vol, "Dt": 1.0 / FPS, "Phase": (t * 2 + 0.5) % 4, "BarPulse": 1 if f % 200 == 0 and f else 0,
+                    "SubBar": 0.6 if at(max(0, t - 0.5))[1] else 0.1, "SubFast": 1.0 if sub else 0.1, "KickRate": 4 if kick else 0, "ToneRise": 0, "SnareRate": 0}
+        return run_sections(drive, int(t * FPS), rules=rules)
+
+    def test_pauses(self):
+        music, pause, drop = (0.3, 0, 1), (0.0, 0, 0), (0.3, 1, 1)
+        cases = [
+            # name, segments, a drop read with the pause reset, without it
+            ("intro, a 3 s pause, the intro again then the drop after 1 bar: too little evidence", [(8, *music), (3, *pause), (2, *music), (8, *drop)], False, True),
+            ("intro, a 3 s pause, 2 intro bars, then the drop", [(8, *music), (3, *pause), (5, *music), (8, *drop)], True, True),
+            ("intro, a 1 beat break, then the drop: the break keeps the evidence", [(8, *music), (0.5, *pause), (8, *drop)], True, True),
+        ]
+        for name, segments, now, before in cases:
+            with self.subTest(name):
+                for rules, want in ((None, now), (NO_PAUSE, before)):
+                    frames = self.scenario(segments, rules)
+                    self.assertEqual(any(v["State"] == 3 for v in frames), want, rules is None)
+
+    def test_a_pause_resets_state_and_evidence(self):
+        frames = self.scenario([(8, 0.3, 1, 1), (3.5, 0.0, 0, 0)])
+        end = frames[-1]
+        self.assertEqual((end["State"], end["MusicBars"], end["SubOut"]), (0, 0, 0))
+        self.assertGreater(end["VolSlow"], xray.QUIET)
+
+
+class KickGateReplayTests(unittest.TestCase):
+    """The live run of 2026-11-18 logged KickRate 2.8 a bar in the intro and 0.02 in the drop: with a hot input the drop's sub-bass kept
+    the plain band above the gate. The replay feeds the track's band (kick_band.py) at several input levels."""
+    LEVELS = (3, 12, 30, 100)
+
+    def test_the_old_gate_reproduces_the_live_run(self):
+        for level in (3, 12, 30):
+            with self.subTest(level=level):
+                pulses = run_kick(level, legacy=True)
+                self.assertGreater(per_beat(pulses, 1, 7.7), 0.65)
+                self.assertLess(per_beat(pulses, 8.5, 23.2), 0.05)
+
+    def test_the_adaptive_gate_pulses_once_a_beat_where_the_kick_plays_at_any_level(self):
+        for level in self.LEVELS:
+            pulses = run_kick(level)
+            for name, a, b in KICK_SECTIONS:
+                with self.subTest(level=level, section=name):
+                    self.assertTrue(0.9 <= per_beat(pulses, a, b) <= 1.15, per_beat(pulses, a, b))
+            for name, a, b in QUIET_SECTIONS:
+                with self.subTest(level=level, section=name):
+                    self.assertLessEqual(per_beat(pulses, a, b), 0.1)
+
+    def test_pulses_keep_the_refractory_time(self):
+        pulses = run_kick(30)
+        self.assertGreater(min(b - a for a, b in zip(pulses, pulses[1:])), xray.KICK_REFRACTORY)

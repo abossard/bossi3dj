@@ -30,6 +30,7 @@ ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(ROOT, "osc"))
 sys.path.insert(0, os.path.join(ROOT, "magic"))
+import xray  # noqa: E402
 LIVE = os.path.join(HERE, "live")
 EVENTS = os.path.join(LIVE, "events.txt")
 TRACK = os.path.join(LIVE, "robot_live_track.wav")
@@ -467,7 +468,7 @@ def preflight(sock):
 
 
 def audio_check(sock):
-    """Magic must hear the track: 6 s of it, then peak Volume above 0.1, then silence."""
+    """Magic must hear the track: 6 s of it, then peak Volume above 0.1, then silence until X-Ray's VolSlow is below Quiet."""
     p = play()
     events = []
     collect(sock, 6, time.time(), events)
@@ -476,13 +477,13 @@ def audio_check(sock):
     print("audio check: peak Volume %.2f" % peak)
     if peak < 0.1:
         raise SystemExit("Magic does not hear the track (peak Volume %.2f): pick BlackHole 2ch as Magic's audio input and the default output" % peak)
-    quiet = time.time() + 15
+    quiet = time.time() + 30      # X-Ray's evidence ends with VolSlow below Quiet (or a pause of xray.PAUSE): wait for it, not for Volume alone
     while time.time() < quiet:
         ev = []
         collect(sock, 1, time.time(), ev)
-        if max([v for _t, n, v in ev if n == "Volume"] or [0]) < 0.01:
+        if max([v for _t, n, v in ev if n == "VolSlow"] or [1]) < xray.QUIET:
             return
-    raise SystemExit("Magic's Volume did not fall to silence after the audio check")
+    raise SystemExit("Magic's VolSlow did not fall below Quiet after the audio check")
 
 
 def run(own_music=False):

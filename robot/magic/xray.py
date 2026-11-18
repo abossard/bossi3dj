@@ -16,6 +16,10 @@ rows in Builder form. The Clip Graph reads only these names:
 SOURCE = "Source 0"
 TEMPO_LO, SUB_LOW, SUB_HIGH, RISE_MIN, QUIET = 90, 0.3, 0.55, 0.06, 0.02
 KICK_DECAY, KICK_THRESHOLD = 0.12, 0.6
+KICK_FLOOR_TAU, KICK_SPAN_TAU = 0.4, 2.0          # s: the kick gate's floor and recent kick height follow the input level
+KICK_MIN_SPAN, KICK_REL_SPAN = 0.03, 0.5           # the height is at least this (KickRaw units) and this share of the floor: a kick rises 30 % over it
+KICK_REFRACTORY = 0.28                                           # s after a kick pulse before the next (kicks up to 214 BPM)
+PAUSE = 2.5                                                      # s of Volume below Quiet that end the music: the section evidence starts again
 SECTION, BEATS, BEAT_FRAC, BPM = "Section", "Beats", "BeatFrac", "Bpm"
 
 
@@ -29,7 +33,9 @@ def globals_(src=SOURCE):
     fr = "audio:%s:Freq. Range:" % src
     tau = lambda beats: "(1 - exp(-Dt*max(Bpm, 60)/%g))" % (60 * beats)   # EMA step with a time constant in beats
 
-    # audio bank: gain, bass, volume, clock, kick envelope and its pulse (a gate edge needs the lag Global, not y)
+    # audio bank: gain, bass, volume, clock, kick envelope and its pulse (a gate edge needs the lag Global, not y).
+    # The kick envelope is the band's rise above its own floor over the recent kick height, so the gate re-arms whatever the input level:
+    # with a hot input the drop's sub-bass held the plain band above the threshold and no kick pulsed (live test 2026-11-18).
     g("Gain", 0.5)
     g("Bass", 0, fr + "20-80 Hz", [ex("x*Gain*4"), ("Smooth", 0.3), ("Clamp", 1)])
     g("Volume", 0, "audio:%s:Volume" % src, [ex("x*Gain*4"), ("Clamp", 1)])
@@ -37,10 +43,12 @@ def globals_(src=SOURCE):
     g("TimeLag", 0, "calc", [ex("Time")])
     g("Dt", 0.016, "calc", [ex("max(0.001, min(0.05, Time - TimeLag))")])
     g("KickRaw", 0, fr + "80-320 Hz", [ex("x*Gain*4")])
-    g("Kick", 0, "calc", [ex("max(KickRaw, y*exp(-Dt/%g))" % KICK_DECAY), ("Clamp", 1)])
+    g("KickFloor", 0, "calc", [ex("if (KickRaw < y, KickRaw, y + (KickRaw - y)*(1 - exp(-Dt/%g)))" % KICK_FLOOR_TAU)])
+    g("KickSpan", KICK_MIN_SPAN, "calc", [ex("max(KickRaw - KickFloor, y*exp(-Dt/%g), %g, KickFloor*%g)" % (KICK_SPAN_TAU, KICK_MIN_SPAN, KICK_REL_SPAN))])
+    g("Kick", 0, "calc", [ex("max((KickRaw - KickFloor)/max(KickSpan, %g), y*exp(-Dt/%g))" % (KICK_MIN_SPAN, KICK_DECAY)), ("Clamp", 1)])
     g("KickGate", 0, "global:Kick", [("Threshold", KICK_THRESHOLD)])
     g("KickGateLag", 0, "calc", [ex("KickGate")])
-    g("KickPulse", 0, "calc", [ex("if (KickGate > 0.5 and KickGateLag < 0.5, 1, 0)")])
+    g("KickPulse", 0, "calc", [ex("if (KickGate > 0.5 and KickGateLag < 0.5 and Time - LastKickT > %g, 1, 0)" % KICK_REFRACTORY)])
 
     # tuning knobs
     g("TempoLo", TEMPO_LO)
@@ -88,14 +96,15 @@ def globals_(src=SOURCE):
     g("SubFast", 0, "calc", [ex("y + (Bass/max(BassPeak, 0.05) - y)*" + tau(0.25))])
     g("SubBar", 0, "calc", [ex("y + (Bass/max(BassPeak, 0.05) - y)*" + tau(2))])
     g("VolSlow", 0, "calc", [ex("y + (Volume - y)*(1 - exp(-Dt/2))")])
+    g("Hush", 0, "calc", [ex("if (Volume < Quiet, y + Dt, 0)")])        # s of silence; past PAUSE the music has ended, though VolSlow still decays
     g("ToneBar", 0, "calc", [ex("if (y < 0.001, ToneRaw, y + (ToneRaw - y)*%s)" % tau(4))])
     g("ToneSlow", 0, "calc", [ex("if (y < 0.001, ToneRaw, y + (ToneRaw - y)*%s)" % tau(16))])
     g("ToneRise", 0, "calc", [ex("ToneBar - ToneSlow")])
     g("KickRate", 0, "calc", [ex("y*exp(-Dt*max(Bpm, 60)/240) + KickPulse")])     # about kicks per bar
     g("SnareRate", 0, "calc", [ex("y*exp(-Dt*max(Bpm, 60)/240) + SnarePulse")])   # about snares per bar
     # bars of music since the last silent bar: the evidence a first State waits for (#29: a silent bar is not a bar without sub)
-    g("MusicBars", 0, "calc", [ex("if (BarPulse > 0.5, if (VolSlow < Quiet, 0, y + 1), y)")])
-    g("SubOut", 0, "calc", [ex("if (DropPulse > 0.5, 0, if (BarPulse > 0.5, if (VolSlow < Quiet, 0, if (SubBar < SubLow, y + 1, 0)), y))")])
+    g("MusicBars", 0, "calc", [ex("if (Hush > %g, 0, if (BarPulse > 0.5, if (VolSlow < Quiet, 0, y + 1), y))" % PAUSE)])
+    g("SubOut", 0, "calc", [ex("if (Hush > %g or DropPulse > 0.5, 0, if (BarPulse > 0.5, if (VolSlow < Quiet, 0, if (SubBar < SubLow, y + 1, 0)), y))" % PAUSE)])
 
     # drop: sub-bass back after >= 2 bars of music without it; it sets the bar grid, also inside a drop (a missed breakdown re-anchors it)
     g("DropPulse", 0, "calc", [ex("if (SubFast > SubHigh and SubOut >= 2 and y < 0.5, 1, 0)")])
@@ -104,12 +113,12 @@ def globals_(src=SOURCE):
     # section state, decided on bar lines (a drop switches at once)
     g("ThinBars", 0, "calc", [ex("if (BarPulse > 0.5, if (SubBar < SubLow and KickRate >= 2.5, y + 1, 0), y)")])
     g("State", 0, "calc", [ex(
-        "if (DropPulse > 0.5, 3, if (BarPulse > 0.5, "
+        "if (Hush > %g, 0, if (DropPulse > 0.5, 3, if (BarPulse > 0.5, " % PAUSE +
         "if (VolSlow < Quiet, 0, if (MusicBars < 2, y, "
         "if (ThinBars >= 16 and y > 0.5, 0, "
         "if (abs(y - 3) < 0.5, if (SubBar < SubLow and KickRate < 0.5, 4, 3), "
         "if (SubBar < SubLow and (ToneRise > RiseMin or SnareRate >= 5), 2, "
-        "if (SubBar < SubLow and KickRate < 0.5 and y > 0.5 and abs(y - 2) > 0.5, 4, y)))))), y))")])
+        "if (SubBar < SubLow and KickRate < 0.5 and y > 0.5 and abs(y - 2) > 0.5, 4, y)))))), y)))")])
 
     # what the Clip Graph reads. A plain Global link reads the same frame.
     g(SECTION, 0, "global:State")

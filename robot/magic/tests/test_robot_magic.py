@@ -539,6 +539,13 @@ class EffectTests(unittest.TestCase):
                         all_off = dict(off, FxHit=0, FxStrobe=0)
                         self.assertAlmostEqual(eval(_translate(exprs["Bright"]), env, dict(all_off, x=x, StrobeEnv=x)), 0)
 
+    def test_the_split_is_capped_whatever_the_flavor(self):
+        exprs = self.params()
+        for param, full in (("Red_zoom", 1 + rm.SPLIT), ("Blue_zoom", 1 - rm.SPLIT)):
+            for x in (1.0, 1.2, 1.4):
+                with self.subTest(param=param, x=x):
+                    self.assertAlmostEqual(eval(_translate(exprs[param]), ENV, {"x": x, "FxHit": 1}), full)
+
     def test_effects_off_leaves_the_composite_as_the_output(self):
         b = rm.build(self.m, effects=False)
         plugins = {n["plugin"] for n in mp.node_table(b.build(), "Robot")}
