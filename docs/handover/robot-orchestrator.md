@@ -1,5 +1,7 @@
 # Robot Scene orchestrator
 
+Current state, plan, open questions and workers: issue #33 "Orchestrator state" (read the body and the last 3 comments first). This note is background.
+
 Since 2026-11-16 22:38 orchestrator-2 (`local_a45f5ac3-446a-4346-8188-59d914ec9784`) drives the Robot Scene, on the user's word ("drive the robot fight in mmv"); the Robot lead stands down. Tracking issue #27. The user chose the giant machine as the opponent (#23). Low-quality review reel of all Moves: `tools/robot_preview_reel.sh`. The user on the reel (2026-11-16): "the android looks VERY underwhelming, but that's a problem for later" (#28).
 
 Started 2026-11-15 by the main orchestrator (`local_17c27d7a-be6f-4ed6-8881-dd774b2e9a7c`). Owns `robot/` only. Terms: GLOSSARY.md, "Robot Scene". Direction, v1 scope and contracts: [robot/README.md](../../robot/README.md), [robot/CONTRACTS.md](../../robot/CONTRACTS.md). Read [docs/lessons-learned-blender.md](../lessons-learned-blender.md) before any build.
