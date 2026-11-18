@@ -36,14 +36,15 @@ LIB = os.path.expanduser("~/Library/Application Support/Blender/data/scatter lib
 # ship False keeps a biome out of the Manifest until its plates pass review on every Angle.
 BIOMES = {
     "arclink_city_1": {"biome": "Arclink City/arclink_city_1.biome", "scale": 1.0, "area": [200, 230], "y0": 15},
+    # P3: front passes at scale 40; duel_low passed in P2 and fails in P3 (beads on the horizon)
     "chipset_04": {"biome": "Binary Frames/chipset_04.biome", "scale": 20.0, "area": [120, 120], "y0": 8, "ship": False,
                    "per_angle": {"front": {"scale": 40.0, "area": [240, 240]},
                                  "duel_low": {"scale": 40.0, "area": [240, 240]}}},
     # y0 8 put a pipe behind the Android's head on side and one slab across the fighters on duel_low; at y0 30
-    # front and duel_low thinned to a band (round P1). front passed at y0 8.
-    "greeble_01": {"biome": "Future Scratch/greeble_01.biome", "scale": 4.0, "area": [200, 200], "y0": 30, "ship": False,
-                   "per_angle": {"front": {"y0": 8},
-                                 "duel_low": {"scale": 8.0, "area": [400, 400]}}},
+    # front and duel_low thinned to a band (round P1); front at y0 8 got a slab again (P2).
+    "greeble_01": {"biome": "Future Scratch/greeble_01.biome", "scale": 4.0, "area": [200, 200], "y0": 30,
+                   "per_angle": {"front": {"y0": 16, "seed": 2},          # round P3 variants s2 and a
+                                 "duel_low": {"scale": 16.0, "area": [800, 800], "y0": 15, "sky": 0.03}}},
     "greeble_03": {"biome": "Future Scratch/greeble_03.biome", "scale": 4.0, "area": [200, 200], "y0": 30},
 }
 GLOW = 3.0

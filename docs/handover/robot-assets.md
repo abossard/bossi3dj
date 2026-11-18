@@ -237,3 +237,9 @@ Before any slot: script work of about one session per step. After the slots: `ma
     - `render greeble_01 --angles duel_low --set scale=12 'area=[600,600]' y0=20 sky=0.03 rim=3 --tag _b`
   - Then without Blender: `preview` each variant, review P3, `promote` the winners, `encode`, `reel`. Write the winning settings into `BIOMES` so a re-render reproduces them.
   - Optional, about 8 min more: re-render all 16 on the current `robot.blend`, so every plate comes from one build.
+- **Review P3 (2026-11-18, one 13 min slot: all 16 plates re-rendered on the current `robot.blend`, whose duel_low camera at (0.9, 2.8, 0.5) matches `camera/duel_low.json`, plus 8 variants; `robot/backdrop/slot_p3.sh`).**
+  - The fresh plates pass 13 of 16. arclink_city_1 and greeble_03 pass on all 4 Angles. chipset_04 front now passes at scale 40, but chipset_04 duel_low fails (beads on the horizon; it passed in P2, so the layout is not stable between builds). greeble_01 fails front and duel_low.
+  - Variant winners, promoted and written into `BIOMES`: greeble_01 front `y0 16, seed 2` (s2: a large lit building with an arch), and greeble_01 duel_low `scale 16, area 800 x 800, y0 15, sky 0.03` (a large block next to the giant). chipset_04 front `_c` (haze, rim and fill at scale 20) passes too but is not needed.
+  - **The Manifest's `backdrops` now lists arclink_city_1, greeble_01 and greeble_03** (validator ok: 84 clips, 42 moves, 4 angles). chipset_04 stays out (`ship: False`) until duel_low passes. Next try: a variant at scale 40 with haze, or the `_c` lighting.
+  - The reviewer notes that several passes are dim (greeble_01 duel_wide, greeble_03 duel_low). Judge them in motion in Magic.
+  - Reel rebuilt: `docs/video/robot-backdrops.mp4`.
