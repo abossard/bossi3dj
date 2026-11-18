@@ -5,6 +5,7 @@
 #   package: the beauty Pass of robot/package/v1 (RGBA .mov), laid over dark grey so the alpha shows
 #   exchanges: the Eevee previews of the Exchanges (review/preview_all.sh EXCHANGE...), duel_wide | duel_low
 #   package-duel: the Exchanges' beauty Pass in robot/package/v1 over dark grey, duel_wide | duel_low
+# ONLY="move ..." limits the reel to those Moves, in that order.
 # Output: robot/build/probe/<mode>_reel.mp4 and <mode>_reel.txt
 set -e
 mode=${1:-preview}
@@ -14,6 +15,7 @@ if [[ $mode == package ]]; then V=robot/package/v1/beauty; ext=mov; else V=$P/pr
 [[ $mode == exchanges ]] && { V=$P/preview/beauty; ext=mov; L=duel_wide; R=duel_low; }
 [[ $mode == package-duel ]] && { V=robot/package/v1/beauty; ext=mov; L=duel_wide; R=duel_low; }
 moves=($(ls $V/*__$L.$ext | xargs -n1 basename | sed "s/__$L.$ext//"))
+[[ -n $ONLY ]] && moves=(${=ONLY})     # ONLY="move ...": just these Moves, in this order
 i=0; t=0; : > $P/${mode}_reel.txt
 for m in $moves; do
   f=$V/${m}__$L.$ext; s=$V/${m}__$R.$ext
