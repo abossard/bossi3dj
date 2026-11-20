@@ -23,6 +23,7 @@ blender/local/
 
 # terrain test recordings and other videos: for the user, not for git
 docs/video/*.mp4
+docs/video/rehearsal-*/
 # Robot Scene build output (robot/build/build_robot.py)
 robot/build/robot.blend
 # Backdrop Plates (robot/backdrop/render_plates.py)

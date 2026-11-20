@@ -1138,7 +1138,9 @@ def load(path, timeout=20):
 
 def toggle_playback():
     """Play/pause audio files (Shift+Cmd+Space). Brings Magic to the front."""
-    _osascript('tell application "MagicBeta" to activate')
+    _, error = _osascript(f'tell application {json.dumps(MAGIC_APP)} to activate')
+    if error:
+        return "", error
     time.sleep(0.4)
     return _osascript('tell application "System Events" to keystroke space using {shift down, command down}')
 
@@ -1442,6 +1444,7 @@ def cmd_grab(a):
 def cmd_play(a):
     out, err = toggle_playback()
     print(err or "toggled playback (Shift+Cmd+Space)")
+    return bool(err)
 
 
 def cmd_listen(a):

@@ -45,6 +45,7 @@ def main():
     ap.add_argument("--size", default="960x540")
     ap.add_argument("--out", required=True)
     ap.add_argument("--flag")
+    ap.add_argument("--ready", help="touch this file once the live texture is available")
     ap.add_argument("--vflip", action="store_true")
     ap.add_argument("--crf", default="23")
     a = ap.parse_args()
@@ -56,6 +57,9 @@ def main():
     w, h = tex.width(), tex.height()
     raw = copy_mtl_texture_to_bytes(tex)
     stride = len(raw) // h
+    if a.ready:
+        with open(a.ready, "w"):
+            pass
     if a.flag:
         while not os.path.exists(a.flag):
             pump(0.01)

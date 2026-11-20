@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Live VJ</title>
+<style>
+  :root { color-scheme: dark; --text: #ecf1f3; --muted: #a6b5ba; --surface: #172129; --edge: #35464f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--text); background: #0b1116; font: 1rem/1.5 system-ui, sans-serif; }
+  main { width: min(100%, 44rem); margin: 0 auto; padding: clamp(1.25rem, 5vw, 3rem); }
+  header { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; }
+  h1 { margin: 0; font-size: clamp(2rem, 6vw, 3.3rem); font-weight: 650; letter-spacing: -.045em; }
+  h2, label { font-size: .95rem; font-weight: 620; }
+  section { margin: 1.8rem 0; }
+  .buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr)); gap: .55rem; }
+  button { min-height: 3rem; padding: .55rem .8rem; color: inherit; background: var(--surface); border: 1px solid var(--edge);
+    border-radius: .5rem; font: inherit; cursor: pointer; touch-action: manipulation; }
+  button:hover { background: #29383e; }
+  button[aria-pressed="true"] { background: #162f37; border-color: #6ac5c7; color: #a8f0e8; }
+  #safe { min-width: 6rem; border-color: #d8ba76; color: #f3d795; }
+  #safe[aria-pressed="true"] { color: #241c0c; background: #f3d795; }
+  :focus-visible { outline: 3px solid #8acbde; outline-offset: 3px; }
+  .readout { color: var(--muted); border-block: 1px solid var(--edge); padding: .75rem 0; }
+  .meter { display: flex; justify-content: space-between; }
+  output { font-variant-numeric: tabular-nums; color: #a8f0e8; }
+  input[type="range"] { width: 100%; margin: .4rem 0 0; min-height: 2rem; accent-color: #9ce1d8; }
+  #error { color: #ffb6a5; }
+</style>
+</head>
+<body>
+<main>
+  <header><h1>Live VJ</h1><button id="safe" data-scene="safe" aria-pressed="false">Safe</button></header>
+  <p id="status" class="readout" aria-live="polite">Connecting to dashboard…</p>
+  <section>
+    <h2>Phase</h2>
+    <div class="buttons">
+      <button data-cue="arrive" aria-pressed="false">Arrive</button>
+      <button data-cue="build" aria-pressed="false">Build</button>
+      <button data-cue="peak" aria-pressed="false">Peak</button>
+      <button data-cue="release" aria-pressed="false">Release</button>
+    </div>
+  </section>
+  <section>
+    <h2>Scene</h2>
+    <div class="buttons">
+      <button data-scene="planet" aria-pressed="false">Synthwave Planet</button>
+      <button data-scene="robot" aria-pressed="false">Robot</button>
+    </div>
+  </section>
+  <section>
+    <div class="meter"><label for="reactivity">Reactivity</label><output for="reactivity" id="percent"></output></div>
+    <input id="reactivity" type="range" min="0" max="1" step=".01" value=".35">
+  </section>
+  <p id="error" role="alert" hidden></p>
+</main>
+<script>
+  const buttons = [...document.querySelectorAll("button[data-cue], button[data-scene]")];
+  const slider = document.querySelector("#reactivity");
+  const percent = document.querySelector("#percent");
+  const status = document.querySelector("#status");
+  const error = document.querySelector("#error");
+  const phaseScene = {arrive: "planet", build: "robot", peak: "robot", release: "planet"};
+  const sceneLabels = {safe: "Safe", planet: "Synthwave Planet", robot: "Robot"};
+  let pending = 0;
+  let revision = 0;
+  let faderTimer;
+
+  function showPercent() {
+    percent.value = `${Math.round(Number(slider.value) * 100)}%`;
+  }
+
+  function render(state) {
+    const {cue, scene, reactivity} = state.requested;
+    const label = cue[0].toUpperCase() + cue.slice(1);
+    const summary = `Requested ${label} · ${sceneLabels[scene]} · On air ${state.readiness.program}`;
+    if (status.textContent !== summary) status.textContent = summary;
+    for (const button of buttons) {
+      const pressed = button.dataset.scene === scene ||
+        (button.dataset.cue === cue && phaseScene[cue] === scene);
+      button.setAttribute("aria-pressed", String(pressed));
+    }
+    if (!slider.matches(":active") && !faderTimer) {
+      slider.value = reactivity;
+      showPercent();
+    }
+  }
+
+  async function request(path, body) {
+    const current = ++revision;
+    pending++;
+    try {
+      const response = await fetch(path, body === undefined ? {} : {
+        method: "PUT", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)
+      });
+      const state = await response.json();
+      if (!response.ok) throw new Error(state.error);
+      if (current === revision) {
+        render(state);
+        error.hidden = true;
+      }
+    } catch (problem) {
+      if (current === revision) {
+        error.textContent = problem.message;
+        error.hidden = false;
+      }
+    } finally {
+      pending--;
+    }
+  }
+
+  for (const button of buttons) {
+    button.addEventListener("click", () => request("/api/show/cue", {...button.dataset}));
+  }
+  slider.addEventListener("input", () => {
+    showPercent();
+    if (!faderTimer) faderTimer = setTimeout(() => {
+      faderTimer = undefined;
+      request("/api/show/reactivity", {value: Number(slider.value)});
+    }, 60);
+  });
+  showPercent();
+  request("/api/show");
+  setInterval(() => { if (!pending) request("/api/show"); }, 1000);
+</script>
+</body>
+</html>

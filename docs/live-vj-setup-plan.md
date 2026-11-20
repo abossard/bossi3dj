@@ -1,0 +1,55 @@
+# Live VJ setup review and rehearsal plan
+
+20 November 2026
+
+Build the first set around two scenes in one Magic Music Visuals project. Open in the **Synthwave Planet Scene**, build toward the **Robot Scene**, then return to the Planet for the release. Use one live Blender viewport for the Planet and play the Robot’s pre-rendered Clips in Magic. A small Magic-native composition gives you a third visual texture and a place to land if Blender stalls. Start previewing the whole set at **480×270**.
+
+## Project state
+
+`make test` passed with local UDP access. The run covered the headless suite and skipped the opt-in Magic live test. It gives a logic baseline for the rehearsal project.
+
+| Area | What works today | What the set still needs |
+| --- | --- | --- |
+| Magic and control | `show.magic` checks clean. A previous live test verified an upright Blender picture through `MAGIC_OUT` and checked the OSC controls. The current show uses a 1080p canvas, one playlist entry and a Blender/Godot mix. | One generated project for Planet, Robot and Safe. The Blender page controls one scene and lives inside Blender, so the performance dashboard needs its own process. [Show generator](../magic/show_magic.py) · [Live proof](handover/handbook-page-magic.md) |
+| Synthwave Planet Scene | Blender has a working Path Camera, GPU terrain, OSC and Syphon. The latest round improved the sky framing and softened dusk. | Prove that two curated views play smoothly at the target resolution and that the output keeps moving. In the November 16 demo, `CAM_OUT` froze around 55 seconds under heavy load while the publisher counter kept rising. A quiet-machine baseline and the latest music demo are still open. [Planet notes](handover/blend-land.md) · [Freeze](https://github.com/abossard/bossi3dj/issues/24) · [Frame times](https://github.com/abossard/bossi3dj/issues/13) |
+| Robot Scene | The local Manifest validates 84 Clips, 42 Moves and four Angles. A fresh temporary Magic project generated from it checks with zero errors or warnings. The saved `robot.magic` has 12 stale media references. | Use the rendered backdrops and rerun the beat test. The last live run measured 111 ms median and 812 ms maximum bar error. The adaptive kick and silence fixes landed afterward. The current package and fixes still need a live run together. [Robot rerun](handover/robot-live-rerun.md) · [Orchestrator state](https://github.com/abossard/bossi3dj/issues/33) |
+| Colossus Scene | The headless Arc and controls work. The user parked the scene after the look review. | The proposed set uses Magic and one Blender scene. [Godot handover](handover/godot-parked.md) |
+
+## The set
+
+Give each scene a different visual rhythm. The Planet uses the horizon, the moon and the pyramids to show scale. The Robot Scene brings the audience close to the Android, then reveals the size difference in a wide Exchange. Use a shared accent colour to connect the two worlds. The Safe composition can be a dim signal moving through broad bands or a simple corridor, built with Magic’s own modules. Judge the silhouettes, palette and timing in motion at 480×270.
+
+| Cue | On screen | What music can move |
+| --- | --- | --- |
+| **Arrive** | One slow twilight orbit around the pyramids. Let the audience get its bearings. | Bass lifts the pyramid glow within a narrow range. |
+| **Build** | Switch to a solo Android Idle Clip and a small pool of Moves. Let the frame tighten and the pace rise. | Magic increases the motion and light response. |
+| **Peak** | Cue a wide Exchange with the six-metre machine. Give the scale reveal room to read. | A locked beat can time the Clip choice. Kick accents briefly lift light or contrast. |
+| **Release** | Return to a high Planet view or a moon vantage. Safe can cover the cut and give the room a moment of quiet. | Ease back to slow motion and low reactivity. |
+
+You choose when each cue happens and can also switch scenes without advancing the set. Start with cuts. Once the path works, try a short dissolve through Safe if the cut needs breathing room. Rehearse with steady light and restrained accents so the two worlds remain readable in a dark room.
+
+## One dashboard and one Magic project
+
+- **Dashboard.** Put four named cue buttons, direct scene selection, a Reactivity fader and a prominent **Safe** button on one page. Safe takes priority over any pending cue and holds until you choose where to go next. Use a standalone localhost process with a small HTTP API so the page and scripts send the same commands. `GET /api/show` returns requested cue, scene, and known readiness. `PUT /api/show/cue` sets an explicit cue or scene, including Safe. `PUT /api/show/reactivity` sets a value from 0 to 1. Show what the dashboard requested and what it can verify, with an unknown status when evidence is missing.
+- **Magic.** Generate one `Master` with a common audio analysis and direct Planet OSC branch. Use `InputSelector` to draw the selected picture. Test cold selection and re-entry early. The Robot graph keeps hidden Angles advancing together. A disconnected video branch stops advancing. On Robot entry, test a known Idle Clip and a clean first Move. Use the performer’s cue to choose the Intensity Tier and the camera preset. Magic shapes audio envelopes and times Clips within that cue. Offer a next-bar cue after the Robot timing replay proves it, with an immediate cue available throughout. [Magic builder](../magic/magicproj.py) · [Robot selector and playback](../robot/magic/robot_magic.py#L299)
+- **Routing.** Dashboard/API sends explicit values to Magic on UDP `9202`. Magic sends scene controls straight to Blender on `9201`. Blender publishes `CAM_OUT - Blender`, and Magic publishes the program as `MAGIC_OUT - Magic`. Register any new `/vj/*` rows in `osc/contract.json` before changing the generators or scene readers. Use the existing Blender page on `9210` for diagnostics. Magic shares one OSC output destination across the project. Use the received picture to verify program changes and check that active settings return after Blender reconnects. Magic’s `OSCSender` sends changed values only. [OSC contract](../osc/contract.json) · [Magic senders](../magic/synthwave_magic.py#L520) · [Magic OSC reference](../.claude/skills/magic-projects/references/inputs.md)
+- **Performer control.** Put the Planet’s path, target and height under cue control even while audio keeps modulating light. The current `Auto=0` still leaves periodic camera moves in the graph, and the existing page’s Takeover normally releases after 20 seconds. Prove that holding a cue through music and silence keeps the chosen view. Exercise the Safe switch with Blender stopped, absent at startup and publishing a frozen picture. Automatic fallback can follow once a receiver-side freshness check works across intentional stillness and active motion. [Path expressions](../magic/synthwave_magic.py#L192) · [Takeover](handbook.md#steer-by-hand)
+
+## Rendering budget
+
+| Stage | Start here | If it misses the budget |
+| --- | --- | --- |
+| Blender live | Use one small camera viewport targeting about 480×270 effective render pixels. Measure the actual camera region and publish a small Syphon texture. Start with the orbit and the high view. | Profile those views and their transitions with Magic open. Simplify expensive fog or shading where it preserves the silhouette. Use a pre-rendered Planet loop or transition for any view that misses the live target. |
+| Robot playback | Reuse the current package for the first run. Start with one solo Angle, one duel Angle, one backdrop and a small group of connected Moves with their Idle Clips. | Build a separate 480×270, 30 fps proxy package from the existing Clips and matching Passes. Preserve alpha, frame counts, Cut Points and Key Poses. Validate the proxy Manifest and its files. If a new render is needed, start with Eevee and reduced render percentage. |
+| Magic program | Set a fixed 480×270 canvas and matching Syphon output. Assess the program at that size. | Try 320×180 for faster iteration if needed. Move to 640×360 when a well-staged shot needs the extra pixels and the rehearsal shows headroom. |
+
+The Planet’s current sender copies an already-rendered viewport into a 1920×1080 texture. A smaller recording or preview leaves the main viewport cost in place. Robot’s `QUALITY=low` uses Eevee at full size by default, so shrinking only Magic’s canvas leaves the HD decode work in place. Keep a separate show media folder with the files the generated project references. The full local Robot render folder has about 67 GiB including intermediates, and a fresh Git checkout needs a media copy. [Planet sender](../blender/scenes/syphon_out.py#L136) · [Robot render modes](../robot/build/build_robot.py#L869) · [Media handover](https://github.com/abossard/bossi3dj/issues/33)
+
+## Build and rehearsal order
+
+1. **Prove the program switch.** Generate a small rehearsal project using a Planet loop, one Robot Clip and Safe. Wire `9202` and a minimal dashboard, validate the generated file with `magicproj.py check`, then grab Magic’s final Syphon output for each cue. Verify that Safe can take over with the Blender process absent. This isolates scene selection and media paths before GPU work.
+2. **Put the two scenes on air.** Rerun the Robot timing replay and the Planet music demo. Add two live Planet viewpoints and the Robot’s curated Clip Graph to the rehearsal project. Run `make test` and the Blender start and health checks. Record one pass through the four cues with a real track, a breakdown or silence, and a return to the beat. Review two short clips from Magic’s final output at the target resolution and judge whether the two worlds and the peak are legible. [Robot timing procedure](handover/robot-live-rerun.md) · [Planet demo script](../tools/live_demo_check.sh)
+3. **Run a 15-minute rehearsal.** Open the rehearsal project in Magic and verify audio input. Prewarm one Blender, then switch between the scenes several times. Aim for 30 distinct frames per second in moving passages, with 24 as the minimum for this rehearsal. Measure when `make status` reports `fps_trustworthy` and log the render size, repeated frames, and cue-to-picture delays. Target a visible Safe switch in under one second and zero unexpected black frames or freezes. Stop Blender during the run, take Safe, restart and verify re-entry without reloading Magic. Check the received `MAGIC_OUT` pixels across each change.
+4. **Write the set checklist.** Save the cue presets, exact launch order, media check and recovery steps in the handbook. Review whether the Magic-native composition earns a full third scene. Consider more Robot variation after a moving rehearsal shows which repeats you can see. [Handbook](handbook.md) · [Variation issue](https://github.com/abossard/bossi3dj/issues/32)
+
+The first rehearsable deliverable is one generated Magic project, one Blender scene, one local dashboard/API and a portable media folder. Use these resolution, timing and fallback targets to evaluate the first live pass on the show Mac.
