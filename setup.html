@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Night Orchard VI setup</title>
+<style>
+:root{color-scheme:dark}body{background:#0a0b0e;color:#ece9e3;font:1.05rem/1.6 system-ui;
+max-width:44rem;margin:4rem auto;padding:0 1.25rem}a{color:#ffa082}code{font-size:.95em}
+</style>
+<nav><a href="./">Back to the handbook</a></nav>
+<h1>Setup and regeneration</h1>
+<p>Open the Night Orchard VI MIDImix Audio Bridge project in Magic Music Visuals.
+In Input Sources, choose the physical MIDI Mix on channel 1 and assign the two audio
+sources to the left and right channels of your audio feed. The Controls tab lists
+each MIDI assignment and the Globals available for MIDI Learn.</p>
+<p>In the project checkout, run <code>make venv</code> once to install the Python
+dependencies, then <code>make orchard-handbook</code>. Open
+<code>magic/showcase/edition6/handbook/index.html</code> for the full local edition.</p>
+<p>To rebuild the web edition with FFmpeg available, run
+<code>.venv/bin/python tools/orchard_handbook_pages.py --out /path/to/empty-directory</code>.
+It uses the saved Magic captures. All web clips are silent. The full local edition
+includes the additional archive recordings and any available local listening copies.</p>
+<p><a href="https://github.com/abossard/bossi3dj">bossi3dj repository</a></p>
+</html>

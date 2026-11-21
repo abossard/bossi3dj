@@ -1,0 +1,7 @@
+Interstellar
+
+Hazel Quantock · Interstellar (CC0).
+
+Retains Quantock’s depth-seeded stepped star volumes and chromatic exposure; the control surface steers drift, population and jump length.
+
+Hazel Quantock places the full Interstellar shader under CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/).
